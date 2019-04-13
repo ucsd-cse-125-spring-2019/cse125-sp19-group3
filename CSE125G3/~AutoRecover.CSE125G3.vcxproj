@@ -23,11 +23,13 @@
     <ClInclude Include="..\main.h" />
     <ClInclude Include="..\Mesh.h" />
     <ClInclude Include="..\shader.h" />
+    <ClInclude Include="..\stb_image.h" />
     <ClInclude Include="..\Window.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Cube.cpp" />
     <ClCompile Include="..\main.cpp" />
+    <ClCompile Include="..\Model.cpp" />
     <ClCompile Include="..\Model.h" />
     <ClCompile Include="..\shader.cpp" />
     <ClCompile Include="..\Window.cpp" />

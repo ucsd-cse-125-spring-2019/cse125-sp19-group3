@@ -27,6 +27,9 @@
     <ClInclude Include="..\shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\main.cpp">
@@ -40,6 +43,9 @@
     </ClCompile>
     <ClCompile Include="..\Cube.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Model.h">
+      <Filter>Header Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -2,6 +2,7 @@
 
 const char* window_title = "GLFW Starter Project";
 Cube * cube;
+Model * model;
 GLint shaderProgram;
 
 // On some systems you need to change this to the absolute path
@@ -9,7 +10,7 @@ GLint shaderProgram;
 #define FRAGMENT_SHADER_PATH "../shader.frag"
 
 // Default camera parameters
-glm::vec3 cam_pos(0.0f, 0.0f, 20.0f);		// e  | Position of camera
+glm::vec3 cam_pos(0.0f, 0.0f, -20.0f);		// e  | Position of camera
 glm::vec3 cam_look_at(0.0f, 0.0f, 0.0f);	// d  | This is where the camera looks at
 glm::vec3 cam_up(0.0f, 1.0f, 0.0f);			// up | What orientation "up" is
 
@@ -22,6 +23,9 @@ glm::mat4 Window::V;
 void Window::initialize_objects()
 {
 	cube = new Cube();
+	cube->toWorld = glm::translate(glm::mat4(1.0f), glm::vec3(0, -0.5f, 0)) * glm::scale(glm::mat4(1.0f), glm::vec3(100, 0.01, 100)) * cube->toWorld;
+
+	model = new Model(std::string("../BaseMesh_Anim.fbx"));
 
 	// Load the shader program. Make sure you have the correct filepath up top
 	shaderProgram = LoadShaders(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
@@ -31,6 +35,7 @@ void Window::initialize_objects()
 void Window::clean_up()
 {
 	delete(cube);
+	delete(model);
 	glDeleteProgram(shaderProgram);
 }
 
@@ -101,7 +106,7 @@ void Window::resize_callback(GLFWwindow* window, int width, int height)
 void Window::idle_callback()
 {
 	// Call the update function the cube
-	cube->update();
+	//cube->update();
 }
 
 void Window::display_callback(GLFWwindow* window)
@@ -114,6 +119,12 @@ void Window::display_callback(GLFWwindow* window)
 	
 	// Render the cube
 	cube->draw(shaderProgram);
+
+	glm::mat4 modelview = Window::V * glm::mat4(1.0f);
+	// Now send these values to the shader program
+	glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, &Window::P[0][0]);
+	glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "modelview"), 1, GL_FALSE, &modelview[0][0]);
+	model->Draw(shaderProgram);
 
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();
@@ -133,4 +144,10 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
 	}
+}
+
+void Window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+	glm::vec3 z_dir = cam_look_at - cam_pos;
+	cam_pos -= ((float)-yoffset * glm::normalize(z_dir));
+	V = glm::lookAt(cam_pos, cam_look_at, cam_up);
 }
