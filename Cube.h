@@ -24,35 +24,53 @@ public:
 	void spin(float);
 
 	// These variables are needed for the shader program
-	GLuint VBO, VAO, EBO;
-	GLuint uProjection, uModelview;
+	GLuint VBO, VBO2, VAO, EBO;
+	GLuint uModel, uModelViewProjection;
 };
 
 // Define the coordinates and indices needed to draw the cube. Note that it is not necessary
 // to use a 2-dimensional array, since the layout in memory is the same as a 1-dimensional array.
 // This just looks nicer since it's easy to tell what coordinates/indices belong where.
-const GLfloat vertices[8][3] = {
+const GLfloat vertices[24][3] = {
 	// "Front" vertices
 	{-2.0, -2.0,  2.0}, {2.0, -2.0,  2.0}, {2.0,  2.0,  2.0}, {-2.0,  2.0,  2.0},
 	// "Back" vertices
-	{-2.0, -2.0, -2.0}, {2.0, -2.0, -2.0}, {2.0,  2.0, -2.0}, {-2.0,  2.0, -2.0}
+	{-2.0, -2.0, -2.0}, {2.0, -2.0, -2.0}, {2.0,  2.0, -2.0}, {-2.0,  2.0, -2.0},
+	// Top
+	{-2.0, 2.0,  2.0}, {2.0, 2.0,  2.0}, {2.0,  2.0,  -2.0}, {-2.0,  2.0,  -2.0},
+	// Bottom
+	{-2.0, -2.0,  -2.0}, {2.0, -2.0,  -2.0}, {2.0,  -2.0,  2.0}, {-2.0,  -2.0,  2.0},
+	// Left
+	{-2.0, -2.0,  -2.0}, {-2.0, -2.0,  2.0}, {-2.0,  2.0,  2.0}, {-2.0,  2.0,  -2.0},
+	// Right
+	{2.0, -2.0,  2.0}, {2.0, -2.0,  -2.0}, {2.0,  2.0,  -2.0}, {2.0,  2.0,  2.0}
+};
+
+const GLfloat normals[24][3] = {
+	// "Front" vertices
+	{0,0,1}, {0,0,1}, {0,0,1}, {0,0,1},
+	{0,0,-1}, {0,0,-1}, {0,0,-1}, {0,0,-1},
+	{0,1,0}, {0,1,0}, {0,1,0}, {0,1,0},
+	{0,-1,0}, {0,-1,0}, {0,-1,0}, {0,-1,0},
+	{-1, 0, 0}, {-1, 0, 0}, {-1, 0, 0}, {-1, 0, 0},
+	{1,0,0}, {1,0,0}, {1,0,0}, {1,0,0}
 };
 
 // Note that GL_QUADS is deprecated in modern OpenGL (and removed from OSX systems).
 // This is why we need to draw each face as 2 triangles instead of 1 quadrilateral
 const GLuint indices[6][6] = {
 	// Front face
-	{0, 1, 2, 2, 3, 0},
-	// Top face
-	{1, 5, 6, 6, 2, 1},
+	{0, 1, 2, 0, 2, 3},
 	// Back face
-	{7, 6, 5, 5, 4, 7},
+	{4, 5, 6, 4, 6, 7},
+	// Top face
+	{8, 9, 10, 8, 10, 11},
 	// Bottom face
-	{4, 0, 3, 3, 7, 4},
+	{12, 13, 14, 12, 14, 15},
 	// Left face
-	{4, 5, 1, 1, 0, 4},
+	{16, 17, 18, 16, 18, 19},
 	// Right face
-	{3, 2, 6, 6, 7, 3}
+	{20, 21, 22, 20, 22, 23}
 };
 
 #endif

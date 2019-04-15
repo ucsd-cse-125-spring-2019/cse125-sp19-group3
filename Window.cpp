@@ -10,7 +10,7 @@ GLint shaderProgram;
 #define FRAGMENT_SHADER_PATH "../shader.frag"
 
 // Default camera parameters
-glm::vec3 cam_pos(0.0f, 0.0f, -20.0f);		// e  | Position of camera
+glm::vec3 cam_pos(10.0f, 30.0f, 30.0f);		// e  | Position of camera
 glm::vec3 cam_look_at(0.0f, 0.0f, 0.0f);	// d  | This is where the camera looks at
 glm::vec3 cam_up(0.0f, 1.0f, 0.0f);			// up | What orientation "up" is
 
@@ -23,7 +23,7 @@ glm::mat4 Window::V;
 void Window::initialize_objects()
 {
 	cube = new Cube();
-	cube->toWorld = glm::translate(glm::mat4(1.0f), glm::vec3(0, -0.5f, 0)) * glm::scale(glm::mat4(1.0f), glm::vec3(100, 0.01, 100)) * cube->toWorld;
+	cube->toWorld = glm::translate(glm::mat4(1.0f), glm::vec3(0, 5, 15)); //* glm::scale(glm::mat4(1.0f), glm::vec3(100, 0.01, 100)) * cube->toWorld;
 
 	model = new Model(std::string("../BaseMesh_Anim.fbx"));
 
@@ -120,10 +120,13 @@ void Window::display_callback(GLFWwindow* window)
 	// Render the cube
 	cube->draw(shaderProgram);
 
-	glm::mat4 modelview = Window::V * glm::mat4(1.0f);
+	glm::mat4 tw = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)) 
+		* glm::rotate(glm::mat4(1.0f), -90 / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)) 
+		* glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 0.1f, 0.1f));
+	glm::mat4 MVP = Window::P * Window::V * tw;
 	// Now send these values to the shader program
-	glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, &Window::P[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "modelview"), 1, GL_FALSE, &modelview[0][0]);
+	glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &tw[0][0]);
+	glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "modelViewProjection"), 1, GL_FALSE, &MVP[0][0]);
 	model->Draw(shaderProgram);
 
 	// Gets events, including input such as keyboard and mouse or window resizing

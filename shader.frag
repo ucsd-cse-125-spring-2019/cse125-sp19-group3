@@ -1,15 +1,32 @@
 #version 330 core
-// This is a sample fragment shader.
 
-// Inputs to the fragment shader are the outputs of the same name from the vertex shader.
-// Note that you do not have access to the vertex shader's default output, gl_Position.
-in float sampleExtraOutput;
+in vec3 fragPosition;
+in vec3 fragNormal;
+in vec2 TexCoord;
 
-// You can output many things. The first vec4 type output determines the color of the fragment
-out vec4 color;
+uniform int UseTex = 0;
+uniform sampler2D Texture;
 
-void main()
-{
-    // Color everything a hot yellow color. An alpha of 1.0f means it is not transparent.
-    color = vec4(0.5f, 0.5f, 0.5f, sampleExtraOutput);
+uniform vec3 AmbientColor = vec3(0.2, 0.1, 0.3);
+uniform vec3 LightDirection=normalize(vec3(1,5,2));
+uniform vec3 LightColor=vec3(0.9, 0.1, 0);
+uniform vec3 DiffuseColor = vec3(0.5);
+
+out vec4 finalColor;
+
+void main() {
+	if (UseTex == 0) {
+		// Compute irradiance (sum of ambient & direct lighting)
+		vec3 irradiance = AmbientColor + LightColor * max(0,dot(LightDirection,fragNormal));
+
+		// Diffuse reflectance
+		vec3 reflectance = irradiance * DiffuseColor;
+
+		// Gamma correction
+		finalColor = vec4(sqrt(reflectance), 1);
+		//finalColor = vec4(normalize(2.0f * fragNormal), 1);
+	}
+	else {
+		finalColor = texture(Texture, TexCoord);
+	}
 }
