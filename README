@@ -1,0 +1,10 @@
+Setting up the environment:
+
+1.) In visual studio open the package manager and install the logger
+	a.) Tools -> NuGet Package Manager -> Console
+	b.) Install-Package spdlog-native
+
+2.) Hide config file warnings
+	Project -> Properties -> C/C++ -> Preprocessor -> Preprocessor Definitions -> then add: _CRT_SECURE_NO_WARNINGS
+
+3.) Linker error?!?!?
