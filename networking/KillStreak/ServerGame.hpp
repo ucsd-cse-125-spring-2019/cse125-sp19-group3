@@ -29,7 +29,8 @@ protected:
 	PCSTR port;
 	ServerNetwork* network;
 	double tick_rate;
-	static unsigned int client_id; // IDs for the clients connecting to the server in ServerNetwork
+	// TODO: static unsigned int client_id
+	unsigned int client_id; // IDs for the clients connecting to the server in ServerNetwork
 };
 
 #endif // SURFSTORESERVER_HPP
