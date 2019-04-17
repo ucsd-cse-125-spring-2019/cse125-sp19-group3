@@ -1,10 +1,10 @@
-Setting up the environment:
+Setting up the Visual Studio Environment at home: 
 
-1.) In visual studio open the package manager and install the logger
-	a.) Tools -> NuGet Package Manager -> Console
-	b.) Install-Package spdlog-native
+* The lab machines use Visual Studio 2017. If you have a different version of VS you'll need to install a few things. 
+* All of the following can be installed using the Visual Studio Installer (it will modify the existing copy of VS).
 
-2.) Hide config file warnings
-	Project -> Properties -> C/C++ -> Preprocessor -> Preprocessor Definitions -> then add: _CRT_SECURE_NO_WARNINGS
+1.) Windows SDK: 10.0.16299 
 
-3.) Linker error?!?!?
+2.) Platform toolset: Visual Studio 2017 build tools v=141 
+
+3.) Once installed you can right click the project -> properties -> General. Make sure SDK & platform toolset are correct.
