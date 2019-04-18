@@ -26,7 +26,7 @@ ClientNetwork::ClientNetwork(PCSTR serverPort) {
 	hints.ai_protocol = IPPROTO_TCP; // TCP baby
 
 	// resole server address and port
-	iResult = getaddrinfo("127.0.0.1", serverPort, &hints, &result);
+	iResult = getaddrinfo("128.54.70.10", serverPort, &hints, &result);
 
 	if (iResult != 0) {
 		log->error("getaddrinfo failed with error: {}", iResult);
