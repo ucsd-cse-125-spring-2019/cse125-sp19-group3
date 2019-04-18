@@ -8,7 +8,6 @@ ServerGame::ServerGame(INIReader& t_config) : config(t_config) {
 	auto log = logger();
 
 	// PULL VALUES FROM THE CONFIG FILE
-
 	// pull the address and port for the server
 	string servconf = config.Get("ssd", "server", "");
 	if (servconf == "") {
