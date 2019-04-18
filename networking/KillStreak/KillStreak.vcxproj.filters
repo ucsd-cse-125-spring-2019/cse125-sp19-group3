@@ -66,4 +66,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="config.ini">
+      <Filter>Source Files</Filter>
+    </Text>
+  </ItemGroup>
 </Project>
