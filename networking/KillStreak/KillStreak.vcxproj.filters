@@ -42,7 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="client_config.ini.ini">
+    <None Include="client_config.ini">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>

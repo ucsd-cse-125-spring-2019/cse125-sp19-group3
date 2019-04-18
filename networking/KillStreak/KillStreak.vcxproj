@@ -126,7 +126,7 @@
     <ClInclude Include="sysexits.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="client_config.ini.ini" />
+    <None Include="client_config.ini" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

@@ -28,6 +28,7 @@ int main(int argc, char** argv) {
 
 	if (config.ParseError() < 0) {
 		cerr << "Error parsing config file " << argv[1] << endl;
+	while (1) {};
 		return EX_CONFIG;
 	}
 

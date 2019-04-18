@@ -1,4 +1,32 @@
-Setting up the Visual Studio Environment at home: 
+Setting up Visual Studio Environment: 
+
+1.) Open the solution file located in 'rendering -> CSE125G3.sln'
+
+2.) From the solution explorer right click on the solution then...
+
+	a.) Set path to config file as the command line argument:
+		i.) Select properties -> Debugging -> command arguments 
+			-->  For Server: ../../networking/KillStreak/config.ini
+			-->  For Client: ../../networking/KillStreak/client_config.ini
+
+	b.) Ignore specific warnings
+		i.) Select properties -> C/C++ -> Preprocessor
+		ii.) Add this line to the end of 'Preprocessor Definitions' (semicolon included) --> ;_CRT_SECURE_NO_WARNINGS
+
+3.) Install all the required packages 
+	a.) Tools -> NuGet package manager -> Manage Nuget Packages for solution
+	b.) Install the following... 
+		-> glm
+		-> nupengl.core 
+		-> nupengl.core.redist
+		-> spdlog.native
+		-> spdlog-native
+
+
+*** Note: If  you're using a different version of VS (non-2017) see below!
+
+
+Setting up the Visual Studio Environment (non-2017): Be sure to also follow the setup for setting up VS for the first time.
 
 * The lab machines use Visual Studio 2017. If you have a different version of VS you'll need to install a few things. 
 * All of the following can be installed using the Visual Studio Installer (it will modify the existing copy of VS).
@@ -8,3 +36,4 @@ Setting up the Visual Studio Environment at home:
 2.) Platform toolset: Visual Studio 2017 build tools v=141 
 
 3.) Once installed you can right click the project -> properties -> General. Make sure SDK & platform toolset are correct.
+
