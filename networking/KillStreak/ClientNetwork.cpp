@@ -46,9 +46,9 @@ ClientNetwork::ClientNetwork(PCSTR serverPort) {
 		// Connect to server
 		iResult = connect(ConnectSocket, ptr->ai_addr, (int)(ptr->ai_addrlen));
 		if (iResult == SOCKET_ERROR) {
+			log->error("The server is down... did not connect: {}", WSAGetLastError());
 			closesocket(ConnectSocket);
 			ConnectSocket = INVALID_SOCKET;
-			log->error("The server is down... did not connect");
 		}
 	}
 

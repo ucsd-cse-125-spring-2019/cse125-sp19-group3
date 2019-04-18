@@ -19,7 +19,10 @@ ServerGame::ServerGame(INIReader& t_config) : config(t_config) {
 		log->error("Config line {} is invalid", servconf);
 		exit(EX_CONFIG);
 	}
-	port = servconf.substr(idx + 1).c_str();
+
+	// get port from config & tick rate
+	string get_port = servconf.substr(idx + 1);
+	port = get_port.c_str();
 	tick_rate = (double)(config.GetInteger("ssd", "tick_rate", -1));
 	if (tick_rate == -1) {
 		log->error("Invalid tick_rate in config file");
