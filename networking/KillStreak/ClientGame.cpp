@@ -16,7 +16,10 @@ ClientGame::ClientGame(INIReader& t_config) : config(t_config) {
 		log->error("Config line {} is invalid", servconf);
 		exit(EX_CONFIG);
 	}
-	serverPort = servconf.substr(idx + 1).c_str();
+
+	// get port from config
+	string get_port = servconf.substr(idx + 1);
+	serverPort = get_port.c_str();
 	
 	network = new ClientNetwork(serverPort);
 }
