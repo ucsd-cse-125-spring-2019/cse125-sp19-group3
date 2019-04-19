@@ -101,5 +101,8 @@
     <None Include="..\..\networking\KillStreak\config.ini">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="..\..\networking\KillStreak\client_config.ini">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -1,7 +1,7 @@
 #include "ServerNetwork.hpp"
 #include "Logger.hpp"
 
-ServerNetwork::ServerNetwork(PCSTR port) : serverPort(port)
+ServerNetwork::ServerNetwork(PCSTR host, PCSTR port) : serverPort(port)
 {
 	auto log = logger();
 	// create WSADATA object
@@ -30,7 +30,7 @@ ServerNetwork::ServerNetwork(PCSTR port) : serverPort(port)
 	hints.ai_flags = AI_PASSIVE;
 
 	// Resolve the server address and port
-	iResult = getaddrinfo(NULL, serverPort, &hints, &result);
+	iResult = getaddrinfo(host, serverPort, &hints, &result);
 
 	if (iResult != 0) {
 		log->error("getaddrinfo failed with error: {}", iResult);
@@ -49,6 +49,8 @@ ServerNetwork::ServerNetwork(PCSTR port) : serverPort(port)
 	}
 
 	// Set the mode of the socket to be nonblocking
+	// TODO: Do we want this non-blocking?!
+	/*
 	u_long iMode = 1;
 	iResult = ioctlsocket(ListenSocket, FIONBIO, &iMode);
 
@@ -58,8 +60,9 @@ ServerNetwork::ServerNetwork(PCSTR port) : serverPort(port)
 		WSACleanup();
 		exit(1);
 	}
+	*/
 
-	// Setup the TCP listening socket
+	// Setup the TCP listening socket (bind)
 	const sockaddr* addr = result->ai_addr;
 	int addrLen = (int)(result->ai_addrlen);
 	iResult = bind(ListenSocket, addr, addrLen);
@@ -84,6 +87,8 @@ ServerNetwork::ServerNetwork(PCSTR port) : serverPort(port)
 		WSACleanup();
 		exit(1);
 	}
+
+	log->info("Server listening on {}:{}", host, port);
 }
 
 
@@ -94,10 +99,18 @@ ServerNetwork::~ServerNetwork(void)
 	WSACleanup();
 }
 
-// accept new connections
+
+/* 
+	Accept an incoming connection. 
+	'id' will be client ID we want to associate with this socket.
+	Once socket is allocated, its mapped to the incoming clients ID.
+*/
 bool ServerNetwork::acceptNewClient(unsigned int & id)
 {
+	auto log = logger();
+
 	// if client waiting, accept the connection and save the socket
+	// TODO: Currently socket non-blocking, make it block? 
 	ClientSocket = accept(ListenSocket, NULL, NULL);
 
 	if (ClientSocket != INVALID_SOCKET)
@@ -108,9 +121,12 @@ bool ServerNetwork::acceptNewClient(unsigned int & id)
 
 		// insert new client into session id table
 		sessions.insert(pair<unsigned int, SOCKET>(id, ClientSocket));
+		log->info("Connection accepted -> Client: {}", id);
 
+		id++;		// inc to next client id
 		return true;
 	}
+	log->info("No connection: {}", WSAGetLastError());
 
 	// TODO: Should we send initial state data to connected client here? 
 

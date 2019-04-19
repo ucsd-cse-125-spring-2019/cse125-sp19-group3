@@ -1,7 +1,7 @@
 #include "ClientNetwork.hpp"
 #include "Logger.hpp"
 
-ClientNetwork::ClientNetwork(PCSTR serverPort) {
+ClientNetwork::ClientNetwork(PCSTR host, PCSTR serverPort) {
 	auto log = logger();
 	// create WSDATA object
 	WSADATA wsaData;
@@ -26,7 +26,7 @@ ClientNetwork::ClientNetwork(PCSTR serverPort) {
 	hints.ai_protocol = IPPROTO_TCP; // TCP baby
 
 	// resole server address and port
-	iResult = getaddrinfo("127.0.0.1", serverPort, &hints, &result);
+	iResult = getaddrinfo(host, serverPort, &hints, &result);
 
 	if (iResult != 0) {
 		log->error("getaddrinfo failed with error: {}", iResult);
@@ -58,6 +58,8 @@ ClientNetwork::ClientNetwork(PCSTR serverPort) {
 		WSACleanup();
 		exit(1);
 	}
+
+	log->info("Client connected on {}:{}", host, serverPort);
 
 	// set the mode of the socket to be nonblocking
 	u_long iMode = 1;

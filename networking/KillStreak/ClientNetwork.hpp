@@ -11,7 +11,7 @@ public:
 	int iResult;
 	SOCKET ConnectSocket;
 
-	ClientNetwork(PCSTR serverPort);
+	ClientNetwork(PCSTR host, PCSTR serverPort);
 	~ClientNetwork();
 };
 

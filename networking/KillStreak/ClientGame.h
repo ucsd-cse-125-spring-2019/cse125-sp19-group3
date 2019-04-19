@@ -15,5 +15,6 @@ public:
 
 protected:
 	INIReader & config;
+	PCSTR host;
 	PCSTR serverPort;
 };

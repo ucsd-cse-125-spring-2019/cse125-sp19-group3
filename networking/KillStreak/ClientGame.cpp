@@ -10,9 +10,9 @@ GLFWwindow* window;
 ClientGame::ClientGame(INIReader& t_config) : config(t_config) {
 	auto log = logger();
 	// PULL WHATEVER YOU NEED FROM THE CONFIG FILE HERE...
-	string servconf = config.Get("ssd", "server", "");
+	string servconf = config.Get("client", "host", "");
 	if (servconf == "") {
-		log->error("Server line not found in config file");
+		log->error("Host line not found in config file");
 		exit(EX_CONFIG);
 	}
 	size_t idx = servconf.find(":");
@@ -20,11 +20,16 @@ ClientGame::ClientGame(INIReader& t_config) : config(t_config) {
 		log->error("Config line {} is invalid", servconf);
 		exit(EX_CONFIG);
 	}
-	// get port from config
+
+	// get host (config)
+	string get_host = servconf.substr(0, idx);
+	host = get_host.c_str();
+
+	// get port (config)
 	string get_port = servconf.substr(idx + 1);
 	serverPort = get_port.c_str();
 	
-	network = new ClientNetwork(serverPort);
+	network = new ClientNetwork(host, serverPort);
 }
 
 
@@ -105,10 +110,10 @@ void ClientGame::run() {
 	// Initialize objects/pointers for rendering
 	Window::initialize_objects();
 
+	log->info("Client running...");
 	// Loop while GLFW window should stay open
 	while (!glfwWindowShouldClose(window))
 	{
-		log->info("Client running");
 		// Main render display callback. Rendering of objects is done here.
 		Window::display_callback(window);
 		// Idle callback. Updating objects, etc. can be done here.
