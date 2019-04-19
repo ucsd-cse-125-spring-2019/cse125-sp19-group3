@@ -15,7 +15,8 @@ Setting up Visual Studio Environment:
 
 3.) Install all the required packages 
 	a.) Tools -> NuGet package manager -> Manage Nuget Packages for solution
-	b.) Install the following... 
+		*** NOTE: You might get notificaton 'install missing packages', if so do it and it should install them automatically.
+	b.) Install the following...  
 		-> glm
 		-> nupengl.core 
 		-> nupengl.core.redist
