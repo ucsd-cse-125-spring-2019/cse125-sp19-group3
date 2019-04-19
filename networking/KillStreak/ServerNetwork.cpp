@@ -38,7 +38,7 @@ ServerNetwork::ServerNetwork(PCSTR host, PCSTR port) : serverPort(port)
 		exit(1);
 	}
 
-	// Create a SOCKET for connecting to server
+	// Create a SOCKET for connecting to server (create socket)
 	ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
 
 	if (ListenSocket == INVALID_SOCKET) {
@@ -48,8 +48,8 @@ ServerNetwork::ServerNetwork(PCSTR host, PCSTR port) : serverPort(port)
 		exit(1);
 	}
 
+	// NOTE: Set it to blocking so 'accept' blocks until connection made
 	// Set the mode of the socket to be nonblocking
-	// TODO: Do we want this non-blocking?!
 	/*
 	u_long iMode = 1;
 	iResult = ioctlsocket(ListenSocket, FIONBIO, &iMode);
@@ -78,7 +78,7 @@ ServerNetwork::ServerNetwork(PCSTR host, PCSTR port) : serverPort(port)
 	// no longer need address information
 	freeaddrinfo(result);
 
-	// start listening for new clients attempting to connect
+	// start listening for new clients attempting to connect (listen)
 	iResult = listen(ListenSocket, SOMAXCONN);
 
 	if (iResult == SOCKET_ERROR) {
@@ -110,7 +110,6 @@ bool ServerNetwork::acceptNewClient(unsigned int & id)
 	auto log = logger();
 
 	// if client waiting, accept the connection and save the socket
-	// TODO: Currently socket non-blocking, make it block? 
 	ClientSocket = accept(ListenSocket, NULL, NULL);
 
 	if (ClientSocket != INVALID_SOCKET)
@@ -126,8 +125,8 @@ bool ServerNetwork::acceptNewClient(unsigned int & id)
 		id++;		// inc to next client id
 		return true;
 	}
-	log->info("No connection: {}", WSAGetLastError());
 
+	log->info("No connection: {}", WSAGetLastError());
 	// TODO: Should we send initial state data to connected client here? 
 
 	return false;

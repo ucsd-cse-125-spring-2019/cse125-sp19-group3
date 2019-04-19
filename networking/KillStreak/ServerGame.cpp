@@ -4,13 +4,13 @@
 #include "ServerNetwork.hpp"
 #include "logger.hpp"
 
-#define GAME_SIZE	2	// total players required to start game
+#define GAME_SIZE	1	// total players required to start game
+
 
 ServerGame::ServerGame(INIReader& t_config) : config(t_config) {
 	auto log = logger();
 
-	// PULL VALUES FROM THE CONFIG FILE
-	// pull the address and port for the server
+	// get server data from config file
 	string servconf = config.Get("server", "host", "");
 	if (servconf == "") {
 		log->error("Host line not found in config file");
@@ -37,23 +37,74 @@ ServerGame::ServerGame(INIReader& t_config) : config(t_config) {
 		exit(EX_CONFIG);
 	}
 
-//	client_id = 0;
 	network = new ServerNetwork(host, port);
 }
 
 
-// TODO: Setup lobby, wait until all player connections are accepted
+/* 
+	Main server loop run once the network is setup. Server will block on accept until 
+	enough players have joined then begin the main game loop. 
+*/
 void ServerGame::launch() {
 	auto log = logger();
-	log->info("Game server live, waiting for {} players...", GAME_SIZE);
+	log->info("Game server live!");
 
-	// Accept connections until GAME_SIZE met
-	unsigned int client_id = 0;		// THINK: Make this static in this script?	
+	/* 
+		NOTE: Currently only waiting for 1 connection, then testing if we 
+		recv() data sent by client.
+	*/
+
+
+	// Accept incoming connections until GAME_SIZE met
+	unsigned int client_id = 0;		// TODO: Make this static in this script?	
 	while (client_id < GAME_SIZE)
 	{
+		log->info("Waiting for {} player(s)...", GAME_SIZE - client_id);
 		network->acceptNewClient(client_id);
-		log->info("Waiting for {} players...", GAME_SIZE - client_id);
 	}
+
+
+	// TESTING: Is server receiving clients data?
+	int iResult;
+	SOCKET client_sock = network->sessions.find(0)->second;	// get client socket 
+	char recvbuf[DEFAULT_BUFLEN];
+	int recvbuflen = DEFAULT_BUFLEN;
+	do {
+
+		iResult = recv(client_sock, recvbuf, recvbuflen, 0);
+		if (iResult > 0)
+		{
+			log->info("Bytes received: {}", iResult);
+		}
+		else if (iResult == 0)
+		{
+			log->info("Connection closed");
+			printf("Connection closed\n");
+		}
+		else
+		{
+			log->info("recv failed: {}", WSAGetLastError());
+		}
+
+	} while (iResult > 0);
+
+
+	while (1) {}; // TODO: REMOVE ME!!
+
+
+	/* TODO: Stop listening to socket once all connections made? 
+		 --> Or we could keep listening, clients would queue up and if one drop sout 
+		     we can replace them with the next one in the queue
+	*/
+
+
+	log->info("All players connected, game starting!");
+
+
+	/* TODO: Send pre-game data to all clients? 
+		--> Or send when connection is accepted
+		--> Then once all players connected we can immedietly start? 
+	*/
 
 
 	double ns = 1000000000.0 / tick_rate;
@@ -80,6 +131,9 @@ void ServerGame::launch() {
 void ServerGame::update() {
 	auto log = logger();
 	log->info("Game server update");
+	// TODO: Will server iterate over all clients and recv() updates? 
+	// --> update game state?
+	// --> send() to all clients?
 }
 
 

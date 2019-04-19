@@ -9,7 +9,8 @@ GLFWwindow* window;
 
 ClientGame::ClientGame(INIReader& t_config) : config(t_config) {
 	auto log = logger();
-	// PULL WHATEVER YOU NEED FROM THE CONFIG FILE HERE...
+
+	// get client data from config file
 	string servconf = config.Get("client", "host", "");
 	if (servconf == "") {
 		log->error("Host line not found in config file");
@@ -33,12 +34,12 @@ ClientGame::ClientGame(INIReader& t_config) : config(t_config) {
 }
 
 
-
 void error_callback(int error, const char* description)
 {
 	// Print error
 	fputs(description, stderr);
 }
+
 
 void setup_callbacks()
 {
@@ -49,6 +50,7 @@ void setup_callbacks()
 	// Set the window resize callback
 	glfwSetFramebufferSizeCallback(window, Window::resize_callback);
 }
+
 
 void setup_glew()
 {
@@ -64,6 +66,7 @@ void setup_glew()
 	fprintf(stdout, "Current GLEW version: %s\n", glewGetString(GLEW_VERSION));
 #endif
 }
+
 
 void setup_opengl_settings()
 {
@@ -84,6 +87,7 @@ void setup_opengl_settings()
 	glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 }
 
+
 void print_versions()
 {
 	// Get info of GPU and supported OpenGL version
@@ -96,8 +100,30 @@ void print_versions()
 #endif
 }
 
+
 void ClientGame::run() {
 	auto log = logger();
+	log->info("Client running...");
+
+
+	// TEST: Sending initial message, does server recv()? 
+	log->info("Client: Sending message...");
+
+	char* sendbuf = "Client: sending data test";
+	int iResult = send(network->ConnectSocket, sendbuf, (int)strlen(sendbuf), 0);
+	if (iResult == SOCKET_ERROR) {
+		wprintf(L"send failed with error: %d\n", WSAGetLastError());
+		closesocket(network->ConnectSocket);
+		WSACleanup();
+		return;
+	}
+
+	log->info("Client: Bytes sent: {}", iResult);
+	while (1) {};	// TODO: REMOVE ME!
+
+
+
+	// GRAPHICS CODE *******************************************************
 
 	// Create the GLFW window
 	window = Window::create_window(640, 480);
@@ -110,7 +136,6 @@ void ClientGame::run() {
 	// Initialize objects/pointers for rendering
 	Window::initialize_objects();
 
-	log->info("Client running...");
 	// Loop while GLFW window should stay open
 	while (!glfwWindowShouldClose(window))
 	{

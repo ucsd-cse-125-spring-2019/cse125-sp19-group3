@@ -1,8 +1,10 @@
 #include "ClientNetwork.hpp"
 #include "Logger.hpp"
 
+
 ClientNetwork::ClientNetwork(PCSTR host, PCSTR serverPort) {
 	auto log = logger();
+
 	// create WSDATA object
 	WSADATA wsaData;
 
@@ -59,8 +61,12 @@ ClientNetwork::ClientNetwork(PCSTR host, PCSTR serverPort) {
 		exit(1);
 	}
 
+	// TODO: Should client block until connection is accepted? 
+
 	log->info("Client connected on {}:{}", host, serverPort);
 
+	/*
+	// TODO: Do we want this to block? 
 	// set the mode of the socket to be nonblocking
 	u_long iMode = 1;
 	iResult = ioctlsocket(ConnectSocket, FIONBIO, &iMode);
@@ -70,11 +76,15 @@ ClientNetwork::ClientNetwork(PCSTR host, PCSTR serverPort) {
 		WSACleanup();
 		exit(1);
 	}
+	*/
 
 	// disable nagle (??)
+	// TODO: TCP optimization? 
+	// https://www.extrahop.com/company/blog/2016/tcp-nodelay-nagle-quickack-best-practices/
 	char value = 1;
 	setsockopt(ConnectSocket, IPPROTO_TCP, TCP_NODELAY, &value, sizeof(value));
 }
+
 
 ClientNetwork::~ClientNetwork(void) {
 
