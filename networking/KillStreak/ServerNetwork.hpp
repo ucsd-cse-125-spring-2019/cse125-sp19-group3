@@ -14,7 +14,7 @@ using namespace std;
 class ServerNetwork
 {
 public:
-	ServerNetwork(PCSTR port);
+	ServerNetwork(PCSTR host, PCSTR port);
 	~ServerNetwork(void);
 
 	// send data to all clients

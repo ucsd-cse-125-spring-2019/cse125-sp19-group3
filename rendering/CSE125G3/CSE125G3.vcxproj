@@ -47,6 +47,7 @@
     <ClCompile Include="..\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\networking\KillStreak\client_config.ini" />
     <None Include="..\..\networking\KillStreak\config.ini" />
     <None Include="..\shader.frag" />
     <None Include="..\shader.vert" />

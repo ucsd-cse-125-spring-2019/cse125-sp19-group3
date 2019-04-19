@@ -1,7 +1,9 @@
 #include "ServerNetwork.hpp"
 #include "Logger.hpp"
+#include <iostream>
+using namespace std;
 
-ServerNetwork::ServerNetwork(PCSTR port) : serverPort(port)
+ServerNetwork::ServerNetwork(PCSTR host, PCSTR port) : serverPort(port)
 {
 	auto log = logger();
 	// create WSADATA object
@@ -30,7 +32,7 @@ ServerNetwork::ServerNetwork(PCSTR port) : serverPort(port)
 	hints.ai_flags = AI_PASSIVE;
 
 	// Resolve the server address and port
-	iResult = getaddrinfo(NULL, serverPort, &hints, &result);
+	iResult = getaddrinfo(host, serverPort, &hints, &result);
 
 	if (iResult != 0) {
 		log->error("getaddrinfo failed with error: {}", iResult);
@@ -84,6 +86,8 @@ ServerNetwork::ServerNetwork(PCSTR port) : serverPort(port)
 		WSACleanup();
 		exit(1);
 	}
+
+	log->info("Server listening on {}:{}", host, port);
 }
 
 
