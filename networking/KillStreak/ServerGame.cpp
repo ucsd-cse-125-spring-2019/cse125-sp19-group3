@@ -4,9 +4,7 @@
 #include "ServerNetwork.hpp"
 #include "logger.hpp"
 
-// IDs for the clients connecting to the server in ServerNetwork
-// NOTE: Can't put this in header since it's in multiple .cpp includes
-static unsigned int client_id; 
+#define GAME_SIZE	2	// total players required to start game
 
 ServerGame::ServerGame(INIReader& t_config) : config(t_config) {
 	auto log = logger();
@@ -39,13 +37,24 @@ ServerGame::ServerGame(INIReader& t_config) : config(t_config) {
 		exit(EX_CONFIG);
 	}
 
-	client_id = 0;
+//	client_id = 0;
 	network = new ServerNetwork(host, port);
 }
 
+
+// TODO: Setup lobby, wait until all player connections are accepted
 void ServerGame::launch() {
 	auto log = logger();
-	log->info("Game server running...");
+	log->info("Game server live, waiting for {} players...", GAME_SIZE);
+
+	// Accept connections until GAME_SIZE met
+	unsigned int client_id = 0;		// THINK: Make this static in this script?	
+	while (client_id < GAME_SIZE)
+	{
+		network->acceptNewClient(client_id);
+		log->info("Waiting for {} players...", GAME_SIZE - client_id);
+	}
+
 
 	double ns = 1000000000.0 / tick_rate;
 	double delta = 0;
@@ -67,11 +76,10 @@ void ServerGame::launch() {
 	}
 }
 
+
 void ServerGame::update() {
-	/*
 	auto log = logger();
-	log->info("Game server running");
-	*/
+	log->info("Game server update");
 }
 
 
