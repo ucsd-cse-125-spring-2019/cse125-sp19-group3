@@ -79,20 +79,56 @@ void client_session(void *arg)
 
 	log->info("CT <{}>: Game started -> Receiving from client!", client_arg->id);
 
-	while (1) {};	// TODO: REMOVE ME!!! -> Start receiving data
+	//while (1) {};	// TODO: REMOVE ME!!! -> Start receiving data
 
 	// TODO: recv() data from each client and ...
+	//	--> How large do we make the buffer?!?!?! How big are our packets going to be?!?!
+	//	--> Serialize or just send byte stream?!?!?!
 	//  --> Put into main buffer until delimiter reached when calling receive 
+	//		*** NEED TO PUT DELIMITER TO DENOTE END OF DATA!!!
 	//  --> Once all data received push to master queue 
 	//  --> Master queue will update state by getting all data from the queue 
 	//			in FIFO order. Then send updates back to the client.
-	//	--> NOTE: Ensure connection with client is persistent. I.E. does not reconnect
-	//				everytime!
+
+	// TESTING: Server receiving data from client and sending response?
+	int iResult;
+	SOCKET client_sock = client_arg->network->sessions.find(client_arg->id)->second;	// get client socket 
+	char recvbuf[DEFAULT_BUFLEN];	// default 512 bytes
+	int recvbuflen = DEFAULT_BUFLEN;
+	do {
+
+		iResult = recv(client_sock, recvbuf, recvbuflen, 0);
+		if (iResult > 0)	// success
+		{
+			recvbuf[iResult] = '\0'; // NULL terminate buffer
+			log->info("CT {}: Bytes received: {}", client_arg->id, iResult);
+			log->info("CT {}: Data received: {}", client_arg->id, recvbuf);
+
+			// send response to client
+			char* sendbuf = "Smile if you're seeing this, because it works :D!!!!";
+			int iResult = send(client_sock, sendbuf, (int)strlen(sendbuf), 0);
+			if (iResult == SOCKET_ERROR) {
+				wprintf(L"send failed with error: %d\n", WSAGetLastError());
+				WSACleanup();
+				return;
+			}
+			log->info("CT {}: Sending response to client!", client_arg->id);
+			
+		}
+		else if (iResult == 0)	// client closed connection
+		{
+			log->info("CT {}: Connection closed", client_arg->id);
+			log->info("CT {}: Connection closed\n", client_arg->id);
+		}
+		else					// error
+		{
+			log->info("CT {}: recv failed: {}", client_arg->id, WSAGetLastError());
+		}
+
+	} while (iResult > 0);  // ensures loop continues until client closes connection/error occurs 
 
 
-
-
-
+	while (1) {};	// TODO: REMOVE ME!!!
 
 	// close socket & free client_data 
 	client_arg->network->closeClientSocket(client_arg->id);
@@ -212,31 +248,3 @@ void ServerGame::update() {
 
 
 
-/* REMOVE ME!!!
-
-	// TESTING: Is server receiving clients data? (REMOVE ME)
-	int iResult;
-	SOCKET client_sock = network->sessions.find(0)->second;	// get client socket 
-	char recvbuf[DEFAULT_BUFLEN];
-	int recvbuflen = DEFAULT_BUFLEN;
-	do {
-
-		iResult = recv(client_sock, recvbuf, recvbuflen, 0);
-		if (iResult > 0)
-		{
-			log->info("Bytes received: {}", iResult);
-			log->info("Data received: {}", recvbuf);
-		}
-		else if (iResult == 0)
-		{
-			log->info("Connection closed");
-			printf("Connection closed\n");
-		}
-		else
-		{
-			log->info("recv failed: {}", WSAGetLastError());
-		}
-
-	} while (iResult > 0);
-
-*/
