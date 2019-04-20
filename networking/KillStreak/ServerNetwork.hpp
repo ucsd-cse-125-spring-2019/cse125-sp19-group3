@@ -3,6 +3,7 @@
 #include <winsock2.h>
 #include <Windows.h>
 #include "NetworkServices.hpp"
+#include "CoreTypes.hpp"
 #include <ws2tcpip.h>
 #include <map>
 // #include "NetworkData.h"

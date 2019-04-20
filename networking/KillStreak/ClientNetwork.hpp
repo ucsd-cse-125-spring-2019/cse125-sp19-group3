@@ -3,6 +3,7 @@
 #include "NetworkServices.hpp"
 #include <ws2tcpip.h>
 #include "Logger.hpp"
+#include "CoreTypes.hpp"
 
 #pragma comment (lib, "Ws2_32.lib")
 
@@ -13,5 +14,7 @@ public:
 
 	ClientNetwork(PCSTR host, PCSTR serverPort);
 	~ClientNetwork();
+
+	int sendToServer(ClientInputPacket packet);
 };
 

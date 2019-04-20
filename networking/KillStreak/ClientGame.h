@@ -3,6 +3,7 @@
 #include "ClientNetwork.hpp"
 #include "INIReader.h"
 #include "Logger.hpp"
+#include "CoreTypes.hpp"
 
 class ClientGame {
 public:

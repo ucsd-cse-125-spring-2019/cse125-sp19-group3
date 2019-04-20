@@ -113,7 +113,18 @@ void ClientGame::run() {
 	log->info("Client: Sending message...");
 
 	char* sendbuf = "Client: sending data test";
-	int iResult = send(network->ConnectSocket, sendbuf, (int)strlen(sendbuf), 0);
+	// int iResult = send(network->ConnectSocket, sendbuf, (int)strlen(sendbuf), 0);
+
+	ClientInputPacket testPacket;
+	testPacket.inputType = MOVEMENT;
+	testPacket.finalLocation = Point(1.0, 2.0, 3.0);
+	testPacket.skillType = 0;
+	testPacket.attackType = 0;
+
+	int iResult = network->sendToServer(testPacket);
+	
+	
+	
 	if (iResult == SOCKET_ERROR) {
 		wprintf(L"send failed with error: %d\n", WSAGetLastError());
 		closesocket(network->ConnectSocket);

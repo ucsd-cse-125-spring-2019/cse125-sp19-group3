@@ -169,15 +169,30 @@ int ServerNetwork::receiveData(unsigned int client_id, char * recvbuf)
 	if (sessions.find(client_id) != sessions.end())
 	{
 		SOCKET currentSocket = sessions[client_id];
-		iResult = NetworkServices::receiveMessage(currentSocket, recvbuf, MAX_PACKET_SIZE);
+		// For now, make all receives from client to server the same input packet type.
+		size_t toRead = sizeof(ClientInputPacket);
+		char  *curr_bufptr = (char*) recvbuf;
 
-		if (iResult == 0)
+		while (toRead > 0)
 		{
-			log->error("Connection closed");
-			closesocket(currentSocket);
+			auto rsz = recv(currentSocket, curr_bufptr, toRead, 0);
+			if (rsz == 0) {
+				log->error("Connection closed");
+				closesocket(currentSocket);
+				return rsz;
+			}
+
+			if (rsz == SOCKET_ERROR) {
+				log->error("Socket error");
+				closesocket(currentSocket);
+				return rsz;
+			}
+
+			toRead -= rsz;  /* Read less next time */
+			curr_bufptr += rsz;  /* Next buffer position to read into */
 		}
 
-		return iResult;
+		return sizeof(ClientInputPacket);
 	}
 
 	return 0;
