@@ -3,6 +3,7 @@
 #include <winsock2.h>
 #include <Windows.h>
 #include "NetworkServices.hpp"
+#include "CoreTypes.hpp"
 #include <ws2tcpip.h>
 #include <map>
 // #include "NetworkData.h"
@@ -27,6 +28,9 @@ public:
 
 	// accept new connections
 	bool acceptNewClient(unsigned int & id);
+
+	// close socket associated with client
+	bool closeClientSocket(unsigned int id);
 
 	// Socket to listen for new connections
 	SOCKET ListenSocket;

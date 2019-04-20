@@ -105,12 +105,26 @@ void ClientGame::run() {
 	auto log = logger();
 	log->info("Client running...");
 
+	// TODO: Client should make request to server and block until it hears back? 
+	//	--> I.E. server accepts and sends some response (hey you've joined the lobby!)	
+	// TODO (MAYBE?): Put timeout on client socket, if server game full will disconnect? 
 
 	// TEST: Sending initial message, does server recv()? 
 	log->info("Client: Sending message...");
 
 	char* sendbuf = "Client: sending data test";
-	int iResult = send(network->ConnectSocket, sendbuf, (int)strlen(sendbuf), 0);
+	// int iResult = send(network->ConnectSocket, sendbuf, (int)strlen(sendbuf), 0);
+
+	ClientInputPacket testPacket;
+	testPacket.inputType = MOVEMENT;
+	testPacket.finalLocation = Point(1.0, 2.0, 3.0);
+	testPacket.skillType = 0;
+	testPacket.attackType = 0;
+
+	int iResult = network->sendToServer(testPacket);
+	
+	
+	
 	if (iResult == SOCKET_ERROR) {
 		wprintf(L"send failed with error: %d\n", WSAGetLastError());
 		closesocket(network->ConnectSocket);

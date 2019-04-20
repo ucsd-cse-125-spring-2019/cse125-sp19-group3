@@ -89,3 +89,11 @@ ClientNetwork::ClientNetwork(PCSTR host, PCSTR serverPort) {
 ClientNetwork::~ClientNetwork(void) {
 
 }
+
+int ClientNetwork::sendToServer(ClientInputPacket packet) {
+	char serialized[sizeof(ClientInputPacket)];
+	memcpy(serialized, &packet, sizeof(ClientInputPacket));
+
+	int sentLength = send(ConnectSocket, serialized, sizeof(ClientInputPacket), 0);
+	return sentLength;
+}

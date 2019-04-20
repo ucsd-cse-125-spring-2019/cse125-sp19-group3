@@ -1,12 +1,12 @@
-#include <iostream>
-#include <stdlib.h>
-#include "INIReader.h"
-#include "ServerGame.hpp"
-#include "ClientGame.h"
 #include "logger.hpp"
 #include "sysexits.h"
-#include <process.h>
+#include "INIReader.h"
+#include "ClientGame.h"
+#include "ServerGame.hpp"
 
+#include <stdlib.h>
+#include <iostream>
+#include <process.h>
 using namespace std;
 
 
@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
 	// create new thread and run server
 	log->info("Launching Killstreak server");
 	server = new ServerGame(config);
-	_beginthread(run_server, 0, (void*)12);
+	_beginthread(run_server, 0, 0);
 
 	// launch client on main thread
 	log->info("Launching Killstreak client");

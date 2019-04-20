@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\networking\KillStreak\ClientGame.h" />
     <ClInclude Include="..\..\networking\KillStreak\ClientNetwork.hpp" />
+    <ClInclude Include="..\..\networking\KillStreak\CoreTypes.hpp" />
     <ClInclude Include="..\..\networking\KillStreak\INIReader.h" />
     <ClInclude Include="..\..\networking\KillStreak\Logger.hpp" />
     <ClInclude Include="..\..\networking\KillStreak\NetworkServices.hpp" />

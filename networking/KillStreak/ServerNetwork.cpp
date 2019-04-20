@@ -102,8 +102,10 @@ ServerNetwork::~ServerNetwork(void)
 
 /* 
 	Accept an incoming connection. 
+
 	'id' will be client ID we want to associate with this socket.
-	Once socket is allocated, its mapped to the incoming clients ID.
+	Once socket is allocated, its mapped to the incoming clients ID
+	in 'sessions' map.
 */
 bool ServerNetwork::acceptNewClient(unsigned int & id)
 {
@@ -120,15 +122,39 @@ bool ServerNetwork::acceptNewClient(unsigned int & id)
 
 		// insert new client into session id table
 		sessions.insert(pair<unsigned int, SOCKET>(id, ClientSocket));
-		log->info("Connection accepted -> Client: {}", id);
+		log->info("MT: Connection accepted -> Client: {}", id);
 
 		id++;		// inc to next client id
 		return true;
 	}
 
-	log->info("No connection: {}", WSAGetLastError());
+	log->info("MT: No connection: {}", WSAGetLastError());
 	// TODO: Should we send initial state data to connected client here? 
 
+	return false;
+}
+
+
+/*
+	Close socket associated with client and remove from 'sessions' mapping.
+	Return true if successfully closed, false otherwise.
+*/
+bool ServerNetwork::closeClientSocket(unsigned int id)
+{
+	auto log = logger();
+	log->info("Closing client socket -> ID: {}", id);
+
+	std::map<unsigned int, SOCKET>::iterator itr = sessions.begin();
+	itr = sessions.find(id);
+	if (itr != sessions.end())
+	{
+		SOCKET client_sock = itr->second;
+		int iResult = closesocket(client_sock);
+		if (iResult != 0) return false;
+		return true;
+	}
+
+	log->error("Socket not found in mapping");
 	return false;
 }
 
@@ -143,15 +169,30 @@ int ServerNetwork::receiveData(unsigned int client_id, char * recvbuf)
 	if (sessions.find(client_id) != sessions.end())
 	{
 		SOCKET currentSocket = sessions[client_id];
-		iResult = NetworkServices::receiveMessage(currentSocket, recvbuf, MAX_PACKET_SIZE);
+		// For now, make all receives from client to server the same input packet type.
+		size_t toRead = sizeof(ClientInputPacket);
+		char  *curr_bufptr = (char*) recvbuf;
 
-		if (iResult == 0)
+		while (toRead > 0)
 		{
-			log->error("Connection closed");
-			closesocket(currentSocket);
+			auto rsz = recv(currentSocket, curr_bufptr, toRead, 0);
+			if (rsz == 0) {
+				log->error("Connection closed");
+				closesocket(currentSocket);
+				return rsz;
+			}
+
+			if (rsz == SOCKET_ERROR) {
+				log->error("Socket error");
+				closesocket(currentSocket);
+				return rsz;
+			}
+
+			toRead -= rsz;  /* Read less next time */
+			curr_bufptr += rsz;  /* Next buffer position to read into */
 		}
 
-		return iResult;
+		return sizeof(ClientInputPacket);
 	}
 
 	return 0;
