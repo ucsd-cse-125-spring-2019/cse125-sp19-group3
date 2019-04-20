@@ -9,6 +9,7 @@
 
 #define GAME_SIZE			2		// total players required to start game
 #define LOBBY_START_TIME	5000	// wait this long (ms) after all players connect
+#define CLIENT_PACKET_SIZE	10000	// expected size in bytes of packet sent from client->server
 
 static int game_start = 0;			// game ready to begin?
 
@@ -60,6 +61,18 @@ ServerGame::ServerGame(INIReader& t_config) : config(t_config) {
 
 	client_data passed to thread (arg), contains client ID & pointer to master queue.
 	Note: log->info( ... ) 'CT {}:' stands for 'Client Thread <ID>:' 
+
+	// TODO: recv() data from each client and ...
+	//	--> DISCUSS: Do we want to assume one full packet will be sent at a time? 
+	//			** Or would we rather take everything, look for delimiter and then send packet to queue (slower?)
+	//	--> How large do we make the buffer?!?!?! How big are our packets going to be?!?!
+	//	--> Serialize or just send byte stream?!?!?!
+	//  --> Put into main buffer until delimiter reached when calling receive 
+	//		*** NEED TO PUT DELIMITER TO DENOTE END OF DATA!!!
+	//  --> Once all data received push to master queue 
+	//  --> Master queue will update state by getting all data from the queue 
+	//			in FIFO order. Then send updates back to the client.
+
 */
 void client_session(void *arg)
 {
@@ -78,56 +91,65 @@ void client_session(void *arg)
 	//		start the game. Once started the main thread will wake all sleeping threads.
 	while (!game_start) {};	
 
+
+
+	// GAME STARTING ****************************************************
 	log->info("CT <{}>: Game started -> Receiving from client!", client_arg->id);
 
-	// TODO: recv() data from each client and ...
-	//	--> How large do we make the buffer?!?!?! How big are our packets going to be?!?!
-	//	--> Serialize or just send byte stream?!?!?!
-	//  --> Put into main buffer until delimiter reached when calling receive 
-	//		*** NEED TO PUT DELIMITER TO DENOTE END OF DATA!!!
-	//  --> Once all data received push to master queue 
-	//  --> Master queue will update state by getting all data from the queue 
-	//			in FIFO order. Then send updates back to the client.
+	// get client socket
+	SOCKET client_sock = client_arg->network->sessions.find(client_arg->id)->second;	
 
-	// TESTING: Server receiving data from client and sending response?
-	int iResult;
-	SOCKET client_sock = client_arg->network->sessions.find(client_arg->id)->second;	// get client socket 
-	char recvbuf[DEFAULT_BUFLEN];	// default 512 bytes
-	int recvbuflen = DEFAULT_BUFLEN;
+	vector<char> main_buffer;			// all bytes received so far
+	int bytes_read;						// total bytes read returned by recv()
+	int keep_conn = 1;                  // keep connection alive
+	int last_index = -1;				// last index of complete request in buffer (end of packet)
 	do {
 
-		iResult = recv(client_sock, recvbuf, recvbuflen, 0);
-		if (iResult > 0)	// success
-		{
-			recvbuf[iResult] = '\0'; // NULL terminate buffer
-			log->info("CT {}: Bytes received: {}", client_arg->id, iResult);
-			log->info("CT {}: Data received: {}", client_arg->id, recvbuf);
+		// allocate buffer & receive data;
+		/* TODO: Play around with CLIENT_PACKET_SIZE
+			--> Make it the largest size we expect to receive a packet from the client
+		*/
+		char temp_buff[CLIENT_PACKET_SIZE];		
+		bytes_read = recv(client_sock, temp_buff, CLIENT_PACKET_SIZE, 0);
+		log->info("CT {}: Total bytes read {}", client_arg->id, bytes_read);
 
-			// send response to client
-			char* sendbuf = "Smile if you're seeing this, because it works :D!!!!";
-			int iResult = send(client_sock, sendbuf, (int)strlen(sendbuf), 0);
-			if (iResult == SOCKET_ERROR) {
-				wprintf(L"send failed with error: %d\n", WSAGetLastError());
-				WSACleanup();
-				return;
-			}
-			log->info("CT {}: Sending response to client!", client_arg->id);
-			
-		}
-		else if (iResult == 0)	// client closed connection
+		if (bytes_read == 0)    // connection closed?
 		{
-			log->info("CT {}: Connection closed", client_arg->id);
-			log->info("CT {}: Connection closed\n", client_arg->id);
-		}
-		else					// error
-		{
-			log->info("CT {}: recv failed: {}", client_arg->id, WSAGetLastError());
+			log->info("CT {}: Client closed connection.", client_arg->id);
+			keep_conn = 0;
+			break;
 		}
 
-	} while (iResult > 0);  // ensures loop continues until client closes connection/error occurs 
+		if (bytes_read == SOCKET_ERROR)     // error?  Close connection.
+		{
+			log->error("CT {}: recv() failed {}", client_arg->id, WSAGetLastError());
+			WSACleanup();
+			keep_conn = 0;
+			break;
+		}
 
+		// NULL terminate temp_buff & copy to dynamic byte array
+		/*
+		temp_buff[bytes_read] = '\0';
+		Util::copy_buffer(main_buffer, temp_buff);
 
-	while (1) {};	// TODO: REMOVE ME!!!
+		// handle response to client for every complete request in buffer
+		while ((last_index = Util::find_delimiter(main_buffer)) >= 0 && keep_conn)
+		{
+			log->info("Full request found.");
+
+			// extract request; remove from buffer
+			string request = Util::vector_to_string(main_buffer, last_index);
+			handle_client_request(request);
+
+			// close connection?
+			if (this->close_conn) keep_conn = 0;
+
+		}
+		*/
+
+	} while (keep_conn);	// connection-closed/error? 
+
 
 	// close socket & free client_data 
 	client_arg->network->closeClientSocket(client_arg->id);
