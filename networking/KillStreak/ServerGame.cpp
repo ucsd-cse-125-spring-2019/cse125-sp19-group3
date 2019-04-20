@@ -6,8 +6,8 @@
 #include <process.h>				// threads
 #include <windows.h>				// sleep
 
-#define GAME_SIZE			1		// total players required to start game
-#define LOBBY_START_TIME	5		// wait for this long after all players connect
+#define GAME_SIZE			2		// total players required to start game
+#define LOBBY_START_TIME	5000	// wait this long (ms) after all players connect
 
 static int game_start = 0;			// game ready to begin?
 
@@ -51,47 +51,75 @@ ServerGame::ServerGame(INIReader& t_config) : config(t_config) {
 }
 
 
+// TODO: MOVE ME?!?!?!
+typedef struct {
+	unsigned int id;
+	// pointer to master queue;
+}client_data;
+
+
 /*
 	Launch thread for new client. Waits until all players connected and 
 	game starts. Will then consistently recv() data from client and 
 	input full packets into master queue. 
+
+	client_data passed to thread (arg), contains client ID & pointer to master queue.
+	Note: log->info( ... ) 'CT {}:' stands for 'Client Thread <ID>:' 
 */
 void client_session(void *arg)
 {
 	auto log = logger();
 
-	// save client ID
-	const unsigned int cur_id = (unsigned int)arg;	
-	log->info("Launching new client thread; Client_ID: {}", cur_id);
+	// get client data
+	client_data *client_arg = (client_data*) arg;
+	log->info("CT <{}>: Launching new client thread", client_arg->id);
 
 	// game hasn't started yet; sleep thread until ready
-	if (!game_start) log->info("{}: Waiting for game to start", cur_id);
+	if (!game_start) log->info("CT <{}>: Waiting for game to start", client_arg->id);
 
 	while (!game_start) {};	// TODO: Remove me!!! Put thread to sleep, no busy waiting!
 
-	log->info("{}: Game started -> Receiving from client!", cur_id);
+	log->info("CT <{}>: Game started -> Receiving from client!", client_arg->id);
 	while (1) {};	// TODO: REMOVE ME!!! -> Start receiving data
 
+
+
+	// TODO: Deallocate client_data on thread completion
 }
 
 
 /* 
 	Main server loop run once the network is setup. Server will block on accept until 
 	enough players have joined then begin the main game loop. 
+
+	Note: log->info( ... ) 'MT' stands for 'Main Thread'
 */
 void ServerGame::launch() {
 	auto log = logger();
-	log->info("Game server live!");
+	log->info("MT: Game server live!");
 
-	// Accept incoming connections until GAME_SIZE met
+
+	// TODO: CREATE MASTER QUEUE --> PROTECT WITH CV!!! PASS BY REFERENCE!!!
+
+
+	// Accept incoming connections until GAME_SIZE met (LOBBY)
 	unsigned int client_id = 0;		
 	while (client_id < GAME_SIZE)
 	{
-		log->info("Waiting for {} player(s)...", GAME_SIZE - client_id);
+		log->info("MT: Waiting for {} player(s)...", GAME_SIZE - client_id);
 		network->acceptNewClient(client_id);
+
+		// allocate data for new client thread 
+		client_data *client_arg;
+		client_arg = (client_data*) malloc (sizeof(client_data));
+		client_arg->id = client_id - 1;	// current clients ID
+										// reference to master queue
+
+
+		// TODO: PASS MASTER QUEUE POINTER TO THREAD!
 	
-		// allocate new thread for client (pass ID)
-		_beginthread(client_session, 0, (void*) (client_id-1));
+		// allocate new thread for client (pass client data)
+		_beginthread(client_session, 0, (void*) client_arg);
 
 		// --> First successfully get string and print it? 
 		// launch new client session thread whose only job is to recv() data 
@@ -101,12 +129,16 @@ void ServerGame::launch() {
 
 
 	// all clients connected, wait LOBBY_START_TIME seconds before starting game
-	log->info("Game starting in {} seconds...", LOBBY_START_TIME);
+	log->info("MT: Game starting in {} seconds...", LOBBY_START_TIME);
 	Sleep(LOBBY_START_TIME);			
-	log->info("Game started!");
+	log->info("MT: Game started!");
 	game_start = 1;			
 
 	while (1) {};	// TODO: REMOVE ME!!!
+
+
+
+
 
 
 	// TESTING: Is server receiving clients data?
@@ -144,9 +176,6 @@ void ServerGame::launch() {
 	*/
 
 
-	log->info("All players connected, game starting!");
-
-
 	/* TODO: Send pre-game data to all clients? 
 		--> Or send when connection is accepted
 		--> Then once all players connected we can immedietly start? 
@@ -180,13 +209,16 @@ void ServerGame::launch() {
 }
 
 
+/*
+	On every server tick will empty the master queue, update game state, and 
+	send data back to all clients.
+*/
 void ServerGame::update() {
 	auto log = logger();
-	log->info("Game server update");
-	// TODO: Will server iterate over all clients and recv() updates? 
-	// --> update game state?
-	// --> send() to all clients?
+	log->info("MT: Game server update...");
+
+	// TODO: Get all packets from queue and update then send back to clients
+
+
 }
-
-
 
