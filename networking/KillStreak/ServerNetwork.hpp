@@ -28,6 +28,9 @@ public:
 	// accept new connections
 	bool acceptNewClient(unsigned int & id);
 
+	// close socket associated with client
+	bool closeClientSocket(unsigned int id);
+
 	// Socket to listen for new connections
 	SOCKET ListenSocket;
 

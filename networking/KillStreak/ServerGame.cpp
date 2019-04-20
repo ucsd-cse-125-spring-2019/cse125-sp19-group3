@@ -3,12 +3,9 @@
 #include "ServerGame.hpp"
 #include "ServerNetwork.hpp"
 
-#include <queue>
 #include <string>
 #include <process.h>				// threads
 #include <windows.h>				// sleep
-
-using namespace std;
 
 #define GAME_SIZE			2		// total players required to start game
 #define LOBBY_START_TIME	5000	// wait this long (ms) after all players connect
@@ -55,17 +52,6 @@ ServerGame::ServerGame(INIReader& t_config) : config(t_config) {
 }
 
 
-// TODO: MOVE ME?!?!?!
-/*
-	Contains meta data for client passed to client thread. 
-	Stores client's ID and a pointer to the master queue.
-*/
-typedef struct {
-	unsigned int id;
-	queue<char*> *mq;
-}client_data;
-
-
 /*
 	Launch thread for new client. Waits until all players connected and 
 	game starts. Will then consistently recv() data from client and 
@@ -85,20 +71,68 @@ void client_session(void *arg)
 	// game hasn't started yet; sleep thread until ready
 	if (!game_start) log->info("CT <{}>: Waiting for game to start", client_arg->id);
 
-	while (!game_start) {};	// TODO: Remove me!!! Put thread to sleep, no busy waiting!
+	while (!game_start) {};	// TODO: REPLACE me!!! Put thread to sleep, no busy waiting!
 
 	log->info("CT <{}>: Game started -> Receiving from client!", client_arg->id);
 	while (1) {};	// TODO: REMOVE ME!!! -> Start receiving data
 
+
+	// TODO: recv() data from each client and ...
+	//  --> Put into main buffer until delimiter reached when calling receive 
+	//  --> Once all data received push to master queue 
+	//  --> Master queue will update state by getting all data from the queue 
+	//			in FIFO order. Then send updates back to the client.
 
 
 	// TODO: Deallocate client_data on thread completion
 }
 
 
+/*
+	Handles the game lobby. Accepts incoming connections from clients until 
+	enough players are found for one full game. Will wait LOBBY_START_TIME ms
+	after all players connected to begin match!
+*/
+void ServerGame::game_match(MasterQueue *mq)
+{
+	auto log = logger();
+
+	// Accept incoming connections until GAME_SIZE met (LOBBY)
+	unsigned int client_id = 0;		
+	while (client_id < GAME_SIZE)
+	{
+		log->info("MT: Waiting for {} player(s)...", GAME_SIZE - client_id);
+		network->acceptNewClient(client_id);		// blocking
+
+		// allocate data for new client thread & run thread
+		client_data* client_arg = (client_data *) malloc (sizeof(client_data));
+		if (client_arg)
+		{
+			client_arg->id = client_id - 1;			// current clients ID
+			client_arg->mq_ptr = mq;				// pointer to master queue
+			_beginthread(client_session, 0, (void*) client_arg);
+		}
+		else	// error allocating client data; decrement client_id & remove socket
+		{
+			log->error("MT: Error allocating client metadata");
+			network->closeClientSocket(--client_id);	
+		}
+	}
+
+	// all clients connected, wait LOBBY_START_TIME seconds before starting game
+	log->info("MT: Game starting in {} seconds...", LOBBY_START_TIME/1000);
+	Sleep(LOBBY_START_TIME);			
+	log->info("MT: Game started!");
+	game_start = 1;			
+
+}
+
+
 /* 
-	Main server loop run once the network is setup. Server will block on accept until 
-	enough players have joined then begin the main game loop. 
+	Main server loop that runs after the network is setup. 
+	Server will block on accept until enough players have joined,
+	then begin the main game loop. A new thread is created for each incoming 
+	client.
 
 	Note: log->info( ... ) 'MT' stands for 'Main Thread'
 */
@@ -108,74 +142,11 @@ void ServerGame::launch() {
 
 
 	// TODO: protect master_queue w/ CV; pass pointer to client thread
-	queue<char*> *master_queue;
-
-
-	// Accept incoming connections until GAME_SIZE met (LOBBY)
-	unsigned int client_id = 0;		
-	while (client_id < GAME_SIZE)
-	{
-		log->info("MT: Waiting for {} player(s)...", GAME_SIZE - client_id);
-		network->acceptNewClient(client_id);
-
-		// allocate data for new client thread 
-		client_data *client_arg;
-		client_arg = (client_data*) malloc (sizeof(client_data));
-		client_arg->id = client_id - 1;	// current clients ID
-		client_arg->mq = master_queue;  // pointer to master queue
-
-		// allocate new thread for client (pass client data)
-		_beginthread(client_session, 0, (void*) client_arg);
-
-		// --> First successfully get string and print it? 
-		// launch new client session thread whose only job is to recv() data 
-		// in put it into a queue? 
-		// --> Test by having 2 clients send data then printing everything in queue?
-	}
-
-
-	// all clients connected, wait LOBBY_START_TIME seconds before starting game
-	log->info("MT: Game starting in {} seconds...", LOBBY_START_TIME);
-	Sleep(LOBBY_START_TIME);			
-	log->info("MT: Game started!");
-	game_start = 1;			
-
+	MasterQueue* mq = new MasterQueue();
+	game_match(mq);
 
 
 	while (1) {};	// TODO: REMOVE ME!!!
-
-
-
-	// TESTING: Is server receiving clients data? (REMOVE ME)
-	int iResult;
-	SOCKET client_sock = network->sessions.find(0)->second;	// get client socket 
-	char recvbuf[DEFAULT_BUFLEN];
-	int recvbuflen = DEFAULT_BUFLEN;
-	do {
-
-		iResult = recv(client_sock, recvbuf, recvbuflen, 0);
-		if (iResult > 0)
-		{
-			log->info("Bytes received: {}", iResult);
-			log->info("Data received: {}", recvbuf);
-		}
-		else if (iResult == 0)
-		{
-			log->info("Connection closed");
-			printf("Connection closed\n");
-		}
-		else
-		{
-			log->info("recv failed: {}", WSAGetLastError());
-		}
-
-	} while (iResult > 0);
-
-
-	/* TODO: Stop listening to socket once all connections made? 
-		 --> Or we could keep listening, clients wo// start gameuld queue up and if one drop sout 
-		     we can replace them with the next one in the queue
-	*/
 
 
 	/* TODO: Send pre-game data to all clients? 
@@ -183,17 +154,16 @@ void ServerGame::launch() {
 		--> Then once all players connected we can immedietly start? 
 	*/
 
-
-	double ns = 1000000000.0 / tick_rate;
-	double delta = 0;
-	bool running = true; // not sure if needed;
-	auto lastTime = Clock::now();
-
 	/* 
 		IDEA: Client threads constantly getting input from user and immedietly putting 
 		into global queue protected by CV. Server loop will clear the queue on 
 		every tick updating the game state and telling all clients?
 	*/
+
+	double ns = 1000000000.0 / tick_rate;
+	double delta = 0;
+	bool running = true; // not sure if needed;
+	auto lastTime = Clock::now();
 	
 	// GAME LOOP
 	while (running) {
@@ -224,3 +194,35 @@ void ServerGame::update() {
 
 }
 
+
+
+
+
+/* REMOVE ME!!!
+
+	// TESTING: Is server receiving clients data? (REMOVE ME)
+	int iResult;
+	SOCKET client_sock = network->sessions.find(0)->second;	// get client socket 
+	char recvbuf[DEFAULT_BUFLEN];
+	int recvbuflen = DEFAULT_BUFLEN;
+	do {
+
+		iResult = recv(client_sock, recvbuf, recvbuflen, 0);
+		if (iResult > 0)
+		{
+			log->info("Bytes received: {}", iResult);
+			log->info("Data received: {}", recvbuf);
+		}
+		else if (iResult == 0)
+		{
+			log->info("Connection closed");
+			printf("Connection closed\n");
+		}
+		else
+		{
+			log->info("recv failed: {}", WSAGetLastError());
+		}
+
+	} while (iResult > 0);
+
+*/
