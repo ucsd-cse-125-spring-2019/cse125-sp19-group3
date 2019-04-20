@@ -72,14 +72,13 @@ void client_session(void *arg)
 	// game hasn't started yet; sleep thread until ready
 	if (!game_start) log->info("CT <{}>: Waiting for game to start", client_arg->id);
 
+	// TODO...
 	// BADD!!!!! BUSY WAITING!!!! Replace by putting thread to sleep until ready!
 	// NOTE: Need this thread to sleep until the main thread decides its time to 
 	//		start the game. Once started the main thread will wake all sleeping threads.
 	while (!game_start) {};	
 
 	log->info("CT <{}>: Game started -> Receiving from client!", client_arg->id);
-
-	//while (1) {};	// TODO: REMOVE ME!!! -> Start receiving data
 
 	// TODO: recv() data from each client and ...
 	//	--> How large do we make the buffer?!?!?! How big are our packets going to be?!?!

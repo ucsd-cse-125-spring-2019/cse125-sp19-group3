@@ -105,7 +105,7 @@ void ClientGame::run() {
 	auto log = logger();
 	log->info("Client running...");
 
-	// TODO: Client should make request to server and block until hears back? 
+	// TODO: Client should make request to server and block until it hears back? 
 	//	--> I.E. server accepts and sends some response (hey you've joined the lobby!)	
 	// TODO: Put timeout on client socket, if server game full will disconnect? 
 
