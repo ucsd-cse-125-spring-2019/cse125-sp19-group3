@@ -1,42 +1,35 @@
 #include "window.h"
 
-const char* window_title = "GLFW Starter Project";
-Cube * cube;
-Model * model;
-GLint shaderProgram;
-
-// On some systems you need to change this to the absolute path
-#define VERTEX_SHADER_PATH "../shader.vert"
-#define FRAGMENT_SHADER_PATH "../shader.frag"
-
-// Default camera parameters
-glm::vec3 cam_pos(10.0f, 30.0f, 30.0f);		// e  | Position of camera
-glm::vec3 cam_look_at(0.0f, 0.0f, 0.0f);	// d  | This is where the camera looks at
-glm::vec3 cam_up(0.0f, 1.0f, 0.0f);			// up | What orientation "up" is
-
-int Window::width;
-int Window::height;
-
-glm::mat4 Window::P;
-glm::mat4 Window::V;
+Window * Window_static::window = new Window();
 
 void Window::initialize_objects()
 {
+	camera = new Camera();
+	camera->SetAspect(width / height);
+	camera->Reset();
+
+	// Load the shader program. Make sure you have the correct filepath up top
+	shaderProgram = new Shader(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
+
+	root = new Transform(glm::mat4(1.0f));
+	
 	cube = new Cube();
 	cube->toWorld = glm::translate(glm::mat4(1.0f), glm::vec3(0, 5, 15)); //* glm::scale(glm::mat4(1.0f), glm::vec3(100, 0.01, 100)) * cube->toWorld;
 
-	model = new Model(std::string("../BaseMesh_Anim.fbx"));
+	player = new Model(std::string("../BaseMesh_Anim.fbx"));
 
-	// Load the shader program. Make sure you have the correct filepath up top
-	shaderProgram = LoadShaders(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
+	models.push_back(ModelData{player, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), shaderProgram, COLOR, 0});
 }
 
 // Treat this as a destructor function. Delete dynamically allocated memory here.
 void Window::clean_up()
 {
+	delete(camera);
 	delete(cube);
-	delete(model);
-	glDeleteProgram(shaderProgram);
+	delete(player);
+	delete(root);
+	delete(shaderProgram);
+	//glDeleteProgram(shaderProgram);
 }
 
 GLFWwindow* Window::create_window(int width, int height)
@@ -98,8 +91,7 @@ void Window::resize_callback(GLFWwindow* window, int width, int height)
 
 	if (height > 0)
 	{
-		P = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.0f);
-		V = glm::lookAt(cam_pos, cam_look_at, cam_up);
+		camera->SetAspect((float)width / (float)height);
 	}
 }
 
@@ -115,15 +107,15 @@ void Window::display_callback(GLFWwindow* window)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Use the shader of programID
-	glUseProgram(shaderProgram);
+	shaderProgram->use();
 	
 	// Render the cube
-	cube->draw(shaderProgram);
+	//cube->draw(shaderProgram);
 
 	glm::mat4 tw = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)) 
 		* glm::rotate(glm::mat4(1.0f), -90 / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)) 
 		* glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 0.1f, 0.1f));
-	glm::mat4 MVP = Window::P * Window::V * tw;
+	glm::mat4 MVP = camera->GetViewProjectMtx() * tw;
 	// Now send these values to the shader program
 	glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &tw[0][0]);
 	glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "modelViewProjection"), 1, GL_FALSE, &MVP[0][0]);
@@ -150,7 +142,6 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 }
 
 void Window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
-	glm::vec3 z_dir = cam_look_at - cam_pos;
-	cam_pos -= ((float)-yoffset * glm::normalize(z_dir));
-	V = glm::lookAt(cam_pos, cam_look_at, cam_up);
+	glm::vec3 z_dir = camera->cam_look_at - camera->cam_pos;
+	camera->cam_pos -= ((float)-yoffset * glm::normalize(z_dir));
 }
