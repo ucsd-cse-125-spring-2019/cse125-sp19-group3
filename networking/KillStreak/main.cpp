@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
 	// create new thread and run server
 	log->info("Launching Killstreak server");
 	server = new ServerGame(config);
-	_beginthread(run_server, 0, (void*)12);
+	_beginthread(run_server, 0, 0);
 
 	// launch client on main thread
 	log->info("Launching Killstreak client");

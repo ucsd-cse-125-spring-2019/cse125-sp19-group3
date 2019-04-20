@@ -105,7 +105,6 @@ void ClientGame::run() {
 	auto log = logger();
 	log->info("Client running...");
 
-
 	// TEST: Sending initial message, does server recv()? 
 	log->info("Client: Sending message...");
 
