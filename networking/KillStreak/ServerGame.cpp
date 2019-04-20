@@ -2,9 +2,13 @@
 #include "logger.hpp"
 #include "ServerGame.hpp"
 #include "ServerNetwork.hpp"
+
+#include <queue>
 #include <string>
 #include <process.h>				// threads
 #include <windows.h>				// sleep
+
+using namespace std;
 
 #define GAME_SIZE			2		// total players required to start game
 #define LOBBY_START_TIME	5000	// wait this long (ms) after all players connect
@@ -52,9 +56,13 @@ ServerGame::ServerGame(INIReader& t_config) : config(t_config) {
 
 
 // TODO: MOVE ME?!?!?!
+/*
+	Contains meta data for client passed to client thread. 
+	Stores client's ID and a pointer to the master queue.
+*/
 typedef struct {
 	unsigned int id;
-	// pointer to master queue;
+	queue<char*> *mq;
 }client_data;
 
 
@@ -99,7 +107,8 @@ void ServerGame::launch() {
 	log->info("MT: Game server live!");
 
 
-	// TODO: CREATE MASTER QUEUE --> PROTECT WITH CV!!! PASS BY REFERENCE!!!
+	// TODO: protect master_queue w/ CV; pass pointer to client thread
+	queue<char*> *master_queue;
 
 
 	// Accept incoming connections until GAME_SIZE met (LOBBY)
@@ -113,11 +122,8 @@ void ServerGame::launch() {
 		client_data *client_arg;
 		client_arg = (client_data*) malloc (sizeof(client_data));
 		client_arg->id = client_id - 1;	// current clients ID
-										// reference to master queue
+		client_arg->mq = master_queue;  // pointer to master queue
 
-
-		// TODO: PASS MASTER QUEUE POINTER TO THREAD!
-	
 		// allocate new thread for client (pass client data)
 		_beginthread(client_session, 0, (void*) client_arg);
 
@@ -134,14 +140,13 @@ void ServerGame::launch() {
 	log->info("MT: Game started!");
 	game_start = 1;			
 
+
+
 	while (1) {};	// TODO: REMOVE ME!!!
 
 
 
-
-
-
-	// TESTING: Is server receiving clients data?
+	// TESTING: Is server receiving clients data? (REMOVE ME)
 	int iResult;
 	SOCKET client_sock = network->sessions.find(0)->second;	// get client socket 
 	char recvbuf[DEFAULT_BUFLEN];
@@ -165,9 +170,6 @@ void ServerGame::launch() {
 		}
 
 	} while (iResult > 0);
-
-
-	while (1) {}; // TODO: REMOVE ME!!
 
 
 	/* TODO: Stop listening to socket once all connections made? 

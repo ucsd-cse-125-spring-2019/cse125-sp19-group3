@@ -1,12 +1,12 @@
-#include <iostream>
-#include <stdlib.h>
-#include "INIReader.h"
-#include "ServerGame.hpp"
-#include "ClientGame.h"
 #include "logger.hpp"
 #include "sysexits.h"
-#include <process.h>
+#include "INIReader.h"
+#include "ClientGame.h"
+#include "ServerGame.hpp"
 
+#include <stdlib.h>
+#include <iostream>
+#include <process.h>
 using namespace std;
 
 
