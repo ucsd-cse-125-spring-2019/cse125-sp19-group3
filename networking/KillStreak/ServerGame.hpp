@@ -19,11 +19,11 @@ typedef queue<char*> MasterQueue;
 
 /*
 	Contains meta data for client passed to client thread. 
-	Stores client's ID and a pointer to the master queue.
 */
 typedef struct {
-	unsigned int id;
-	MasterQueue *mq_ptr;
+	unsigned int id;			// client ID
+	MasterQueue *mq_ptr;		// master queue pointer
+	ServerNetwork *network;		// Server network pointer
 }client_data;
 
 

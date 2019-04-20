@@ -1,4 +1,4 @@
-Setting up Visual Studio Environment: 
+# Setting up Visual Studio Environment: 
 
 1.) Open the solution file located in 'rendering -> CSE125G3.sln'
 
@@ -26,7 +26,9 @@ Setting up Visual Studio Environment:
 *** Note: If  you're using a different version of VS (non-2017) see below!
 
 
-Setting up the Visual Studio Environment (non-2017): Be sure to also follow the setup for setting up VS for the first time.
+# Setting up the Visual Studio Environment (non-2017): 
+
+* Be sure to also follow the setup for setting up VS for the first time.
 
 * The lab machines use Visual Studio 2017. If you have a different version of VS you'll need to install a few things. 
 * All of the following can be installed using the Visual Studio Installer (it will modify the existing copy of VS).
@@ -37,3 +39,10 @@ Setting up the Visual Studio Environment (non-2017): Be sure to also follow the 
 
 3.) Once installed you can right click the project -> properties -> General. Make sure SDK & platform toolset are correct.
 
+
+# Sending Requests to Server without running the client: 
+
+* You can test the server connection without running the client by using the *nux 'nc' command. After running the server input 'nc <host> <port>' into the terminal to make a request to the server. 
+
+* An alternative would be to use 'curl -v <host>:<port>' 
+  --> '-v' for verbose mode, shows the GET request and how the server handles it.

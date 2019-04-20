@@ -54,8 +54,9 @@ ServerGame::ServerGame(INIReader& t_config) : config(t_config) {
 
 /*
 	Launch thread for new client. Waits until all players connected and 
-	game starts. Will then consistently recv() data from client and 
-	input full packets into master queue. 
+	game starts. Will then consistently recv() data from client storing 
+	into a buffer until the delimiter is reached. Once reached the data is 
+	sent to the master queue to be processed by the server.
 
 	client_data passed to thread (arg), contains client ID & pointer to master queue.
 	Note: log->info( ... ) 'CT {}:' stands for 'Client Thread <ID>:' 
@@ -71,27 +72,38 @@ void client_session(void *arg)
 	// game hasn't started yet; sleep thread until ready
 	if (!game_start) log->info("CT <{}>: Waiting for game to start", client_arg->id);
 
-	while (!game_start) {};	// TODO: REPLACE me!!! Put thread to sleep, no busy waiting!
+	// BADD!!!!! BUSY WAITING!!!! Replace by putting thread to sleep until ready!
+	// NOTE: Need this thread to sleep until the main thread decides its time to 
+	//		start the game. Once started the main thread will wake all sleeping threads.
+	while (!game_start) {};	
 
 	log->info("CT <{}>: Game started -> Receiving from client!", client_arg->id);
-	while (1) {};	// TODO: REMOVE ME!!! -> Start receiving data
 
+	while (1) {};	// TODO: REMOVE ME!!! -> Start receiving data
 
 	// TODO: recv() data from each client and ...
 	//  --> Put into main buffer until delimiter reached when calling receive 
 	//  --> Once all data received push to master queue 
 	//  --> Master queue will update state by getting all data from the queue 
 	//			in FIFO order. Then send updates back to the client.
+	//	--> NOTE: Ensure connection with client is persistent. I.E. does not reconnect
+	//				everytime!
 
 
-	// TODO: Deallocate client_data on thread completion
+
+
+
+
+	// close socket & free client_data 
+	client_arg->network->closeClientSocket(client_arg->id);
+	free(client_arg);
 }
 
 
 /*
 	Handles the game lobby. Accepts incoming connections from clients until 
-	enough players are found for one full game. Will wait LOBBY_START_TIME ms
-	after all players connected to begin match!
+	enough players are found for one full game. Will wait LOBBY_START_TIME (ms)
+	after all players connected to begin match by setting 'game_start' to 1.
 */
 void ServerGame::game_match(MasterQueue *mq)
 {
@@ -110,6 +122,7 @@ void ServerGame::game_match(MasterQueue *mq)
 		{
 			client_arg->id = client_id - 1;			// current clients ID
 			client_arg->mq_ptr = mq;				// pointer to master queue
+			client_arg->network = network;			// pointer to ServerNetwork
 			_beginthread(client_session, 0, (void*) client_arg);
 		}
 		else	// error allocating client data; decrement client_id & remove socket
@@ -119,10 +132,12 @@ void ServerGame::game_match(MasterQueue *mq)
 		}
 	}
 
-	// all clients connected, wait LOBBY_START_TIME seconds before starting game
+	// all clients connected, wait LOBBY_START_TIME (ms) before starting game
 	log->info("MT: Game starting in {} seconds...", LOBBY_START_TIME/1000);
 	Sleep(LOBBY_START_TIME);			
 	log->info("MT: Game started!");
+
+	// TODO: Wake all sleeping client threads once busy waiting is removed.
 	game_start = 1;			
 
 }
@@ -130,9 +145,9 @@ void ServerGame::game_match(MasterQueue *mq)
 
 /* 
 	Main server loop that runs after the network is setup. 
-	Server will block on accept until enough players have joined,
-	then begin the main game loop. A new thread is created for each incoming 
-	client.
+	Server will block on game_match until enough players have joined,
+	then it'll begin the main game loop. 
+	A new thread is created for each incoming client.
 
 	Note: log->info( ... ) 'MT' stands for 'Main Thread'
 */
@@ -140,11 +155,10 @@ void ServerGame::launch() {
 	auto log = logger();
 	log->info("MT: Game server live!");
 
-
 	// TODO: protect master_queue w/ CV; pass pointer to client thread
 	MasterQueue* mq = new MasterQueue();
-	game_match(mq);
 
+	game_match(mq);	// launch lobby; accept players until game full
 
 	while (1) {};	// TODO: REMOVE ME!!!
 
@@ -182,8 +196,8 @@ void ServerGame::launch() {
 
 
 /*
-	On every server tick will empty the master queue, update game state, and 
-	send data back to all clients.
+	Runs on every server tick. Empties the master queue, updates the game state, and 
+	sends updated state back to all clients.
 */
 void ServerGame::update() {
 	auto log = logger();
