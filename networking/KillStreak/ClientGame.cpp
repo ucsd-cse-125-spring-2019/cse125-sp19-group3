@@ -101,29 +101,71 @@ void print_versions()
 }
 
 
+/*
+	Send initial request to server asking to join game. Will hang until request accepted 
+	by server. Once accepted, client will remain in lobby until game start.
+
+	-- Return 1 on success, 0 on failure
+*/
+// TODO: Client should make request to server and block until it hears back? 
+//	--> I.E. server accepts and sends some response (hey you've joined the lobby!)	
+int ClientGame::join_game()
+{
+	auto log = logger();
+
+	// send initial request to server 
+	ClientInputPacket init_packet = network->createClientPacket(INIT_CONN, NULL_POINT, 0, 0);
+	int iResult = network->sendToServer(init_packet);
+
+	// error?
+	if (iResult != sizeof(ClientInputPacket))
+	{
+		log->error("Failure sending packet, only sent {} of {} bytes", iResult, sizeof(ClientInputPacket));
+		return 0;
+	} 
+	if (iResult == SOCKET_ERROR)
+	{
+		log->error("Send failed with error: {}", WSAGetLastError());
+		WSACleanup();
+		return 0;
+	}
+
+
+	// TODO: Client should hang on recv() untils server responds .. 
+	// should we implement a timeout???
+
+
+	return 1;
+}
+
+
 void ClientGame::run() {
 	auto log = logger();
 	log->info("Client running...");
 
-	// TODO: Client should make request to server and block until it hears back? 
-	//	--> I.E. server accepts and sends some response (hey you've joined the lobby!)	
+	// attempt to join game
+	int iResult = join_game();
+	if (!iResult)
+	{
+		closesocket(network->ConnectSocket);
+		return;
+	}
+
+
+	// GAME STARTING ******************************************************
+
+	while (1) {};	// TODO: REMOVE ME!
+	
+
 	// TODO (MAYBE?): Put timeout on client socket, if server game full will disconnect? 
 
 	// TEST: Sending initial message, does server recv()? 
+	/*
 	log->info("Client: Sending message...");
+	Point finalLocation = Point(1.0, 2.0, 3.0);
+	ClientInputPacket testPacket = network->createClientPacket(MOVEMENT, finalLocation, 0, 0);
 
-	char* sendbuf = "Client: sending data test";
-	// int iResult = send(network->ConnectSocket, sendbuf, (int)strlen(sendbuf), 0);
-
-	ClientInputPacket testPacket;
-	testPacket.inputType = MOVEMENT;
-	testPacket.finalLocation = Point(1.0, 2.0, 3.0);
-	testPacket.skillType = 0;
-	testPacket.attackType = 0;
-
-	int iResult = network->sendToServer(testPacket);
-	
-	
+	iResult = network->sendToServer(testPacket);
 	
 	if (iResult == SOCKET_ERROR) {
 		wprintf(L"send failed with error: %d\n", WSAGetLastError());
@@ -133,7 +175,8 @@ void ClientGame::run() {
 	}
 
 	log->info("Client: Bytes sent: {}", iResult);
-	while (1) {};	// TODO: REMOVE ME!
+
+*/
 
 
 

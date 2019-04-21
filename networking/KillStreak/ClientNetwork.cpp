@@ -101,3 +101,19 @@ int ClientNetwork::sendToServer(ClientInputPacket packet) {
 	int sentLength = send(ConnectSocket, serialized, sizeof(ClientInputPacket), 0);
 	return sentLength;
 }
+
+
+/*
+	Initialize a packet to send to the server. 
+*/
+ClientInputPacket ClientNetwork::createClientPacket(InputType type, Point finalLocation,
+	int skillType, int attackType)
+{
+	ClientInputPacket packet;
+	packet.inputType = type;
+	packet.finalLocation = finalLocation;
+	packet.skillType = skillType;
+	packet.attackType = attackType;
+
+	return packet;
+}

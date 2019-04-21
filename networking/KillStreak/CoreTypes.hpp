@@ -2,12 +2,12 @@
 #include <glm/glm.hpp>
 #include <chrono>
 #include <queue>
-#include "ServerNetwork.hpp"
 
+#define NULL_POINT Point(0.0,0.0,0.0)
 
 typedef glm::vec3 Point;
 
-typedef enum {MOVEMENT, SKILL, ATTACK} InputType;
+typedef enum {INIT_CONN, MOVEMENT, SKILL, ATTACK} InputType;
 typedef struct {
 	InputType inputType;
 	// Movement Data

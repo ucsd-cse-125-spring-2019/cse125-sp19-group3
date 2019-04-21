@@ -8,8 +8,8 @@ ServerNetwork::ServerNetwork(PCSTR host, PCSTR port) : serverPort(port)
 	WSADATA wsaData;
 
 	// our sockets for the server
-	ListenSocket = INVALID_SOCKET;
-	ClientSocket = INVALID_SOCKET;
+	listenSocket = INVALID_SOCKET;
+	clientSocket = INVALID_SOCKET;
 
 	// address info for the server to listen to
 	struct addrinfo *result = NULL;
@@ -39,9 +39,9 @@ ServerNetwork::ServerNetwork(PCSTR host, PCSTR port) : serverPort(port)
 	}
 
 	// Create a SOCKET for connecting to server (create socket)
-	ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+	listenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
 
-	if (ListenSocket == INVALID_SOCKET) {
+	if (listenSocket == INVALID_SOCKET) {
 		log->error("socket failed with error: {}", WSAGetLastError());
 		freeaddrinfo(result);
 		WSACleanup();
@@ -52,11 +52,11 @@ ServerNetwork::ServerNetwork(PCSTR host, PCSTR port) : serverPort(port)
 	// Set the mode of the socket to be nonblocking
 	/*
 	u_long iMode = 1;
-	iResult = ioctlsocket(ListenSocket, FIONBIO, &iMode);
+	iResult = ioctlsocket(listenSocket, FIONBIO, &iMode);
 
 	if (iResult == SOCKET_ERROR) {
 		log->error("ioctlsocket failed with error: {}", WSAGetLastError());
-		closesocket(ListenSocket);
+		closesocket(listenSocket);
 		WSACleanup();
 		exit(1);
 	}
@@ -65,12 +65,12 @@ ServerNetwork::ServerNetwork(PCSTR host, PCSTR port) : serverPort(port)
 	// Setup the TCP listening socket (bind)
 	const sockaddr* addr = result->ai_addr;
 	int addrLen = (int)(result->ai_addrlen);
-	iResult = bind(ListenSocket, addr, addrLen);
+	iResult = bind(listenSocket, addr, addrLen);
 
 	if (iResult == SOCKET_ERROR) {
 		log->error("bind failed with error: {}", WSAGetLastError());
 		freeaddrinfo(result);
-		closesocket(ListenSocket);
+		closesocket(listenSocket);
 		WSACleanup();
 		exit(1);
 	}
@@ -79,11 +79,11 @@ ServerNetwork::ServerNetwork(PCSTR host, PCSTR port) : serverPort(port)
 	freeaddrinfo(result);
 
 	// start listening for new clients attempting to connect (listen)
-	iResult = listen(ListenSocket, SOMAXCONN);
+	iResult = listen(listenSocket, SOMAXCONN);
 
 	if (iResult == SOCKET_ERROR) {
 		log->error("listen failed with error: {}", WSAGetLastError());
-		closesocket(ListenSocket);
+		closesocket(listenSocket);
 		WSACleanup();
 		exit(1);
 	}
@@ -95,7 +95,7 @@ ServerNetwork::ServerNetwork(PCSTR host, PCSTR port) : serverPort(port)
 ServerNetwork::~ServerNetwork(void)
 {
 	// tear down all client / server sockets???
-	closesocket(ListenSocket);
+	closesocket(listenSocket);
 	WSACleanup();
 }
 
@@ -104,6 +104,8 @@ ServerNetwork::~ServerNetwork(void)
 	Accept an incoming connection. 
 
 	'id' will be client ID we want to associate with this socket.
+	Check if client requested to initialize a connection as their first 
+	request. Close connection if this was not their first request.
 	Once socket is allocated, its mapped to the incoming clients ID
 	in 'sessions' map.
 */
@@ -112,24 +114,40 @@ bool ServerNetwork::acceptNewClient(unsigned int & id)
 	auto log = logger();
 
 	// if client waiting, accept the connection and save the socket
-	ClientSocket = accept(ListenSocket, NULL, NULL);
+	clientSocket = accept(listenSocket, NULL, NULL);
 
-	if (ClientSocket != INVALID_SOCKET)
+	if (clientSocket != INVALID_SOCKET)
 	{
 		//disable nagle on the client's socket
 		char value = 1;
-		setsockopt(ClientSocket, IPPROTO_TCP, TCP_NODELAY, &value, sizeof(value));
+		setsockopt(clientSocket, IPPROTO_TCP, TCP_NODELAY, &value, sizeof(value));
 
-		// insert new client into session id table
-		sessions.insert(pair<unsigned int, SOCKET>(id, ClientSocket));
+		// get clients initial request to join game
+		ClientInputPacket* packet = receivePacket(id);
+		if (!packet)		// error? 
+		{
+			closesocket(clientSocket);
+			return false;
+		}
+
+		// initialization request from client? 
+		if (packet->inputType != INIT_CONN)
+		{
+			log->info("MT: Client <{}>'s first request was not to initialize, closing connection.", id);
+			closesocket(clientSocket);
+			return false;
+		}
+
 		log->info("MT: Connection accepted -> Client: {}", id);
 
+		// insert new client into session id table
+		sessions.insert(pair<unsigned int, SOCKET>(id, clientSocket));
 		id++;		// inc to next client id
+
 		return true;
 	}
 
 	log->info("MT: No connection: {}", WSAGetLastError());
-	// TODO: Should we send initial state data to connected client here? 
 
 	return false;
 }
@@ -159,39 +177,64 @@ bool ServerNetwork::closeClientSocket(unsigned int id)
 }
 
 
-/* 
-	Receive incoming data from client. Reads until packet size met. Based on 
-	packet type a different size is selected to read. All read data updates 
-	receiver buffer passed by reference.
+/*
+	Calls the receiveData function to receive a packet sized amount of data 
+	from the client. On success will deserialize the data and return the packet. 
 
-	-- Returns amount of bytes read, updates 'recbuf' pointer passed by 
-	reference with data read.
+	-- Return deserialized packet from client, 0 on error
+*/
+ClientInputPacket* ServerNetwork::receivePacket(unsigned int client_id)
+{
+
+	// allocate buffer & receive data from client
+	char temp_buff[sizeof(ClientInputPacket)];
+	memset(temp_buff, 0, sizeof(temp_buff));
+	int bytes_read = receiveData(client_id, temp_buff);
+
+	// client closed conection/error?
+	if (!bytes_read || bytes_read == SOCKET_ERROR) return 0;
+
+	// deserialize data
+	ClientInputPacket* packet = deserializeCP(temp_buff);
+	free(temp_buff);
+	return packet;
+}
+
+
+/* 
+	Receive incoming data from client. Reads until packet size met. 
+	All read data updates receiver buffer passed by reference.
+
+	-- Returns amount of bytes read, 0 for closed connection, 
+	SOCKET_ERROR otherwise. Updates 'recbuf' pointer passed by 
+	reference with data read. 
 */
 int ServerNetwork::receiveData(unsigned int client_id, char * recvbuf)
 {
 	auto log = logger();
-	if (sessions.find(client_id) != sessions.end())
+	log->info("CT <{}>: Receiving data from client");
+
+	if (sessions.find(client_id) != sessions.end())		// find client 
 	{
+		// NOTE: For now, make all receives from client to server the same input packet type.
 
-		// TODO: Need to check packet type, based on that sizeof bytes to read will be different
-		// For now, make all receives from client to server the same input packet type.
+		SOCKET currentSocket = sessions[client_id];		// get client socket
+		size_t toRead = sizeof(ClientInputPacket);		// amount of data to read
+		char  *curr_bufptr = (char*) recvbuf;			// ptr to output buffer
 
-		SOCKET currentSocket = sessions[client_id];
-		size_t toRead = sizeof(ClientInputPacket);
-		char  *curr_bufptr = (char*) recvbuf;
-
-		while (toRead > 0)
+		while (toRead > 0)								// read entire packet
 		{
 			auto rsz = recv(currentSocket, curr_bufptr, toRead, 0);
+
 			if (rsz == 0) {
-				log->error("Connection closed");
-				closesocket(currentSocket);
+				log->error("CT <{}>: Client closed connection", client_id);
+				closeClientSocket(client_id);
 				return rsz;
 			}
 
 			if (rsz == SOCKET_ERROR) {
-				log->error("Socket error");
-				closesocket(currentSocket);
+				log->error("CT <{}>: recv() failed {}", client_id, WSAGetLastError());
+				closeClientSocket(client_id);
 				return rsz;
 			}
 
@@ -202,6 +245,7 @@ int ServerNetwork::receiveData(unsigned int client_id, char * recvbuf)
 		return sizeof(ClientInputPacket);
 	}
 
+	log->error("Receive error: Client mapping not found -> ID: {}", client_id);
 	return 0;
 }
 
@@ -241,4 +285,14 @@ void ServerNetwork::targetedSend(unsigned int client_id, char * packets, int tot
 		printf("send failed with error: %d\n", WSAGetLastError());
 		closesocket(currentSocket);
 	}
+}
+
+
+/*
+	Deserialize data sent from client back into a ClientInputPacket struct.
+	-- Return reconstructed ClientInputPacket
+*/
+ClientInputPacket* ServerNetwork::deserializeCP(char* temp_buff)
+{
+	return reinterpret_cast<ClientInputPacket*>(temp_buff);
 }

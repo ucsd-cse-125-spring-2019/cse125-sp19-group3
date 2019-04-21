@@ -78,6 +78,8 @@ void client_session(void *arg)
 
 
 	// GAME STARTING ****************************************************
+
+	// receive from client until end of game sending deserialized packets to queue
 	log->info("CT <{}>: Game started -> Receiving from client!", client_arg->id);
 
 	// get client socket; pointer to clients queue & pointer to network
@@ -85,45 +87,26 @@ void client_session(void *arg)
 	ClientThreadQueue *input_queue = client_arg->q_ptr;
 	ServerNetwork * network = client_arg->network;
 
-	int bytes_read;						// total bytes read returned by recv()
-	int keep_conn = 1;                  // keep connection alive
+	int keep_conn = 1;				// keep connection alive
 	do {
 
-		// allocate buffer & receive data
-		char temp_buff[sizeof(ClientInputPacket)];		
-		memset(temp_buff, 0, sizeof(temp_buff));
-		bytes_read = network->receiveData(client_id, temp_buff);
-		
-		log->info("CT {}: Total bytes read {} from ServerNetwork::receive", client_id, bytes_read);
-
-		if (bytes_read == 0)			// connection closed?
-		{
-			log->info("CT {}: Client closed connection.", client_id);
+		// get packet from client
+		ClientInputPacket* packet = network->receivePacket(client_id);
+		if (!packet) {
 			keep_conn = 0;
 			break;
 		}
 
-		if (bytes_read == SOCKET_ERROR)  // error?  Close connection.
-		{
-			log->error("CT {}: recv() failed {}", client_id, WSAGetLastError());
-			WSACleanup();
-			keep_conn = 0;
-			break;
-		}
+		input_queue->push(*packet);		// push packet to queue
 
-		// convert temp_buff into a ClientInputPacket (deserialize data)
-		// TODO: might run into alignment issues later
-		ClientInputPacket* packet = reinterpret_cast<ClientInputPacket*>(temp_buff);
+		log->debug("RECEIVED ON SERVER: ");
+		log->debug("packet input type: {}", packet->inputType);
+		log->debug("packet final location x: {}", (packet->finalLocation).x);
+		log->debug("y: {}", (packet->finalLocation).y);
+		log->debug("z: {}", (packet->finalLocation).z);
+		log->debug("packet skillType: {}", packet->skillType);
+		log->debug("packet attackType: {}", packet->attackType);
 
-		log->info("RECEIVED ON SERVER: ");
-		log->info("packet input type: {}", packet->inputType);
-		log->info("packet final location x: {}", (packet->finalLocation).x);
-		log->info("y: {}", (packet->finalLocation).y);
-		log->info("z: {}", (packet->finalLocation).z);
-		log->info("packet skillType: {}", packet->skillType);
-		log->info("packet attackType: {}", packet->attackType);
-
-		input_queue->push(*packet);		// push full packet to client threads queue
 
 	} while (keep_conn);				// connection-closed/error? 
 
@@ -143,17 +126,18 @@ void ServerGame::game_match()
 {
 	auto log = logger();
 
-	log->info("Size of overall inputpacketstruct: {}", sizeof(ClientInputPacket));
-	log->info("Size of enum: {}", sizeof(InputType));
-	log->info("Size of Point: {}", sizeof(Point));
-	log->info("Size of int: {}", sizeof(int));
+	log->debug("Size of overall inputpacketstruct: {}", sizeof(ClientInputPacket));
+	log->debug("Size of enum: {}", sizeof(InputType));
+	log->debug("Size of Point: {}", sizeof(Point));
+	log->debug("Size of int: {}", sizeof(int));
 
 	// Accept incoming connections until GAME_SIZE met (LOBBY)
 	unsigned int client_id = 0;		
 	while (client_id < GAME_SIZE)
 	{
 		log->info("MT: Waiting for {} player(s)...", GAME_SIZE - client_id);
-		network->acceptNewClient(client_id);		// blocking
+		bool ret_accept = network->acceptNewClient(client_id);		// blocking
+		if (!ret_accept) continue;
 
 		// allocate data for new client thread & run thread
 		client_data* client_arg = (client_data *) malloc (sizeof(client_data));
