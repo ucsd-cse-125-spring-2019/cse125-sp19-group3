@@ -90,6 +90,10 @@ ClientNetwork::~ClientNetwork(void) {
 
 }
 
+
+/*
+	Serialize packet then send to server.
+*/
 int ClientNetwork::sendToServer(ClientInputPacket packet) {
 	char serialized[sizeof(ClientInputPacket)];
 	memcpy(serialized, &packet, sizeof(ClientInputPacket));

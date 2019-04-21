@@ -16,9 +16,9 @@ using namespace std;
 Contains meta data for client passed to client thread.
 */
 typedef struct {
-	unsigned int id;			// client ID
+	unsigned int id;				// client ID
 	ClientThreadQueue *q_ptr;		// queue pointer
-	ServerNetwork *network;		// Server network pointer
+	ServerNetwork *network;			// Server network pointer
 } client_data;
 
 class ServerGame {

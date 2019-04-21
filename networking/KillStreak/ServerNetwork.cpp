@@ -159,17 +159,24 @@ bool ServerNetwork::closeClientSocket(unsigned int id)
 }
 
 
-// TODO: Decide on which layer to put Serializer and Deserializer (in Network or in game??)
+/* 
+	Receive incoming data from client. Reads until packet size met. Based on 
+	packet type a different size is selected to read. All read data updates 
+	receiver buffer passed by reference.
 
-
-// receive incoming data
+	-- Returns amount of bytes read, updates 'recbuf' pointer passed by 
+	reference with data read.
+*/
 int ServerNetwork::receiveData(unsigned int client_id, char * recvbuf)
 {
 	auto log = logger();
 	if (sessions.find(client_id) != sessions.end())
 	{
-		SOCKET currentSocket = sessions[client_id];
+
+		// TODO: Need to check packet type, based on that sizeof bytes to read will be different
 		// For now, make all receives from client to server the same input packet type.
+
+		SOCKET currentSocket = sessions[client_id];
 		size_t toRead = sizeof(ClientInputPacket);
 		char  *curr_bufptr = (char*) recvbuf;
 
@@ -188,7 +195,7 @@ int ServerNetwork::receiveData(unsigned int client_id, char * recvbuf)
 				return rsz;
 			}
 
-			toRead -= rsz;  /* Read less next time */
+			toRead -= rsz;		 /* Read less next time */
 			curr_bufptr += rsz;  /* Next buffer position to read into */
 		}
 
@@ -197,6 +204,7 @@ int ServerNetwork::receiveData(unsigned int client_id, char * recvbuf)
 
 	return 0;
 }
+
 
 // send data to all clients
 void ServerNetwork::broadcastSend(char * packets, int totalSize)
@@ -217,6 +225,7 @@ void ServerNetwork::broadcastSend(char * packets, int totalSize)
 		}
 	}
 }
+
 
 // send data to one client
 void ServerNetwork::targetedSend(unsigned int client_id, char * packets, int totalSize)

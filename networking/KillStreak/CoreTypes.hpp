@@ -5,7 +5,6 @@
 #include "ServerNetwork.hpp"
 
 
-
 typedef glm::vec3 Point;
 
 typedef enum {MOVEMENT, SKILL, ATTACK} InputType;
