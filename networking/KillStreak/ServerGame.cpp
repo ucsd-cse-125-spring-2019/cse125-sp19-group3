@@ -72,6 +72,11 @@ void client_session(void *arg)
 	client_data *client_arg = (client_data*) arg;
 	log->info("CT <{}>: Launching new client thread", client_arg->id);
 
+
+	// TODO: Send pre-game data to client
+	//	--> Send them to lobby and send any other data needed
+
+
 	// game hasn't started yet; sleep thread until ready
 	if (!game_start) log->info("CT <{}>: Waiting for game to start", client_arg->id);
 	while (!game_start) {};	 // TODO: Keep busy waiting or put threads to sleep?
@@ -137,7 +142,7 @@ void ServerGame::game_match()
 	{
 		log->info("MT: Waiting for {} player(s)...", GAME_SIZE - client_id);
 		bool ret_accept = network->acceptNewClient(client_id);		// blocking
-		if (!ret_accept) continue;
+		if (!ret_accept) continue;									// failed to my conn? 
 
 		// allocate data for new client thread & run thread
 		client_data* client_arg = (client_data *) malloc (sizeof(client_data));
@@ -151,7 +156,7 @@ void ServerGame::game_match()
 			client_arg->network = network;				// pointer to ServerNetwork
 			_beginthread(client_session, 0, (void*) client_arg);
 		}
-		else	// error allocating client data; decrement client_id & remove socket
+		else	// error allocating client data; decrement client_id & close socket
 		{
 			log->error("MT: Error allocating client metadata");
 			network->closeClientSocket(--client_id);	
@@ -202,7 +207,7 @@ void ServerGame::launch() {
 		lastTime = now;
 
 		while (delta >= 1) {
-			log->info("TICK");
+//			log->info("TICK");
 			//update();
 			delta--;
 		}
@@ -220,6 +225,9 @@ void ServerGame::update() {
 
 	// TODO: Get one packet from each client queue. Maintain round robin order switching order 
 	// of getting packets.
+
+	// TODO: BE SURE TO FREE PACKETS AFTER PROCESSING THEM, OTEHRWISE THE PACKET WILL 
+	// CAUSE MEMORY TO BECOME FULL!!
 }
 
 

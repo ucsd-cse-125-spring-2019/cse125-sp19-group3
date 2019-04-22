@@ -106,7 +106,7 @@ ServerNetwork::~ServerNetwork(void)
 	'id' will be client ID we want to associate with this socket.
 	Check if client requested to initialize a connection as their first 
 	request. Close connection if this was not their first request.
-	Once socket is allocated, its mapped to the incoming clients ID
+	Otherwise, nce socket is allocated, its mapped to the incoming clients ID
 	in 'sessions' map.
 */
 bool ServerNetwork::acceptNewClient(unsigned int & id)
@@ -122,11 +122,14 @@ bool ServerNetwork::acceptNewClient(unsigned int & id)
 		char value = 1;
 		setsockopt(clientSocket, IPPROTO_TCP, TCP_NODELAY, &value, sizeof(value));
 
+		// insert new client into session id table
+		sessions.insert(pair<unsigned int, SOCKET>(id, clientSocket));
+
 		// get clients initial request to join game
 		ClientInputPacket* packet = receivePacket(id);
 		if (!packet)		// error? 
 		{
-			closesocket(clientSocket);
+			closeClientSocket(clientSocket);
 			return false;
 		}
 
@@ -134,14 +137,11 @@ bool ServerNetwork::acceptNewClient(unsigned int & id)
 		if (packet->inputType != INIT_CONN)
 		{
 			log->info("MT: Client <{}>'s first request was not to initialize, closing connection.", id);
-			closesocket(clientSocket);
+			closeClientSocket(clientSocket);
 			return false;
 		}
 
 		log->info("MT: Connection accepted -> Client: {}", id);
-
-		// insert new client into session id table
-		sessions.insert(pair<unsigned int, SOCKET>(id, clientSocket));
 		id++;		// inc to next client id
 
 		return true;
@@ -196,7 +196,7 @@ ClientInputPacket* ServerNetwork::receivePacket(unsigned int client_id)
 
 	// deserialize data
 	ClientInputPacket* packet = deserializeCP(temp_buff);
-	free(temp_buff);
+//	free(temp_buff);
 	return packet;
 }
 
@@ -212,7 +212,6 @@ ClientInputPacket* ServerNetwork::receivePacket(unsigned int client_id)
 int ServerNetwork::receiveData(unsigned int client_id, char * recvbuf)
 {
 	auto log = logger();
-	log->info("CT <{}>: Receiving data from client");
 
 	if (sessions.find(client_id) != sessions.end())		// find client 
 	{

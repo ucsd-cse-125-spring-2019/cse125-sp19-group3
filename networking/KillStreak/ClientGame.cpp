@@ -107,12 +107,11 @@ void print_versions()
 
 	-- Return 1 on success, 0 on failure
 */
-// TODO: Client should make request to server and block until it hears back? 
-//	--> I.E. server accepts and sends some response (hey you've joined the lobby!)	
 int ClientGame::join_game()
 {
 	auto log = logger();
 
+	log->info("Sending initialization packet...");
 	// send initial request to server 
 	ClientInputPacket init_packet = network->createClientPacket(INIT_CONN, NULL_POINT, 0, 0);
 	int iResult = network->sendToServer(init_packet);
@@ -131,9 +130,17 @@ int ClientGame::join_game()
 	}
 
 
-	// TODO: Client should hang on recv() untils server responds .. 
+	// TODO: Client should hang on recv() untils server responds with pregame meta data and 
+	// lobby info... Client should then be in the lobby.
 	// should we implement a timeout???
 
+
+	// TODO: Need to create server to client struct and send serialized data from the 
+	// server to the client
+
+	log->info("Request accepted, joined lobby!");
+
+	while (1) {};
 
 	return 1;
 }

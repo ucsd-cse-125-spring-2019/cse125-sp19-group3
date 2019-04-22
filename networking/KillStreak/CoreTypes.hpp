@@ -8,6 +8,10 @@
 typedef glm::vec3 Point;
 
 typedef enum {INIT_CONN, MOVEMENT, SKILL, ATTACK} InputType;
+
+/*
+	Packet send from the client to the server.
+*/
 typedef struct {
 	InputType inputType;
 	// Movement Data
@@ -19,6 +23,15 @@ typedef struct {
 	// Attack Data
 	int attackType; // 0: melee, 1: projectile
 } ClientInputPacket;
+
+
+/*
+	Packet sent from the server to the client.
+*/
+typedef struct {
+	int temp;
+} ServerInputPacket;
+
 
 typedef std::chrono::high_resolution_clock Clock;
 typedef std::chrono::nanoseconds nanoseconds;
