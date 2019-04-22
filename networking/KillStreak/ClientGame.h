@@ -11,8 +11,9 @@ public:
 	~ClientGame(void);
 
 	ClientNetwork * network;
-	// sendStuffToServer(input)????
+
 	void run();
+	int join_game();
 
 protected:
 	INIReader & config;
