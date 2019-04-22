@@ -65,20 +65,7 @@ ClientNetwork::ClientNetwork(PCSTR host, PCSTR serverPort) {
 
 	log->info("Client connected on {}:{}", host, serverPort);
 
-	/*
-	// TODO: Do we want this to block? 
-	// set the mode of the socket to be nonblocking
-	u_long iMode = 1;
-	iResult = ioctlsocket(ConnectSocket, FIONBIO, &iMode);
-	if (iResult == SOCKET_ERROR) {
-		log->error("ioctlsocket failed with error: {}", WSAGetLastError());
-		closesocket(ConnectSocket);
-		WSACleanup();
-		exit(1);
-	}
-	*/
 
-	// disable nagle (??)
 	// TODO: TCP optimization? 
 	// https://www.extrahop.com/company/blog/2016/tcp-nodelay-nagle-quickack-best-practices/
 	char value = 1;
@@ -92,7 +79,7 @@ ClientNetwork::~ClientNetwork(void) {
 
 
 /*
-	Serialize packet then send to server.
+	Serialize a packet then send to server.
 */
 int ClientNetwork::sendToServer(ClientInputPacket packet) {
 	char serialized[sizeof(ClientInputPacket)];
@@ -116,4 +103,77 @@ ClientInputPacket ClientNetwork::createClientPacket(InputType type, Point finalL
 	packet.attackType = attackType;
 
 	return packet;
+}
+
+
+/*
+	Calls the receiveData function to receive a packet sized amount of data 
+	from the client. On success will deserialize the data and return the packet. 
+
+	-- Return deserialized packet from server, 0 on error
+*/
+ServerInputPacket* ClientNetwork::receivePacket()
+{
+
+	// allocate buffer & receive data from client
+	char* temp_buff = (char*)malloc(sizeof(ServerInputPacket));
+	int bytes_read = receiveData(temp_buff);
+
+	// client closed conection/error?
+	if (!bytes_read || bytes_read == SOCKET_ERROR) return 0;
+
+	// deserialize data into memory, point packet to it
+	ServerInputPacket* packet = deserializeSP(temp_buff);
+	return packet;
+}
+
+
+/* 
+	Receive incoming data from server. Reads until packet size met. 
+	All read data updates receiver buffer passed by reference.
+
+	-- Returns amount of bytes read, 0 for closed connection, 
+	SOCKET_ERROR otherwise. Updates 'recbuf' pointer passed by 
+	reference with data read. 
+*/
+int ClientNetwork::receiveData(char * recvbuf)
+{
+	auto log = logger();
+
+	SOCKET currentSocket = ConnectSocket;			// get client socket
+	size_t toRead = sizeof(ServerInputPacket);		// amount of data to read
+	char  *curr_bufptr = (char*) recvbuf;			// ptr to output buffer
+
+	while (toRead > 0)								// read entire packet
+	{
+		auto rsz = recv(currentSocket, curr_bufptr, toRead, 0);
+
+		if (rsz == 0) {
+			log->error("Server closed connection");
+			closesocket(ConnectSocket);
+			return rsz;
+		}
+
+		if (rsz == SOCKET_ERROR) {
+			log->error("recv() failed {}", WSAGetLastError());
+			closesocket(ConnectSocket);
+			return rsz;
+		}
+
+		toRead -= rsz;		 /* Read less next time */
+		curr_bufptr += rsz;  /* Next buffer position to read into */
+	}
+
+	return sizeof(ServerInputPacket);
+
+}
+
+
+/*
+	Deserialize data sent from server back into a ServerInputPacket struct.
+	-- Return reconstructed ServerInputPacket
+*/
+ServerInputPacket* ClientNetwork::deserializeSP(char* temp_buff)
+{
+	return reinterpret_cast<ServerInputPacket*>(temp_buff);
 }

@@ -8,7 +8,7 @@
 #include <windows.h>				// sleep
 
 #define GAME_SIZE			1		// total players required to start game
-#define LOBBY_START_TIME	5000	// wait this long (ms) after all players connect
+#define LOBBY_START_TIME	2000	// wait this long (ms) after all players connect
 
 static int game_start = 0;			// game ready to begin?
 
@@ -70,29 +70,37 @@ void client_session(void *arg)
 
 	// get client data
 	client_data *client_arg = (client_data*) arg;
-	log->info("CT <{}>: Launching new client thread", client_arg->id);
+	int client_id = client_arg->id;
+	ServerNetwork * network = client_arg->network;
 
+	log->info("CT <{}>: Launching new client thread", client_id);
 
-	// TODO: Send pre-game data to client
-	//	--> Send them to lobby and send any other data needed
+	// TODO: Add more data to go into this struct!
+	// send pre-game data to client ( meta data and lobby info )
+	ServerInputPacket welcome_packet = network->createServerPacket(INIT_CONN, 0);
+	int bytes_sent = network->sendToClient(client_id, welcome_packet);
 
+	if (!bytes_sent) {	// error? 
+		log->error("CT <{}>: Sending init packet to client failed, closing connection", client_id);
+		network->closeClientSocket(client_id);
+		return;
+	}
 
 	// game hasn't started yet; sleep thread until ready
 	if (!game_start) log->info("CT <{}>: Waiting for game to start", client_arg->id);
-	while (!game_start) {};	 // TODO: Keep busy waiting or put threads to sleep?
+	while (!game_start) {};	 
 
 
 	// GAME STARTING ****************************************************
+
 
 	// receive from client until end of game sending deserialized packets to queue
 	log->info("CT <{}>: Game started -> Receiving from client!", client_arg->id);
 
 	// get client socket; pointer to clients queue & pointer to network
-	int client_id = client_arg->id;
 	ClientThreadQueue *input_queue = client_arg->q_ptr;
-	ServerNetwork * network = client_arg->network;
 
-	int keep_conn = 1;				// keep connection alive
+	int keep_conn = 1;					// keep connection alive
 	do {
 
 		// get packet from client
@@ -103,15 +111,6 @@ void client_session(void *arg)
 		}
 
 		input_queue->push(*packet);		// push packet to queue
-
-		log->debug("RECEIVED ON SERVER: ");
-		log->debug("packet input type: {}", packet->inputType);
-		log->debug("packet final location x: {}", (packet->finalLocation).x);
-		log->debug("y: {}", (packet->finalLocation).y);
-		log->debug("z: {}", (packet->finalLocation).z);
-		log->debug("packet skillType: {}", packet->skillType);
-		log->debug("packet attackType: {}", packet->attackType);
-
 
 	} while (keep_conn);				// connection-closed/error? 
 
@@ -130,11 +129,6 @@ void client_session(void *arg)
 void ServerGame::game_match()
 {
 	auto log = logger();
-
-	log->debug("Size of overall inputpacketstruct: {}", sizeof(ClientInputPacket));
-	log->debug("Size of enum: {}", sizeof(InputType));
-	log->debug("Size of Point: {}", sizeof(Point));
-	log->debug("Size of int: {}", sizeof(int));
 
 	// Accept incoming connections until GAME_SIZE met (LOBBY)
 	unsigned int client_id = 0;		
@@ -188,9 +182,10 @@ void ServerGame::launch() {
 	log->info("MT: Game server live - Launching lobby!");
 	game_match();	
 
-	/* TODO: Send pre-game data to all clients? 
-		--> Or send when connection is accepted
-		--> Then once all players connected we can immedietly start? 
+	// GAME START *************************************************
+
+	/* TODO: Once game_match() returns all the players have been confirmed 
+	and the lobby has been exited. The game is about to begin!
 	*/
 
 	double ns = 1000000000.0 / tick_rate;
@@ -226,8 +221,8 @@ void ServerGame::update() {
 	// TODO: Get one packet from each client queue. Maintain round robin order switching order 
 	// of getting packets.
 
-	// TODO: BE SURE TO FREE PACKETS AFTER PROCESSING THEM, OTEHRWISE THE PACKET WILL 
-	// CAUSE MEMORY TO BECOME FULL!!
+	// TODO: BE SURE TO FREE PACKETS AFTER PROCESSING THEM, OTEHRWISE THE PACKETS WILL EVENTUALLY
+	// FILL MEMORY!
 }
 
 

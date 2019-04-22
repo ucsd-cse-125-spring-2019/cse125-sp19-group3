@@ -103,7 +103,8 @@ void print_versions()
 
 /*
 	Send initial request to server asking to join game. Will hang until request accepted 
-	by server. Once accepted, client will remain in lobby until game start.
+	by server and initial data is sent back to client.
+	Once client gets pre-game metadata they will remain in the lobby until game start.
 
 	-- Return 1 on success, 0 on failure
 */
@@ -129,18 +130,29 @@ int ClientGame::join_game()
 		return 0;
 	}
 
+	// block until receive servers init package
+	ServerInputPacket* packet = network->receivePacket();
+	if (!packet)								// error 
+	{
+		log->error("Error receiving servers initialization packet");
+		return 0;
+	}
+	if (packet->inputType != INIT_CONN)			// not initialization packet
+	{
+		log->error("Invalid initialization packet send from server");
+		return 0;
+	}
 
-	// TODO: Client should hang on recv() untils server responds with pregame meta data and 
-	// lobby info... Client should then be in the lobby.
-	// should we implement a timeout???
+
+	log->debug("DATA FROM SERVER: {} {}", packet->inputType, packet->temp);
 
 
-	// TODO: Need to create server to client struct and send serialized data from the 
-	// server to the client
+	// client successfully received servers initialization packet with the
+	// pre-game metadata and is now in the lobby
+	// TODO:: CLIENT LOBBY !!!
+	log->info("Received servers init package, waiting in lobby!!");
+	while (1);
 
-	log->info("Request accepted, joined lobby!");
-
-	while (1) {};
 
 	return 1;
 }
@@ -154,25 +166,28 @@ void ClientGame::run() {
 	int iResult = join_game();
 	if (!iResult)
 	{
+		log->error("Closing connection");
 		closesocket(network->ConnectSocket);
 		return;
 	}
 
 
+	// This part will run after all players join and players leave lobby!
 	// GAME STARTING ******************************************************
 
 	while (1) {};	// TODO: REMOVE ME!
 	
-
 	// TODO (MAYBE?): Put timeout on client socket, if server game full will disconnect? 
 
-	// TEST: Sending initial message, does server recv()? 
 	/*
+	// TEST: Sending initial message, does server recv()? 
 	log->info("Client: Sending message...");
 	Point finalLocation = Point(1.0, 2.0, 3.0);
 	ClientInputPacket testPacket = network->createClientPacket(MOVEMENT, finalLocation, 0, 0);
+	ClientInputPacket testPacket2 = network->createClientPacket(MOVEMENT, finalLocation, 0, 0);
 
-	iResult = network->sendToServer(testPacket);
+	int iResult = network->sendToServer(testPacket);
+	iResult = network->sendToServer(testPacket2);
 	
 	if (iResult == SOCKET_ERROR) {
 		wprintf(L"send failed with error: %d\n", WSAGetLastError());
@@ -182,9 +197,8 @@ void ClientGame::run() {
 	}
 
 	log->info("Client: Bytes sent: {}", iResult);
-
-*/
-
+	while (1) {};
+	*/
 
 
 	// GRAPHICS CODE *******************************************************

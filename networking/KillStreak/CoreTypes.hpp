@@ -29,6 +29,7 @@ typedef struct {
 	Packet sent from the server to the client.
 */
 typedef struct {
+	InputType inputType;
 	int temp;
 } ServerInputPacket;
 

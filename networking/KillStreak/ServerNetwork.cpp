@@ -133,7 +133,7 @@ bool ServerNetwork::acceptNewClient(unsigned int & id)
 			return false;
 		}
 
-		// initialization request from client? 
+		// ensure client request is for initialization 
 		if (packet->inputType != INIT_CONN)
 		{
 			log->info("MT: Client <{}>'s first request was not to initialize, closing connection.", id);
@@ -187,16 +187,14 @@ ClientInputPacket* ServerNetwork::receivePacket(unsigned int client_id)
 {
 
 	// allocate buffer & receive data from client
-	char temp_buff[sizeof(ClientInputPacket)];
-	memset(temp_buff, 0, sizeof(temp_buff));
+	char *temp_buff = (char*)malloc(sizeof(ClientInputPacket));
 	int bytes_read = receiveData(client_id, temp_buff);
 
 	// client closed conection/error?
 	if (!bytes_read || bytes_read == SOCKET_ERROR) return 0;
 
-	// deserialize data
+	// deserialize data into memory, point packet to it
 	ClientInputPacket* packet = deserializeCP(temp_buff);
-//	free(temp_buff);
 	return packet;
 }
 
@@ -270,20 +268,25 @@ void ServerNetwork::broadcastSend(char * packets, int totalSize)
 }
 
 
-// send data to one client
-void ServerNetwork::targetedSend(unsigned int client_id, char * packets, int totalSize)
+/*
+	Serialize data and send to one client.
+*/
+int ServerNetwork::sendToClient(unsigned int client_id, ServerInputPacket packet)
 {
-	SOCKET currentSocket;
-	int iSendResult;
+	auto log = logger();
 
-	currentSocket = sessions[client_id];
-	iSendResult = NetworkServices::sendMessage(currentSocket, packets, totalSize);
-
-	if (iSendResult == SOCKET_ERROR)
+	if (sessions.find(client_id) != sessions.end())		// find client 
 	{
-		printf("send failed with error: %d\n", WSAGetLastError());
-		closesocket(currentSocket);
+		SOCKET currentSocket = sessions[client_id];		// get client socket
+		char serialized[sizeof(ServerInputPacket)];
+		memcpy(serialized, &packet, sizeof(ServerInputPacket));
+
+		int sentLength = send(currentSocket, serialized, sizeof(ServerInputPacket), 0);
+		return sentLength;
 	}
+
+	log->error("Receive error: Client mapping not found -> ID: {}", client_id);
+	return 0;
 }
 
 
@@ -294,4 +297,16 @@ void ServerNetwork::targetedSend(unsigned int client_id, char * packets, int tot
 ClientInputPacket* ServerNetwork::deserializeCP(char* temp_buff)
 {
 	return reinterpret_cast<ClientInputPacket*>(temp_buff);
+}
+
+
+/*
+	Initialize a packet to send to the client. 
+*/
+ServerInputPacket ServerNetwork::createServerPacket(InputType type, int temp)
+{
+	ServerInputPacket packet;
+	packet.inputType = type;
+	packet.temp = temp;
+	return packet;
 }

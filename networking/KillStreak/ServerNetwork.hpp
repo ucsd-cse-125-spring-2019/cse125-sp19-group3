@@ -21,8 +21,8 @@ public:
 	// send data to all clients
 	void broadcastSend(char * packets, int totalSize);
 
-	// send data to one client
-	void targetedSend(unsigned int client_id, char * packets, int totalSize);
+	// serialize data & send to one client
+	int sendToClient(unsigned int client_id, ServerInputPacket packet);
 
 	// receive incoming data
 	int receiveData(unsigned int client_id, char * recvbuf);
@@ -32,6 +32,9 @@ public:
 
 	// close socket associated with client
 	bool closeClientSocket(unsigned int id);
+
+	// create packet for server to send to client
+	ServerInputPacket createServerPacket(InputType type, int temp);
 
 	// receive incoming data and deserialize into ClientInputPacket
 	ClientInputPacket* receivePacket(unsigned int client_id);
