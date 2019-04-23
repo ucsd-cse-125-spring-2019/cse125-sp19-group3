@@ -89,7 +89,7 @@ void ServerGame::launch() {
 	} while (iResult > 0);
 
 
-	while (1) {}; // TODO: REMOVE ME!!
+	//while (1) {}; // TODO: REMOVE ME!!
 
 
 	/* TODO: Stop listening to socket once all connections made? 

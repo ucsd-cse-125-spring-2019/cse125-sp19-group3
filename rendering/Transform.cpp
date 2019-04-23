@@ -14,26 +14,26 @@ void Transform::removeChild(unsigned int id) {
 	children.erase(id);
 }
 
-void Transform::draw(GLuint shaderProgram, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx) {
+void Transform::draw(Shader * shader, const std::vector<ModelData> &models, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx) {
 	if (!enabled)
 		return;
 
 	glm::mat4 childMtx = parentMtx * M;
 
 	for (auto child : children)
-		child.second->draw(shaderProgram, childMtx, viewProjMtx);
+		child.second->draw(shader, models, childMtx, viewProjMtx);
 
-	//for (auto model_id : model_ids) {
-	//	if (models[model_id].renderMode == COLOR) {
-	//		models[model_id].shader->use();
-	//		models[model_id].shader->setVec4("color", models[model_id].color);
-	//		models[model_id].model->draw(*(models[model_id].shader), childMtx, viewProjMtx);
-	//	}
-	//	else if (models[model_id].renderMode == TEXTURE) {
-	//		models[model_id].shader->use();
-	//		glBindTexture(GL_TEXTURE_2D, models[model_id].texID);
-	//		models[model_id].model->draw(*(models[model_id].shader), childMtx, viewProjMtx);
-	//		glBindTexture(GL_TEXTURE_2D, 0);
-	//	}
-	//}
+	for (auto model_id : model_ids) {
+		if (models[model_id].renderMode == COLOR) {
+			models[model_id].shader->use();
+			models[model_id].shader->setVec4("color", models[model_id].color);
+			models[model_id].model->draw(models[model_id].shader, childMtx, viewProjMtx);
+		}
+		else if (models[model_id].renderMode == TEXTURE) {
+			models[model_id].shader->use();
+			glBindTexture(GL_TEXTURE_2D, models[model_id].texID);
+			models[model_id].model->draw(models[model_id].shader, childMtx, viewProjMtx);
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
+	}
 }

@@ -10,6 +10,27 @@
 #include "Model.h"
 #include "Shader.h"
 
+enum RenderMode {
+	COLOR,
+	TEXTURE
+};
+
+struct ModelData {
+	Model * model;
+	glm::vec4 color;
+	Shader * shader;
+	RenderMode renderMode;
+	GLuint texID;
+};
+
+enum ModelIds {
+	PLAYER = 0,
+	QUAD = 1,
+	GUN = 2,
+	BAR = 3,
+	HEAD = 4
+};
+
 class Transform
 {
 public:
@@ -25,7 +46,7 @@ public:
 	void addChild(const unsigned int id, Transform* child);
 	void removeChild(unsigned int id);
 
-	void draw(GLuint shaderProgram, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx);
+	void draw(Shader * shader, const std::vector<ModelData> &models, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx);
 };
 
 #endif

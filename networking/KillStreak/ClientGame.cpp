@@ -47,6 +47,8 @@ void setup_callbacks()
 	glfwSetErrorCallback(error_callback);
 	// Set the key callback
 	glfwSetKeyCallback(window, Window_static::key_callback);
+	// Set the mouse callback
+	glfwSetMouseButtonCallback(window, Window_static::mouse_button_callback);
 	// Set the window resize callback
 	glfwSetFramebufferSizeCallback(window, Window_static::resize_callback);
 }
@@ -127,12 +129,12 @@ void ClientGame::run() {
 
 	// Create the GLFW window
 	window = Window_static::create_window(640, 480);
+	// Setup OpenGL settings, including lighting, materials, etc.
+	setup_opengl_settings();
 	// Print OpenGL and GLSL versions
 	print_versions();
 	// Setup callbacks
 	setup_callbacks();
-	// Setup OpenGL settings, including lighting, materials, etc.
-	setup_opengl_settings();
 	// Initialize objects/pointers for rendering
 	Window_static::initialize_objects();
 

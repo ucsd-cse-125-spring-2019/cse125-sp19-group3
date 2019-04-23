@@ -11,6 +11,8 @@
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "shader.h"
+
 class Cube
 {
 public:
@@ -19,7 +21,7 @@ public:
 
 	glm::mat4 toWorld;
 
-	void draw(GLuint);
+	void draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx);
 	void update();
 	void spin(float);
 

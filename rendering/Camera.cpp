@@ -35,15 +35,20 @@ void Camera::Reset() {
 	FOV=45.0f;
 	Aspect=1.33f;
 	NearClip=0.1f;
-	FarClip=1000.0f;
+	FarClip=100.0f;
 
 	Distance=10.0f;
 	Azimuth=0.0f;
 	Incline=20.0f;
 
-	cam_pos = glm::vec3(10.0f, 30.0f, 30.0f);
+	cam_pos = glm::vec3(0.0f, 40.0f, 30.0f);
 	cam_look_at = glm::vec3(0.0f, 0.0f, 0.0f);
 	cam_up = glm::vec3(0.0f, 1.0f, 0.0f);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+float Camera::GetDepth() {
+	return (FarClip + NearClip) / (FarClip - NearClip) + 
+		(1 / pow(pow(cam_pos.y, 2) + pow(cam_pos.z, 2), 0.5) * (-2 * FarClip)) / (FarClip - NearClip);
+}

@@ -16,6 +16,7 @@
 #include <assimp/postprocess.h>
 
 #include "Mesh.h"
+#include "shader.h"
 //#include "stb_image.h"
 
 #include <string>
@@ -45,13 +46,20 @@ public:
 	}
 
 	// draws the model, and thus all its meshes
-	void Draw(GLuint shaderProgram)
+	void draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx)
 	{
+		glm::mat4 modelMtx = parentMtx * localMtx;
+		shader->use();
+		shader->setMat4("ModelMtx", modelMtx);
+		shader->setMat4("ModelViewProjMtx", viewProjMtx * modelMtx);
 		for (unsigned int i = 0; i < meshes.size(); i++)
-			meshes[i].Draw(shaderProgram);
+			meshes[i].draw(shader, viewProjMtx);
 	}
 
 private:
+
+	glm::mat4 localMtx = glm::mat4(1.0f);
+
 	/*  Functions   */
 	// loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.
 	void loadModel(string const &path)
