@@ -13,9 +13,9 @@ void Window::initialize_objects()
 
 	root = new Transform(glm::mat4(1.0f));
 	
-	player_t = new Transform(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0))
-		* glm::rotate(glm::mat4(1.0f), -90 / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0))
-		* glm::scale(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, 0.05f)));
+	player_t = new Transform(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)), 
+		glm::rotate(glm::mat4(1.0f), -90 / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)),
+		glm::scale(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, 0.05f)));
 	player_t->model_ids.insert(PLAYER);
 	root->addChild(1, player_t);
 
@@ -167,7 +167,7 @@ void Window::mouse_button_callback(GLFWwindow* window, int button, int action, i
 		float angle = glm::acos(glm::dot(glm::normalize(new_dest - player->currentPos), player->currentOri));
 		printf("rotate angle = %f", angle);
 		glm::vec3 axis = glm::cross(player->currentOri, glm::normalize(new_dest - player->currentPos));
-		//player->rotate(angle, axis);
+		player->rotate(angle, axis);
 
 		//std::cout << "Cursor Position at (" << xpos << " : " << ypos << std::endl;
 	}

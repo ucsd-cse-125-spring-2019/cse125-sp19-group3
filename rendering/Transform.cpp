@@ -4,6 +4,13 @@ Transform::Transform() : Transform(glm::mat4(1)) {}
 
 Transform::Transform(glm::mat4 M) : M(M) {}
 
+Transform::Transform(glm::mat4 translation, glm::mat4 rotation, glm::mat4 scale) {
+	this->translation = translation;
+	this->rotation = rotation;
+	this->scale = scale;
+	this->M = translation * rotation * scale;
+}
+
 void Transform::addChild(const unsigned int id, Transform* child) {
 	children.insert({ id, child });
 }
@@ -36,4 +43,8 @@ void Transform::draw(Shader * shader, const std::vector<ModelData> &models, cons
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}
 	}
+}
+
+void Transform::update() {
+	M = translation * rotation * scale;
 }

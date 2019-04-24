@@ -37,16 +37,21 @@ public:
 	bool enabled = true;
 
 	glm::mat4 M;
+	glm::mat4 translation;
+	glm::mat4 rotation;
+	glm::mat4 scale;
 	std::unordered_map<unsigned int, Transform*> children;
 	std::unordered_set<unsigned int> model_ids;
 
 	Transform();
-	Transform(glm::mat4 C);
+	Transform(glm::mat4 M);
+	Transform(glm::mat4 translation, glm::mat4 rotation, glm::mat4 scale);
 
 	void addChild(const unsigned int id, Transform* child);
 	void removeChild(unsigned int id);
 
 	void draw(Shader * shader, const std::vector<ModelData> &models, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx);
+	void update();
 };
 
 #endif

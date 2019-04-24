@@ -20,8 +20,8 @@ public:
 	Transform * playerRoot;
 	Model * model;
 	glm::vec3 destination = glm::vec3(0.0f);
-	glm::vec3 currentPos;
-	glm::vec3 currentOri;
+	glm::vec3 currentPos = glm::vec3(0.0f);
+	glm::vec3 currentOri = glm::vec3(0.0f, 0.0f, 0.0f);
 	float speed = 0.2f;
 };
 
