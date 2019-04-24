@@ -7,7 +7,7 @@
 
 typedef glm::vec3 Point;
 
-typedef enum {INIT_CONN, MOVEMENT, SKILL, ATTACK} InputType;
+typedef enum {INIT_CONN, MOVEMENT, SKILL, ATTACK, GAME_STATE} InputType;
 
 /*
 	Packet send from the client to the server.
@@ -30,7 +30,8 @@ typedef struct {
 */
 typedef struct {
 	InputType inputType;
-	int temp;
+	int game_state;
+
 } ServerInputPacket;
 
 

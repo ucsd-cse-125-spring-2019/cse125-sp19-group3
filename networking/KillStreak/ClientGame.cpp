@@ -152,7 +152,14 @@ int ClientGame::join_game()
 	// TODO:: CLIENT LOBBY !!!
 	log->info("Received servers init package, waiting in lobby!!");
 	while (1);
-
+  //attempt to receive start signal?
+  packet = network->receivePacket();
+  if (packet.inputType == GAME_STATE && packet.game_state==1){
+    //game starts
+  }else {
+    //error because it shouldn't be reiceving any other packets?
+  }
+  
 
 	return 1;
 }
