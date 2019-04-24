@@ -73,6 +73,13 @@ void client_session(void *arg)
 	int client_id = client_arg->id;
 	ServerNetwork * network = client_arg->network;
 
+	/*log->info("attempt lock_client");
+	client_arg->lock->lock();
+	log->info("attempt lock_client");
+	Sleep(10000);
+	client_arg->lock->unlock();
+	log->info("unlock_client");*/
+
 	log->info("CT <{}>: Launching new client thread", client_id);
 
 	// TODO: Add more data to go into this struct!
@@ -142,12 +149,15 @@ void ServerGame::game_match()
 		client_data* client_arg = (client_data *) malloc (sizeof(client_data));
 		ClientThreadQueue* client_q = new ClientThreadQueue();		// queue for client's packets
 		clientThreadQueues.push_back(client_q);						// add to servers vector of all client queues
+		mutex* lock = new mutex();
+		locks.push_back(lock);
 
 		if (client_arg)
 		{
 			client_arg->id = client_id - 1;				// current clients ID
 			client_arg->q_ptr = client_q;				// pointer to clients packet queue
 			client_arg->network = network;				// pointer to ServerNetwork
+			client_arg->lock = lock;
 			_beginthread(client_session, 0, (void*) client_arg);
 		}
 		else	// error allocating client data; decrement client_id & close socket
@@ -156,14 +166,19 @@ void ServerGame::game_match()
 			network->closeClientSocket(--client_id);	
 		}
 	}
-
+	/*log->info("server accquiring lock");
+	locks[0]->lock();
+	log->info("server accquired lock");
+	Sleep(1000);
+	locks[0]->unlock();
+	log->info("server release lock");*/
 	// all clients connected, wait LOBBY_START_TIME (ms) before starting game
 	log->info("MT: Game starting in {} seconds...", LOBBY_START_TIME/1000);
 	Sleep(LOBBY_START_TIME);			
 	log->info("MT: Game started!");
 
 	// TODO: Wake all sleeping client threads once busy waiting is removed.
-	game_start = 1;			
+	game_start = 1;	
 }
 
 

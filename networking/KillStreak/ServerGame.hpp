@@ -8,6 +8,7 @@
 #include "CoreTypes.hpp"
 #include <string>
 #include <vector>
+#include <mutex>
 
 using namespace std;
 
@@ -19,6 +20,7 @@ typedef struct {
 	unsigned int id;				// client ID
 	ClientThreadQueue *q_ptr;		// queue pointer
 	ServerNetwork *network;			// Server network pointer
+	mutex* lock;
 } client_data;
 
 class ServerGame {
@@ -40,6 +42,7 @@ protected:
 	ServerNetwork* network;
 	double tick_rate;
 	vector<ClientThreadQueue*> clientThreadQueues;
+	vector<mutex*> locks;
 };
 
 #endif // SURFSTORESERVER_HPP
