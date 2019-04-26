@@ -22,6 +22,8 @@
 
 using namespace std;
 
+#define NUM_BONES_PER_VERTEX 4
+
 struct Vertex {
 	// position
 	glm::vec3 Position;
@@ -29,16 +31,21 @@ struct Vertex {
 	glm::vec3 Normal;
 	// texCoords
 	glm::vec2 TexCoords;
-	// tangent
-	glm::vec3 Tangent;
-	// bitangent
-	glm::vec3 Bitangent;
+
+	float IDs[NUM_BONES_PER_VERTEX];
+
+	float Weights[NUM_BONES_PER_VERTEX];
 };
 
 struct Texture {
 	unsigned int id;
 	string type;
 	string path;
+};
+
+struct BoneInfo {
+	glm::mat4 BoneOffset;
+	glm::mat4 FinalTransformation;
 };
 
 class Mesh {
@@ -133,12 +140,12 @@ private:
 		// vertex texture coords
 		glEnableVertexAttribArray(2);
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
-		// vertex tangent
+		// bone indices
 		glEnableVertexAttribArray(3);
-		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Tangent));
-		// vertex bitangent
+		glVertexAttribPointer(3, NUM_BONES_PER_VERTEX, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, IDs));
+		// weights
 		glEnableVertexAttribArray(4);
-		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Bitangent));
+		glVertexAttribPointer(4, NUM_BONES_PER_VERTEX, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Weights));
 
 		glBindVertexArray(0);
 	}

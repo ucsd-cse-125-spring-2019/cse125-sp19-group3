@@ -111,8 +111,9 @@ void Window::idle_callback()
 {
 	// Call the update function the cube
 	//cube->update();
+	time += 1.0 / 60;
 	camera->Update();
-	player->update();
+	player->update(time);
 }
 
 void Window::display_callback(GLFWwindow* window)
@@ -124,7 +125,7 @@ void Window::display_callback(GLFWwindow* window)
 	shader->use();
 	
 	// Render the cube
-	cube->draw(shader, glm::mat4(1.0f), camera->GetViewProjectMtx());
+	//cube->draw(shader, glm::mat4(1.0f), camera->GetViewProjectMtx());
 
 	// Now send these values to the shader program
 	root->draw(shader, models, glm::mat4(1.0f), camera->GetViewProjectMtx());

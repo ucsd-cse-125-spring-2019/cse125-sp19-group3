@@ -31,7 +31,8 @@ void Player::setDestination(glm::vec3 newDest) {
 	destination = newDest;
 }
 
-void Player::update() {
+void Player::update(double currTime) {
+	model->BoneTransform(string("Root|Idle"), currTime);
 	move();
 	playerRoot->update();
 }

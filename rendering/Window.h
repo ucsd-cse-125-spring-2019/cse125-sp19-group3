@@ -50,6 +50,8 @@ private:
 	Transform * player_t;
 
 	std::vector<ModelData> models;
+
+	double time = 0.0;
 };
 
 #endif
