@@ -5,7 +5,7 @@
 
 #include "../../rendering/main.h"
 
-GLFWwindow* window;
+GLFWwindow * window = 0;
 
 ClientGame::ClientGame(INIReader& t_config) : config(t_config) {
 	auto log = logger();
@@ -46,9 +46,11 @@ void setup_callbacks()
 	// Set the error callback
 	glfwSetErrorCallback(error_callback);
 	// Set the key callback
-	glfwSetKeyCallback(window, Window::key_callback);
+	glfwSetKeyCallback(window, Window_static::key_callback);
+	// Set the mouse callback
+	glfwSetMouseButtonCallback(window, Window_static::mouse_button_callback);
 	// Set the window resize callback
-	glfwSetFramebufferSizeCallback(window, Window::resize_callback);
+	glfwSetFramebufferSizeCallback(window, Window_static::resize_callback);
 }
 
 
@@ -84,7 +86,7 @@ void setup_opengl_settings()
 	// Disable backface culling to render both sides of polygons
 	glDisable(GL_CULL_FACE);
 	// Set clear color
-	glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+	glClearColor(0.05f, 0.35f, 0.05f, 1.0f);
 }
 
 
@@ -197,33 +199,31 @@ void ClientGame::run() {
 	}
 
 	log->info("Client: Bytes sent: {}", iResult);
-	while (1) {};
-	*/
 
 
 	// GRAPHICS CODE *******************************************************
 
 	// Create the GLFW window
-	window = Window::create_window(640, 480);
+	window = Window_static::create_window(640, 480);
+	// Setup OpenGL settings, including lighting, materials, etc.
+	setup_opengl_settings();
 	// Print OpenGL and GLSL versions
 	print_versions();
 	// Setup callbacks
 	setup_callbacks();
-	// Setup OpenGL settings, including lighting, materials, etc.
-	setup_opengl_settings();
 	// Initialize objects/pointers for rendering
-	Window::initialize_objects();
+	Window_static::initialize_objects();
 
 	// Loop while GLFW window should stay open
 	while (!glfwWindowShouldClose(window))
 	{
 		// Main render display callback. Rendering of objects is done here.
-		Window::display_callback(window);
+		Window_static::display_callback(window);
 		// Idle callback. Updating objects, etc. can be done here.
-		Window::idle_callback();
+		Window_static::idle_callback();
 	}
 
-	Window::clean_up();
+	Window_static::clean_up();
 	// Destroy the window
 	glfwDestroyWindow(window);
 	// Terminate GLFW

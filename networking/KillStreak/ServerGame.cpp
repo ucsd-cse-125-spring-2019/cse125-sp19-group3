@@ -178,7 +178,6 @@ void ServerGame::game_match()
 
 	}
 
-
 	/*
 	1) send startgame packet to all clients
 	2) start timer on server

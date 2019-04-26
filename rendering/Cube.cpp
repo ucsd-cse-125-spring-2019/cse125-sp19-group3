@@ -67,18 +67,13 @@ Cube::~Cube()
 	glDeleteBuffers(1, &EBO);
 }
 
-void Cube::draw(GLuint shaderProgram)
+void Cube::draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx)
 { 
-	// Calculate the combination of the model and view (camera inverse) matrices
-	glm::mat4 MVP = Window::P * Window::V * toWorld;
-	// We need to calcullate this because modern OpenGL does not keep track of any matrix other than the viewport (D)
-	// Consequently, we need to forward the projection, view, and model matrices to the shader programs
-	// Get the location of the uniform variables "projection" and "modelview"
-	uModel = glGetUniformLocation(shaderProgram, "model");
-	uModelViewProjection = glGetUniformLocation(shaderProgram, "modelViewProjection");
-	// Now send these values to the shader program
-	glUniformMatrix4fv(uModel, 1, GL_FALSE, &toWorld[0][0]);
-	glUniformMatrix4fv(uModelViewProjection, 1, GL_FALSE, &MVP[0][0]);
+	glm::mat4 modelMtx = parentMtx * toWorld;
+	shader->use();
+	shader->setMat4("ModelMtx", modelMtx);
+	shader->setMat4("ModelViewProjMtx", viewProjMtx * modelMtx);
+	
 	// Now draw the cube. We simply need to bind the VAO associated with it.
 	glBindVertexArray(VAO);
 	// Tell OpenGL to draw with triangles, using 36 indices, the type of the indices, and the offset to start from

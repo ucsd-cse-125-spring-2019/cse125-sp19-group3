@@ -3,6 +3,7 @@
 in vec3 fragPosition;
 in vec3 fragNormal;
 in vec2 TexCoord;
+in vec3 boneIDs;
 
 uniform int UseTex = 0;
 uniform sampler2D Texture;
@@ -23,8 +24,10 @@ void main() {
 		vec3 reflectance = irradiance * DiffuseColor;
 
 		// Gamma correction
-		finalColor = vec4(sqrt(reflectance), 1);
-		//finalColor = vec4(normalize(2.0f * fragNormal), 1);
+		//finalColor = vec4(sqrt(reflectance), 1);
+		finalColor = vec4(normalize(2.0f * fragNormal), 1);
+		//finalColor = vec4(sqrt(pow(boneIDs.x, 2) + pow(boneIDs.y, 2) + pow(boneIDs.z, 2)), 0, 0, 1);
+		//finalColor = vec4(normalize(boneIDs), 1);
 	}
 	else {
 		finalColor = texture(Texture, TexCoord);

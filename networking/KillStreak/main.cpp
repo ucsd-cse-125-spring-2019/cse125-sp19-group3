@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
 	}
 
 	// Multi-threaded approach ************************************************
-/*
+
 	// create new thread and run server
 	log->info("Launching Killstreak server");
 	server = new ServerGame(config);
@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
 
 	// ************************************************************************
 
-*/
+
 
 
 
