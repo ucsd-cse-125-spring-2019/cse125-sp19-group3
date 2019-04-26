@@ -65,6 +65,9 @@
     </ClInclude>
     <ClInclude Include="..\ServerScene.h">
       <Filter>Header Files</Filter>
+     </ClInclude>
+    <ClInclude Include="..\..\networking\KillStreak\CoreTypes.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -121,12 +124,12 @@
     <None Include="..\shader.vert">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="packages.config" />
     <None Include="..\..\networking\KillStreak\config.ini">
       <Filter>Source Files</Filter>
     </None>
     <None Include="..\..\networking\KillStreak\client_config.ini">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

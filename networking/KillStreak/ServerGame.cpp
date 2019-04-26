@@ -1,12 +1,22 @@
 #include "sysexits.h"
-#include <string>
+#include "logger.hpp"
 #include "ServerGame.hpp"
 #include "ServerNetwork.hpp"
-#include "logger.hpp"
 
-#define GAME_SIZE	1	// total players required to start game
+#include <string>
+#include <process.h>				// threads
+#include <windows.h>				// sleep
+
+#define GAME_SIZE			2		// total players required to start game
+#define LOBBY_START_TIME	2000	// wait this long (ms) after all players connect
+
+static int game_start = 0;			// game ready to begin?
 
 
+/*
+	Parse data from config file for server. Then initialize 
+	server network (create socket).
+*/
 ServerGame::ServerGame(INIReader& t_config) : config(t_config) {
 	auto log = logger();
 
@@ -16,6 +26,7 @@ ServerGame::ServerGame(INIReader& t_config) : config(t_config) {
 		log->error("Host line not found in config file");
 		exit(EX_CONFIG);
 	}
+
 	size_t idx = servconf.find(":");		// delimiter index
 	if (idx == string::npos) {
 		log->error("Config line {} is invalid", servconf);
@@ -38,79 +49,199 @@ ServerGame::ServerGame(INIReader& t_config) : config(t_config) {
 	}
 
 	network = new ServerNetwork(host, port);
+	scheduledEvent = ScheduledEvent(END_KILLPHASE, 10000000); // default huge value
+}
+
+
+/*
+	Launch thread for new client. Waits until all players connected and 
+	game starts. Will then consistently recv() data from client one packet size 
+	at a time into a buffer. Once full packet is read, its deserialzied into a 
+	ClientInputPacket struct and added to the client threads queue. Packets sent
+	to the client threads queue are ready to be processed by the server.
+
+	client_data passed to thread (arg), contains client ID & pointer to client
+	thread queue & server network.
+
+	Note: log->info( ... ) 'CT {}:' stands for 'Client Thread <ID>:' 
+*/
+void client_session(void *arg)
+{
+	auto log = logger();
+
+	// get client data
+	client_data *client_arg = (client_data*) arg;
+	int client_id = client_arg->id;
+	ServerNetwork * network = client_arg->network;
+
+	/* Testing locks on multiple clients
+	log->debug("CT <{}>: Grabbing lock!", client_id);
+	client_arg->q_lock->lock();
+	log->debug("CT <{}>: Grabbed lock, sleeping 10 secods!", client_id);
+	Sleep(5000);
+	client_arg->q_lock->unlock();
+	log->debug("CT <{}>: Released lock!", client_id);
+	*/
+
+
+	log->info("CT <{}>: Launching new client thread", client_id);
+
+	// TODO: Add more data to go into this struct!
+	// send pre-game data to client ( meta data and lobby info )
+	ServerInputPacket welcome_packet = network->createServerPacket(INIT_CONN, 0);
+	int bytes_sent = network->sendToClient(client_id, welcome_packet);
+
+	if (!bytes_sent) {	// error? 
+		log->error("CT <{}>: Sending init packet to client failed, closing connection", client_id);
+		network->closeClientSocket(client_id);
+		return;
+	}
+
+	// game hasn't started yet; sleep thread until ready
+	if (!game_start) log->info("CT <{}>: Waiting for game to start", client_arg->id);
+	while (!game_start) {};	 
+
+
+	// GAME STARTING ****************************************************
+
+
+	// receive from client until end of game sending deserialized packets to queue
+	log->info("CT <{}>: Game started -> Receiving from client!", client_arg->id);
+
+	// get client socket; pointer to clients queue & pointer to network
+	ClientThreadQueue *input_queue = client_arg->q_ptr;
+
+	int keep_conn = 1;					// keep connection alive
+	do {
+
+		// get packet from client
+		ClientInputPacket* packet = network->receivePacket(client_id);
+		if (!packet) {
+			keep_conn = 0;
+			break;
+		}
+
+		input_queue->push(*packet);		// push packet to queue
+
+	} while (keep_conn);				// connection-closed/error? 
+
+
+	// close socket & free client_data 
+	client_arg->network->closeClientSocket(client_arg->id);
+	free(client_arg);
+}
+
+
+/*
+	Handles the game lobby. Accepts incoming connections from clients until 
+	enough players are found for one full game. Will wait LOBBY_START_TIME (ms)
+	after all players connected to begin match by setting 'game_start' to 1.
+*/
+void ServerGame::game_match()
+{
+	auto log = logger();
+
+	// Accept incoming connections until GAME_SIZE met (LOBBY)
+	unsigned int client_id = 0;		
+	while (client_id < GAME_SIZE)
+	{
+
+		log->info("MT: Waiting for {} player(s)...", GAME_SIZE - client_id);
+
+		// accpet inc. connection (blocking)
+		bool ret_accept = network->acceptNewClient(client_id);		
+		if (!ret_accept) continue; // failed to make conn?
+
+		// allocate data for new client thread & run thread
+		client_data* client_arg = (client_data *) malloc (sizeof(client_data));
+		ClientThreadQueue* client_q = new ClientThreadQueue();		// queue for client's packets
+		mutex* client_lock = new mutex();							// lock for clients queue
+
+		if (client_arg)
+		{
+			client_arg->id = client_id - 1;				// current clients ID
+			client_arg->q_ptr = client_q;				// pointer to clients packet queue
+			client_arg->network = network;				// pointer to ServerNetwork
+			client_arg->q_lock = client_lock;				// pointer to queue lock
+
+			client_data_list.push_back(client_arg);		// add pointer to this clients data
+			_beginthread(client_session, 0, (void*) client_arg);
+		}
+		else	// error allocating client data; decrement client_id, close socket, deallocate
+		{
+			log->error("MT: Error allocating client metadata");
+			network->closeClientSocket(--client_id);	
+			free(client_q);
+			free(client_lock);
+			free(client_arg);
+		}
+
+	}
+
+	/*
+	1) send startgame packet to all clients
+	2) start timer on server
+	3) wait until you receive all finish start game init packets from clients && timer is up
+	4) schedule end of kill phase
+	*/
+
+	ScheduledEvent initKillPhase(END_KILLPHASE, 60); // play with values in config file
+
+
+
+	// all clients connected, wait LOBBY_START_TIME (ms) before starting game
+	log->info("MT: Game starting in {} seconds...", LOBBY_START_TIME/1000);
+	Sleep(LOBBY_START_TIME);					// TODO: Uncomment me
+	log->info("MT: Game started!");
+
+
+
+	// TODO: Wake all sleeping client threads once busy waiting is removed.
+	game_start = 1;	
 }
 
 
 /* 
-	Main server loop run once the network is setup. Server will block on accept until 
-	enough players have joined then begin the main game loop. 
+	Main server loop that runs after the network is setup. 
+	Server will block on game_match until enough players have joined,
+	then it'll begin the main game loop. 
+	A new thread is created for each incoming client.
+
+	Note: log->info( ... ) 'MT' stands for 'Main Thread'
 */
 void ServerGame::launch() {
 	auto log = logger();
-	log->info("Game server live!");
 
-	/* 
-		NOTE: Currently only waiting for 1 connection, then testing if we 
-		recv() data sent by client.
-	*/
+	// launch lobby; accept players until game full
+	log->info("MT: Game server live - Launching lobby!");
+	game_match();	
 
+	// GAME START *************************************************
 
-	// Accept incoming connections until GAME_SIZE met
-	unsigned int client_id = 0;		// TODO: Make this static in this script?	
-	while (client_id < GAME_SIZE)
-	{
-		log->info("Waiting for {} player(s)...", GAME_SIZE - client_id);
-		network->acceptNewClient(client_id);
+	/* Testing locks on multiple clients
+	client_data* client;
+	for (int i = 0; i < client_data_list.size(); i++) {
+		client = client_data_list[i];
+		log->debug("MT <{}>: Getting lock!", client->id);
+		client->q_lock->lock();
+		log->debug("MT <{}>: Acquried lock, sleeping 10 seconds!", client->id);
+		Sleep(2000);
+		client->q_lock->unlock();
+		log->debug("MT <{}>: Released lock!", client->id);
 	}
-
-
-	// TESTING: Is server receiving clients data?
-	int iResult;
-	SOCKET client_sock = network->sessions.find(0)->second;	// get client socket 
-	char recvbuf[DEFAULT_BUFLEN];
-	int recvbuflen = DEFAULT_BUFLEN;
-	do {
-
-		iResult = recv(client_sock, recvbuf, recvbuflen, 0);
-		if (iResult > 0)
-		{
-			log->info("Bytes received: {}", iResult);
-		}
-		else if (iResult == 0)
-		{
-			log->info("Connection closed");
-			printf("Connection closed\n");
-		}
-		else
-		{
-			log->info("recv failed: {}", WSAGetLastError());
-		}
-
-	} while (iResult > 0);
-
-
-	//while (1) {}; // TODO: REMOVE ME!!
-
-
-	/* TODO: Stop listening to socket once all connections made? 
-		 --> Or we could keep listening, clients would queue up and if one drop sout 
-		     we can replace them with the next one in the queue
 	*/
 
-
-	log->info("All players connected, game starting!");
-
-
-	/* TODO: Send pre-game data to all clients? 
-		--> Or send when connection is accepted
-		--> Then once all players connected we can immedietly start? 
+	/* TODO: Once game_match() returns all the players have been confirmed 
+	and the lobby has been exited. The game is about to begin!
 	*/
-
 
 	double ns = 1000000000.0 / tick_rate;
 	double delta = 0;
 	bool running = true; // not sure if needed;
 	auto lastTime = Clock::now();
+	
+	// isKillPhase = true;
+
 
 	// GAME LOOP
 	while (running) {
@@ -121,20 +252,64 @@ void ServerGame::launch() {
 		lastTime = now;
 
 		while (delta >= 1) {
-			//update();
+			// put kill phase vs prepare phase here?
 			delta--;
+			/*
+
+			decrement alarm;
+			if time is <= 0:
+				initNewPhase(isKillPhase);
+				isKillPhase = !isKillPhase;
+
+			if (isKillPhase) {
+				updateKillPhase();
+			} else {
+				updatePreparePhase();
+			}
+
+			*/
+			
+			
+			
+			update();
 		}
 	}
 }
 
 
+/*
+	Runs on every server tick. Empties the master queue, updates the game state, and 
+	sends updated state back to all clients.
+*/
 void ServerGame::update() {
 	auto log = logger();
-	log->info("Game server update");
-	// TODO: Will server iterate over all clients and recv() updates? 
-	// --> update game state?
-	// --> send() to all clients?
+	log->info("MT: Game server update...");
+
+	/*
+	
+	1) Drain all packets from all client inputs at this point (acquire lock), squash if necessary
+
+	2) Apply input to change game state
+
+	3) Use updated game state (movement, fired skill, etc.) to change server SceneGraph slightly
+
+	4) Hit detection on all objects
+		a) For each player, put in quant tree to see if hit skill / environment
+		b) For each skill, put in quant tree to see if hit environment
+	
+	5) Do any calculations necessary for deaths (update leaderboard, update gold rewarded, update bonuses, etc)
+
+	6) Serialize server SceneGraph, send leaderboard / gold/ time remaining in round / player state to all clients 
+	*/
+
+	// TODO: Get one packet from each client queue. Maintain round robin order switching order 
+	// of getting packets.
+
+	// TODO: BE SURE TO FREE PACKETS AFTER PROCESSING THEM, OTEHRWISE THE PACKETS WILL EVENTUALLY
+	// FILL MEMORY!
 }
+
+
 
 
 

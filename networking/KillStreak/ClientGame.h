@@ -3,6 +3,7 @@
 #include "ClientNetwork.hpp"
 #include "INIReader.h"
 #include "Logger.hpp"
+#include "CoreTypes.hpp"
 
 class ClientGame {
 public:
@@ -10,8 +11,9 @@ public:
 	~ClientGame(void);
 
 	ClientNetwork * network;
-	// sendStuffToServer(input)????
+
 	void run();
+	int join_game();
 
 protected:
 	INIReader & config;

@@ -3,9 +3,10 @@
 #include <winsock2.h>
 #include <Windows.h>
 #include "NetworkServices.hpp"
+#include "CoreTypes.hpp"
 #include <ws2tcpip.h>
 #include <map>
-// #include "NetworkData.h"
+
 using namespace std;
 #pragma comment (lib, "Ws2_32.lib")
 
@@ -19,8 +20,9 @@ public:
 
 	// send data to all clients
 	void broadcastSend(char * packets, int totalSize);
-	// send data to one client
-	void targetedSend(unsigned int client_id, char * packets, int totalSize);
+
+	// serialize data & send to one client
+	int sendToClient(unsigned int client_id, ServerInputPacket packet);
 
 	// receive incoming data
 	int receiveData(unsigned int client_id, char * recvbuf);
@@ -28,11 +30,23 @@ public:
 	// accept new connections
 	bool acceptNewClient(unsigned int & id);
 
+	// close socket associated with client
+	bool closeClientSocket(unsigned int id);
+
+	// create packet for server to send to client
+	ServerInputPacket createServerPacket(InputType type, int temp);
+
+	// receive incoming data and deserialize into ClientInputPacket
+	ClientInputPacket* receivePacket(unsigned int client_id);
+
+	// deserialize client packet  
+	ClientInputPacket* deserializeCP(char* temp_buff);
+
 	// Socket to listen for new connections
-	SOCKET ListenSocket;
+	SOCKET listenSocket;
 
 	// Socket to give to the clients
-	SOCKET ClientSocket;
+	SOCKET clientSocket;
 
 	// for error checking return values
 	int iResult;
