@@ -141,6 +141,53 @@ private:
 
 	}
 
+
+	void normalize(vector<Vertex>& vertices) {
+		float min_x, max_x, min_y, max_y, min_z, max_z;
+		min_x = 100000.0f;
+		max_x = -100000.0f;
+		min_y = 100000.0f;
+		max_y = -100000.0f;
+		min_z = 100000.0f;
+		max_z = -100000.0f;
+		for (int i = 0; i < vertices.size(); i++) {
+			if (min_x > vertices[i].Position.x)
+				min_x = vertices[i].Position.x;
+			if (max_x < vertices[i].Position.x)
+				max_x = vertices[i].Position.x;
+
+			if (min_y > vertices[i].Position.y)
+				min_y = vertices[i].Position.y;
+			if (max_y < vertices[i].Position.y)
+				max_y = vertices[i].Position.y;
+
+			if (min_z > vertices[i].Position.z)
+				min_z = vertices[i].Position.z;
+			if (max_z < vertices[i].Position.z)
+				max_z = vertices[i].Position.z;
+		}
+		float mid_x = (min_x + max_x) / 2;
+		float mid_y = (min_y + max_y) / 2;
+		float mid_z = (min_z + max_z) / 2;
+
+		float range_x = max_x - min_x;
+		float max = range_x;
+		float range_y = max_y - min_y;
+		float range_z = max_z - min_z;
+		if (max < range_y)
+			max = range_y;
+		if (max < range_z)
+			max = range_z;
+
+		printf("The model is centered at : %f %f %f \n", mid_x, mid_y, mid_z);
+		for (int i = 0; i < vertices.size(); i++) {
+			vertices[i].Position.x = (vertices[i].Position.x - mid_x);// *2 / max;
+			vertices[i].Position.y = (vertices[i].Position.y - mid_y);// *2 / max;
+			vertices[i].Position.z = (vertices[i].Position.z - mid_z);// *2 / max;
+		}
+	}
+
+
 	Mesh processMesh(aiMesh *mesh, const aiScene *scene)
 	{
 		// data to fill
@@ -177,6 +224,8 @@ private:
 				vertex.TexCoords = glm::vec2(0.0f, 0.0f);
 			vertices.push_back(vertex);
 		}
+
+		normalize(vertices);
 		// now wak through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
 		for (unsigned int i = 0; i < mesh->mNumFaces; i++)
 		{
