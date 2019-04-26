@@ -31,6 +31,7 @@ typedef struct {
 typedef struct {
 	InputType inputType;
 	int temp;
+	// TODO: Add data!!! 
 } ServerInputPacket;
 
 

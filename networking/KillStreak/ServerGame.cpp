@@ -7,7 +7,7 @@
 #include <process.h>				// threads
 #include <windows.h>				// sleep
 
-#define GAME_SIZE			1		// total players required to start game
+#define GAME_SIZE			2		// total players required to start game
 #define LOBBY_START_TIME	2000	// wait this long (ms) after all players connect
 
 static int game_start = 0;			// game ready to begin?
@@ -73,12 +73,15 @@ void client_session(void *arg)
 	int client_id = client_arg->id;
 	ServerNetwork * network = client_arg->network;
 
-	/*log->info("attempt lock_client");
-	client_arg->lock->lock();
-	log->info("attempt lock_client");
-	Sleep(10000);
-	client_arg->lock->unlock();
-	log->info("unlock_client");*/
+	/* Testing locks on multiple clients
+	log->debug("CT <{}>: Grabbing lock!", client_id);
+	client_arg->q_lock->lock();
+	log->debug("CT <{}>: Grabbed lock, sleeping 10 secods!", client_id);
+	Sleep(5000);
+	client_arg->q_lock->unlock();
+	log->debug("CT <{}>: Released lock!", client_id);
+	*/
+
 
 	log->info("CT <{}>: Launching new client thread", client_id);
 
@@ -141,40 +144,42 @@ void ServerGame::game_match()
 	unsigned int client_id = 0;		
 	while (client_id < GAME_SIZE)
 	{
+
 		log->info("MT: Waiting for {} player(s)...", GAME_SIZE - client_id);
-		bool ret_accept = network->acceptNewClient(client_id);		// blocking
-		if (!ret_accept) continue;									// failed to my conn? 
+
+		// accpet inc. connection (blocking)
+		bool ret_accept = network->acceptNewClient(client_id);		
+		if (!ret_accept) continue; // failed to make conn?
 
 		// allocate data for new client thread & run thread
 		client_data* client_arg = (client_data *) malloc (sizeof(client_data));
 		ClientThreadQueue* client_q = new ClientThreadQueue();		// queue for client's packets
-		clientThreadQueues.push_back(client_q);						// add to servers vector of all client queues
-		mutex* lock = new mutex();
-		locks.push_back(lock);
+		mutex* client_lock = new mutex();							// lock for clients queue
 
 		if (client_arg)
 		{
 			client_arg->id = client_id - 1;				// current clients ID
 			client_arg->q_ptr = client_q;				// pointer to clients packet queue
 			client_arg->network = network;				// pointer to ServerNetwork
-			client_arg->lock = lock;
+			client_arg->q_lock = client_lock;				// pointer to queue lock
+
+			client_data_list.push_back(client_arg);		// add pointer to this clients data
 			_beginthread(client_session, 0, (void*) client_arg);
 		}
-		else	// error allocating client data; decrement client_id & close socket
+		else	// error allocating client data; decrement client_id, close socket, deallocate
 		{
 			log->error("MT: Error allocating client metadata");
 			network->closeClientSocket(--client_id);	
+			free(client_q);
+			free(client_lock);
+			free(client_arg);
 		}
+
 	}
-	/*log->info("server accquiring lock");
-	locks[0]->lock();
-	log->info("server accquired lock");
-	Sleep(1000);
-	locks[0]->unlock();
-	log->info("server release lock");*/
+
 	// all clients connected, wait LOBBY_START_TIME (ms) before starting game
 	log->info("MT: Game starting in {} seconds...", LOBBY_START_TIME/1000);
-	Sleep(LOBBY_START_TIME);			
+	Sleep(LOBBY_START_TIME);					// TODO: Uncomment me
 	log->info("MT: Game started!");
 
 	// TODO: Wake all sleeping client threads once busy waiting is removed.
@@ -198,6 +203,19 @@ void ServerGame::launch() {
 	game_match();	
 
 	// GAME START *************************************************
+
+	/* Testing locks on multiple clients
+	client_data* client;
+	for (int i = 0; i < client_data_list.size(); i++) {
+		client = client_data_list[i];
+		log->debug("MT <{}>: Getting lock!", client->id);
+		client->q_lock->lock();
+		log->debug("MT <{}>: Acquried lock, sleeping 10 seconds!", client->id);
+		Sleep(2000);
+		client->q_lock->unlock();
+		log->debug("MT <{}>: Released lock!", client->id);
+	}
+	*/
 
 	/* TODO: Once game_match() returns all the players have been confirmed 
 	and the lobby has been exited. The game is about to begin!

@@ -20,7 +20,7 @@ typedef struct {
 	unsigned int id;				// client ID
 	ClientThreadQueue *q_ptr;		// queue pointer
 	ServerNetwork *network;			// Server network pointer
-	mutex* lock;
+	mutex* q_lock;					// lock for client queue
 } client_data;
 
 class ServerGame {
@@ -41,8 +41,7 @@ protected:
 	PCSTR port;
 	ServerNetwork* network;
 	double tick_rate;
-	vector<ClientThreadQueue*> clientThreadQueues;
-	vector<mutex*> locks;
+	vector<client_data*> client_data_list;	// list of pointers to all client meta-data
 };
 
 #endif // SURFSTORESERVER_HPP
