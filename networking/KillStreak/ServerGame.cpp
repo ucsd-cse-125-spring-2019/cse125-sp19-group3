@@ -177,10 +177,24 @@ void ServerGame::game_match()
 
 	}
 
+
+	/*
+	1) send startgame packet to all clients
+	2) start timer on server
+	3) wait until you receive all finish start game init packets from clients && timer is up
+	4) schedule end of kill phase
+	*/
+
+	ScheduledEvent initKillPhase(END_KILLPHASE, 60); // play with values in config file
+
+
+
 	// all clients connected, wait LOBBY_START_TIME (ms) before starting game
 	log->info("MT: Game starting in {} seconds...", LOBBY_START_TIME/1000);
 	Sleep(LOBBY_START_TIME);					// TODO: Uncomment me
 	log->info("MT: Game started!");
+
+
 
 	// TODO: Wake all sleeping client threads once busy waiting is removed.
 	game_start = 1;	
@@ -244,7 +258,7 @@ void ServerGame::launch() {
 
 			decrement alarm;
 			if time is <= 0:
-				fire update for that event
+				initNewPhase(isKillPhase);
 				isKillPhase = !isKillPhase;
 
 			if (isKillPhase) {
@@ -272,28 +286,20 @@ void ServerGame::update() {
 	log->info("MT: Game server update...");
 
 	/*
-	1) Check to see if any scheduledEvents need to be processed, and remove any if necessary
 	
-	2) Drain all packets from all client inputs at this point (acquire lock), squash if necessary
+	1) Drain all packets from all client inputs at this point (acquire lock), squash if necessary
 
-	3) Apply input to change game state
+	2) Apply input to change game state
 
-	4) Use updated game state (movement, fired skill, etc.) to change server SceneGraph slightly
+	3) Use updated game state (movement, fired skill, etc.) to change server SceneGraph slightly
 
-	5) Hit detection on all objects
+	4) Hit detection on all objects
 		a) For each player, put in quant tree to see if hit skill / environment
 		b) For each skill, put in quant tree to see if hit environment
 	
-	6) Do any calculations necessary for deaths (update leaderboard, update gold rewarded, update bonuses, etc)
+	5) Do any calculations necessary for deaths (update leaderboard, update gold rewarded, update bonuses, etc)
 
-	7) Serialize server SceneGraph, send leaderboard / gold/ time remaining in round / player state to all clients
-
-	8) 
-
-	
-	
-	
-	
+	6) Serialize server SceneGraph, send leaderboard / gold/ time remaining in round / player state to all clients 
 	*/
 
 	// TODO: Get one packet from each client queue. Maintain round robin order switching order 
