@@ -226,6 +226,9 @@ void ServerGame::launch() {
 	bool running = true; // not sure if needed;
 	auto lastTime = Clock::now();
 	
+	// isKillPhase = true;
+
+
 	// GAME LOOP
 	while (running) {
 		auto now = Clock::now();
@@ -235,9 +238,26 @@ void ServerGame::launch() {
 		lastTime = now;
 
 		while (delta >= 1) {
-//			log->info("TICK");
-			//update();
+			// put kill phase vs prepare phase here?
 			delta--;
+			/*
+
+			decrement alarm;
+			if time is <= 0:
+				fire update for that event
+				isKillPhase = !isKillPhase;
+
+			if (isKillPhase) {
+				updateKillPhase();
+			} else {
+				updatePreparePhase();
+			}
+
+			*/
+			
+			
+			
+			update();
 		}
 	}
 }
@@ -250,6 +270,31 @@ void ServerGame::launch() {
 void ServerGame::update() {
 	auto log = logger();
 	log->info("MT: Game server update...");
+
+	/*
+	1) Check to see if any scheduledEvents need to be processed, and remove any if necessary
+	
+	2) Drain all packets from all client inputs at this point (acquire lock), squash if necessary
+
+	3) Apply input to change game state
+
+	4) Use updated game state (movement, fired skill, etc.) to change server SceneGraph slightly
+
+	5) Hit detection on all objects
+		a) For each player, put in quant tree to see if hit skill / environment
+		b) For each skill, put in quant tree to see if hit environment
+	
+	6) Do any calculations necessary for deaths (update leaderboard, update gold rewarded, update bonuses, etc)
+
+	7) Serialize server SceneGraph, send leaderboard / gold/ time remaining in round / player state to all clients
+
+	8) 
+
+	
+	
+	
+	
+	*/
 
 	// TODO: Get one packet from each client queue. Maintain round robin order switching order 
 	// of getting packets.

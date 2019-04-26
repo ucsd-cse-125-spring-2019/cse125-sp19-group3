@@ -40,3 +40,11 @@ typedef std::chrono::nanoseconds nanoseconds;
 typedef std::chrono::duration<double> dsec;
 
 typedef std::queue<ClientInputPacket> ClientThreadQueue;
+
+/* Server scheduling queue event */
+typedef enum {END_KILLPHASE, END_PREPAREPHASE} EventType;
+
+typedef struct {
+	EventType eventType;
+	int ticksLeft; // assume that all ticks are constant amount
+} ScheduledEvent;

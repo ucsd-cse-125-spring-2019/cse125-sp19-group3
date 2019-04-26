@@ -42,6 +42,7 @@ protected:
 	ServerNetwork* network;
 	double tick_rate;
 	vector<client_data*> client_data_list;	// list of pointers to all client meta-data
+	ScheduledEvent scheduledEventQueue;
 };
 
 #endif // SURFSTORESERVER_HPP
