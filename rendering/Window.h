@@ -37,6 +37,8 @@ public:
 	void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 	void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 	glm::vec3 viewToWorldCoordTransform(int mouse_x, int mouse_y);
+	char* deserializeSceneGraph(char* data, unsigned int size);
+	char* deserializeSceneGraph(Transform* t, char* data, unsigned int size);
 
 private:
 	const char* window_title = "CSE 125 Group 3";
@@ -50,8 +52,11 @@ private:
 	Transform * player_t;
 
 	std::vector<ModelData> models;
+	std::unordered_set<unsigned int> updated_ids;
 
 	double time = 0.0;
+
+	void removeTransform(Transform * parent, const unsigned int node_id);
 };
 
 #endif

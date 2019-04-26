@@ -32,9 +32,9 @@ struct Vertex {
 	// texCoords
 	glm::vec2 TexCoords;
 
-	float IDs[NUM_BONES_PER_VERTEX];
+	float IDs[NUM_BONES_PER_VERTEX] = { 0.0, 0.0, 0.0, 0.0 };
 
-	float Weights[NUM_BONES_PER_VERTEX];
+	float Weights[NUM_BONES_PER_VERTEX] = { 0.0, 0.0, 0.0, 0.0 };
 };
 
 struct Texture {
