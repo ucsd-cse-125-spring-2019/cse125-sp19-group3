@@ -50,5 +50,9 @@ typedef struct ScheduledEvent {
 	ScheduledEvent(EventType et, int tl) {
 		eventType = et;
 		ticksLeft = tl;
+	};
+	ScheduledEvent() {
+		eventType = END_KILLPHASE;
+		ticksLeft = 10000000000;
 	}
 } ScheduledEvent;

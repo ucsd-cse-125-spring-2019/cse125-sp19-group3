@@ -49,6 +49,7 @@ ServerGame::ServerGame(INIReader& t_config) : config(t_config) {
 	}
 
 	network = new ServerNetwork(host, port);
+	scheduledEvent = ScheduledEvent(END_KILLPHASE, 10000000); // default huge value
 }
 
 
