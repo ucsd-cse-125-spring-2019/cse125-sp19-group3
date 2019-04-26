@@ -163,14 +163,21 @@ void Window::mouse_button_callback(GLFWwindow* window, int button, int action, i
 		//getting cursor position
 		glfwGetCursorPos(window, &xpos, &ypos);
 		printf("Cursor Position at %f: %f \n", xpos, ypos);
-		glm::vec3 new_dest = viewToWorldCoordTransform(xpos, ypos);
-		player->setDestination(new_dest);
-		float angle = glm::acos(glm::dot(glm::normalize(new_dest - player->currentPos), player->currentOri));
-		printf("rotate angle = %f", angle);
-		glm::vec3 axis = glm::cross(player->currentOri, glm::normalize(new_dest - player->currentPos));
-		player->rotate(angle, axis);
 
-		//std::cout << "Cursor Position at (" << xpos << " : " << ypos << std::endl;
+		// I need to send the server a packet...
+
+		/*glm::vec3 new_dest = viewToWorldCoordTransform(xpos, ypos);
+		player->setDestination(new_dest);
+		float dotResult = glm::dot(glm::normalize(new_dest - player->currentPos), player->currentOri);
+
+		if (abs(dotResult) < 1.0) {
+			float angle = glm::acos(dotResult);
+			printf("rotate angle = %f", angle);
+			glm::vec3 axis = glm::cross(player->currentOri, glm::normalize(new_dest - player->currentPos));
+			if (glm::length(axis) != 0) {
+				player->rotate(angle, axis);
+			}
+		}*/
 	}
 }
 
@@ -204,3 +211,58 @@ glm::vec3 Window::viewToWorldCoordTransform(int mouse_x, int mouse_y) {
 
 	return realPos;
 }
+
+char * Window::deserializeSceneGraph(char * data, unsigned int size) {
+	char * retval = deserializeSceneGraph(root, data, size);
+	return retval;
+}
+
+char * Window::deserializeSceneGraph(Transform * t, char * data, unsigned int size) {
+	memcpy(&t->M[0][0], data, sizeof(glm::mat4));
+	data += sizeof(glm::mat4);
+	size -= sizeof(glm::mat4);
+
+	t->model_ids.clear();
+
+	while (char c = *data++) {
+		size -= sizeof(char);
+		if (c == 'T') {
+			unsigned int node_id;
+			memcpy(&node_id, data, sizeof(unsigned int));
+			data += sizeof(unsigned int);
+			size -= sizeof(unsigned int);
+			if (t->children.find(node_id) == t->children.end())
+				t->addChild(node_id, new Transform());
+			updated_ids.insert(node_id);
+			data = deserializeSceneGraph(t->children[node_id], data, size);
+		}
+		else if (c == 'M') {
+			unsigned int model_id;
+			memcpy(&model_id, data, sizeof(unsigned int));
+			data += sizeof(unsigned int);
+			t->model_ids.insert(model_id);
+		}
+	}
+
+	std::vector<unsigned int> to_remove;
+	for (auto child : t->children) {
+		if (updated_ids.find(child.first) == updated_ids.end()) {
+			to_remove.push_back(child.first);
+		}
+	}
+	for (unsigned int i : to_remove) {
+		removeTransform(t, i);
+	}
+	return data;
+}
+
+void Window::removeTransform(Transform * parent, const unsigned int node_id) {
+	auto to_remove = parent->children[node_id];
+	for (auto child : to_remove->children) {
+		removeTransform(to_remove, child.first);
+	}
+	for (auto model_id : to_remove->model_ids) {
+	}
+	parent->removeChild(node_id);
+}
+

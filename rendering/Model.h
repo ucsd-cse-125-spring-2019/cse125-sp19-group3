@@ -318,10 +318,10 @@ private:
 			for (unsigned int j = 0; j < mesh->mBones[i]->mNumWeights; j++) {
 				unsigned int VertexID = mesh->mBones[i]->mWeights[j].mVertexId;
 				float Weight = mesh->mBones[i]->mWeights[j].mWeight;
-				for (unsigned int i = 0; i < NUM_BONES_PER_VERTEX; i++) {
-					if (vertices[VertexID].Weights[i] == 0.0) {
-						vertices[VertexID].IDs[i] = BoneIndex;
-						vertices[VertexID].Weights[i] = Weight;
+				for (unsigned int k = 0; k < NUM_BONES_PER_VERTEX; k++) {
+					if (vertices[VertexID].Weights[k] == 0.0) {
+						vertices[VertexID].IDs[k] = float(BoneIndex);
+						vertices[VertexID].Weights[k] = Weight;
 						break;
 					}
 				}
