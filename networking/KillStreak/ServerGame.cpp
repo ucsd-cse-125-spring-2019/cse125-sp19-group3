@@ -187,13 +187,13 @@ void ServerGame::game_match()
 		*** NOTE: Need to modify client thread to expect this!
 	2) start timer on server
 	3) wait until you receive all finish start game init packets from clients && timer is up
+		** Once timer is up send ack to clients telling them its starting with whatever 
+			data is needed
 	4) schedule end of kill phase
 	*/
 
 	// schedule end of kill phase
 	ScheduledEvent initKillPhase(END_KILLPHASE, 60); // play with values in config file
-
-
 
 
 

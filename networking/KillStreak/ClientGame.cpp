@@ -196,15 +196,23 @@ int ClientGame::join_game()
 
 	/* TODO: Client officially in the LOBBY. 
 
-		1. Create new thread to always recv() incoming packets from server
+		1. block until recv() start game from server 
+			--> initiate countdown based on how long server says you have 
+				** Should we do this locally? 
+				** I.E. server says you have 30 seconds, and client handles countdown
+			--> Once decision made send to server
+			--> Then block until you receive confirmation from server that characters			
+					are selected and the game is starting
 
-		2. Get packets from 
+		2. Create new thread to always recv() incoming packets from server
+
 
 	*/
 
 	server_data* server_arg = (server_data *)malloc(sizeof(server_data));
 	/*
-	--> STEP 1 : DISCUSS 
+	--> STEP 1 : DISCUSS --> When should we launch this thread? Once actual game starts,
+			during lobby? etc.. 
 
 	// run new thread to always recv() incoming packets from server 
 
