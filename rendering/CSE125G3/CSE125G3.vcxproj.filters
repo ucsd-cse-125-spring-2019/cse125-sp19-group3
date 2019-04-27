@@ -65,8 +65,11 @@
     </ClInclude>
     <ClInclude Include="..\ServerScene.h">
       <Filter>Header Files</Filter>
-     </ClInclude>
+    </ClInclude>
     <ClInclude Include="..\..\networking\KillStreak\CoreTypes.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\networking\KillStreak\PlayerData.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

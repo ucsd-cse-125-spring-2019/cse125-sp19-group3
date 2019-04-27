@@ -30,5 +30,7 @@ public:
 
 	// deserialize data from server back into ServerInputPacket struct
 	ServerInputPacket* deserializeSP(char* temp_buff);
+
+	void closeSocket();
 };
 

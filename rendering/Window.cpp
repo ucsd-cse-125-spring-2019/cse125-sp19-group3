@@ -2,7 +2,7 @@
 
 Window * Window_static::window = new Window();
 
-void Window::initialize_objects()
+void Window::initialize_objects(ClientGame * game)
 {
 	camera = new Camera();
 	camera->SetAspect(width / height);
@@ -28,6 +28,8 @@ void Window::initialize_objects()
 				// * glm::scale(glm::mat4(1.0f), glm::vec3(100, 0.01, 100)) * cube->toWorld;
 
 	models.push_back(ModelData{player_m, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), shader, COLOR, 0});
+
+	this->game = game;
 }
 
 void Window::clean_up()
@@ -163,10 +165,11 @@ void Window::mouse_button_callback(GLFWwindow* window, int button, int action, i
 		//getting cursor position
 		glfwGetCursorPos(window, &xpos, &ypos);
 		printf("Cursor Position at %f: %f \n", xpos, ypos);
-
+		glm::vec3 new_dest = viewToWorldCoordTransform(xpos, ypos);
 		// I need to send the server a packet...
+		game->sendPacket(MOVEMENT, new_dest, 0, 0);
 
-		/*glm::vec3 new_dest = viewToWorldCoordTransform(xpos, ypos);
+		/*
 		player->setDestination(new_dest);
 		float dotResult = glm::dot(glm::normalize(new_dest - player->currentPos), player->currentOri);
 
@@ -236,12 +239,12 @@ char * Window::deserializeSceneGraph(Transform * t, char * data, unsigned int si
 			updated_ids.insert(node_id);
 			data = deserializeSceneGraph(t->children[node_id], data, size);
 		}
-		else if (c == 'M') {
-			unsigned int model_id;
-			memcpy(&model_id, data, sizeof(unsigned int));
-			data += sizeof(unsigned int);
-			t->model_ids.insert(model_id);
-		}
+		//else if (c == 'M') {
+		//	unsigned int model_id;
+		//	memcpy(&model_id, data, sizeof(unsigned int));
+		//	data += sizeof(unsigned int);
+		//	t->model_ids.insert(model_id);
+		//}
 	}
 
 	std::vector<unsigned int> to_remove;

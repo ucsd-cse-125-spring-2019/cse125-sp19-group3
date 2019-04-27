@@ -9,6 +9,8 @@ typedef glm::vec3 Point;
 
 typedef enum {INIT_CONN, MOVEMENT, SKILL, ATTACK} InputType;
 
+typedef enum {INIT_SCENE, UPDATE_SCENE_GRAPH} ServerPacketType;
+
 /*
 	Packet send from the client to the server.
 */
@@ -29,8 +31,9 @@ typedef struct {
 	Packet sent from the server to the client.
 */
 typedef struct {
-	InputType inputType;
-	int temp;
+	ServerPacketType packetType;
+	int size;
+	char data[1024];
 	// TODO: Add data!!! 
 } ServerInputPacket;
 
@@ -40,6 +43,7 @@ typedef std::chrono::nanoseconds nanoseconds;
 typedef std::chrono::duration<double> dsec;
 
 typedef std::queue<ClientInputPacket> ClientThreadQueue;
+typedef std::queue<ServerInputPacket> ServerInputQueue;
 
 /* Server scheduling queue event */
 typedef enum {END_KILLPHASE, END_PREPAREPHASE} EventType;

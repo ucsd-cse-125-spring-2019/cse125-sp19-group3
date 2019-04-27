@@ -6,6 +6,7 @@
 #include "logger.hpp"
 #include "ServerNetwork.hpp"
 #include "CoreTypes.hpp"
+#include "../../ServerScene.h"
 #include <string>
 #include <vector>
 #include <mutex>
@@ -29,7 +30,9 @@ public:
 
 	void launch();
 
-	void update();
+	void updateKillPhase();
+
+	void updatePreparePhase();
 
 	void game_match();
 
@@ -43,6 +46,8 @@ protected:
 	double tick_rate;
 	vector<client_data*> client_data_list;	// list of pointers to all client meta-data
 	ScheduledEvent scheduledEvent;
+
+	ServerScene * scene;
 };
 
 #endif // SURFSTORESERVER_HPP

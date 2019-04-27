@@ -25,6 +25,7 @@
     <ClInclude Include="..\..\networking\KillStreak\INIReader.h" />
     <ClInclude Include="..\..\networking\KillStreak\Logger.hpp" />
     <ClInclude Include="..\..\networking\KillStreak\NetworkServices.hpp" />
+    <ClInclude Include="..\..\networking\KillStreak\PlayerData.hpp" />
     <ClInclude Include="..\..\networking\KillStreak\ServerGame.hpp" />
     <ClInclude Include="..\..\networking\KillStreak\ServerNetwork.hpp" />
     <ClInclude Include="..\..\networking\KillStreak\sysexits.h" />

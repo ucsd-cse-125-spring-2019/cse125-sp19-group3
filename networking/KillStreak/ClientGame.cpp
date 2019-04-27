@@ -5,6 +5,11 @@
 
 #include "../../rendering/main.h"
 
+typedef struct {
+	std::queue<ServerInputPacket>* queuePtr;
+	ClientNetwork* network;
+} server_data;
+
 GLFWwindow * window = 0;
 
 ClientGame::ClientGame(INIReader& t_config) : config(t_config) {
@@ -102,6 +107,34 @@ void print_versions()
 #endif
 }
 
+void constantListenFromServer(void *arg)
+{
+	auto log = logger();
+	server_data* server_arg = (server_data*) arg;
+	ServerInputQueue* q_ptr = server_arg->queuePtr;
+	ClientNetwork* network = server_arg->network;
+
+	log->info("Launching thread on client to listen to server");
+	int keep_conn = 1;					// keep connection alive
+	do {
+
+		// get packet from client
+		ServerInputPacket* packet = network->receivePacket();
+		if (!packet) {
+			keep_conn = 0;
+			break;
+		}
+
+		q_ptr->push(*packet);		// push packet to queue
+
+	} while (keep_conn);				// connection-closed/error? 
+
+
+										// close socket & free client_data 
+	network->closeSocket();
+	free(server_arg);
+}
+
 
 /*
 	Send initial request to server asking to join game. Will hang until request accepted 
@@ -139,21 +172,28 @@ int ClientGame::join_game()
 		log->error("Error receiving servers initialization packet");
 		return 0;
 	}
-	if (packet->inputType != INIT_CONN)			// not initialization packet
+	if (packet->packetType != INIT_SCENE)			// not initialization packet
 	{
 		log->error("Invalid initialization packet send from server");
 		return 0;
 	}
 
 
-	log->debug("DATA FROM SERVER: {} {}", packet->inputType, packet->temp);
+	server_data* server_arg = (server_data *)malloc(sizeof(server_data));
+
+	/*server_arg->queuePtr = &serverPackets;
+	server_arg->network = network;
+	_beginthread(constantListenFromServer, 0, (void*)network);*/
+
+
+	log->debug("DATA FROM SERVER: {} {}", packet->packetType, packet->size);
 
 
 	// client successfully received servers initialization packet with the
 	// pre-game metadata and is now in the lobby
 	// TODO:: CLIENT LOBBY !!!
 	log->info("Received servers init package, waiting in lobby!!");
-	while (1);
+	//while (1);
 
 
 	return 1;
@@ -177,18 +217,18 @@ void ClientGame::run() {
 	// This part will run after all players join and players leave lobby!
 	// GAME STARTING ******************************************************
 
-	while (1) {};	// TODO: REMOVE ME!
+	//while (1) {};	// TODO: REMOVE ME!
 	
 	// TODO (MAYBE?): Put timeout on client socket, if server game full will disconnect? 
 
-	/*
+	
 	// TEST: Sending initial message, does server recv()? 
 	log->info("Client: Sending message...");
 	Point finalLocation = Point(1.0, 2.0, 3.0);
 	ClientInputPacket testPacket = network->createClientPacket(MOVEMENT, finalLocation, 0, 0);
 	ClientInputPacket testPacket2 = network->createClientPacket(MOVEMENT, finalLocation, 0, 0);
 
-	int iResult = network->sendToServer(testPacket);
+	iResult = network->sendToServer(testPacket);
 	iResult = network->sendToServer(testPacket2);
 	
 	if (iResult == SOCKET_ERROR) {
@@ -212,11 +252,27 @@ void ClientGame::run() {
 	// Setup callbacks
 	setup_callbacks();
 	// Initialize objects/pointers for rendering
-	Window_static::initialize_objects();
+	Window_static::initialize_objects(this);
 
 	// Loop while GLFW window should stay open
 	while (!glfwWindowShouldClose(window))
 	{
+		/*
+		1) grab a packet from the serverInputQueue
+		2) render scene based off of packet + update any game state UI / variable based on packet.
+		*/
+
+		/*if (!(serverPackets.empty())) {
+			ServerInputPacket packet = serverPackets.front();
+			serverPackets.pop();
+			Window_static::window->deserializeSceneGraph(packet.data, packet.size);
+		}*/
+
+		ServerInputPacket* packet = network->receivePacket();
+		log->info("client received packet of size {}", packet->size);
+		Window_static::window->deserializeSceneGraph(packet->data, packet->size);
+
+
 		// Main render display callback. Rendering of objects is done here.
 		Window_static::display_callback(window);
 		// Idle callback. Updating objects, etc. can be done here.
@@ -230,4 +286,10 @@ void ClientGame::run() {
 	glfwTerminate();
 
 	exit(EXIT_SUCCESS);
+	
+}
+
+void ClientGame::sendPacket(InputType inputType, Point finalLocation, int skillType, int attackType) {
+	ClientInputPacket packet = network->createClientPacket(inputType, finalLocation, skillType, attackType);
+	network->sendToServer(packet);
 }

@@ -18,6 +18,8 @@
 #include "Camera.h"
 #include "Transform.h"
 #include "Player.h"
+#include "../networking/KillStreak/ClientGame.h"
+#include "../networking/KillStreak/CoreTypes.hpp"
 
 // On some systems you need to change this to the absolute path
 #define VERTEX_SHADER_PATH "../shader.vert"
@@ -27,7 +29,7 @@ class Window {
 public:
 	int width;
 	int height;
-	void initialize_objects();
+	void initialize_objects(ClientGame * game);
 	void clean_up();
 	GLFWwindow * create_window(int width, int height);
 	void resize_callback(GLFWwindow* window, int width, int height);
@@ -56,6 +58,8 @@ private:
 
 	double time = 0.0;
 
+	ClientGame * game;
+
 	void removeTransform(Transform * parent, const unsigned int node_id);
 };
 
@@ -65,7 +69,7 @@ class Window_static
 {
 public:
 	static Window * window;
-	static void initialize_objects() { window->initialize_objects(); };
+	static void initialize_objects(ClientGame * game) { window->initialize_objects(game); };
 	static void clean_up() { window->clean_up(); };
 	static GLFWwindow * create_window(int width, int height) { return window->create_window(width, height); };
 	static void resize_callback(GLFWwindow* win, int width, int height) {

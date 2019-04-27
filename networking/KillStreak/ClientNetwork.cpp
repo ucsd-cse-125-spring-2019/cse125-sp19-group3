@@ -77,6 +77,10 @@ ClientNetwork::~ClientNetwork(void) {
 
 }
 
+void ClientNetwork::closeSocket() {
+	closesocket(ConnectSocket);
+}
+
 
 /*
 	Serialize a packet then send to server.

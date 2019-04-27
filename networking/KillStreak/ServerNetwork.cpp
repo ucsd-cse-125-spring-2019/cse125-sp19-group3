@@ -248,22 +248,27 @@ int ServerNetwork::receiveData(unsigned int client_id, char * recvbuf)
 
 
 // send data to all clients
-void ServerNetwork::broadcastSend(char * packets, int totalSize)
+void ServerNetwork::broadcastSend(ServerInputPacket packet)
 {
 	auto log = logger();
 	SOCKET currentSocket;
 	int iSendResult;
 
+	char serialized[sizeof(ServerInputPacket)];
+	memcpy(serialized, &packet, sizeof(ServerInputPacket));
+
 	for (auto const& x : sessions)
 	{
 		currentSocket = x.second;
-		iSendResult = NetworkServices::sendMessage(currentSocket, packets, totalSize);
+		int sentLength = send(currentSocket, serialized, sizeof(ServerInputPacket), 0);
+		log->info("Sent packet of length {} to client {}", sentLength, x.first);
+		//iSendResult = NetworkServices::sendMessage(currentSocket, packets, totalSize);
 
-		if (iSendResult == SOCKET_ERROR)
-		{
-			log->error("send failed with error: {}", WSAGetLastError());
-			closesocket(currentSocket);
-		}
+		//if (iSendResult == SOCKET_ERROR)
+		//{
+		//	log->error("send failed with error: {}", WSAGetLastError());
+		//	closesocket(currentSocket);
+		//}
 	}
 }
 
@@ -303,10 +308,14 @@ ClientInputPacket* ServerNetwork::deserializeCP(char* temp_buff)
 /*
 	Initialize a packet to send to the client. 
 */
-ServerInputPacket ServerNetwork::createServerPacket(InputType type, int temp)
+ServerInputPacket ServerNetwork::createServerPacket(ServerPacketType type, int size, char * data)
 {
 	ServerInputPacket packet;
-	packet.inputType = type;
-	packet.temp = temp;
+	packet.packetType = type;
+	packet.size = size;
+	auto log = logger();
+	log->info("Size of scene graph packet is {}", (size + 2));
+	memcpy(packet.data, data, sizeof(glm::mat4));
+
 	return packet;
 }

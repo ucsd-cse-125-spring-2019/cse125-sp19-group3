@@ -7,7 +7,7 @@
 #include <process.h>				// threads
 #include <windows.h>				// sleep
 
-#define GAME_SIZE			2		// total players required to start game
+#define GAME_SIZE			1		// total players required to start game
 #define LOBBY_START_TIME	2000	// wait this long (ms) after all players connect
 
 static int game_start = 0;			// game ready to begin?
@@ -50,6 +50,9 @@ ServerGame::ServerGame(INIReader& t_config) : config(t_config) {
 
 	network = new ServerNetwork(host, port);
 	scheduledEvent = ScheduledEvent(END_KILLPHASE, 10000000); // default huge value
+
+	scene = new ServerScene();
+	scene->initialize_objects();
 }
 
 
@@ -88,7 +91,8 @@ void client_session(void *arg)
 
 	// TODO: Add more data to go into this struct!
 	// send pre-game data to client ( meta data and lobby info )
-	ServerInputPacket welcome_packet = network->createServerPacket(INIT_CONN, 0);
+	char buf[1024] = { 0 };
+	ServerInputPacket welcome_packet = network->createServerPacket(INIT_SCENE, 0, buf);
 	int bytes_sent = network->sendToClient(client_id, welcome_packet);
 
 	if (!bytes_sent) {	// error? 
@@ -240,9 +244,9 @@ void ServerGame::launch() {
 	bool running = true; // not sure if needed;
 	auto lastTime = Clock::now();
 	
-	// isKillPhase = true;
+	bool isKillPhase = true;
 
-
+	log->info("Server is about to enter game loop!");
 	// GAME LOOP
 	while (running) {
 		auto now = Clock::now();
@@ -254,24 +258,21 @@ void ServerGame::launch() {
 		while (delta >= 1) {
 			// put kill phase vs prepare phase here?
 			delta--;
-			/*
 
-			decrement alarm;
-			if time is <= 0:
-				initNewPhase(isKillPhase);
+			scheduledEvent.ticksLeft--;
+
+			if (scheduledEvent.ticksLeft <= 0) {
+				// initNewPhase(isKillPhase);
 				isKillPhase = !isKillPhase;
+				// pop off / get rid of event alarm here?
+			}
 
 			if (isKillPhase) {
 				updateKillPhase();
-			} else {
+			}
+			else {
 				updatePreparePhase();
 			}
-
-			*/
-			
-			
-			
-			update();
 		}
 	}
 }
@@ -281,9 +282,42 @@ void ServerGame::launch() {
 	Runs on every server tick. Empties the master queue, updates the game state, and 
 	sends updated state back to all clients.
 */
-void ServerGame::update() {
+void ServerGame::updateKillPhase() {
 	auto log = logger();
-	log->info("MT: Game server update...");
+	log->info("MT: Game server kill phase update...");
+
+	// Drain all packets from all client inputs
+	vector<vector<ClientInputPacket>> inputPackets;
+	for (int i = 0; i < GAME_SIZE; i++) {
+		inputPackets.push_back(vector<ClientInputPacket>());
+	}
+
+	for (auto client_data : client_data_list) {
+		int i = client_data->id;
+		ClientThreadQueue * q_ptr = client_data->q_ptr;
+		while (!(q_ptr->empty())) {
+			inputPackets[i].push_back(q_ptr->front());
+			q_ptr->pop();
+		}
+	}
+
+	// Handle packets
+	for (int i = 0; i < GAME_SIZE; i++) {
+		for (auto packet : inputPackets[i]) {
+			log->info("Server received packet with input type {}, finalLocation of {}, {}, {}", packet.inputType, packet.finalLocation.x, packet.finalLocation.y, packet.finalLocation.z);
+			switch (packet.inputType) {
+			MOVEMENT:
+				scene->handlePlayerMovement(packet.finalLocation);
+			}
+		}
+	}
+
+	// Serialize scene graph and send packet to clients
+	char buf[1024] = { 0 };
+	int size = scene->serializeSceneGraph(buf);
+	ServerInputPacket sceneGraphPacket = network->createServerPacket(UPDATE_SCENE_GRAPH, size, buf);
+
+	network->broadcastSend(sceneGraphPacket);
 
 	/*
 	
@@ -307,6 +341,11 @@ void ServerGame::update() {
 
 	// TODO: BE SURE TO FREE PACKETS AFTER PROCESSING THEM, OTEHRWISE THE PACKETS WILL EVENTUALLY
 	// FILL MEMORY!
+}
+
+void ServerGame::updatePreparePhase() {
+	auto log = logger();
+	log->info("MT: Game server update prepare phase...");
 }
 
 

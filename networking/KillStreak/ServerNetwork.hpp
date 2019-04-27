@@ -19,7 +19,7 @@ public:
 	~ServerNetwork(void);
 
 	// send data to all clients
-	void broadcastSend(char * packets, int totalSize);
+	void broadcastSend(ServerInputPacket packet);
 
 	// serialize data & send to one client
 	int sendToClient(unsigned int client_id, ServerInputPacket packet);
@@ -34,7 +34,7 @@ public:
 	bool closeClientSocket(unsigned int id);
 
 	// create packet for server to send to client
-	ServerInputPacket createServerPacket(InputType type, int temp);
+	ServerInputPacket createServerPacket(ServerPacketType type, int temp, char * data);
 
 	// receive incoming data and deserialize into ClientInputPacket
 	ClientInputPacket* receivePacket(unsigned int client_id);
