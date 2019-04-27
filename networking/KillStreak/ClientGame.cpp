@@ -5,12 +5,20 @@
 
 #include "../../rendering/main.h"
 
+
+/*
+	Contains pointer to network and queue that will store all 
+	incoming packets from server.
+*/
 typedef struct {
 	std::queue<ServerInputPacket>* queuePtr;
 	ClientNetwork* network;
+	mutex* q_lock;
 } server_data;
 
+
 GLFWwindow * window = 0;
+
 
 ClientGame::ClientGame(INIReader& t_config) : config(t_config) {
 	auto log = logger();
@@ -36,6 +44,7 @@ ClientGame::ClientGame(INIReader& t_config) : config(t_config) {
 	serverPort = get_port.c_str();
 	
 	network = new ClientNetwork(host, serverPort);
+	q_lock = new mutex();
 }
 
 
@@ -107,10 +116,15 @@ void print_versions()
 #endif
 }
 
+
+/*
+	Launch new thread to keep an open recv() connection with the server. 
+*/
 void constantListenFromServer(void *arg)
 {
 	auto log = logger();
 	server_data* server_arg = (server_data*) arg;
+	mutex* q_lock = server_arg->q_lock;
 	ServerInputQueue* q_ptr = server_arg->queuePtr;
 	ClientNetwork* network = server_arg->network;
 
@@ -125,13 +139,14 @@ void constantListenFromServer(void *arg)
 			break;
 		}
 
-		q_ptr->push(*packet);		// push packet to queue
+		// acquire queue lock & push packet 
+		q_lock->lock();
+		q_ptr->push(*packet);			
+		q_lock->unlock();
 
 	} while (keep_conn);				// connection-closed/error? 
 
-
-										// close socket & free client_data 
-	network->closeSocket();
+	network->closeSocket();				// close socket & free client_data 
 	free(server_arg);
 }
 
@@ -148,7 +163,8 @@ int ClientGame::join_game()
 	auto log = logger();
 
 	log->info("Sending initialization packet...");
-	// send initial request to server 
+
+	// send initial request to server (ask to join game, start my thread on the server!)
 	ClientInputPacket init_packet = network->createClientPacket(INIT_CONN, NULL_POINT, 0, 0);
 	int iResult = network->sendToServer(init_packet);
 
@@ -165,35 +181,55 @@ int ClientGame::join_game()
 		return 0;
 	}
 
-	// block until receive servers init package
+	// block until receive servers welcome package (telling us we're accepted and in lobby)
 	ServerInputPacket* packet = network->receivePacket();
-	if (!packet)								// error 
+	if (!packet)									// error 
 	{
 		log->error("Error receiving servers initialization packet");
 		return 0;
 	}
 	if (packet->packetType != INIT_SCENE)			// not initialization packet
 	{
-		log->error("Invalid initialization packet send from server");
+		log->error("Invalid initialization packet sent from server");
 		return 0;
 	}
 
+	/* TODO: Client officially in the LOBBY. 
+
+		1. Create new thread to always recv() incoming packets from server
+
+		2. Get packets from 
+
+	*/
 
 	server_data* server_arg = (server_data *)malloc(sizeof(server_data));
+	/*
+	--> STEP 1 : DISCUSS 
 
-	/*server_arg->queuePtr = &serverPackets;
-	server_arg->network = network;
-	_beginthread(constantListenFromServer, 0, (void*)network);*/
+	// run new thread to always recv() incoming packets from server 
 
 
-	log->debug("DATA FROM SERVER: {} {}", packet->packetType, packet->size);
+	 ***NOTE: Server arg queue should be a queue of pointers? Packets already 
+		in memory anyway
+	server_arg->q_lock = q_lock;				// ptr to queue lock
+	server_arg->queuePtr = &serverPackets;		// ptr to server input queue
+
+	server_arg->network = network;				// ptr to network
+
+
+	 ***NOTE: Should change 'network' to 'server_arg' below. 
+		--> _beginthread(constantListenFromServer, 0, (void*)server_arg);	
+		--> Instead of: _beginthread(constantListenFromServer, 0, (void*)network);
+
+	*/
+
+
+
 
 
 	// client successfully received servers initialization packet with the
 	// pre-game metadata and is now in the lobby
-	// TODO:: CLIENT LOBBY !!!
 	log->info("Received servers init package, waiting in lobby!!");
-	//while (1);
 
 
 	return 1;
@@ -217,32 +253,6 @@ void ClientGame::run() {
 	// This part will run after all players join and players leave lobby!
 	// GAME STARTING ******************************************************
 
-	//while (1) {};	// TODO: REMOVE ME!
-	
-	// TODO (MAYBE?): Put timeout on client socket, if server game full will disconnect? 
-
-	
-	// TEST: Sending initial message, does server recv()? 
-	log->info("Client: Sending message...");
-	Point finalLocation = Point(1.0, 2.0, 3.0);
-	ClientInputPacket testPacket = network->createClientPacket(MOVEMENT, finalLocation, 0, 0);
-	ClientInputPacket testPacket2 = network->createClientPacket(MOVEMENT, finalLocation, 0, 0);
-
-	iResult = network->sendToServer(testPacket);
-	iResult = network->sendToServer(testPacket2);
-	
-	if (iResult == SOCKET_ERROR) {
-		wprintf(L"send failed with error: %d\n", WSAGetLastError());
-		closesocket(network->ConnectSocket);
-		WSACleanup();
-		return;
-	}
-
-	log->info("Client: Bytes sent: {}", iResult);
-
-
-	// GRAPHICS CODE *******************************************************
-
 	// Create the GLFW window
 	window = Window_static::create_window(640, 480);
 	// Setup OpenGL settings, including lighting, materials, etc.
@@ -262,12 +272,18 @@ void ClientGame::run() {
 		2) render scene based off of packet + update any game state UI / variable based on packet.
 		*/
 
-		/*if (!(serverPackets.empty())) {
+		/*
+		// acquire lock & get next packet from queue
+		q_lock->lock();
+		if (!(serverPackets.empty())) {
 			ServerInputPacket packet = serverPackets.front();
 			serverPackets.pop();
 			Window_static::window->deserializeSceneGraph(packet.data, packet.size);
-		}*/
+		}
+		q_lock->unlock();
+		*/
 
+		// TODO: REMOVE ME!!! (new thread should handle incoming packets
 		ServerInputPacket* packet = network->receivePacket();
 		log->info("client received packet of size {}", packet->size);
 		Window_static::window->deserializeSceneGraph(packet->data, packet->size);

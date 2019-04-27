@@ -77,20 +77,9 @@ void client_session(void *arg)
 	int client_id = client_arg->id;
 	ServerNetwork * network = client_arg->network;
 
-	/* Testing locks on multiple clients
-	log->debug("CT <{}>: Grabbing lock!", client_id);
-	client_arg->q_lock->lock();
-	log->debug("CT <{}>: Grabbed lock, sleeping 10 secods!", client_id);
-	Sleep(5000);
-	client_arg->q_lock->unlock();
-	log->debug("CT <{}>: Released lock!", client_id);
-	*/
-
-
 	log->info("CT <{}>: Launching new client thread", client_id);
 
-	// TODO: Add more data to go into this struct!
-	// send pre-game data to client ( meta data and lobby info )
+	// send pre-game data to client telling them they're accepted ( meta data and lobby info )
 	char buf[1024] = { 0 };
 	ServerInputPacket welcome_packet = network->createServerPacket(INIT_SCENE, 0, buf);
 	int bytes_sent = network->sendToClient(client_id, welcome_packet);
@@ -101,9 +90,10 @@ void client_session(void *arg)
 		return;
 	}
 
-	// game hasn't started yet; sleep thread until ready
+	// game hasn't started yet; wait until ready
 	if (!game_start) log->info("CT <{}>: Waiting for game to start", client_arg->id);
 	while (!game_start) {};	 
+
 
 
 	// GAME STARTING ****************************************************
@@ -125,7 +115,10 @@ void client_session(void *arg)
 			break;
 		}
 
-		input_queue->push(*packet);		// push packet to queue
+		// acquire queue lock & push packet 
+		client_arg->q_lock->lock();
+		input_queue->push(*packet);		
+		client_arg->q_lock->unlock();
 
 	} while (keep_conn);				// connection-closed/error? 
 
@@ -166,7 +159,7 @@ void ServerGame::game_match()
 			client_arg->id = client_id - 1;				// current clients ID
 			client_arg->q_ptr = client_q;				// pointer to clients packet queue
 			client_arg->network = network;				// pointer to ServerNetwork
-			client_arg->q_lock = client_lock;				// pointer to queue lock
+			client_arg->q_lock = client_lock;			// pointer to queue lock
 
 			client_data_list.push_back(client_arg);		// add pointer to this clients data
 			_beginthread(client_session, 0, (void*) client_arg);
@@ -175,32 +168,37 @@ void ServerGame::game_match()
 		{
 			log->error("MT: Error allocating client metadata");
 			network->closeClientSocket(--client_id);	
-			free(client_q);
-			free(client_lock);
+			delete (client_q);
+			delete (client_lock);
 			free(client_arg);
 		}
 
 	}
 
+	// all clients connected, wait LOBBY_START_TIME (ms) before starting character selection
+	log->info("MT: Character selection starting in {} seconds...", LOBBY_START_TIME/1000);
+	Sleep(LOBBY_START_TIME);					
+	log->info("MT: Character selection started!");
+
 	/*
 	1) send startgame packet to all clients
+		--> Hey client game is starting, exit the lobby, enter username and select character
+		--> Tell them how much time they have to make selection
+		*** NOTE: Need to modify client thread to expect this!
 	2) start timer on server
 	3) wait until you receive all finish start game init packets from clients && timer is up
 	4) schedule end of kill phase
 	*/
 
+	// schedule end of kill phase
 	ScheduledEvent initKillPhase(END_KILLPHASE, 60); // play with values in config file
 
 
 
-	// all clients connected, wait LOBBY_START_TIME (ms) before starting game
-	log->info("MT: Game starting in {} seconds...", LOBBY_START_TIME/1000);
-	Sleep(LOBBY_START_TIME);					// TODO: Uncomment me
-	log->info("MT: Game started!");
 
 
 
-	// TODO: Wake all sleeping client threads once busy waiting is removed.
+	// Tell all client threads to begin the game!
 	game_start = 1;	
 }
 
@@ -221,23 +219,6 @@ void ServerGame::launch() {
 	game_match();	
 
 	// GAME START *************************************************
-
-	/* Testing locks on multiple clients
-	client_data* client;
-	for (int i = 0; i < client_data_list.size(); i++) {
-		client = client_data_list[i];
-		log->debug("MT <{}>: Getting lock!", client->id);
-		client->q_lock->lock();
-		log->debug("MT <{}>: Acquried lock, sleeping 10 seconds!", client->id);
-		Sleep(2000);
-		client->q_lock->unlock();
-		log->debug("MT <{}>: Released lock!", client->id);
-	}
-	*/
-
-	/* TODO: Once game_match() returns all the players have been confirmed 
-	and the lobby has been exited. The game is about to begin!
-	*/
 
 	double ns = 1000000000.0 / tick_rate;
 	double delta = 0;
@@ -286,25 +267,37 @@ void ServerGame::updateKillPhase() {
 	auto log = logger();
 	log->info("MT: Game server kill phase update...");
 
-	// Drain all packets from all client inputs
+	// create temp vectors for each client to dump all incoming packets into
 	vector<vector<ClientInputPacket>> inputPackets;
 	for (int i = 0; i < GAME_SIZE; i++) {
 		inputPackets.push_back(vector<ClientInputPacket>());
 	}
 
+	// TODO: BE SURE TO FREE PACKETS AFTER PROCESSING THEM, OTHERWISE THE PACKETS WILL EVENTUALLY
+	// FILL MEMORY!
+	// Drain all packets from all client inputs
 	for (auto client_data : client_data_list) {
 		int i = client_data->id;
 		ClientThreadQueue * q_ptr = client_data->q_ptr;
+
+		// acquire lock; empty entire queue
+		client_data->q_lock->lock();
 		while (!(q_ptr->empty())) {
 			inputPackets[i].push_back(q_ptr->front());
 			q_ptr->pop();
+			// TODO: Should inputPackets have pointers to packets? 
+			// If not then we should free the packet popped from the q_ptr here
 		}
+		client_data->q_lock->unlock();
 	}
 
 	// Handle packets
 	for (int i = 0; i < GAME_SIZE; i++) {
 		for (auto packet : inputPackets[i]) {
-			log->info("Server received packet with input type {}, finalLocation of {}, {}, {}", packet.inputType, packet.finalLocation.x, packet.finalLocation.y, packet.finalLocation.z);
+
+			log->info("Server received packet with input type {}, finalLocation of {}, {}, {}", 
+				packet.inputType, packet.finalLocation.x, packet.finalLocation.y, packet.finalLocation.z);
+
 			switch (packet.inputType) {
 			MOVEMENT:
 				scene->handlePlayerMovement(packet.finalLocation);
@@ -334,13 +327,11 @@ void ServerGame::updateKillPhase() {
 	5) Do any calculations necessary for deaths (update leaderboard, update gold rewarded, update bonuses, etc)
 
 	6) Serialize server SceneGraph, send leaderboard / gold/ time remaining in round / player state to all clients 
+
+	7.) Deallocate packets 
 	*/
 
-	// TODO: Get one packet from each client queue. Maintain round robin order switching order 
-	// of getting packets.
 
-	// TODO: BE SURE TO FREE PACKETS AFTER PROCESSING THEM, OTEHRWISE THE PACKETS WILL EVENTUALLY
-	// FILL MEMORY!
 }
 
 void ServerGame::updatePreparePhase() {

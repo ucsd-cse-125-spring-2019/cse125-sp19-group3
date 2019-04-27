@@ -40,6 +40,7 @@ int main(int argc, char** argv) {
 		return EX_CONFIG;
 	}
 
+	/*
 	// Multi-threaded approach ************************************************
 
 	// create new thread and run server
@@ -53,6 +54,7 @@ int main(int argc, char** argv) {
 	client->run();
 
 	// ************************************************************************
+	*/
 
 
 
