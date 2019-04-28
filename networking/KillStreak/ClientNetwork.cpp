@@ -130,6 +130,7 @@ ServerInputPacket* ClientNetwork::receivePacket()
 
 	// deserialize data into memory, point packet to it
 	ServerInputPacket* packet = deserializeSP(temp_buff);
+	logger()->debug("Deserialized packet size: {}", bytes_read);
 	return packet;
 }
 
