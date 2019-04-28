@@ -42,12 +42,13 @@ protected:
 	INIReader & config;
 	PCSTR host;
 	PCSTR port;
-	ServerNetwork* network;
 	double tick_rate;
-	vector<client_data*> client_data_list;	// list of pointers to all client meta-data
-	ScheduledEvent scheduledEvent;
 
 	ServerScene * scene;
+	ServerNetwork* network;					// ptr to servers network
+	ScheduledEvent scheduledEvent;
+	vector<client_data*> client_data_list;	// list of pointers to all client meta-data
+
 };
 
 #endif // SURFSTORESERVER_HPP

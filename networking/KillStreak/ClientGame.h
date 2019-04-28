@@ -21,6 +21,6 @@ protected:
 	INIReader & config;
 	PCSTR host;
 	PCSTR serverPort;
-	ServerInputQueue serverPackets;			// queue of packets from server
-	mutex* q_lock;							// lock for queue
+	ServerInputQueue* serverPackets;	// queue of packets from server
+	mutex* q_lock;						// lock for queue
 };

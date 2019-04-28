@@ -42,8 +42,10 @@ typedef std::chrono::high_resolution_clock Clock;
 typedef std::chrono::nanoseconds nanoseconds;
 typedef std::chrono::duration<double> dsec;
 
-typedef std::queue<ClientInputPacket> ClientThreadQueue;
-typedef std::queue<ServerInputPacket> ServerInputQueue;
+// queue for each client threads packets (server)
+typedef std::queue<ClientInputPacket*> ClientThreadQueue;	
+// queue for clients incoming packets from server (client)
+typedef std::queue<ServerInputPacket*> ServerInputQueue;    
 
 /* Server scheduling queue event */
 typedef enum {END_KILLPHASE, END_PREPAREPHASE} EventType;

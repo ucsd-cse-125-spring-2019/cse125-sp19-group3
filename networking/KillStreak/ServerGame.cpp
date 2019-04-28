@@ -15,7 +15,7 @@ static int game_start = 0;			// game ready to begin?
 
 /*
 	Parse data from config file for server. Then initialize 
-	server network (create socket).
+	server network (create socket) and initialize data.
 */
 ServerGame::ServerGame(INIReader& t_config) : config(t_config) {
 	auto log = logger();
@@ -48,11 +48,12 @@ ServerGame::ServerGame(INIReader& t_config) : config(t_config) {
 		exit(EX_CONFIG);
 	}
 
+	scene = new ServerScene();
+	scene->initialize_objects();
+
 	network = new ServerNetwork(host, port);
 	scheduledEvent = ScheduledEvent(END_KILLPHASE, 10000000); // default huge value
 
-	scene = new ServerScene();
-	scene->initialize_objects();
 }
 
 
@@ -95,11 +96,9 @@ void client_session(void *arg)
 	while (!game_start) {};	 
 
 
-
 	// GAME STARTING ****************************************************
-
-
 	// receive from client until end of game sending deserialized packets to queue
+
 	log->info("CT <{}>: Game started -> Receiving from client!", client_arg->id);
 
 	// get client socket; pointer to clients queue & pointer to network
@@ -117,7 +116,7 @@ void client_session(void *arg)
 
 		// acquire queue lock & push packet 
 		client_arg->q_lock->lock();
-		input_queue->push(*packet);		
+		input_queue->push(packet);		
 		client_arg->q_lock->unlock();
 
 	} while (keep_conn);				// connection-closed/error? 
@@ -195,9 +194,6 @@ void ServerGame::game_match()
 	// schedule end of kill phase
 	ScheduledEvent initKillPhase(END_KILLPHASE, 60); // play with values in config file
 
-
-
-
 	// Tell all client threads to begin the game!
 	game_start = 1;	
 }
@@ -217,6 +213,33 @@ void ServerGame::launch() {
 	// launch lobby; accept players until game full
 	log->info("MT: Game server live - Launching lobby!");
 	game_match();	
+
+
+	// TESTING: Sending multiple different packets to client testing their queue
+	log->debug("MT: Sending test packets to client");
+	char buf[1024] = { 0 };
+	ServerInputPacket welcome_packet = network->createServerPacket(INIT_SCENE, 0, buf);
+	int bytes_sent = network->sendToClient(0, welcome_packet);
+	log->debug("MT: Sending packet 1 size: {}", bytes_sent);
+	log->debug("MT: Type: {}", INIT_SCENE);
+
+	char buf2[1024] = { 0 };
+	ServerInputPacket welcome_packet2 = network->createServerPacket(UPDATE_SCENE_GRAPH, 0, buf2);
+	int bytes_sent2 = network->sendToClient(0, welcome_packet2);
+	log->debug("MT: Sending packet 2 size: {}", bytes_sent2);
+	log->debug("MT: Type: {}", UPDATE_SCENE_GRAPH);
+
+	char buf3[1024] = { 0 };
+	ServerInputPacket welcome_packet3 = network->createServerPacket(INIT_SCENE, 0, buf3);
+	int bytes_sent3 = network->sendToClient(0, welcome_packet3);
+	log->debug("MT: Sending packet 3 size: {}", bytes_sent3);
+	log->debug("MT: Type: {}", INIT_SCENE);
+
+	log->debug("MT: All three packets sent to client");
+	while (1) {};	// TODO: REMOVE ME!!!!
+
+
+
 
 	// GAME START *************************************************
 
@@ -260,17 +283,17 @@ void ServerGame::launch() {
 
 
 /*
-	Runs on every server tick. Empties the master queue, updates the game state, and 
-	sends updated state back to all clients.
+	Runs on every server tick. Empties all client_thread queues, updates the game state, and 
+	broadcasts updated state back to all clients.
 */
 void ServerGame::updateKillPhase() {
 	auto log = logger();
 	log->info("MT: Game server kill phase update...");
 
 	// create temp vectors for each client to dump all incoming packets into
-	vector<vector<ClientInputPacket>> inputPackets;
+	vector<vector<ClientInputPacket*>> inputPackets;
 	for (int i = 0; i < GAME_SIZE; i++) {
-		inputPackets.push_back(vector<ClientInputPacket>());
+		inputPackets.push_back(vector<ClientInputPacket*>());
 	}
 
 	// TODO: BE SURE TO FREE PACKETS AFTER PROCESSING THEM, OTHERWISE THE PACKETS WILL EVENTUALLY
@@ -285,8 +308,6 @@ void ServerGame::updateKillPhase() {
 		while (!(q_ptr->empty())) {
 			inputPackets[i].push_back(q_ptr->front());
 			q_ptr->pop();
-			// TODO: Should inputPackets have pointers to packets? 
-			// If not then we should free the packet popped from the q_ptr here
 		}
 		client_data->q_lock->unlock();
 	}
@@ -296,11 +317,11 @@ void ServerGame::updateKillPhase() {
 		for (auto packet : inputPackets[i]) {
 
 			log->info("Server received packet with input type {}, finalLocation of {}, {}, {}", 
-				packet.inputType, packet.finalLocation.x, packet.finalLocation.y, packet.finalLocation.z);
+				packet->inputType, packet->finalLocation.x, packet->finalLocation.y, packet->finalLocation.z);
 
-			switch (packet.inputType) {
+			switch (packet->inputType) {
 			MOVEMENT:
-				scene->handlePlayerMovement(packet.finalLocation);
+				scene->handlePlayerMovement(packet->finalLocation);
 			}
 		}
 	}

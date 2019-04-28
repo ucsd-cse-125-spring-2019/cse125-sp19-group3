@@ -11,7 +11,7 @@
 	incoming packets from server.
 */
 typedef struct {
-	std::queue<ServerInputPacket>* queuePtr;
+	std::queue<ServerInputPacket*>* queuePtr;
 	ClientNetwork* network;
 	mutex* q_lock;
 } server_data;
@@ -20,6 +20,9 @@ typedef struct {
 GLFWwindow * window = 0;
 
 
+/*
+	Constructor: parse config and initialize all data.
+*/
 ClientGame::ClientGame(INIReader& t_config) : config(t_config) {
 	auto log = logger();
 
@@ -43,8 +46,9 @@ ClientGame::ClientGame(INIReader& t_config) : config(t_config) {
 	string get_port = servconf.substr(idx + 1);
 	serverPort = get_port.c_str();
 	
-	network = new ClientNetwork(host, serverPort);
 	q_lock = new mutex();
+	serverPackets = new ServerInputQueue();
+	network = new ClientNetwork(host, serverPort);
 }
 
 
@@ -139,9 +143,13 @@ void constantListenFromServer(void *arg)
 			break;
 		}
 
+		// TODO: REMOVE ME!!!
+		log->debug("--> Receiving packet from server size: {}", packet->size);
+		log->debug("--> Packet Type: {}", packet->packetType);
+
 		// acquire queue lock & push packet 
 		q_lock->lock();
-		q_ptr->push(*packet);			
+		q_ptr->push(packet);			
 		q_lock->unlock();
 
 	} while (keep_conn);				// connection-closed/error? 
@@ -194,7 +202,18 @@ int ClientGame::join_game()
 		return 0;
 	}
 
-	/* TODO: Client officially in the LOBBY. 
+
+	// CLIENT JOINED LOBBY ************************************************
+	// must wait for server to send packet (game starting sending to character selection)
+	log->info("Received servers init package, waiting in lobby!!");
+
+
+	/*
+		**** DISCUSS following...
+
+		0. Should we just allow character selection and username input while the clients 
+			are waiting in the lobby? Once the laster player enters they'll have 30 seconds 
+			to make their decision? 
 
 		1. block until recv() start game from server 
 			--> initiate countdown based on how long server says you have 
@@ -206,38 +225,38 @@ int ClientGame::join_game()
 
 		2. Create new thread to always recv() incoming packets from server
 
-
 	*/
 
-	server_data* server_arg = (server_data *)malloc(sizeof(server_data));
 	/*
-	--> STEP 1 : DISCUSS --> When should we launch this thread? Once actual game starts,
+	--> DISCUSS: When should we launch this thread? Once actual game starts,
 			during lobby? etc.. 
-
-	// run new thread to always recv() incoming packets from server 
-
-
-	 ***NOTE: Server arg queue should be a queue of pointers? Packets already 
-		in memory anyway
-	server_arg->q_lock = q_lock;				// ptr to queue lock
-	server_arg->queuePtr = &serverPackets;		// ptr to server input queue
-
-	server_arg->network = network;				// ptr to network
-
-
-	 ***NOTE: Should change 'network' to 'server_arg' below. 
-		--> _beginthread(constantListenFromServer, 0, (void*)server_arg);	
-		--> Instead of: _beginthread(constantListenFromServer, 0, (void*)network);
-
+		** Do we want to associate lobby with this thread? Or run it AFTER 
+			the lobby is complete? 
 	*/
 
 
 
+	/* FOR NOW: 
+		1. Create seperate client thread that recv()'s indefinently XXXX
+		2. Have main thread get each packet checking what type it is!
+		3. Test by having server send multiple different packets to client
+	*/
 
-
-	// client successfully received servers initialization packet with the
-	// pre-game metadata and is now in the lobby
-	log->info("Received servers init package, waiting in lobby!!");
+	// allocate new data for server thread & launch (will recv() indefinitely)
+	server_data* server_arg = (server_data *)malloc(sizeof(server_data));
+	if (server_arg)
+	{
+		server_arg->q_lock = q_lock;				// ptr to queue lock
+		server_arg->queuePtr = serverPackets;		// ptr to server input queue
+		server_arg->network = network;				// ptr to network
+		_beginthread(constantListenFromServer, 0, (void*)server_arg);	
+	}
+	else	// error allocating server data; 
+	{
+		log->error("Error allocating server metadata");
+		closesocket(network->ConnectSocket);
+		return 0;
+	}
 
 
 	return 1;
@@ -256,6 +275,25 @@ void ClientGame::run() {
 		closesocket(network->ConnectSocket);
 		return;
 	}
+
+
+	// TODO: TEST RECEIVING PACKETS, iterate over queue and take take take!
+	// TODO: TESTING ------- REMOVE ME!!!!
+	while (1) {
+		ServerInputPacket* packet;
+
+		// acquire lock & get next packet from queue
+		q_lock->lock();
+		if (!(serverPackets->empty())) {
+			packet = serverPackets->front();
+			serverPackets->pop();
+			log->debug("Reading packet from queue of size {}", packet->size);
+			log->debug("Packet Type: {}", packet->packetType);
+		}
+		q_lock->unlock();
+
+	}
+
 
 
 	// This part will run after all players join and players leave lobby!
@@ -283,10 +321,10 @@ void ClientGame::run() {
 		/*
 		// acquire lock & get next packet from queue
 		q_lock->lock();
-		if (!(serverPackets.empty())) {
-			ServerInputPacket packet = serverPackets.front();
-			serverPackets.pop();
-			Window_static::window->deserializeSceneGraph(packet.data, packet.size);
+		if (!(serverPackets->empty())) {
+			ServerInputPacket* packet = serverPackets->front();
+			serverPackets->pop();
+			Window_static::window->deserializeSceneGraph(packet->data, packet->size);
 		}
 		q_lock->unlock();
 		*/
