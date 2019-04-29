@@ -214,26 +214,25 @@ void ServerGame::launch() {
 	log->info("MT: Game server live - Launching lobby!");
 	game_match();	
 
-
 	// TESTING: Sending multiple different packets to client testing their queue
 	log->debug("MT: Sending test packets to client");
-	char buf[1024] = { 0 };
+	char buf[1024] = "The first packet!";
 	ServerInputPacket welcome_packet = network->createServerPacket(INIT_SCENE, 0, buf);
 	int bytes_sent = network->sendToClient(0, welcome_packet);
-	log->debug("MT: Sending packet 1 size: {}", bytes_sent);
 	log->debug("MT: Type: {}", INIT_SCENE);
+	log->debug("MT: Sending packet data: {}", bytes_sent);
 
-	char buf2[1024] = { 0 };
+	char buf2[1024] = "The second packet!";
 	ServerInputPacket welcome_packet2 = network->createServerPacket(UPDATE_SCENE_GRAPH, 0, buf2);
 	int bytes_sent2 = network->sendToClient(0, welcome_packet2);
-	log->debug("MT: Sending packet 2 size: {}", bytes_sent2);
 	log->debug("MT: Type: {}", UPDATE_SCENE_GRAPH);
+	log->debug("MT: Sending packet data: {}", buf2);
 
-	char buf3[1024] = { 0 };
+	char buf3[1024] = "The third packet!";
 	ServerInputPacket welcome_packet3 = network->createServerPacket(INIT_SCENE, 0, buf3);
 	int bytes_sent3 = network->sendToClient(0, welcome_packet3);
-	log->debug("MT: Sending packet 3 size: {}", bytes_sent3);
 	log->debug("MT: Type: {}", INIT_SCENE);
+	log->debug("MT: Sending packet data: {}", buf3);
 
 	log->debug("MT: All three packets sent to client");
 	while (1) {};	// TODO: REMOVE ME!!!!

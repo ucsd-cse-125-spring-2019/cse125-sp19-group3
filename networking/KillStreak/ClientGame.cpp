@@ -287,8 +287,8 @@ void ClientGame::run() {
 		if (!(serverPackets->empty())) {
 			packet = serverPackets->front();
 			serverPackets->pop();
-			log->debug("Reading packet from queue of size {}", packet->size);
 			log->debug("Packet Type: {}", packet->packetType);
+			log->debug("Reading packet data --> {}", packet->data);
 		}
 		q_lock->unlock();
 
