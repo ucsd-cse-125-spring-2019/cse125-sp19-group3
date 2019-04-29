@@ -3,7 +3,8 @@
 #include "Logger.hpp"
 #include "sysexits.h"
 
-#include "../../rendering/main.h"
+#include "main.h"
+#include "../../rendering/ClientScene.h"
 
 
 /*
@@ -194,6 +195,8 @@ int ClientGame::join_game()
 		return 0;
 	}
 
+	// TODO: deserialize INIT_SCENE packet, then call playerInit() on ClientScene
+
 	/* TODO: Client officially in the LOBBY. 
 
 		1. block until recv() start game from server 
@@ -294,7 +297,7 @@ void ClientGame::run() {
 		// TODO: REMOVE ME!!! (new thread should handle incoming packets
 		ServerInputPacket* packet = network->receivePacket();
 		log->info("client received packet of size {}", packet->size);
-		Window_static::window->deserializeSceneGraph(packet->data, packet->size);
+		Window_static::scene->deserializeSceneGraph(packet->data, packet->size);
 
 
 		// Main render display callback. Rendering of objects is done here.

@@ -21,27 +21,26 @@ class ServerScene {
 public:
 	int width;
 	int height;
-	void initialize_objects();
+
+	ServerScene();
+	~ServerScene();
+	void addPlayer();
 	void update();
-	void render();
-	void handlePlayerMovement(glm::vec3 destination);
+	void handlePlayerMovement(unsigned int player_id, glm::vec3 destination);
+	unsigned int serializeInitScene(char* data, unsigned int playerId, unsigned int playerRootId);
 	unsigned int serializeSceneGraph(char* data);
 	unsigned int serializeSceneGraph(Transform* t, char* data);
 
 private:
-	const char* window_title = "CSE 125 Group 3";
-	Shader * shader;
-	Camera * camera;
-
-	Cube * cube;
 	Player * player;
-	Model * player_m;
 	Transform * root;
-	Transform * player_t;
-
-	std::vector<ModelData> models;
+	Transform * playerRoot;
 
 	double time = 0.0;
+	unsigned int playerIdCounter = 0;
+	unsigned int nodeIdCounter = 0;
+
+	std::map<unsigned int, Player *> playerMap;
 };
 
 #endif

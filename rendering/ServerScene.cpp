@@ -1,53 +1,37 @@
 #include "ServerScene.h"
 
-void ServerScene::initialize_objects()
+ServerScene::ServerScene()
 {
-	//camera = new Camera();
-	//camera->SetAspect(width / height);
-	//camera->Reset();
-
-	// Load the shader program. Make sure you have the correct filepath up top
-	//shader = new Shader(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
-
 	root = new Transform(glm::mat4(1.0f));
-	
-	player_t = new Transform(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)), 
+}
+
+ServerScene::~ServerScene() {
+	delete root;
+}
+
+void ServerScene::addPlayer() {
+	nodeIdCounter++;
+	playerRoot = new Transform(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)),
 		glm::rotate(glm::mat4(1.0f), -90 / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)),
 		glm::scale(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, 0.05f)));
-	player_t->model_ids.insert(PLAYER);
-	root->addChild(1, player_t);
+	playerRoot->model_ids.insert(PLAYER);
+	root->addChild(nodeIdCounter, playerRoot);
 
-	//player_m = new Model(std::string("../BaseMesh_Anim.fbx"));
-
-	player = new Player(player_t, player_m);
-
-	//cube = new Cube();
-	//cube->toWorld = glm::translate(glm::mat4(1.0f), glm::vec3(0, 5, 10)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.5f)); 
-				// * glm::scale(glm::mat4(1.0f), glm::vec3(100, 0.01, 100)) * cube->toWorld;
-
-	//models.push_back(ModelData{player_m, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), shader, COLOR, 0});
+	// TODO: need to set model type based on player selection in lobby
+	player = new Player(playerIdCounter, nodeIdCounter, HUMAN);
+	playerMap.insert(std::pair<unsigned int, Player *>(playerIdCounter, player));
+	playerIdCounter++;
 }
 
 void ServerScene::update()
 {
-	// Call the update function the cube
-	//cube->update();
 	time += 1.0 / 60;
-	//camera->Update();
 	player->update(time);
 }
 
-void ServerScene::render()
+void ServerScene::handlePlayerMovement(unsigned int playerId, glm::vec3 destination)
 {
-	// Render the cube
-	//cube->draw(shader, glm::mat4(1.0f), camera->GetViewProjectMtx());
-
-	// Now send these values to the shader program
-	//root->draw(shader, models, glm::mat4(1.0f), camera->GetViewProjectMtx());
-}
-
-void ServerScene::handlePlayerMovement(glm::vec3 destination)
-{
+	Player * player = playerMap[playerId];
 	player->setDestination(destination);
 	float dotResult = glm::dot(glm::normalize(destination - player->currentPos), player->currentOri);
 
@@ -59,6 +43,14 @@ void ServerScene::handlePlayerMovement(glm::vec3 destination)
 			player->rotate(angle, axis);
 		}
 	}
+}
+
+unsigned int ServerScene::serializeInitScene(char* data, unsigned int playerId, unsigned int playerRootId) {
+	memcpy(data, &playerId, sizeof(unsigned int));
+	data += sizeof(unsigned int);
+	memcpy(data, &playerRootId, sizeof(unsigned int));
+	data += sizeof(unsigned int);
+	return 2 * sizeof(unsigned int) + serializeSceneGraph(data);
 }
 
 unsigned int ServerScene::serializeSceneGraph(char* data) {

@@ -52,7 +52,6 @@ ServerGame::ServerGame(INIReader& t_config) : config(t_config) {
 	scheduledEvent = ScheduledEvent(END_KILLPHASE, 10000000); // default huge value
 
 	scene = new ServerScene();
-	scene->initialize_objects();
 }
 
 
@@ -79,7 +78,7 @@ void client_session(void *arg)
 
 	log->info("CT <{}>: Launching new client thread", client_id);
 
-	// send pre-game data to client telling them they're accepted ( meta data and lobby info )
+	// TODO: send pre-game data to client telling them they're accepted ( meta data and lobby info )
 	char buf[1024] = { 0 };
 	ServerInputPacket welcome_packet = network->createServerPacket(INIT_SCENE, 0, buf);
 	int bytes_sent = network->sendToClient(client_id, welcome_packet);
@@ -300,7 +299,7 @@ void ServerGame::updateKillPhase() {
 
 			switch (packet.inputType) {
 			MOVEMENT:
-				scene->handlePlayerMovement(packet.finalLocation);
+				scene->handlePlayerMovement(i, packet.finalLocation);
 			}
 		}
 	}

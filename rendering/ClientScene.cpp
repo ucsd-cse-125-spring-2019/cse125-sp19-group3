@@ -1,48 +1,46 @@
-#include "window.h"
+#include "ClientScene.h"
 
-Window * Window_static::window = new Window();
+ClientScene * Window_static::scene = new ClientScene();
 
-void Window::initialize_objects(ClientGame * game)
+void ClientScene::initialize_objects(ClientGame * game)
 {
 	camera = new Camera();
-	camera->SetAspect(width / height);
-	camera->Reset();
 
-	// Load the shader program. Make sure you have the correct filepath up top
 	shader = new Shader(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
 
 	root = new Transform(glm::mat4(1.0f));
-	
-	player_t = new Transform(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)), 
-		glm::rotate(glm::mat4(1.0f), -90 / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)),
-		glm::scale(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, 0.05f)));
-	player_t->model_ids.insert(PLAYER);
-	root->addChild(1, player_t);
 
+	// TODO: add more models
 	player_m = new Model(std::string("../BaseMesh_Anim.fbx"));
 
-	player = new Player(player_t, player_m);
+	//player = new Player(player_t, player_m);
 
-	cube = new Cube();
-	cube->toWorld = glm::translate(glm::mat4(1.0f), glm::vec3(0, 5, 10)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.5f)); 
-				// * glm::scale(glm::mat4(1.0f), glm::vec3(100, 0.01, 100)) * cube->toWorld;
+	//cube = new Cube();
+	//cube->toWorld = glm::translate(glm::mat4(1.0f), glm::vec3(0, 5, 10)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.5f)); 
+	//			// * glm::scale(glm::mat4(1.0f), glm::vec3(100, 0.01, 100)) * cube->toWorld;
 
 	models.push_back(ModelData{player_m, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), shader, COLOR, 0});
 
 	this->game = game;
 }
 
-void Window::clean_up()
-{
-	delete(camera);
-	delete(cube);
-	delete(player_m);
-	delete(player_t);
-	delete(root);
-	//glDeleteProgram(shader);
+void ClientScene::playerInit(const Player &player) {
+	this->player = player;
+
+	// TODO: move to here: init player model and corresponding shader based on player data
 }
 
-GLFWwindow* Window::create_window(int width, int height)
+void ClientScene::clean_up()
+{
+	delete(camera);
+	//delete(cube);
+	delete(player_m);
+	//delete(player_t);
+	delete(root);
+	delete(shader);
+}
+
+GLFWwindow* ClientScene::create_window(int width, int height)
 {
 	// Initialize GLFW
 	if (!glfwInit())
@@ -53,15 +51,6 @@ GLFWwindow* Window::create_window(int width, int height)
 
 	// 4x antialiasing
 	glfwWindowHint(GLFW_SAMPLES, 4);
-
-#ifdef __APPLE__ // Because Apple hates comforming to standards
-	// Ensure that minimum OpenGL version is 3.3
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	// Enable forward compatibility and allow a modern OpenGL context
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
 
 	// Create the GLFW window
 	GLFWwindow* window = glfwCreateWindow(width, height, window_title, NULL, NULL);
@@ -84,22 +73,19 @@ GLFWwindow* Window::create_window(int width, int height)
 	// Get the width and height of the framebuffer to properly resize the window
 	glfwGetFramebufferSize(window, &width, &height);
 	// Call the resize callback to make sure things get drawn immediately
-	//Window::resize_callback(window, width, height);
-	Window::width = width;
-	Window::height = height;
+	//ClientScene::resize_callback(window, width, height);
+	ClientScene::width = width;
+	ClientScene::height = height;
 	// Set the viewport size. This is the only matrix that OpenGL maintains for us in modern OpenGL!
 	glViewport(0, 0, width, height);
 
 	return window;
 }
 
-void Window::resize_callback(GLFWwindow* window, int width, int height)
+void ClientScene::resize_callback(GLFWwindow* window, int width, int height)
 {
-#ifdef __APPLE__
-	glfwGetFramebufferSize(window, &width, &height); // In case your Mac has a retina display
-#endif
-	Window::width = width;
-	Window::height = height;
+	ClientScene::width = width;
+	ClientScene::height = height;
 	// Set the viewport size. This is the only matrix that OpenGL maintains for us in modern OpenGL!
 	glViewport(0, 0, width, height);
 
@@ -109,16 +95,16 @@ void Window::resize_callback(GLFWwindow* window, int width, int height)
 	}
 }
 
-void Window::idle_callback()
+void ClientScene::idle_callback()
 {
 	// Call the update function the cube
 	//cube->update();
 	time += 1.0 / 60;
 	camera->Update();
-	player->update(time);
+	player.update(time);
 }
 
-void Window::display_callback(GLFWwindow* window)
+void ClientScene::display_callback(GLFWwindow* window)
 {
 	// Clear the color and depth buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -138,7 +124,7 @@ void Window::display_callback(GLFWwindow* window)
 	glfwSwapBuffers(window);
 }
 
-void Window::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	// Check for a key press
 	if (action == GLFW_PRESS)
@@ -152,12 +138,12 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 	}
 }
 
-void Window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+void ClientScene::scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
 	glm::vec3 z_dir = camera->cam_look_at - camera->cam_pos;
 	camera->cam_pos -= ((float)-yoffset * glm::normalize(z_dir));
 }
 
-void Window::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
 	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
 	{
@@ -185,7 +171,7 @@ void Window::mouse_button_callback(GLFWwindow* window, int button, int action, i
 }
 
 // SCREEN SPACE: mouse_x and mouse_y are screen space
-glm::vec3 Window::viewToWorldCoordTransform(int mouse_x, int mouse_y) {
+glm::vec3 ClientScene::viewToWorldCoordTransform(int mouse_x, int mouse_y) {
 	// NORMALISED DEVICE SPACE
 	double x = 2.0 * mouse_x / width - 1;
 	double y = 2.0 * mouse_y / height - 1;
@@ -215,12 +201,28 @@ glm::vec3 Window::viewToWorldCoordTransform(int mouse_x, int mouse_y) {
 	return realPos;
 }
 
-char * Window::deserializeSceneGraph(char * data, unsigned int size) {
+char * ClientScene::deserializeInitScene(char * data, unsigned int size) {
+	memcpy(&player.player_id, data, sizeof(unsigned int));
+	data += sizeof(unsigned int);
+	memcpy(&player.root_id, data, sizeof(unsigned int));
+	data += sizeof(unsigned int);
+	size -= 2 * sizeof(unsigned int);
+	char * retval = deserializeSceneGraph(data, size);
+	for (auto child : root->children) {
+		if (player.root_id == child.first) {
+			this->player.playerRoot = child.second;
+			break;
+		}
+	}
+	return retval;
+}
+
+char * ClientScene::deserializeSceneGraph(char * data, unsigned int size) {
 	char * retval = deserializeSceneGraph(root, data, size);
 	return retval;
 }
 
-char * Window::deserializeSceneGraph(Transform * t, char * data, unsigned int size) {
+char * ClientScene::deserializeSceneGraph(Transform * t, char * data, unsigned int size) {
 	memcpy(&t->M[0][0], data, sizeof(glm::mat4));
 	data += sizeof(glm::mat4);
 	size -= sizeof(glm::mat4);
@@ -259,7 +261,7 @@ char * Window::deserializeSceneGraph(Transform * t, char * data, unsigned int si
 	return data;
 }
 
-void Window::removeTransform(Transform * parent, const unsigned int node_id) {
+void ClientScene::removeTransform(Transform * parent, const unsigned int node_id) {
 	auto to_remove = parent->children[node_id];
 	for (auto child : to_remove->children) {
 		removeTransform(to_remove, child.first);

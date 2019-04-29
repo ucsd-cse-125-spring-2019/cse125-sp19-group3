@@ -1,15 +1,6 @@
-#ifndef _WINDOW_H_
-#define _WINDOW_H_
-
 #include <iostream>
 #include <vector>
-
-#define GLFW_INCLUDE_GLEXT
-#ifdef __APPLE__
-#define GLFW_INCLUDE_GLCOREARB
-#else
 #include <GL/glew.h>
-#endif
 #include <GLFW/glfw3.h>
 
 #include "Cube.h"
@@ -25,11 +16,12 @@
 #define VERTEX_SHADER_PATH "../shader.vert"
 #define FRAGMENT_SHADER_PATH "../shader.frag"
 
-class Window {
+class ClientScene {
 public:
 	int width;
 	int height;
 	void initialize_objects(ClientGame * game);
+	void playerInit(const Player &player);
 	void clean_up();
 	GLFWwindow * create_window(int width, int height);
 	void resize_callback(GLFWwindow* window, int width, int height);
@@ -39,6 +31,7 @@ public:
 	void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 	void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 	glm::vec3 viewToWorldCoordTransform(int mouse_x, int mouse_y);
+	char* deserializeInitScene(char * data, unsigned int size);
 	char* deserializeSceneGraph(char* data, unsigned int size);
 	char* deserializeSceneGraph(Transform* t, char* data, unsigned int size);
 
@@ -48,7 +41,7 @@ private:
 	Camera * camera;
 
 	Cube * cube;
-	Player * player;
+	Player player;
 	Model * player_m;
 	Transform * root;
 	Transform * player_t;
@@ -63,23 +56,21 @@ private:
 	void removeTransform(Transform * parent, const unsigned int node_id);
 };
 
-#endif
-
 class Window_static
 {
 public:
-	static Window * window;
-	static void initialize_objects(ClientGame * game) { window->initialize_objects(game); };
-	static void clean_up() { window->clean_up(); };
-	static GLFWwindow * create_window(int width, int height) { return window->create_window(width, height); };
+	static ClientScene * scene;
+	static void initialize_objects(ClientGame * game) { scene->initialize_objects(game); };
+	static void clean_up() { scene->clean_up(); };
+	static GLFWwindow * create_window(int width, int height) { return scene->create_window(width, height); };
 	static void resize_callback(GLFWwindow* win, int width, int height) {
-		window->resize_callback(win, width, height);
+		scene->resize_callback(win, width, height);
 	};
-	static void idle_callback() { window->idle_callback(); };
-	static void display_callback(GLFWwindow* win) { window->display_callback(win); };
-	static void key_callback(GLFWwindow* win, int key, int scancode, int action, int mods) { window->key_callback(win, key, scancode, action, mods); };
-	static void scroll_callback(GLFWwindow* win, double xoffset, double yoffset) { window->scroll_callback(win, xoffset, yoffset); };
-	static void mouse_button_callback(GLFWwindow* win, int button, int action, int mods) { window->mouse_button_callback(win, button, action, mods); };
+	static void idle_callback() { scene->idle_callback(); };
+	static void display_callback(GLFWwindow* win) { scene->display_callback(win); };
+	static void key_callback(GLFWwindow* win, int key, int scancode, int action, int mods) { scene->key_callback(win, key, scancode, action, mods); };
+	static void scroll_callback(GLFWwindow* win, double xoffset, double yoffset) { scene->scroll_callback(win, xoffset, yoffset); };
+	static void mouse_button_callback(GLFWwindow* win, int button, int action, int mods) { scene->mouse_button_callback(win, button, action, mods); };
 };
 
 

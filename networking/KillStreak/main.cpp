@@ -1,12 +1,4 @@
-#include "logger.hpp"
-#include "sysexits.h"
-#include "INIReader.h"
-#include "ClientGame.h"
-#include "ServerGame.hpp"
-
-#include <stdlib.h>
-#include <iostream>
-#include <process.h>
+#include "main.h"
 using namespace std;
 
 
@@ -40,7 +32,7 @@ int main(int argc, char** argv) {
 		return EX_CONFIG;
 	}
 
-	/*
+	
 	// Multi-threaded approach ************************************************
 
 	// create new thread and run server
@@ -54,7 +46,7 @@ int main(int argc, char** argv) {
 	client->run();
 
 	// ************************************************************************
-	*/
+	
 
 
 
