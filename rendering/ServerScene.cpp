@@ -19,6 +19,7 @@ void ServerScene::addPlayer(unsigned int playerId) {
 
 	// TODO: need to set model type based on player selection in lobby
 	player = new Player(playerId, nodeIdCounter, HUMAN);
+	player->playerRoot = playerRoot;
 	playerMap.insert(std::pair<unsigned int, Player *>(playerId, player));
 	playerIdCounter++;
 }

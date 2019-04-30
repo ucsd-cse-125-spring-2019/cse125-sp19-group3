@@ -32,6 +32,7 @@ public:
 	unsigned int serializeInitScene(char* data, unsigned int playerId, unsigned int playerRootId);
 	unsigned int serializeSceneGraph(char* data);
 	unsigned int serializeSceneGraph(Transform* t, char* data);
+	Transform * getRoot();
 
 private:
 	Player * player;

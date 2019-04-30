@@ -174,10 +174,14 @@ void ServerGame::game_match()
 
 	}
 
+	for (auto client_data : client_data_list) {
+		unsigned int client_id = client_data->id;
+		scene->addPlayer(client_id);	
+	}
+
 	// Init players in the scene
 	for (auto client_data : client_data_list) {
 		unsigned int client_id = client_data->id;
-		scene->addPlayer(client_id);
 		char buf[1024] = { 0 };
 		unsigned int size = scene->serializeInitScene(buf, client_id, scene->playerMap[client_id]->root_id);
 		ServerInputPacket welcome_packet = network->createServerPacket(INIT_SCENE, size, buf);
@@ -274,7 +278,7 @@ void ServerGame::launch() {
 */
 void ServerGame::updateKillPhase() {
 	auto log = logger();
-	log->info("MT: Game server kill phase update...");
+	// log->info("MT: Game server kill phase update...");
 
 	// create temp vectors for each client to dump all incoming packets into
 	vector<vector<ClientInputPacket>> inputPackets;
@@ -304,15 +308,17 @@ void ServerGame::updateKillPhase() {
 	for (int i = 0; i < GAME_SIZE; i++) {
 		for (auto packet : inputPackets[i]) {
 
-			log->info("Server received packet with input type {}, finalLocation of {}, {}, {}", 
-				packet.inputType, packet.finalLocation.x, packet.finalLocation.y, packet.finalLocation.z);
+			//log->info("Server received packet with input type {}, finalLocation of {}, {}, {}", 
+			//	packet.inputType, packet.finalLocation.x, packet.finalLocation.y, packet.finalLocation.z);
 
 			switch (packet.inputType) {
-			MOVEMENT:
+			case MOVEMENT:
+				log->info("Handling movement packet on server");
 				scene->handlePlayerMovement(i, packet.finalLocation);
 			}
 		}
 	}
+	scene->update();
 
 	// Serialize scene graph and send packet to clients
 	char buf[1024] = { 0 };

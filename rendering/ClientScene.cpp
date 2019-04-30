@@ -106,7 +106,7 @@ void ClientScene::idle_callback()
 	//cube->update();
 	time += 1.0 / 60;
 	camera->Update();
-	player.update(time);
+	//player.update(time);
 }
 
 void ClientScene::display_callback(GLFWwindow* window)
@@ -226,7 +226,11 @@ char * ClientScene::deserializeInitScene(char * data, unsigned int size) {
 }
 
 char * ClientScene::deserializeSceneGraph(char * data, unsigned int size) {
+	auto log = logger();
+	
 	char * retval = deserializeSceneGraph(root, data, size);
+	if(this->player.playerRoot)
+		log->info("Client root is {} {} {}, after deserialization.", player.playerRoot->M[0][0], player.playerRoot->M[0][1], player.playerRoot->M[0][2]);
 	return retval;
 }
 

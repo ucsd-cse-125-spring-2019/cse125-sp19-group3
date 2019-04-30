@@ -301,7 +301,8 @@ void ClientGame::run() {
 
 		// TODO: REMOVE ME!!! (new thread should handle incoming packets
 		ServerInputPacket* packet = network->receivePacket();
-		log->info("client received packet of size {}", packet->size);
+		//log->info("client received packet of size {}", packet->size);
+		//log->info("client received packet of size {}", packet->size);
 		Window_static::scene->deserializeSceneGraph(packet->data, packet->size);
 
 
