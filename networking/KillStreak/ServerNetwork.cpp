@@ -315,7 +315,7 @@ ServerInputPacket ServerNetwork::createServerPacket(ServerPacketType type, int s
 	packet.size = size;
 	auto log = logger();
 	log->info("Size of scene graph packet is {}", (size + 2));
-	memcpy(packet.data, data, sizeof(glm::mat4));
+	memcpy(packet.data, data, size);
 
 	return packet;
 }

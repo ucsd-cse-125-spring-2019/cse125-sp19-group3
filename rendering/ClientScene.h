@@ -2,6 +2,7 @@
 #include <vector>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "Cube.h"
 #include "shader.h"

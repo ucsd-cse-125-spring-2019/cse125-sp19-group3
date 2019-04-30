@@ -9,7 +9,7 @@ ServerScene::~ServerScene() {
 	delete root;
 }
 
-void ServerScene::addPlayer() {
+void ServerScene::addPlayer(unsigned int playerId) {
 	nodeIdCounter++;
 	playerRoot = new Transform(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)),
 		glm::rotate(glm::mat4(1.0f), -90 / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)),
@@ -18,8 +18,8 @@ void ServerScene::addPlayer() {
 	root->addChild(nodeIdCounter, playerRoot);
 
 	// TODO: need to set model type based on player selection in lobby
-	player = new Player(playerIdCounter, nodeIdCounter, HUMAN);
-	playerMap.insert(std::pair<unsigned int, Player *>(playerIdCounter, player));
+	player = new Player(playerId, nodeIdCounter, HUMAN);
+	playerMap.insert(std::pair<unsigned int, Player *>(playerId, player));
 	playerIdCounter++;
 }
 
@@ -58,7 +58,7 @@ unsigned int ServerScene::serializeSceneGraph(char* data) {
 }
 
 unsigned int ServerScene::serializeSceneGraph(Transform* t, char* data) {
-	memcpy(data, &t->M[0][0], sizeof(glm::mat4));
+	memcpy(data, &(t->M[0][0]), sizeof(glm::mat4));
 	data += sizeof(glm::mat4);
 	unsigned int size = sizeof(glm::mat4);
 
@@ -71,13 +71,13 @@ unsigned int ServerScene::serializeSceneGraph(Transform* t, char* data) {
 		size += serializeSceneGraph(child.second, data);
 	}
 
-	//for (auto model_id : t->model_ids) {
-	//	*data++ = 'M';
-	//	size += sizeof(char);
-	//	memcpy(data, &model_id, sizeof(unsigned int));
-	//	data += sizeof(unsigned int);
-	//	size += sizeof(unsigned int);
-	//}
+	for (auto model_id : t->model_ids) {
+		*data++ = 'M';
+		size += sizeof(char);
+		memcpy(data, &model_id, sizeof(unsigned int));
+		data += sizeof(unsigned int);
+		size += sizeof(unsigned int);
+	}
 
 	*data++ = '\0';
 	size += sizeof(char);

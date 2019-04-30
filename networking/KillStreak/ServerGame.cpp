@@ -174,6 +174,16 @@ void ServerGame::game_match()
 
 	}
 
+	// Init players in the scene
+	for (auto client_data : client_data_list) {
+		unsigned int client_id = client_data->id;
+		scene->addPlayer(client_id);
+		char buf[1024] = { 0 };
+		unsigned int size = scene->serializeInitScene(buf, client_id, scene->playerMap[client_id]->root_id);
+		ServerInputPacket welcome_packet = network->createServerPacket(INIT_SCENE, size, buf);
+		int bytes_sent = network->sendToClient(client_id, welcome_packet);
+	}
+
 	// all clients connected, wait LOBBY_START_TIME (ms) before starting character selection
 	log->info("MT: Character selection starting in {} seconds...", LOBBY_START_TIME/1000);
 	Sleep(LOBBY_START_TIME);					

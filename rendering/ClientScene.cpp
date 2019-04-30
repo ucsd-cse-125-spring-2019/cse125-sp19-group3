@@ -5,10 +5,12 @@ ClientScene * Window_static::scene = new ClientScene();
 void ClientScene::initialize_objects(ClientGame * game)
 {
 	camera = new Camera();
+	camera->SetAspect(width / height);
+	camera->Reset();
 
 	shader = new Shader(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
 
-	root = new Transform(glm::mat4(1.0f));
+
 
 	// TODO: add more models
 	player_m = new Model(std::string("../BaseMesh_Anim.fbx"));
@@ -26,8 +28,11 @@ void ClientScene::initialize_objects(ClientGame * game)
 
 void ClientScene::playerInit(const Player &player) {
 	this->player = player;
-
-	// TODO: move to here: init player model and corresponding shader based on player data
+	
+	// TODO: move to here: 
+	// 1) init player model
+	// 2) create corresponding shader based on player data
+	// 3) move camera
 }
 
 void ClientScene::clean_up()
@@ -117,6 +122,8 @@ void ClientScene::display_callback(GLFWwindow* window)
 
 	// Now send these values to the shader program
 	root->draw(shader, models, glm::mat4(1.0f), camera->GetViewProjectMtx());
+	//models[0].model->draw(models[0].shader, player.playerRoot->M, camera->GetViewProjectMtx());
+	//models[0].model->draw(models[0].shader, glm::mat4(1.0f), camera->GetViewProjectMtx());
 
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();
@@ -185,7 +192,7 @@ glm::vec3 ClientScene::viewToWorldCoordTransform(int mouse_x, int mouse_y) {
 	glm::mat4 viewProjectionInverse = inverse(ProjectView);
 
 	glm::vec4 worldPos = viewProjectionInverse * screenPos;
-	printf("world pos map to: %f %f %f\n", worldPos.x, worldPos.y, worldPos.z);
+	//printf("world pos map to: %f %f %f\n", worldPos.x, worldPos.y, worldPos.z);
 	glm::vec3 realPos = glm::vec3(worldPos.x / worldPos.w, worldPos.y / worldPos.w, worldPos.z / worldPos.w);
 	
 
@@ -196,7 +203,7 @@ glm::vec3 ClientScene::viewToWorldCoordTransform(int mouse_x, int mouse_y) {
 	realPos.y = 0;
 	realPos.z = cam_pos.z + n * dir.z;
 
-	printf("world pos remap to: %f %f %f\n", realPos.x, realPos.y, realPos.z);
+	//printf("world pos remap to: %f %f %f\n", realPos.x, realPos.y, realPos.z);
 
 	return realPos;
 }
@@ -207,6 +214,7 @@ char * ClientScene::deserializeInitScene(char * data, unsigned int size) {
 	memcpy(&player.root_id, data, sizeof(unsigned int));
 	data += sizeof(unsigned int);
 	size -= 2 * sizeof(unsigned int);
+	root = new Transform(glm::mat4(1.0f));
 	char * retval = deserializeSceneGraph(data, size);
 	for (auto child : root->children) {
 		if (player.root_id == child.first) {
@@ -223,13 +231,15 @@ char * ClientScene::deserializeSceneGraph(char * data, unsigned int size) {
 }
 
 char * ClientScene::deserializeSceneGraph(Transform * t, char * data, unsigned int size) {
-	memcpy(&t->M[0][0], data, sizeof(glm::mat4));
+	memcpy(glm::value_ptr(t->M), data, sizeof(glm::mat4));
 	data += sizeof(glm::mat4);
 	size -= sizeof(glm::mat4);
 
 	t->model_ids.clear();
 
-	while (char c = *data++) {
+	while (*data && size > 0) {
+		char c = *data;
+		data++;
 		size -= sizeof(char);
 		if (c == 'T') {
 			unsigned int node_id;
@@ -241,12 +251,13 @@ char * ClientScene::deserializeSceneGraph(Transform * t, char * data, unsigned i
 			updated_ids.insert(node_id);
 			data = deserializeSceneGraph(t->children[node_id], data, size);
 		}
-		//else if (c == 'M') {
-		//	unsigned int model_id;
-		//	memcpy(&model_id, data, sizeof(unsigned int));
-		//	data += sizeof(unsigned int);
-		//	t->model_ids.insert(model_id);
-		//}
+		else if (c == 'M') {
+			unsigned int model_id;
+			memcpy(&model_id, data, sizeof(unsigned int));
+			data += sizeof(unsigned int);
+			size -= sizeof(unsigned int);
+			t->model_ids.insert(model_id);
+		}
 	}
 
 	std::vector<unsigned int> to_remove;
