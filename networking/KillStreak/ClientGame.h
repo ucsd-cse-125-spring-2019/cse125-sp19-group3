@@ -23,4 +23,7 @@ protected:
 	PCSTR serverPort;
 	ServerInputQueue serverPackets;			// queue of packets from server
 	mutex* q_lock;							// lock for queue
+	vector<string> skill_names;
+	vector<int> cooldown_times;
+
 };

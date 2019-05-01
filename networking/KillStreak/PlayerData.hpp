@@ -3,6 +3,7 @@
 #include <string>
 #include <algorithm>    // std::sort
 #include <vector>
+#include "../../ServerScene.h"
 
 // #define PLAYERNUM 4;
 
@@ -26,7 +27,7 @@ protected:
 	float prizeChange;							// prizes increases per round (1.2)
 };
 
-typedef enum{AOE, MINIMAP, INVISIBLE, CHARGE, DEFAULT_SKILLTYPE} SkillType;
+typedef enum{MELEE, PROJECTILE, AOE, MINIMAP, INVISIBLE, CHARGE, DEFAULT_SKILLTYPE} SkillType;
 class Skill {
 protected:
 	SkillType skillType;
@@ -46,7 +47,7 @@ public:
 	Arche(){}
 	~Arche(){}
 	void addSkill(Skill s) { skills.push_back(s); }
-	virtual void useSkill(int skillIndex, Point finalLocation);
+	virtual void useSkill(int skillIndex, Point finalLocation, ServerScene * scene);
 protected:
 	vector<Skill> skills;
 };
@@ -54,19 +55,32 @@ protected:
 class Mage: Arche {
 	Mage() {}
 	~Mage() {}
-	void useSkill(int skillIndex, Point finalLocation);
+	void useSkill(int skillIndex, Point finalLocation, ServerScene * scene);
+	void melee(ServerScene * scene);
+	void projectile(Point finalLocation, ServerScene * scene);
+	void aoe(ServerScene * scene);
+	void coneAoe(Point finalLocation, ServerScene * scene);
 };
 
 class Assassin: Arche {
 	Assassin() {}
 	~Assassin() {}
-	void useSkill(int skillIndex, Point finalLocation);
+	void useSkill(int skillIndex, Point finalLocation, ServerScene * scene);
+	void melee(ServerScene * scene);
+	void projectile(Point finalLocation, ServerScene * scene);
+	void aoe(ServerScene * scene);
+	void minimap();
+	void invisibility();
 };
 
 class Warrior: Arche {
 	Warrior() {}
 	~Warrior() {}
-	void useSkill(int skillIndex, Point finalLocation);
+	void useSkill(int skillIndex, Point finalLocation, ServerScene * scene);
+	void melee(ServerScene * scene);
+	void projectile(Point finalLocation, ServerScene * scene);
+	void aoe(ServerScene * scene);
+	void coneAoe(Point finalLocation, ServerScene * scene);
 };
 
 class Player {
