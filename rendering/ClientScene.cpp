@@ -230,7 +230,7 @@ char * ClientScene::deserializeSceneGraph(char * data, unsigned int size) {
 	
 	char * retval = deserializeSceneGraph(root, data, size);
 	if(this->player.playerRoot)
-		log->info("Client root is {} {} {}, after deserialization.", player.playerRoot->M[0][0], player.playerRoot->M[0][1], player.playerRoot->M[0][2]);
+		log->info("Player {}: Client root is {} {} {}, after deserialization.", player.player_id, player.playerRoot->M[0][0], player.playerRoot->M[0][1], player.playerRoot->M[0][2]);
 	return retval;
 }
 

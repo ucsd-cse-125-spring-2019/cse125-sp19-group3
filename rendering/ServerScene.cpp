@@ -18,6 +18,8 @@ void ServerScene::addPlayer(unsigned int playerId) {
 	root->addChild(nodeIdCounter, playerRoot);
 
 	// TODO: need to set model type based on player selection in lobby
+
+	//TODO: WARNING: ALWAYS SETTING this.player TO THE NEWEST PLAYER IN THE LOBBY
 	player = new Player(playerId, nodeIdCounter, HUMAN);
 	player->playerRoot = playerRoot;
 	playerMap.insert(std::pair<unsigned int, Player *>(playerId, player));
