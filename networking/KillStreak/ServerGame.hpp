@@ -43,6 +43,7 @@ protected:
 	PCSTR host;
 	PCSTR port;
 	double tick_rate;
+	int char_select_time;					// time for character selection phase
 
 	ServerScene * scene;
 	ServerNetwork* network;					// ptr to servers network

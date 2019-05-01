@@ -2,6 +2,7 @@
 #include "ClientNetwork.hpp"
 #include "Logger.hpp"
 #include "sysexits.h"
+#include <chrono>
 
 #include "../../rendering/main.h"
 
@@ -45,7 +46,14 @@ ClientGame::ClientGame(INIReader& t_config) : config(t_config) {
 	// get port (config)
 	string get_port = servconf.substr(idx + 1);
 	serverPort = get_port.c_str();
-	
+
+	// get character selection time (config)
+	char_select_time = (int) (config.GetInteger("game", "char_select_time", -1));
+	if (char_select_time == -1) {
+		log->error("Invalid char_select_time in config file");
+		exit(EX_CONFIG);
+	}
+
 	q_lock = new mutex();
 	serverPackets = new ServerInputQueue();
 	network = new ClientNetwork(host, serverPort);
@@ -190,57 +198,77 @@ int ClientGame::join_game()
 	}
 
 	// block until receive servers welcome package (telling us we're accepted and in lobby)
-	ServerInputPacket* packet = network->receivePacket();
-	if (!packet)									// error 
+	ServerInputPacket* welcome_packet = network->receivePacket();
+	if (!welcome_packet)									// error 
 	{
 		log->error("Error receiving servers initialization packet");
 		return 0;
 	}
-	if (packet->packetType != INIT_SCENE)			// not initialization packet
+	if (welcome_packet->packetType != INIT_SCENE)			// not initialization packet
 	{
 		log->error("Invalid initialization packet sent from server");
+		free(welcome_packet);
 		return 0;
 	}
 
+	free(welcome_packet);		// deallocate welcome packet
 
-	// CLIENT JOINED LOBBY ************************************************
-	// must wait for server to send packet (game starting sending to character selection)
-	log->info("Received servers init package, waiting in lobby!!");
 
+	/* 
+	CLIENT JOINED LOBBY ************************************************
+		--> Block on recv() until server sends confirmation all players joined starting character selection 
+	*/
+
+	log->info("Received servers init package, waiting in lobby for all players to join...");
+
+	// block on recv() until server starts character selection phase 
+	ServerInputPacket* char_select_packet = network->receivePacket();
+	while (char_select_packet->packetType != CHAR_SELECT_PHASE)
+	{
+		free(char_select_packet);							// deallocate invalid packet
+		char_select_packet = network->receivePacket();		// get another packet
+	}
+	free(char_select_packet);								// deallocate packet
+
+	log->info("All players joined, selecting character and username.");
+	string username;			// user selected username
+	string selected_char;		// user selected character
+
+	// countdown until character selection phase is over
+	auto Start = std::chrono::high_resolution_clock::now();
+	while (1)
+	{
+		// time up? 
+		auto End = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double, std::milli> Elapsed = End - Start;
+		if (Elapsed.count() >= char_select_time)		
+			break;
+
+		// TODO: Display UI (enter username, pick character) --> update values
+		username = "Snake";		// TODO: REMOVE ME
+		selected_char = "Link";	// TODO: REMOVE ME
+
+	}
+
+	log->info("Time up, sending selection data to server, waiting for game to start.");
 
 	/*
-		**** DISCUSS following...
-
-		0. Should we just allow character selection and username input while the clients 
-			are waiting in the lobby? Once the laster player enters they'll have 30 seconds 
-			to make their decision? 
-
-		1. block until recv() start game from server 
-			--> initiate countdown based on how long server says you have 
-				** Should we do this locally? 
-				** I.E. server says you have 30 seconds, and client handles countdown
-			--> Once decision made send to server
-			--> Then block until you receive confirmation from server that characters			
-					are selected and the game is starting
-
-		2. Create new thread to always recv() incoming packets from server
-
+		1. Create new packet for client to send to server with its selection 
+			--> Client blocks until recvieves confirmation from server that game is starting
+		2. recv() and deserialize packet on the server 
+		3. server waits for each client to send packet
+		4. server sends ACK to all clients that game is starting once all character packets recvieved
 	*/
 
-	/*
-	--> DISCUSS: When should we launch this thread? Once actual game starts,
-			during lobby? etc.. 
-		** Do we want to associate lobby with this thread? Or run it AFTER 
-			the lobby is complete? 
-	*/
+	// TODO: Create new type of packet (ClientSelectionPacket) in CoreTypes.hpp specifically for 
+	// selecting a character.
+	// send packet with selection data to server
 
 
 
-	/* FOR NOW: 
-		1. Create seperate client thread that recv()'s indefinently XXXX
-		2. Have main thread get each packet checking what type it is!
-		3. Test by having server send multiple different packets to client
-	*/
+	// TODO: Block on recv() until server sends start_game packet
+
+
 
 	// allocate new data for server thread & launch (will recv() indefinitely)
 	server_data* server_arg = (server_data *)malloc(sizeof(server_data));
@@ -276,28 +304,10 @@ void ClientGame::run() {
 		return;
 	}
 
+	while (1) {}; // TODO: REMOVE ME!!
 
-	// TODO: TEST RECEIVING PACKETS, iterate over queue and take take take!
-	// TODO: TESTING ------- REMOVE ME!!!!
-	while (1) {
-		ServerInputPacket* packet;
-
-		// acquire lock & get next packet from queue
-		q_lock->lock();
-		if (!(serverPackets->empty())) {
-			packet = serverPackets->front();
-			serverPackets->pop();
-			log->debug("Packet Type: {}", packet->packetType);
-			log->debug("Reading packet data --> {}", packet->data);
-		}
-		q_lock->unlock();
-
-	}
-
-
-
-	// This part will run after all players join and players leave lobby!
 	// GAME STARTING ******************************************************
+	// This part will run after all players have selected their characters!
 
 	// Create the GLFW window
 	window = Window_static::create_window(640, 480);

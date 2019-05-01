@@ -174,22 +174,39 @@ void ServerGame::game_match()
 
 	}
 
+	// LOBBY OVER CHARACTER SELECTION STARTING ***************************************************
+
 	// all clients connected, wait LOBBY_START_TIME (ms) before starting character selection
 	log->info("MT: Character selection starting in {} seconds...", LOBBY_START_TIME/1000);
 	Sleep(LOBBY_START_TIME);					
-	log->info("MT: Character selection started!");
 
 	/*
-	1) send startgame packet to all clients
+	XXX) send startgame packet to all clients
 		--> Hey client game is starting, exit the lobby, enter username and select character
-		--> Tell them how much time they have to make selection
-		*** NOTE: Need to modify client thread to expect this!
-	2) start timer on server
-	3) wait until you receive all finish start game init packets from clients && timer is up
-		** Once timer is up send ack to clients telling them its starting with whatever 
-			data is needed
-	4) schedule end of kill phase
+
+	2) wait for all clients to make their selections (their timers run out)
+
+	3) send ACK to clients telling them the game is starting and any init data they may need
+
+	XXX) schedule end of kill phase
 	*/
+
+	log->info("MT: Broadcasting character selection packet!");
+
+	// broadcast character selection packet to all clients
+	char buf[1024] = { 0 };
+	ServerInputPacket char_select_packet = network->createServerPacket(CHAR_SELECT_PHASE, 0, buf);
+	network->broadcastSend(char_select_packet);
+
+
+	// block on recv() until all clients send character selections
+	// TODO: How to approach this?  
+	// --> Check to see if each client has sent the packet 
+
+
+	// TODO: broadcast game start to all clients once all characters selected
+
+
 
 	// schedule end of kill phase
 	ScheduledEvent initKillPhase(END_KILLPHASE, 60); // play with values in config file
@@ -215,6 +232,7 @@ void ServerGame::launch() {
 	game_match();	
 
 	// TESTING: Sending multiple different packets to client testing their queue
+	/*
 	log->debug("MT: Sending test packets to client");
 	char buf[1024] = "The first packet!";
 	ServerInputPacket welcome_packet = network->createServerPacket(INIT_SCENE, 0, buf);
@@ -235,6 +253,8 @@ void ServerGame::launch() {
 	log->debug("MT: Sending packet data: {}", buf3);
 
 	log->debug("MT: All three packets sent to client");
+	*/
+
 	while (1) {};	// TODO: REMOVE ME!!!!
 
 

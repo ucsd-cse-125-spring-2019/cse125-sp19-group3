@@ -123,14 +123,11 @@ ServerInputPacket* ClientNetwork::receivePacket()
 	char* temp_buff = (char*)malloc(sizeof(ServerInputPacket));
 	int bytes_read = receiveData(temp_buff);
 
-	logger()->debug("Pre-deserialization packet size: {}", bytes_read);
-
 	// client closed conection/error?
 	if (!bytes_read || bytes_read == SOCKET_ERROR) return 0;
 
 	// deserialize data into memory, point packet to it
 	ServerInputPacket* packet = deserializeSP(temp_buff);
-	logger()->debug("Deserialized packet size: {}", bytes_read);
 	return packet;
 }
 
