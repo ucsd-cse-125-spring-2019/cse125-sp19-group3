@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
 	auto log = logger();
 
 	// Handle the command-line argument
-	if (argc != 2) {
+	if (argc != 3) {
 		cerr << "Usage: " << argv[0] << " [config_file]" << endl;
 		return EX_USAGE;
 	}
@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
 	if (config.GetBoolean("server", "enabled", true))	
 	{
 		log->info("Launching Killstreak server");
-		server = new ServerGame(config,meta_data);
+		server = new ServerGame(config, meta_data);
 		server->launch();
 	}
 	else if (config.GetBoolean("client", "enabled", true))

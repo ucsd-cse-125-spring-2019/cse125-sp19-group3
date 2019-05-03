@@ -17,7 +17,7 @@ static int game_start = 0;			// game ready to begin?
 	Parse data from config file for server. Then initialize 
 	server network (create socket).
 */
-ServerGame::ServerGame(INIReader& t_config, INIReader& t_meta_data) : config(t_config),meta_data(t_meta_data){
+ServerGame::ServerGame(INIReader& t_config, INIReader& t_meta_data) : config(t_config), meta_data(t_meta_data) {
 	auto log = logger();
 
 	// get server data from config file
@@ -50,7 +50,7 @@ ServerGame::ServerGame(INIReader& t_config, INIReader& t_meta_data) : config(t_c
   
   // fetch list of archetype
 	string archetype_t = meta_data.Get("Archetype", "list", "");
-	if (archetype == "") {
+	if (archetype_t == "") {
 		log->error("Archetype list not found in config file");
 		exit(EX_CONFIG);
 	}
@@ -66,13 +66,13 @@ ServerGame::ServerGame(INIReader& t_config, INIReader& t_meta_data) : config(t_c
   vector <string> skills;
   for(string type:archetype){
 	  string skills_t = meta_data.Get(type, "skill", "");
-	  if (archetype == "") {
+	  if (archetype_t == "") {
 	  	log->error("{} skill not found in config file",type);
 	  	exit(EX_CONFIG);
 	  }
     std::stringstream skills_stream(skills_t);
     while(std::getline(skills_stream,temp,',')){
-      skill.push_back(temp);
+      skills.push_back(temp);
     }
 
     for(string skill:skills){
@@ -82,7 +82,7 @@ ServerGame::ServerGame(INIReader& t_config, INIReader& t_meta_data) : config(t_c
       //assignment on global static
     }
     
-    skills.clear()
+	skills.clear();
   }
 //	size_t idx = servconf.find(":");		// delimiter index
 //	if (idx == string::npos) {

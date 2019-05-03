@@ -27,7 +27,7 @@ typedef struct {
 
 class ServerGame {
 public:
-	ServerGame(INIReader& t_config);
+	ServerGame(INIReader& t_config, INIReader& t_meta_data);
 
 	void launch();
 
@@ -41,6 +41,7 @@ public:
 
 protected:
 	INIReader & config;
+	INIReader & meta_data;
 	PCSTR host;
 	PCSTR port;
 	ServerNetwork* network;
