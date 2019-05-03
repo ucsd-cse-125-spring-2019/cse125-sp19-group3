@@ -17,7 +17,7 @@ public:
 	LeaderBoard() : currentKills(vector<int>(PLAYERNUM, 0)), currPoints(vector<int>(PLAYERNUM, 0)) {}
 	~LeaderBoard() {}
 
-	vector<int> roundSummary (); // Update vectors for the round and return the ranking of each player
+	vector<int>* roundSummary (); // Update vectors for the round and return the ranking of each player
 	vector<int> getCurrPoints() {return currPoints;}
 
 protected:
@@ -47,7 +47,7 @@ public:
 	Arche(){}
 	~Arche(){}
 	void addSkill(Skill s) { skills.push_back(s); }
-	virtual void useSkill(int skillIndex, Point finalLocation, ServerScene * scene);
+	virtual void useSkill(int skillIndex, Point finalLocation, ServerScene * scene) {}
 protected:
 	vector<Skill> skills;
 };
@@ -55,7 +55,7 @@ protected:
 class Mage: Arche {
 	Mage() {}
 	~Mage() {}
-	void useSkill(int skillIndex, Point finalLocation, ServerScene * scene);
+	void useSkill(int skillIndex, Point finalLocation, ServerScene * scene) override;
 	void melee(ServerScene * scene);
 	void projectile(Point finalLocation, ServerScene * scene);
 	void aoe(ServerScene * scene);
@@ -65,7 +65,7 @@ class Mage: Arche {
 class Assassin: Arche {
 	Assassin() {}
 	~Assassin() {}
-	void useSkill(int skillIndex, Point finalLocation, ServerScene * scene);
+	void useSkill(int skillIndex, Point finalLocation, ServerScene * scene) override;
 	void melee(ServerScene * scene);
 	void projectile(Point finalLocation, ServerScene * scene);
 	void aoe(ServerScene * scene);
@@ -76,7 +76,7 @@ class Assassin: Arche {
 class Warrior: Arche {
 	Warrior() {}
 	~Warrior() {}
-	void useSkill(int skillIndex, Point finalLocation, ServerScene * scene);
+	void useSkill(int skillIndex, Point finalLocation, ServerScene * scene) override;
 	void melee(ServerScene * scene);
 	void projectile(Point finalLocation, ServerScene * scene);
 	void aoe(ServerScene * scene);
@@ -103,57 +103,5 @@ protected:
 	int currKillStreak;		// to give out gold
 	int currLoseStreak;		// to give out gold
 	unordered_set<string> inventory;	// items from shop
-	unordered_set<string> equipped;		// weapons, default to a melee and a proj
-	int meleeLv;
-	int projLv;
-
 };
 
-vector<int> LeaderBoard::roundSummary() {
-	// get the ranking result of this round
-	vector<int> temp(currentKills);
-	vector<int> rankings(PLAYERNUM);
-	sort(temp.begin(), temp.end(), [](const int &i1, const int &i2) {return i1 > i2; });
-
-	int rank = 1;
-	int curr = temp[0]+1;
-	for (int score : temp) {
-		if (score < curr) { rank++; curr = score;}
-		else { continue; }
-
-		for (int i=0; i<PLAYERNUM; i++) {
-			if (currentKills[i] == score) { rankings[i] = rank; }
-		}
-	}
-
-	// Update current points based on rankings
-	for (int i=0; i<PLAYERNUM; i++) currPoints[i] += prizes[rankings[i]];
-	// Update prizes
-	for (int i=0; i<PLAYERNUM; i++) prizes[i] *= prizeChange;
-	// reset current kills
-	currentKills.clear();
-
-	return rankings;
-}
-
-void Skill::update(SkillType skillType, int range=0, int cooldown=0, int duration=0, int speed=0) {
-	this->skillType = skillType;
-	this->cooldown = cooldown;
-	switch (skillType) {
-	case AOE:
-		this->range = range;
-		this->duration = duration;
-		break;
-	case MINIMAP:
-		this->duration = duration;
-		break;
-	case INVISIBLE:
-		this->duration = duration;
-		this->speed = speed;
-		break;
-	case CHARGE:
-		this->range = range;
-		this->speed = speed;
-		break;
-	}
-}
