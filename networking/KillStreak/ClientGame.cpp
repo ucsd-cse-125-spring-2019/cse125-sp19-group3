@@ -178,6 +178,7 @@ int ClientGame::join_game()
 {
 	auto log = logger();
 
+
 	log->info("Sending initialization packet...");
 
 	// send initial request to server (ask to join game, start my thread on the server!)
@@ -197,6 +198,7 @@ int ClientGame::join_game()
 		return 0;
 	}
 
+
 	// block until receive servers welcome package (telling us we're accepted and in lobby)
 	ServerInputPacket* welcome_packet = network->receivePacket();
 	if (!welcome_packet)									// error 
@@ -210,13 +212,13 @@ int ClientGame::join_game()
 		free(welcome_packet);
 		return 0;
 	}
-
 	free(welcome_packet);		// deallocate welcome packet
 
 
 	/* 
 	CLIENT JOINED LOBBY ************************************************
-		--> Block on recv() until server sends confirmation all players joined starting character selection 
+		--> Block on recv() until server sends confirmation that all players joined 
+			and its starting character selection 
 	*/
 
 	log->info("Received servers init package, waiting in lobby for all players to join...");
@@ -230,9 +232,10 @@ int ClientGame::join_game()
 	}
 	free(char_select_packet);								// deallocate packet
 
+
 	log->info("All players joined, selecting character and username.");
-	string username;			// user selected username
-	string selected_char;		// user selected character
+	std::string username;			// user selected username
+	std::string selected_char;		// user selected character
 
 	// countdown until character selection phase is over
 	auto Start = std::chrono::high_resolution_clock::now();
@@ -252,21 +255,39 @@ int ClientGame::join_game()
 
 	log->info("Time up, sending selection data to server, waiting for game to start.");
 
-	/*
-		1. Create new packet for client to send to server with its selection 
-			--> Client blocks until recvieves confirmation from server that game is starting
-		2. recv() and deserialize packet on the server 
-		3. server waits for each client to send packet
-		4. server sends ACK to all clients that game is starting once all character packets recvieved
-	*/
+	// create character selection packet & send to server
+	ClientSelectionPacket selection_packet;
+	selection_packet.username = username; 
+	selection_packet.character = selected_char; 
+	iResult = network->sendToServer(selection_packet);	// send
 
-	// TODO: Create new type of packet (ClientSelectionPacket) in CoreTypes.hpp specifically for 
-	// selecting a character.
-	// send packet with selection data to server
+	// error?
+	if (iResult != sizeof(ClientSelectionPacket))
+	{
+		log->error("Failure sending packet, only sent {} of {} bytes", iResult, sizeof(ClientSelectionPacket));
+		return 0;
+	} 
+	if (iResult == SOCKET_ERROR)
+	{
+		log->error("Send failed with error: {}", WSAGetLastError());
+		WSACleanup();
+		return 0;
+	}
 
+
+	log->debug("Sent character data, waiting for game to start message from server!");
 
 
 	// TODO: Block on recv() until server sends start_game packet
+	// --> This packet will include init scene graph
+	// 
+	// Graphics this is where the client will recv() the init scene graph! 
+	// ....
+	// ....
+	// ....
+	// ....
+
+
 
 
 

@@ -25,7 +25,7 @@ public:
 	int sendToClient(unsigned int client_id, ServerInputPacket packet);
 
 	// receive incoming data
-	int receiveData(unsigned int client_id, char * recvbuf);
+	int receiveData(unsigned int client_id, char * recvbuf, size_t packet_size);
 
 	// accept new connections
 	bool acceptNewClient(unsigned int & id);
@@ -35,6 +35,9 @@ public:
 
 	// create packet for server to send to client
 	ServerInputPacket createServerPacket(ServerPacketType type, int temp, char * data);
+
+	// receive incoming data and deserialize into ClientSelectionPacket
+	ClientSelectionPacket* receiveSelectionPacket(unsigned int client_id);
 
 	// receive incoming data and deserialize into ClientInputPacket
 	ClientInputPacket* receivePacket(unsigned int client_id);

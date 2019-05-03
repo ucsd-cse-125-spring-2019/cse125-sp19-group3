@@ -174,37 +174,42 @@ void ServerGame::game_match()
 
 	}
 
-	// LOBBY OVER CHARACTER SELECTION STARTING ***************************************************
+	// LOBBY OVER -> CHARACTER SELECTION STARTING ***************************************************
 
 	// all clients connected, wait LOBBY_START_TIME (ms) before starting character selection
 	log->info("MT: Character selection starting in {} seconds...", LOBBY_START_TIME/1000);
 	Sleep(LOBBY_START_TIME);					
 
-	/*
-	XXX) send startgame packet to all clients
-		--> Hey client game is starting, exit the lobby, enter username and select character
+	log->info("MT: Broadcasting character selection packet to all clients!");
 
-	2) wait for all clients to make their selections (their timers run out)
-
-	3) send ACK to clients telling them the game is starting and any init data they may need
-
-	XXX) schedule end of kill phase
-	*/
-
-	log->info("MT: Broadcasting character selection packet!");
-
-	// broadcast character selection packet to all clients
+	// broadcast character selection packet to all clients (tell them to select username/character)
 	char buf[1024] = { 0 };
 	ServerInputPacket char_select_packet = network->createServerPacket(CHAR_SELECT_PHASE, 0, buf);
 	network->broadcastSend(char_select_packet);
 
 
-	// block on recv() until all clients send character selections
-	// TODO: How to approach this?  
-	// --> Check to see if each client has sent the packet 
+	// wait for character selection packet from each client (block on recv())
+	for (auto client_data : client_data_list) {		
+		int client_id = client_data->id;
+		ClientSelectionPacket* selection_packet = network->receiveSelectionPacket(client_id);
+
+		// TODO: Store this data somewhere on the server mapped to client
+		std::string username = selection_packet->username;
+		std::string character_selection = selection_packet->character;
+
+		log->debug("Client {}: Username {}, Character: {}", client_id, username, character_selection);
+	}
 
 
+	log->info("All client character selections received, starting game...");
 	// TODO: broadcast game start to all clients once all characters selected
+	//	--> ATTACH MODEL IDS TO SCENE GRAPH AND BROADCAST TO ALL CLIENTS in start_game packet from server
+	//
+	// Graphics this is where to send init scene graph!!
+	// ....
+	// ....
+	// ....
+	// ....
 
 
 

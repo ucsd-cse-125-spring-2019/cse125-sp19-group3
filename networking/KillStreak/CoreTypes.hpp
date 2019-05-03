@@ -13,6 +13,16 @@ typedef enum {INIT_SCENE, UPDATE_SCENE_GRAPH, CHAR_SELECT_PHASE} ServerPacketTyp
 
 
 /*
+	Packet sent from the client to the server when client 
+	selects username and character in lobby.
+*/
+typedef struct {
+	std::string username;
+	std::string character;
+} ClientSelectionPacket;
+
+
+/*
 	Packet sent from the client to the server.
 */
 typedef struct {
