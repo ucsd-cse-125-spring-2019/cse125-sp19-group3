@@ -15,6 +15,9 @@ public:
 	ClientNetwork(PCSTR host, PCSTR serverPort);
 	~ClientNetwork();
 
+	// Serialize character selection packet & send to server
+	int sendToServer(ClientSelectionPacket packet);
+
 	// Serialize packet & send to server
 	int sendToServer(ClientInputPacket packet);
 

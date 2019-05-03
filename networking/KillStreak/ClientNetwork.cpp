@@ -83,6 +83,18 @@ void ClientNetwork::closeSocket() {
 
 
 /*
+	Serialize character selection packet then send to server.
+*/
+int ClientNetwork::sendToServer(ClientSelectionPacket packet) {
+	char serialized[sizeof(ClientSelectionPacket)];
+	memcpy(serialized, &packet, sizeof(ClientSelectionPacket));
+
+	int sentLength = send(ConnectSocket, serialized, sizeof(ClientSelectionPacket), 0);
+	return sentLength;
+}
+
+
+/*
 	Serialize a packet then send to server.
 */
 int ClientNetwork::sendToServer(ClientInputPacket packet) {

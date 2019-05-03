@@ -15,7 +15,7 @@ static int game_start = 0;			// game ready to begin?
 
 /*
 	Parse data from config file for server. Then initialize 
-	server network (create socket).
+	server network (create socket) and initialize data.
 */
 ServerGame::ServerGame(INIReader& t_config, INIReader& t_meta_data) : config(t_config), meta_data(t_meta_data) {
 	auto log = logger();
@@ -90,11 +90,12 @@ ServerGame::ServerGame(INIReader& t_config, INIReader& t_meta_data) : config(t_c
 //		exit(EX_CONFIG);
 //	}
 
+	scene = new ServerScene();
+	scene->initialize_objects();
+
 	network = new ServerNetwork(host, port);
 	scheduledEvent = ScheduledEvent(END_KILLPHASE, 10000000); // default huge value
 
-	scene = new ServerScene();
-	scene->initialize_objects();
 }
 
 
@@ -137,11 +138,9 @@ void client_session(void *arg)
 	while (!game_start) {};	 
 
 
-
 	// GAME STARTING ****************************************************
-
-
 	// receive from client until end of game sending deserialized packets to queue
+
 	log->info("CT <{}>: Game started -> Receiving from client!", client_arg->id);
 
 	// get client socket; pointer to clients queue & pointer to network
@@ -159,7 +158,7 @@ void client_session(void *arg)
 
 		// acquire queue lock & push packet 
 		client_arg->q_lock->lock();
-		input_queue->push(*packet);		
+		input_queue->push(packet);		
 		client_arg->q_lock->unlock();
 
 	} while (keep_conn);				// connection-closed/error? 
@@ -217,28 +216,47 @@ void ServerGame::game_match()
 
 	}
 
+	// LOBBY OVER -> CHARACTER SELECTION STARTING ***************************************************
+
 	// all clients connected, wait LOBBY_START_TIME (ms) before starting character selection
 	log->info("MT: Character selection starting in {} seconds...", LOBBY_START_TIME/1000);
 	Sleep(LOBBY_START_TIME);					
-	log->info("MT: Character selection started!");
 
-	/*
-	1) send startgame packet to all clients
-		--> Hey client game is starting, exit the lobby, enter username and select character
-		--> Tell them how much time they have to make selection
-		*** NOTE: Need to modify client thread to expect this!
-	2) start timer on server
-	3) wait until you receive all finish start game init packets from clients && timer is up
-		** Once timer is up send ack to clients telling them its starting with whatever 
-			data is needed
-	4) schedule end of kill phase
-	*/
+	log->info("MT: Broadcasting character selection packet to all clients!");
+
+	// broadcast character selection packet to all clients (tell them to select username/character)
+	char buf[1024] = { 0 };
+	ServerInputPacket char_select_packet = network->createServerPacket(CHAR_SELECT_PHASE, 0, buf);
+	network->broadcastSend(char_select_packet);
+
+
+	// wait for character selection packet from each client (block on recv())
+	for (auto client_data : client_data_list) {		
+		int client_id = client_data->id;
+		ClientSelectionPacket* selection_packet = network->receiveSelectionPacket(client_id);
+
+		// TODO: Store this data somewhere on the server mapped to client
+		std::string username = selection_packet->username;
+		std::string character_selection = selection_packet->character;
+
+		log->debug("Client {}: Username {}, Character: {}", client_id, username, character_selection);
+	}
+
+
+	log->info("All client character selections received, starting game...");
+	// TODO: broadcast game start to all clients once all characters selected
+	//	--> ATTACH MODEL IDS TO SCENE GRAPH AND BROADCAST TO ALL CLIENTS in start_game packet from server
+	//
+	// Graphics this is where to send init scene graph!!
+	// ....
+	// ....
+	// ....
+	// ....
+
+
 
 	// schedule end of kill phase
 	ScheduledEvent initKillPhase(END_KILLPHASE, 60); // play with values in config file
-
-
-
 
 	// Tell all client threads to begin the game!
 	game_start = 1;	
@@ -259,6 +277,35 @@ void ServerGame::launch() {
 	// launch lobby; accept players until game full
 	log->info("MT: Game server live - Launching lobby!");
 	game_match();	
+
+	// TESTING: Sending multiple different packets to client testing their queue
+	/*
+	log->debug("MT: Sending test packets to client");
+	char buf[1024] = "The first packet!";
+	ServerInputPacket welcome_packet = network->createServerPacket(INIT_SCENE, 0, buf);
+	int bytes_sent = network->sendToClient(0, welcome_packet);
+	log->debug("MT: Type: {}", INIT_SCENE);
+	log->debug("MT: Sending packet data: {}", bytes_sent);
+
+	char buf2[1024] = "The second packet!";
+	ServerInputPacket welcome_packet2 = network->createServerPacket(UPDATE_SCENE_GRAPH, 0, buf2);
+	int bytes_sent2 = network->sendToClient(0, welcome_packet2);
+	log->debug("MT: Type: {}", UPDATE_SCENE_GRAPH);
+	log->debug("MT: Sending packet data: {}", buf2);
+
+	char buf3[1024] = "The third packet!";
+	ServerInputPacket welcome_packet3 = network->createServerPacket(INIT_SCENE, 0, buf3);
+	int bytes_sent3 = network->sendToClient(0, welcome_packet3);
+	log->debug("MT: Type: {}", INIT_SCENE);
+	log->debug("MT: Sending packet data: {}", buf3);
+
+	log->debug("MT: All three packets sent to client");
+	*/
+
+	while (1) {};	// TODO: REMOVE ME!!!!
+
+
+
 
 	// GAME START *************************************************
 
@@ -302,17 +349,17 @@ void ServerGame::launch() {
 
 
 /*
-	Runs on every server tick. Empties the master queue, updates the game state, and 
-	sends updated state back to all clients.
+	Runs on every server tick. Empties all client_thread queues, updates the game state, and 
+	broadcasts updated state back to all clients.
 */
 void ServerGame::updateKillPhase() {
 	auto log = logger();
 	log->info("MT: Game server kill phase update...");
 
 	// create temp vectors for each client to dump all incoming packets into
-	vector<vector<ClientInputPacket>> inputPackets;
+	vector<vector<ClientInputPacket*>> inputPackets;
 	for (int i = 0; i < GAME_SIZE; i++) {
-		inputPackets.push_back(vector<ClientInputPacket>());
+		inputPackets.push_back(vector<ClientInputPacket*>());
 	}
 
 	// TODO: BE SURE TO FREE PACKETS AFTER PROCESSING THEM, OTHERWISE THE PACKETS WILL EVENTUALLY
@@ -327,8 +374,6 @@ void ServerGame::updateKillPhase() {
 		while (!(q_ptr->empty())) {
 			inputPackets[i].push_back(q_ptr->front());
 			q_ptr->pop();
-			// TODO: Should inputPackets have pointers to packets? 
-			// If not then we should free the packet popped from the q_ptr here
 		}
 		client_data->q_lock->unlock();
 	}
@@ -338,11 +383,11 @@ void ServerGame::updateKillPhase() {
 		for (auto packet : inputPackets[i]) {
 
 			log->info("Server received packet with input type {}, finalLocation of {}, {}, {}", 
-				packet.inputType, packet.finalLocation.x, packet.finalLocation.y, packet.finalLocation.z);
+				packet->inputType, packet->finalLocation.x, packet->finalLocation.y, packet->finalLocation.z);
 
-			switch (packet.inputType) {
+			switch (packet->inputType) {
 			MOVEMENT:
-				scene->handlePlayerMovement(packet.finalLocation);
+				scene->handlePlayerMovement(packet->finalLocation);
 			}
 		}
 	}

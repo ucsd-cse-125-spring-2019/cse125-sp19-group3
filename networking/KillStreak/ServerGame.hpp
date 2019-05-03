@@ -44,14 +44,19 @@ protected:
 	INIReader & meta_data;
 	PCSTR host;
 	PCSTR port;
-	ServerNetwork* network;
+  
 	double tick_rate;
+	int char_select_time;					// time for character selection phase
+
 	vector<client_data*> client_data_list;	// list of pointers to all client meta-data
 	ScheduledEvent scheduledEvent;
+  
 	vector<ClientPlayer> players;
 	unordered_map<ArcheType, vector<Skill>&> skill_map;
 
 	ServerScene * scene;
+	ServerNetwork* network;					// ptr to servers network
+
 };
 
 #endif // SURFSTORESERVER_HPP

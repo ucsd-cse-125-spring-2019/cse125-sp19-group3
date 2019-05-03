@@ -9,10 +9,21 @@ typedef glm::vec3 Point;
 
 typedef enum {INIT_CONN, MOVEMENT, SKILL, ATTACK} InputType;
 
-typedef enum {INIT_SCENE, UPDATE_SCENE_GRAPH} ServerPacketType;
+typedef enum {INIT_SCENE, UPDATE_SCENE_GRAPH, CHAR_SELECT_PHASE} ServerPacketType;
+
 
 /*
-	Packet send from the client to the server.
+	Packet sent from the client to the server when client 
+	selects username and character in lobby.
+*/
+typedef struct {
+	std::string username;
+	std::string character;
+} ClientSelectionPacket;
+
+
+/*
+	Packet sent from the client to the server.
 */
 typedef struct {
 	InputType inputType;
@@ -42,8 +53,10 @@ typedef std::chrono::high_resolution_clock Clock;
 typedef std::chrono::nanoseconds nanoseconds;
 typedef std::chrono::duration<double> dsec;
 
-typedef std::queue<ClientInputPacket> ClientThreadQueue;
-typedef std::queue<ServerInputPacket> ServerInputQueue;
+// queue for each client threads packets (server)
+typedef std::queue<ClientInputPacket*> ClientThreadQueue;	
+// queue for clients incoming packets from server (client)
+typedef std::queue<ServerInputPacket*> ServerInputQueue;    
 
 /* Server scheduling queue event */
 typedef enum {END_KILLPHASE, END_PREPAREPHASE} EventType;

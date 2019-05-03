@@ -183,12 +183,34 @@ bool ServerNetwork::closeClientSocket(unsigned int id)
 
 	-- Return deserialized packet from client, 0 on error
 */
+ClientSelectionPacket* ServerNetwork::receiveSelectionPacket(unsigned int client_id)
+{
+
+	// allocate buffer & receive data from client
+	char *temp_buff = (char*)malloc(sizeof(ClientSelectionPacket));
+	int bytes_read = receiveData(client_id, temp_buff, sizeof(ClientSelectionPacket));
+
+	// client closed conection/error?
+	if (!bytes_read || bytes_read == SOCKET_ERROR) return 0;
+
+	// deserialize data into memory, point packet to it
+	ClientSelectionPacket* packet = reinterpret_cast<ClientSelectionPacket*>(temp_buff);
+	return packet;
+}
+
+
+/*
+	Calls the receiveData function to receive a packet sized amount of data 
+	from the client. On success will deserialize the data and return the packet. 
+
+	-- Return deserialized packet from client, 0 on error
+*/
 ClientInputPacket* ServerNetwork::receivePacket(unsigned int client_id)
 {
 
 	// allocate buffer & receive data from client
 	char *temp_buff = (char*)malloc(sizeof(ClientInputPacket));
-	int bytes_read = receiveData(client_id, temp_buff);
+	int bytes_read = receiveData(client_id, temp_buff, sizeof(ClientInputPacket));
 
 	// client closed conection/error?
 	if (!bytes_read || bytes_read == SOCKET_ERROR) return 0;
@@ -207,16 +229,14 @@ ClientInputPacket* ServerNetwork::receivePacket(unsigned int client_id)
 	SOCKET_ERROR otherwise. Updates 'recbuf' pointer passed by 
 	reference with data read. 
 */
-int ServerNetwork::receiveData(unsigned int client_id, char * recvbuf)
+int ServerNetwork::receiveData(unsigned int client_id, char * recvbuf, size_t packet_size)
 {
 	auto log = logger();
 
 	if (sessions.find(client_id) != sessions.end())		// find client 
 	{
-		// NOTE: For now, make all receives from client to server the same input packet type.
-
 		SOCKET currentSocket = sessions[client_id];		// get client socket
-		size_t toRead = sizeof(ClientInputPacket);		// amount of data to read
+		size_t toRead = packet_size;					// amount of data to read
 		char  *curr_bufptr = (char*) recvbuf;			// ptr to output buffer
 
 		while (toRead > 0)								// read entire packet
@@ -239,7 +259,7 @@ int ServerNetwork::receiveData(unsigned int client_id, char * recvbuf)
 			curr_bufptr += rsz;  /* Next buffer position to read into */
 		}
 
-		return sizeof(ClientInputPacket);
+		return packet_size;
 	}
 
 	log->error("Receive error: Client mapping not found -> ID: {}", client_id);
