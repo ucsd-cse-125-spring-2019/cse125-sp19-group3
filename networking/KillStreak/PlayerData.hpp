@@ -83,10 +83,10 @@ class Warrior: Arche {
 	void coneAoe(Point finalLocation, ServerScene * scene);
 };
 
-class Player {
+class ClientPlayer {
 public:
-	Player() {}
-	~Player() {}
+	ClientPlayer() {}
+	~ClientPlayer() {}
 
 protected:
 	int clientId;
