@@ -21,8 +21,12 @@ protected:
 	INIReader & config;
 	PCSTR host;
 	PCSTR serverPort;
-	int char_select_time;				// time allotted to make character selection
 
+	int char_select_time;				      // time allotted to make character selection
 	ServerInputQueue* serverPackets;	// queue of packets from server
-	mutex* q_lock;						// lock for queue
+	mutex* q_lock;						        // lock for queue
+  
+	vector<string> skill_names;
+	vector<int> cooldown_times;
+
 };

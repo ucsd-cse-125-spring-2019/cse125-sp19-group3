@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 #include <mutex>
+#include "PlayerData.hpp"
 
 using namespace std;
 
@@ -26,7 +27,7 @@ typedef struct {
 
 class ServerGame {
 public:
-	ServerGame(INIReader& t_config);
+	ServerGame(INIReader& t_config, INIReader& t_meta_data);
 
 	void launch();
 
@@ -40,15 +41,21 @@ public:
 
 protected:
 	INIReader & config;
+	INIReader & meta_data;
 	PCSTR host;
 	PCSTR port;
+  
 	double tick_rate;
 	int char_select_time;					// time for character selection phase
 
+	vector<client_data*> client_data_list;	// list of pointers to all client meta-data
+	ScheduledEvent scheduledEvent;
+  
+	vector<ClientPlayer> players;
+	unordered_map<ArcheType, vector<Skill>&> skill_map;
+
 	ServerScene * scene;
 	ServerNetwork* network;					// ptr to servers network
-	ScheduledEvent scheduledEvent;
-	vector<client_data*> client_data_list;	// list of pointers to all client meta-data
 
 };
 
