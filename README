@@ -6,8 +6,8 @@
 
 	a.) Set path to config file as the command line argument:
 		i.) Select properties -> Debugging -> command arguments 
-			-->  For Server: ../../networking/KillStreak/config.ini
-			-->  For Client: ../../networking/KillStreak/client_config.ini
+			-->  For Server: ../../networking/KillStreak/config.ini ../../networking/KillStreak/meta_data.ini
+			-->  For Client: ../../networking/KillStreak/client_config.ini ../../networking/KillStreak/meta_data.ini
 
 	b.) Ignore specific warnings
 		i.) Select properties -> C/C++ -> Preprocessor
