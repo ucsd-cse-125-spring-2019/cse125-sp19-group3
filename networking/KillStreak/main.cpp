@@ -40,6 +40,14 @@ int main(int argc, char** argv) {
 		return EX_CONFIG;
 	}
 
+	INIReader meta_data(argv[2]);
+
+	if (config.ParseError() < 0) {
+		cerr << "Error parsing config file " << argv[2] << endl;
+	while (1) {};
+		return EX_CONFIG;
+	}
+
 	/*
 	// Multi-threaded approach ************************************************
 
@@ -66,7 +74,7 @@ int main(int argc, char** argv) {
 	if (config.GetBoolean("server", "enabled", true))	
 	{
 		log->info("Launching Killstreak server");
-		server = new ServerGame(config);
+		server = new ServerGame(config,meta_data);
 		server->launch();
 	}
 	else if (config.GetBoolean("client", "enabled", true))
