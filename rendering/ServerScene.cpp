@@ -11,30 +11,31 @@ ServerScene::~ServerScene() {
 
 void ServerScene::addPlayer(unsigned int playerId) {
 	nodeIdCounter++;
-	playerRoot = new Transform(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)),
+	Transform * playerRoot = new Transform(glm::translate(glm::mat4(1.0f), glm::vec3(playerId * 10.0f, 0, 0)),
 		glm::rotate(glm::mat4(1.0f), -90 / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)),
 		glm::scale(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, 0.05f)));
 	playerRoot->model_ids.insert(PLAYER);
 	root->addChild(nodeIdCounter, playerRoot);
 
+
 	// TODO: need to set model type based on player selection in lobby
 
-	//TODO: WARNING: ALWAYS SETTING this.player TO THE NEWEST PLAYER IN THE LOBBY
-	player = new Player(playerId, nodeIdCounter, HUMAN);
-	player->playerRoot = playerRoot;
-	playerMap.insert(std::pair<unsigned int, Player *>(playerId, player));
-	playerIdCounter++;
+	Player * player = new Player(playerId, nodeIdCounter, HUMAN, playerRoot);
+	//playerMap.insert(std::pair<unsigned int, Player *>(playerId, player));
+	players.push_back(player);
 }
 
 void ServerScene::update()
 {
 	time += 1.0 / 60;
-	player->update(time);
+	for (Player * player : players) {
+		player->update(time);
+	}
 }
 
 void ServerScene::handlePlayerMovement(unsigned int playerId, glm::vec3 destination)
 {
-	Player * player = playerMap[playerId];
+	Player * player = players[playerId];
 	player->setDestination(destination);
 	float dotResult = glm::dot(glm::normalize(destination - player->currentPos), player->currentOri);
 
@@ -57,10 +58,10 @@ unsigned int ServerScene::serializeInitScene(char* data, unsigned int playerId, 
 }
 
 unsigned int ServerScene::serializeSceneGraph(char* data) {
-	return serializeSceneGraph(root, data);
+	return serializeSceneGraph(root, data).second;
 }
 
-unsigned int ServerScene::serializeSceneGraph(Transform* t, char* data) {
+std::pair<char *, unsigned int> ServerScene::serializeSceneGraph(Transform* t, char* data) {
 	memcpy(data, &(t->M[0][0]), sizeof(glm::mat4));
 	data += sizeof(glm::mat4);
 	unsigned int size = sizeof(glm::mat4);
@@ -71,7 +72,9 @@ unsigned int ServerScene::serializeSceneGraph(Transform* t, char* data) {
 		memcpy(data, &child.first, sizeof(unsigned int));
 		data += sizeof(unsigned int);
 		size += sizeof(unsigned int);
-		size += serializeSceneGraph(child.second, data);
+		auto retval = serializeSceneGraph(child.second, data);
+		data = retval.first;
+		size += retval.second;
 	}
 
 	for (auto model_id : t->model_ids) {
@@ -82,7 +85,7 @@ unsigned int ServerScene::serializeSceneGraph(Transform* t, char* data) {
 		size += sizeof(unsigned int);
 	}
 
-	*data++ = '\0';
-	size += sizeof(char);
-	return size;
+	//*data++ = '\0';
+	//size += sizeof(char);
+	return std::pair<char *, unsigned int>(data, size);
 }

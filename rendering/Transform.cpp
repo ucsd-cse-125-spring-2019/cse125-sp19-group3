@@ -11,6 +11,34 @@ Transform::Transform(glm::mat4 translation, glm::mat4 rotation, glm::mat4 scale)
 	this->M = translation * rotation * scale;
 }
 
+char * Transform::serialize() {
+	char buf[1024] = { 0 };
+	char * currLoc = buf;
+	//copying over nodeid
+	memcpy(currLoc, &node_id, sizeof(unsigned int));
+	currLoc += sizeof(unsigned int);
+	//copying over the Transfromation Matrix
+	memcpy(currLoc, &(M[0][0]), sizeof(glm::mat4));
+	currLoc += sizeof(glm::mat4);
+	//copying over the model ids size + models
+	unsigned int model_id_size = model_ids.size();
+	memcpy(currLoc, &(model_id_size), sizeof(unsigned int));
+	currLoc += sizeof(unsigned int);
+	for (auto model_id : model_ids) {
+		memcpy(currLoc, &model_id, sizeof(unsigned int));
+		currLoc += sizeof(unsigned int);
+	}
+	//copying over the child ids size + models
+	unsigned int children_size = children.size();
+	memcpy(currLoc, &(children_size), sizeof(unsigned int));
+	currLoc += sizeof(unsigned int);
+	for (auto child_id : children) {
+		memcpy(currLoc, &child_id, sizeof(unsigned int));
+		currLoc += sizeof(unsigned int);
+	}
+	return buf;
+}
+
 void Transform::addChild(const unsigned int id, Transform* child) {
 	children.insert({ id, child });
 }

@@ -34,6 +34,7 @@
     <ClInclude Include="..\ClientScene.h" />
     <ClInclude Include="..\Cube.h" />
     <ClInclude Include="..\Mesh.h" />
+    <ClInclude Include="..\Model.h" />
     <ClInclude Include="..\Player.h" />
     <ClInclude Include="..\ServerScene.h" />
     <ClInclude Include="..\shader.h" />
@@ -51,7 +52,6 @@
     <ClCompile Include="..\ClientScene.cpp" />
     <ClCompile Include="..\Cube.cpp" />
     <ClCompile Include="..\Model.cpp" />
-    <ClCompile Include="..\Model.h" />
     <ClCompile Include="..\Player.cpp" />
     <ClCompile Include="..\ServerScene.cpp" />
     <ClCompile Include="..\shader.cpp" />

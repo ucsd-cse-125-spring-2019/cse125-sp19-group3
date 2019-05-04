@@ -197,6 +197,7 @@ int ClientGame::join_game()
 
 	// TODO: deserialize INIT_SCENE packet, then call playerInit() on ClientScene
 	//Window_static::scene->initialize_objects(this);
+
 	char * retval = Window_static::scene->deserializeInitScene(packet->data, packet->size);
 	if (*retval != '\0') {
 		log->error("INIT_SCENE packet from server is corrupted");

@@ -72,6 +72,9 @@
     <ClInclude Include="..\ClientScene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\shader.cpp">
@@ -79,9 +82,6 @@
     </ClCompile>
     <ClCompile Include="..\Cube.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Model.h">
-      <Filter>Header Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\networking\KillStreak\ClientGame.cpp">
       <Filter>Source Files</Filter>

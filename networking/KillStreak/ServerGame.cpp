@@ -7,7 +7,7 @@
 #include <process.h>				// threads
 #include <windows.h>				// sleep
 
-#define GAME_SIZE			1		// total players required to start game
+#define GAME_SIZE			2		// total players required to start game
 #define LOBBY_START_TIME	2000	// wait this long (ms) after all players connect
 
 static int game_start = 0;			// game ready to begin?
@@ -174,6 +174,8 @@ void ServerGame::game_match()
 
 	}
 
+	Sleep(3000);
+
 	for (auto client_data : client_data_list) {
 		unsigned int client_id = client_data->id;
 		scene->addPlayer(client_id);	
@@ -183,7 +185,7 @@ void ServerGame::game_match()
 	for (auto client_data : client_data_list) {
 		unsigned int client_id = client_data->id;
 		char buf[1024] = { 0 };
-		unsigned int size = scene->serializeInitScene(buf, client_id, scene->playerMap[client_id]->root_id);
+		unsigned int size = scene->serializeInitScene(buf, client_id, scene->players[client_id]->root_id);
 		ServerInputPacket welcome_packet = network->createServerPacket(INIT_SCENE, size, buf);
 		int bytes_sent = network->sendToClient(client_id, welcome_packet);
 	}

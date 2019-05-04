@@ -10,7 +10,10 @@ typedef enum {HUMAN, MAGE, WARRIOR, ASSASIN} MODEL_TYPE;
 class Player {
 public:
 	Player() {};
-	Player(unsigned int playerId, unsigned int playerRootId, MODEL_TYPE modelType) { this->player_id = playerId; this->root_id = playerRootId; this->modelType = modelType; };
+	Player(unsigned int playerId, unsigned int playerRootId, MODEL_TYPE modelType, Transform * playerRoot) 
+	{
+		this->player_id = playerId; this->root_id = playerRootId; this->modelType = modelType; this->playerRoot = playerRoot;
+	};
 	~Player() {};
 
 	void move();

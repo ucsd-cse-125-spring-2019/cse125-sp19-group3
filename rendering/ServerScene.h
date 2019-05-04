@@ -22,7 +22,7 @@ public:
 	int width;
 	int height;
 
-	std::map<unsigned int, Player *> playerMap;
+	std::vector<Player *> players;
 
 	ServerScene();
 	~ServerScene();
@@ -31,16 +31,13 @@ public:
 	void handlePlayerMovement(unsigned int player_id, glm::vec3 destination);
 	unsigned int serializeInitScene(char* data, unsigned int playerId, unsigned int playerRootId);
 	unsigned int serializeSceneGraph(char* data);
-	unsigned int serializeSceneGraph(Transform* t, char* data);
+	std::pair<char *, unsigned int> serializeSceneGraph(Transform* t, char* data);
 	Transform * getRoot();
 
 private:
-	Player * player;
 	Transform * root;
-	Transform * playerRoot;
 
 	double time = 0.0;
-	unsigned int playerIdCounter = 0;
 	unsigned int nodeIdCounter = 0;
 };
 
