@@ -11,6 +11,7 @@
 
 #include "Mesh.h"
 #include "shader.h"
+#include "Sphere.h"
 //#include "stb_image.h"
 
 #include <string>
@@ -31,7 +32,7 @@ public:
 	vector<Mesh> meshes;
 	string directory;
 	bool gammaCorrection;
-
+	Sphere * bounding_sphere;
 	/*  Functions   */
 	// constructor, expects a filepath to a 3D model.
 	Model(string const &path, bool gamma = false);
@@ -40,6 +41,9 @@ public:
 	void draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx);
 
 	void BoneTransform(string AnimationName, float TimeInSeconds);
+
+	//TODO: collision detection. when doing collision detection, pass in location data(could get from translate matrix)
+	bool isCollided(glm::vec3 myPos, Model * other, glm::vec3 otherPos);
 
 private:
 

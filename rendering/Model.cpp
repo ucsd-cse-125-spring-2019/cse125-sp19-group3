@@ -10,6 +10,11 @@ Model::Model(string const &path, bool gamma)
 	BoneTransform("Root|Idle", 0.0f);
 }
 
+//TODO
+bool Model::isCollided(glm::vec3 myPos, Model * other, glm::vec3 otherPos) {
+	return true;
+}
+
 // draws the model, and thus all its meshes
 void Model::draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx)
 {
@@ -173,7 +178,7 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 		vertices.push_back(vertex);
 	}
 
-	//normalize(vertices);
+	normalize(vertices);
 	// now wak through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
 	{
