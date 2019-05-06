@@ -45,6 +45,7 @@
     <ClCompile Include="..\..\networking\KillStreak\Logger.cpp" />
     <ClCompile Include="..\..\networking\KillStreak\main.cpp" />
     <ClCompile Include="..\..\networking\KillStreak\NetworkServices.cpp" />
+    <ClCompile Include="..\..\networking\KillStreak\PlayerData.cpp" />
     <ClCompile Include="..\..\networking\KillStreak\ServerGame.cpp" />
     <ClCompile Include="..\..\networking\KillStreak\ServerNetwork.cpp" />
     <ClCompile Include="..\Camera.cpp" />

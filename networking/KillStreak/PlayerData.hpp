@@ -40,6 +40,12 @@ public:
 	Skill() : skillType(DEFAULT_SKILLTYPE), range(-1), cooldown(-1), duration(-1), speed(-1) {}
 	~Skill(){}
 	void update(SkillType skillType, int range=0, int cooldown=0, int duration=0, int speed=0);
+	static Skill getMelee(INIReader & meta_data, string archeType);
+	static Skill getProjectile(INIReader & meta_data, string archeType);
+	static Skill getAoe(INIReader & meta_data, string archetype);
+	static Skill getMinimap(INIReader & meta_data, string archetype);
+	static Skill getInvisible(INIReader & meta_data, string archetype);
+	static Skill getCharge(INIReader & meta_data, string archetype);
 };
 
 typedef enum{MAGE, ASSASSIN, WARRIOR} ArcheType;
@@ -106,9 +112,3 @@ protected:
 	unordered_set<string> inventory;	// items from shop
 };
 
-Skill getMelee(INIReader & meta_data, string archeType);
-Skill getProjectile(INIReader & meta_data, string archeType);
-Skill getAoe(INIReader & meta_data, string archetype);
-Skill getMinimap(INIReader & meta_data, string archetype);
-Skill getInvisible(INIReader & meta_data, string archetype);
-Skill getCharge(INIReader & meta_data, string archetype);

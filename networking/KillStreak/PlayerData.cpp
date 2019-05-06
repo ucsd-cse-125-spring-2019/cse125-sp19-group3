@@ -61,14 +61,14 @@ double getDoubleField(INIReader & meta_data, string archetype, string field) {
 	return temp;
 }
 
-Skill getMelee(INIReader & meta_data, string archetype) {
+Skill Skill::getMelee(INIReader & meta_data, string archetype) {
 	
 	Skill temp = Skill();
 	temp.update(SkillType::MELEE, getDoubleField(meta_data, archetype, "range"));
 	return temp;
 }
 
-Skill getProjectile(INIReader & meta_data, string archetype) {
+Skill Skill::getProjectile(INIReader & meta_data, string archetype) {
 	Skill temp = Skill();
 	double cooldown = getDoubleField(meta_data, archetype, "cooldown");
 	double speed = getDoubleField(meta_data, archetype, "speed");
@@ -76,7 +76,7 @@ Skill getProjectile(INIReader & meta_data, string archetype) {
 	return temp;
 }
 
-Skill getAoe(INIReader & meta_data, string archetype) {
+Skill Skill::getAoe(INIReader & meta_data, string archetype) {
 	Skill temp = Skill();
 	double range = getDoubleField(meta_data, archetype, "range");
 	double duration = getDoubleField(meta_data, archetype, "duration");
@@ -84,14 +84,14 @@ Skill getAoe(INIReader & meta_data, string archetype) {
 	return temp;
 }
 
-Skill getMinimap(INIReader & meta_data, string archetype) {
+Skill Skill::getMinimap(INIReader & meta_data, string archetype) {
 	Skill temp = Skill();
 	double duration = getDoubleField(meta_data, archetype, "duration");
 	temp.update(SkillType::MINIMAP, 0, 0, duration, 0);
 	return temp;
 }
 
-Skill getInvisible(INIReader & meta_data, string archetype) {
+Skill Skill::getInvisible(INIReader & meta_data, string archetype) {
 	Skill temp = Skill();
 	double speed = getDoubleField(meta_data, archetype, "speed");
 	double duration = getDoubleField(meta_data, archetype, "duration");
@@ -99,7 +99,7 @@ Skill getInvisible(INIReader & meta_data, string archetype) {
 	return temp;
 }
 
-Skill getCharge(INIReader & meta_data, string archetype) {
+Skill Skill::getCharge(INIReader & meta_data, string archetype) {
 	Skill temp = Skill();
 	double speed = getDoubleField(meta_data, archetype, "speed");
 	double range = getDoubleField(meta_data, archetype, "range");

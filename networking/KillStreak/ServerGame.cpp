@@ -395,21 +395,21 @@ void ServerGame::updatePreparePhase() {
 }
 
 void ServerGame::readMetaDataForSkills() {
-	skill_map[ArcheType::MAGE].push_back(getMelee(meta_data, "MAGE"));
-	skill_map[ArcheType::MAGE].push_back(getProjectile(meta_data, "MAGE"));
-	skill_map[ArcheType::MAGE].push_back(getAoe(meta_data, "MAGE"));
-	skill_map[ArcheType::MAGE].push_back(getAoe(meta_data, "MAGE"));
+	skill_map[ArcheType::MAGE].push_back(Skill::getMelee(meta_data, "MAGE"));
+	skill_map[ArcheType::MAGE].push_back(Skill::getProjectile(meta_data, "MAGE"));
+	skill_map[ArcheType::MAGE].push_back(Skill::getAoe(meta_data, "MAGE"));
+	skill_map[ArcheType::MAGE].push_back(Skill::getAoe(meta_data, "MAGE"));
 
-	skill_map[ArcheType::ASSASSIN].push_back(getMelee(meta_data, "ASSASSIN"));
-	skill_map[ArcheType::ASSASSIN].push_back(getProjectile(meta_data, "ASSASSIN"));
-	skill_map[ArcheType::ASSASSIN].push_back(getAoe(meta_data, "ASSASSIN"));
-	skill_map[ArcheType::ASSASSIN].push_back(getMinimap(meta_data, "ASSASSIN"));
-	skill_map[ArcheType::ASSASSIN].push_back(getInvisible(meta_data, "ASSASSIN"));
+	skill_map[ArcheType::ASSASSIN].push_back(Skill::getMelee(meta_data, "ASSASSIN"));
+	skill_map[ArcheType::ASSASSIN].push_back(Skill::getProjectile(meta_data, "ASSASSIN"));
+	skill_map[ArcheType::ASSASSIN].push_back(Skill::getAoe(meta_data, "ASSASSIN"));
+	skill_map[ArcheType::ASSASSIN].push_back(Skill::getMinimap(meta_data, "ASSASSIN"));
+	skill_map[ArcheType::ASSASSIN].push_back(Skill::getInvisible(meta_data, "ASSASSIN"));
 
-	skill_map[ArcheType::WARRIOR].push_back(getMelee(meta_data, "WARRIOR"));
-	skill_map[ArcheType::WARRIOR].push_back(getProjectile(meta_data, "WARRIOR"));
-	skill_map[ArcheType::WARRIOR].push_back(getAoe(meta_data, "WARRIOR"));
-	skill_map[ArcheType::WARRIOR].push_back(getCharge(meta_data, "WARRIOR"));
+	skill_map[ArcheType::WARRIOR].push_back(Skill::getMelee(meta_data, "WARRIOR"));
+	skill_map[ArcheType::WARRIOR].push_back(Skill::getProjectile(meta_data, "WARRIOR"));
+	skill_map[ArcheType::WARRIOR].push_back(Skill::getAoe(meta_data, "WARRIOR"));
+	skill_map[ArcheType::WARRIOR].push_back(Skill::getCharge(meta_data, "WARRIOR"));
 }
 
 
