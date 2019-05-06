@@ -47,48 +47,16 @@ ServerGame::ServerGame(INIReader& t_config, INIReader& t_meta_data) : config(t_c
 		log->error("Invalid tick_rate in config file");
 		exit(EX_CONFIG);
 	}
-  
-  // fetch list of archetype
-	string archetype_t = meta_data.Get("Archetype", "list", "");
-	if (archetype_t == "") {
-		log->error("Archetype list not found in config file");
-		exit(EX_CONFIG);
-	}
 
-  // parse archetype
-  string temp;
-  vector <string> archetype;
-  std::stringstream arch_stream(archetype_t);
-  while(std::getline(arch_stream,temp,',')){
-    archetype.push_back(temp);
-  }
+	// initialize skills map
+	vector<Skill> mage_skills;
+	vector<Skill> assassin_skills;
+	vector<Skill> warrior_skills;
+	skill_map[ArcheType::MAGE] = mage_skills;
+	skill_map[ArcheType::ASSASSIN] = assassin_skills;
+	skill_map[ArcheType::WARRIOR] = warrior_skills;
 
-  vector <string> skills;
-  for(string type:archetype){
-	  string skills_t = meta_data.Get(type, "skill", "");
-	  if (archetype_t == "") {
-	  	log->error("{} skill not found in config file",type);
-	  	exit(EX_CONFIG);
-	  }
-    std::stringstream skills_stream(skills_t);
-    while(std::getline(skills_stream,temp,',')){
-      skills.push_back(temp);
-    }
-
-    for(string skill:skills){
-      //fetch skill parameter
-	    string s = meta_data.Get(skill, "skill", "");
-
-      //assignment on global static
-    }
-    
-	skills.clear();
-  }
-//	size_t idx = servconf.find(":");		// delimiter index
-//	if (idx == string::npos) {
-//		log->error("Config line {} is invalid", servconf);
-//		exit(EX_CONFIG);
-//	}
+	readMetaDataForSkills();
 
 	scene = new ServerScene();
 	scene->initialize_objects();
@@ -426,7 +394,23 @@ void ServerGame::updatePreparePhase() {
 	log->info("MT: Game server update prepare phase...");
 }
 
+void ServerGame::readMetaDataForSkills() {
+	skill_map[ArcheType::MAGE].push_back(getMelee(meta_data, "MAGE"));
+	skill_map[ArcheType::MAGE].push_back(getProjectile(meta_data, "MAGE"));
+	skill_map[ArcheType::MAGE].push_back(getAoe(meta_data, "MAGE"));
+	skill_map[ArcheType::MAGE].push_back(getAoe(meta_data, "MAGE"));
 
+	skill_map[ArcheType::ASSASSIN].push_back(getMelee(meta_data, "ASSASSIN"));
+	skill_map[ArcheType::ASSASSIN].push_back(getProjectile(meta_data, "ASSASSIN"));
+	skill_map[ArcheType::ASSASSIN].push_back(getAoe(meta_data, "ASSASSIN"));
+	skill_map[ArcheType::ASSASSIN].push_back(getMinimap(meta_data, "ASSASSIN"));
+	skill_map[ArcheType::ASSASSIN].push_back(getInvisible(meta_data, "ASSASSIN"));
+
+	skill_map[ArcheType::WARRIOR].push_back(getMelee(meta_data, "WARRIOR"));
+	skill_map[ArcheType::WARRIOR].push_back(getProjectile(meta_data, "WARRIOR"));
+	skill_map[ArcheType::WARRIOR].push_back(getAoe(meta_data, "WARRIOR"));
+	skill_map[ArcheType::WARRIOR].push_back(getCharge(meta_data, "WARRIOR"));
+}
 
 
 
