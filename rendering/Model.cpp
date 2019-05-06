@@ -360,7 +360,7 @@ void Model::ReadNodeHeirarchy(string AnimationName, float AnimationTime, const a
 
 	if (m_BoneMapping.find(NodeName) != m_BoneMapping.end()) {
 		unsigned int BoneIndex = m_BoneMapping[NodeName];
-		m_BoneInfo[BoneIndex].FinalTransformation = globalInverseTransform * WorldTransformation *
+		m_BoneInfo[BoneIndex].FinalTransformation = WorldTransformation *//globalInverseTransform * WorldTransformation 
 			m_BoneInfo[BoneIndex].BoneOffset;
 	}
 
