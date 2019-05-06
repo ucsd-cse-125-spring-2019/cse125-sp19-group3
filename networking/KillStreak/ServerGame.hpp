@@ -52,10 +52,12 @@ protected:
 	ScheduledEvent scheduledEvent;
   
 	vector<ClientPlayer> players;
-	unordered_map<ArcheType, vector<Skill>&> skill_map;
+	unordered_map<ArcheType, vector<Skill>> skill_map;
 
 	ServerScene * scene;
 	ServerNetwork* network;					// ptr to servers network
+
+	void readMetaDataForSkills();
 
 };
 
