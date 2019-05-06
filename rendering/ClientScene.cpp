@@ -106,7 +106,7 @@ void ClientScene::idle_callback()
 	//cube->update();
 	time += 1.0 / 60;
 	camera->Update();
-	models[0].model->BoneTransform("idlerunning", time);
+	//models[0].model->BoneTransform("idlerunning", time);
 }
 
 void ClientScene::display_callback(GLFWwindow* window)

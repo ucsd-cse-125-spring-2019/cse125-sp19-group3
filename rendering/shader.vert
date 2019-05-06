@@ -31,7 +31,9 @@ void main() {
 		BoneTransform += BoneMtx[BoneIDs_2[2]] * Weights_2[2];
 		BoneTransform += BoneMtx[BoneIDs_2[3]] * Weights_2[3];
 
-		//BoneTransform = mat4(1);
+		//if (Weights[0] == 0) {
+		//    BoneTransform = mat4(1);
+		//}
 
 
 	vec4 PosL = BoneTransform * vec4(position, 1.0);
@@ -46,10 +48,10 @@ void main() {
 	//fragNormal = vec3(ModelMtx * vec4(normal, 0.0));
 
 	texCoord = texCoordIn;
-	//boneIDs = vec4(1.0f * BoneIDs[0], 1.0f * BoneIDs[1], 1.0f * BoneIDs[2], 1.0f * BoneIDs[3]);
-	boneIDs = Weights;
-	//boneIDs_2 = vec4(1.0f * BoneIDs_2[0], 1.0f * BoneIDs_2[1], 1.0f * BoneIDs_2[2], 1.0f * BoneIDs_2[3]);
-	boneIDs_2 = Weights_2;
-	pos = vec4(normalize(vec3(PosL.x, PosL.y, PosL.z)), 1.0);
-	//pos = vec4(normalize(position), 1.0);
+	boneIDs = vec4(1.0f * BoneIDs[0], 1.0f * BoneIDs[1], 1.0f * BoneIDs[2], 1.0f * BoneIDs[3]);
+	//boneIDs = Weights;
+	boneIDs_2 = vec4(1.0f * BoneIDs_2[0], 1.0f * BoneIDs_2[1], 1.0f * BoneIDs_2[2], 1.0f * BoneIDs_2[3]);
+	//boneIDs_2 = Weights_2;
+	//pos = vec4(normalize(vec3(PosL.x, PosL.y, PosL.z)), 1.0);
+	pos = vec4(normalize(position), 1.0);
 }

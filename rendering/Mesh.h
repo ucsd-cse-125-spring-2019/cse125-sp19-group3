@@ -47,6 +47,7 @@ struct BoneInfo {
 	glm::mat4 BoneOffset;
 	glm::mat4 FinalTransformation;
 	string BoneLocation;
+	string BoneName;
 };
 
 class Mesh {

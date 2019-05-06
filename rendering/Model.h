@@ -78,7 +78,7 @@ private:
 
 	void normalize(vector<Vertex>& vertices);
 
-	Mesh processMesh(unsigned int meshIndex, aiMesh *mesh, const aiScene *scene);
+	void processMesh(vector<Vertex>& vertices, vector<unsigned int>& indices, vector<Texture>& textures, unsigned int meshIndex, aiMesh *mesh, const aiScene *scene);
 
 	// checks all material textures of a given type and loads the textures if they're not loaded yet.
 	// the required info is returned as a Texture struct.

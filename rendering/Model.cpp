@@ -9,7 +9,7 @@ Model::Model(string const &path, bool gamma)
 {
 	gammaCorrection = gamma;
 	loadModel(path);
-	BoneTransform("idlerunning", 0.0f);
+	BoneTransform("Root|Idle", 0.0f);
 }
 
 //TODO
@@ -74,8 +74,36 @@ void Model::loadModel(string const &path)
 		globalInverseTransform = glm::inverse(mat4_cast(scene->mRootNode->mTransformation));
 	}
 
+	unsigned int numVertices = 0;
+	unsigned int numIndices = 0;
+
+	// process each mesh located at the current node
+	for (unsigned int i = 0; i < scene->mNumMeshes; i++)
+	{
+		// the node object only contains indices to index the actual objects in the scene. 
+		// the scene contains all the data, node is just to keep stuff organized (like relations between nodes).
+		meshesData.push_back(
+			MeshData{ scene->mMeshes[i]->mMaterialIndex,
+			scene->mMeshes[i]->mNumFaces * 3,
+			numVertices,
+			numIndices }
+		);
+		numVertices += scene->mMeshes[i]->mNumVertices;
+		numIndices += meshesData[i].numIndices;
+	}
+
 	// process ASSIMP's root node recursively
 	processNode(scene->mRootNode, scene);
+
+	vector<Vertex> vertices;
+	vector<unsigned int> indices;
+	vector<Texture> textures;
+
+	for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
+		processMesh(vertices, indices, textures, i, scene->mMeshes[i], scene);
+	}
+
+	meshes.push_back(Mesh(vertices, indices, textures));
 
 	for (unsigned int i = 0; i < scene->mNumAnimations; i++) {
 		m_AnimationMapping[scene->mAnimations[i]->mName.data] = i;
@@ -90,26 +118,6 @@ void Model::loadModel(string const &path)
 // processes a node in a recursive fashion. Processes each individual mesh located at the node and repeats this process on its children nodes (if any).
 void Model::processNode(aiNode *node, const aiScene *scene)
 {
-	unsigned int numVertices = 0;
-	unsigned int numIndices = 0;
-
-	// process each mesh located at the current node
-	for (unsigned int i = 0; i < node->mNumMeshes; i++)
-	{
-		// the node object only contains indices to index the actual objects in the scene. 
-		// the scene contains all the data, node is just to keep stuff organized (like relations between nodes).
-		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		meshesData.push_back(
-			MeshData{ scene->mMeshes[i]->mMaterialIndex,
-			scene->mMeshes[i]->mNumFaces * 3,
-			numVertices,
-			numIndices }
-		);
-		numVertices += scene->mMeshes[i]->mNumVertices;
-		numIndices += meshesData[i].numIndices;
-
-		meshes.push_back(processMesh(i, mesh, scene));
-	}
 	// after we've processed all of the meshes (if any) we then recursively process each of the children nodes
 	for (unsigned int i = 0; i < node->mNumChildren; i++)
 	{
@@ -117,7 +125,6 @@ void Model::processNode(aiNode *node, const aiScene *scene)
 	}
 
 }
-
 
 void Model::normalize(vector<Vertex>& vertices) {
 	float min_x, max_x, min_y, max_y, min_z, max_z;
@@ -165,13 +172,8 @@ void Model::normalize(vector<Vertex>& vertices) {
 }
 
 
-Mesh Model::processMesh(unsigned int meshIndex, aiMesh *mesh, const aiScene *scene)
+void Model::processMesh(vector<Vertex>& vertices, vector<unsigned int>& indices, vector<Texture>& textures, unsigned int meshIndex, aiMesh *mesh, const aiScene *scene)
 {
-	// data to fill
-	vector<Vertex> vertices;
-	vector<unsigned int> indices;
-	vector<Texture> textures;
-
 	// Walk through each of the mesh's vertices
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 	{
@@ -201,8 +203,9 @@ Mesh Model::processMesh(unsigned int meshIndex, aiMesh *mesh, const aiScene *sce
 			vertex.TexCoords = glm::vec2(0.0f, 0.0f);
 		vertices.push_back(vertex);
 	}
+	//printf("size of vertices is %d", vertices.size());
 
-	normalize(vertices);
+	//normalize(vertices);
 	// now wak through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
 	{
@@ -235,9 +238,6 @@ Mesh Model::processMesh(unsigned int meshIndex, aiMesh *mesh, const aiScene *sce
 
 	// process bones
 	LoadBones(meshIndex, mesh, vertices);
-
-	// return a mesh object created from the extracted mesh data
-	return Mesh(vertices, indices, textures);
 }
 
 // checks all material textures of a given type and loads the textures if they're not loaded yet.
@@ -281,27 +281,28 @@ void Model::LoadBones(unsigned int meshIndex, const aiMesh* mesh, vector<Vertex>
 
 		if (m_BoneMapping.find(BoneName) == m_BoneMapping.end()) {
 			BoneIndex = m_BoneInfo.size();
-			//m_NumBones++;
+			m_NumBones++;
 			BoneInfo bi;
 			m_BoneInfo.push_back(bi);
+			m_BoneMapping[BoneName] = BoneIndex;
+			m_BoneInfo[BoneIndex].BoneOffset = mat4_cast(mesh->mBones[i]->mOffsetMatrix);
+			m_BoneInfo[BoneIndex].BoneLocation = "BoneMtx[";
+			m_BoneInfo[BoneIndex].BoneLocation.append(std::to_string(BoneIndex));
+			m_BoneInfo[BoneIndex].BoneLocation.append("]");
+			m_BoneInfo[BoneIndex].BoneName = BoneName;
 		}
 		else {
 			BoneIndex = m_BoneMapping[BoneName];
 		}
 
-		m_BoneMapping[BoneName] = BoneIndex;
-		m_BoneInfo[BoneIndex].BoneOffset = mat4_cast(mesh->mBones[i]->mOffsetMatrix);
-		m_BoneInfo[BoneIndex].BoneLocation = "BoneMtx[";
-		m_BoneInfo[BoneIndex].BoneLocation.append(std::to_string(BoneIndex));
-		m_BoneInfo[BoneIndex].BoneLocation.append("]");
-
 		for (unsigned int j = 0; j < mesh->mBones[i]->mNumWeights; j++) {
-			unsigned int VertexID = meshesData[meshIndex].baseIndex + mesh->mBones[i]->mWeights[j].mVertexId;
+			unsigned int VertexID = meshesData[meshIndex].baseVertex + mesh->mBones[i]->mWeights[j].mVertexId;
 			float Weight = mesh->mBones[i]->mWeights[j].mWeight;
 			for (unsigned int k = 0; k < NUM_BONES_PER_VERTEX; k++) {
 				if (vertices[VertexID].Weights[k] == 0.0) {
 					vertices[VertexID].IDs[k] = BoneIndex;
 					vertices[VertexID].Weights[k] = Weight;
+					//printf("set vertex %d index %d with weight %f of bone %d\n", VertexID, k, Weight, BoneIndex);
 					break;
 				}
 				if (k == NUM_BONES_PER_VERTEX - 1) {
@@ -345,7 +346,7 @@ void Model::ReadNodeHeirarchy(string AnimationName, float AnimationTime, const a
 		// Interpolate rotation and generate rotation transformation matrix
 		aiQuaternion RotationQ;
 		CalcInterpolatedRotation(RotationQ, AnimationTime, pNodeAnim);
-		glm::mat4 RotationM = aiM3x3toGlmMat4(RotationQ.GetMatrix());
+		glm::mat4 RotationM = mat4_cast(aiMatrix4x4(RotationQ.GetMatrix()));
 
 		// Interpolate translation and generate translation transformation matrix
 		aiVector3D Translation;
@@ -353,14 +354,17 @@ void Model::ReadNodeHeirarchy(string AnimationName, float AnimationTime, const a
 		glm::mat4 TranslationM = glm::translate(glm::mat4(1.0f), glm::vec3(Translation.x, Translation.y, Translation.z));
 
 		// Combine the above transformations
-		NodeTransformation = TranslationM * glm::mat4(glm::mat3(mat4_cast(pNode->mTransformation))) * RotationM * ScalingM;
+		NodeTransformation = TranslationM * 
+			//glm::mat4(glm::mat3(mat4_cast(pNode->mTransformation))) * 
+			RotationM * 
+			ScalingM;
 	}
 
 	glm::mat4 WorldTransformation = ParentTransform * NodeTransformation;
 
 	if (m_BoneMapping.find(NodeName) != m_BoneMapping.end()) {
 		unsigned int BoneIndex = m_BoneMapping[NodeName];
-		m_BoneInfo[BoneIndex].FinalTransformation = WorldTransformation *//globalInverseTransform * WorldTransformation 
+		m_BoneInfo[BoneIndex].FinalTransformation = globalInverseTransform * WorldTransformation *
 			m_BoneInfo[BoneIndex].BoneOffset;
 	}
 

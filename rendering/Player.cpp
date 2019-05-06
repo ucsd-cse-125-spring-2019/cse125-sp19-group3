@@ -37,6 +37,6 @@ void Player::update() {
 }
 
 void Player::animate(double currTime) {
-	model->BoneTransform(string("idlerunning"), currTime);
+	//model->BoneTransform(string("idlerunning"), currTime);
 }
 
