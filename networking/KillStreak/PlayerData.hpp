@@ -4,6 +4,7 @@
 #include <algorithm>    // std::sort
 #include <vector>
 #include "../../ServerScene.h"
+#include "INIReader.h"
 
 // #define PLAYERNUM 4;
 
@@ -31,10 +32,10 @@ typedef enum{MELEE, PROJECTILE, AOE, MINIMAP, INVISIBLE, CHARGE, DEFAULT_SKILLTY
 class Skill {
 protected:
 	SkillType skillType;
-	int range;
-	int cooldown;
-	int duration;
-	int speed;
+	double range;
+	double cooldown;
+	double duration;
+	double speed;
 public:
 	Skill() : skillType(DEFAULT_SKILLTYPE), range(-1), cooldown(-1), duration(-1), speed(-1) {}
 	~Skill(){}
@@ -105,3 +106,9 @@ protected:
 	unordered_set<string> inventory;	// items from shop
 };
 
+Skill getMelee(INIReader & meta_data, string archeType);
+Skill getProjectile(INIReader & meta_data, string archeType);
+Skill getAoe(INIReader & meta_data, string archetype);
+Skill getMinimap(INIReader & meta_data, string archetype);
+Skill getInvisible(INIReader & meta_data, string archetype);
+Skill getCharge(INIReader & meta_data, string archetype);
