@@ -13,7 +13,7 @@ void ClientScene::initialize_objects(ClientGame * game)
 
 
 	// TODO: add more models
-	player_m = new Model(std::string("../BaseMesh_Anim.fbx"));
+	player_m = new Model(std::string("../dog_animation.fbx"));
 
 	//player = new Player(player_t, player_m);
 
@@ -28,7 +28,7 @@ void ClientScene::initialize_objects(ClientGame * game)
 
 void ClientScene::playerInit(const Player &player) {
 	this->player = player;
-	
+	this->player.model = models[this->player.modelType].model;
 	// TODO: move to here: 
 	// 1) init player model
 	// 2) create corresponding shader based on player data
@@ -106,7 +106,7 @@ void ClientScene::idle_callback()
 	//cube->update();
 	time += 1.0 / 60;
 	camera->Update();
-	//player.update(time);
+	models[0].model->BoneTransform("idlerunning", time);
 }
 
 void ClientScene::display_callback(GLFWwindow* window)
