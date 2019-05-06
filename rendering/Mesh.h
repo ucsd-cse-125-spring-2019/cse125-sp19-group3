@@ -22,7 +22,7 @@
 
 using namespace std;
 
-#define NUM_BONES_PER_VERTEX 4
+#define NUM_BONES_PER_VERTEX 8
 
 struct Vertex {
 	// position
@@ -32,9 +32,9 @@ struct Vertex {
 	// texCoords
 	glm::vec2 TexCoords;
 
-	float IDs[NUM_BONES_PER_VERTEX] = { 0.0, 0.0, 0.0, 0.0 };
+	int IDs[NUM_BONES_PER_VERTEX] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
-	float Weights[NUM_BONES_PER_VERTEX] = { 0.0, 0.0, 0.0, 0.0 };
+	float Weights[NUM_BONES_PER_VERTEX] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 };
 
 struct Texture {
@@ -46,6 +46,7 @@ struct Texture {
 struct BoneInfo {
 	glm::mat4 BoneOffset;
 	glm::mat4 FinalTransformation;
+	string BoneLocation;
 };
 
 class Mesh {
@@ -97,6 +98,8 @@ public:
 			glBindTexture(GL_TEXTURE_2D, textures[i].id);
 		}
 
+
+
 		// draw mesh
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
@@ -142,10 +145,14 @@ private:
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
 		// bone indices
 		glEnableVertexAttribArray(3);
-		glVertexAttribPointer(3, NUM_BONES_PER_VERTEX, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, IDs));
-		// weights
+		glVertexAttribIPointer(3, 4, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, IDs));	
 		glEnableVertexAttribArray(4);
-		glVertexAttribPointer(4, NUM_BONES_PER_VERTEX, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Weights));
+		glVertexAttribIPointer(4, 4, GL_INT, sizeof(Vertex), (void*)(offsetof(Vertex, IDs) + 4 * sizeof(unsigned int)));
+		// weights
+		glEnableVertexAttribArray(5);
+		glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Weights));
+		glEnableVertexAttribArray(6);
+		glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, Weights) + 4 * sizeof(float)));
 
 		glBindVertexArray(0);
 	}

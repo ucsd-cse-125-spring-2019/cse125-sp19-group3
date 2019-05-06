@@ -12,8 +12,9 @@ ServerScene::~ServerScene() {
 void ServerScene::addPlayer(unsigned int playerId) {
 	nodeIdCounter++;
 	Transform * playerRoot = new Transform(glm::translate(glm::mat4(1.0f), glm::vec3(playerId * 10.0f, 0, 0)),
-		glm::rotate(glm::mat4(1.0f), -90 / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)),
-		glm::scale(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, 0.05f)));
+		glm::rotate(glm::mat4(1.0f), 0.0f * glm::pi<float>(), glm::vec3(1, 0, 0)),//-90 / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)),
+		glm::scale(glm::mat4(1.0f), glm::vec3(10.0f)));
+		//glm::scale(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, 0.05f)));
 	playerRoot->model_ids.insert(PLAYER);
 	root->addChild(nodeIdCounter, playerRoot);
 
@@ -29,7 +30,7 @@ void ServerScene::update()
 {
 	time += 1.0 / 60;
 	for (Player * player : players) {
-		player->update(time);
+		player->update();
 	}
 }
 

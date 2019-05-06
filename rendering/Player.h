@@ -20,7 +20,8 @@ public:
 	void rotate(float angle, glm::vec3 axis);
 	void setDestination(glm::vec3 newDest);
 	void translate(glm::vec3 forward);
-	void update(double currTime);
+	void update();
+	void animate(double currTime);
 
 	unsigned int player_id;
 	unsigned int root_id;
