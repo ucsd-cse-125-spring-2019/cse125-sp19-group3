@@ -5,6 +5,7 @@
 
 #include "main.h"
 #include "../../rendering/ClientScene.h"
+#include "../../rendering/Serialization.h"
 
 
 /*
@@ -189,7 +190,8 @@ int ClientGame::join_game()
 		log->error("Error receiving servers initialization packet");
 		return 0;
 	}
-	if (packet->packetType != INIT_SCENE)			// not initialization packet
+	// a little bit hardcoded imo but ok
+	if (packet->packetType != WELCOME)			// not initialization packet
 	{
 		log->error("Invalid initialization packet sent from server");
 		return 0;
@@ -198,10 +200,11 @@ int ClientGame::join_game()
 	// TODO: deserialize INIT_SCENE packet, then call playerInit() on ClientScene
 	//Window_static::scene->initialize_objects(this);
 
-	char * retval = Window_static::scene->deserializeInitScene(packet->data, packet->size);
+	handleServerInputPacket(packet);
+	/*char * retval = Window_static::scene->deserializeInitScene(packet->data, packet->size);
 	if (*retval != '\0') {
 		log->error("INIT_SCENE packet from server is corrupted");
-	}
+	}*/
 
 	/* TODO: Client officially in the LOBBY. 
 
@@ -304,8 +307,7 @@ void ClientGame::run() {
 		ServerInputPacket* packet = network->receivePacket();
 		//log->info("client received packet of size {}", packet->size);
 		//log->info("client received packet of size {}", packet->size);
-		Window_static::scene->deserializeSceneGraph(packet->data, packet->size);
-
+		handleServerInputPacket(packet);
 
 		// Main render display callback. Rendering of objects is done here.
 		Window_static::display_callback(window);
@@ -326,4 +328,17 @@ void ClientGame::run() {
 void ClientGame::sendPacket(InputType inputType, Point finalLocation, int skillType, int attackType) {
 	ClientInputPacket packet = network->createClientPacket(inputType, finalLocation, skillType, attackType);
 	network->sendToServer(packet);
+}
+
+void ClientGame::handleServerInputPacket(ServerInputPacket * packet) {
+	switch (packet->packetType) {
+	case INIT_SCENE:
+		Window_static::scene->handleInitScenePacket(packet->data);
+		break;
+	case UPDATE_SCENE_GRAPH:
+		Window_static::scene->handleServerTickPacket(packet->data);
+		break;
+	default:
+		break;
+	}
 }

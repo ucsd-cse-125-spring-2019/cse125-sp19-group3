@@ -48,6 +48,10 @@ protected:
 	ScheduledEvent scheduledEvent;
 
 	ServerScene * scene;
+
+
+	ServerInputPacket createInitScenePacket(unsigned int playerId, unsigned int playerRootid);
+	ServerInputPacket createServerTickPacket();
 };
 
 #endif // SURFSTORESERVER_HPP

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <unordered_map>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -12,6 +13,7 @@
 #include "Player.h"
 #include "../networking/KillStreak/ClientGame.h"
 #include "../networking/KillStreak/CoreTypes.hpp"
+#include "../rendering/Serialization.h"
 
 // On some systems you need to change this to the absolute path
 #define VERTEX_SHADER_PATH "../shader.vert"
@@ -21,6 +23,9 @@ class ClientScene {
 public:
 	int width;
 	int height;
+
+	std::unordered_map<unsigned int, Transform *> clientSceneGraphMap;
+
 	void initialize_objects(ClientGame * game);
 	void playerInit(const Player &player);
 	void clean_up();
@@ -32,9 +37,9 @@ public:
 	void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 	void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 	glm::vec3 viewToWorldCoordTransform(int mouse_x, int mouse_y);
-	char* deserializeInitScene(char * data, unsigned int size);
-	char* deserializeSceneGraph(char* data, unsigned int size);
-	char* deserializeSceneGraph(Transform* t, char* data, unsigned int size);
+	void handleInitScenePacket(char * data);
+	void handleServerTickPacket(char* data);
+	void setRoot(Transform * newRoot);
 
 private:
 	const char* window_title = "CSE 125 Group 3";
@@ -45,7 +50,7 @@ private:
 	Player player;
 	Model * player_m;
 	Transform * root;
-	Transform * player_t;
+	// Transform * player_t;
 
 	std::vector<ModelData> models;
 	std::unordered_set<unsigned int> updated_ids;
@@ -54,7 +59,8 @@ private:
 
 	ClientGame * game;
 
-	void removeTransform(Transform * parent, const unsigned int node_id);
+	// void removeTransform(Transform * parent, const unsigned int node_id);
+	
 };
 
 class Window_static
@@ -72,6 +78,8 @@ public:
 	static void key_callback(GLFWwindow* win, int key, int scancode, int action, int mods) { scene->key_callback(win, key, scancode, action, mods); };
 	static void scroll_callback(GLFWwindow* win, double xoffset, double yoffset) { scene->scroll_callback(win, xoffset, yoffset); };
 	static void mouse_button_callback(GLFWwindow* win, int button, int action, int mods) { scene->mouse_button_callback(win, button, action, mods); };
+	static void handleInitScenePacket(char * data) { scene->handleInitScenePacket(data); };
+	static void handleServerTickPacket(char* data) { scene->handleServerTickPacket(data); };
 };
 
 

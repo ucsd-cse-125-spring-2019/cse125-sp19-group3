@@ -4,7 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <GL/glew.h>
-
+#include <queue> 
 
 #include "Cube.h"
 #include "shader.h"
@@ -29,10 +29,11 @@ public:
 	void addPlayer(unsigned int playerId);
 	void update();
 	void handlePlayerMovement(unsigned int player_id, glm::vec3 destination);
-	unsigned int serializeInitScene(char* data, unsigned int playerId, unsigned int playerRootId);
+	/*unsigned int serializeInitScene(char* data, unsigned int playerId, unsigned int playerRootId);
 	unsigned int serializeSceneGraph(char* data);
-	std::pair<char *, unsigned int> serializeSceneGraph(Transform* t, char* data);
+	std::pair<char *, unsigned int> serializeSceneGraph(Transform* t, char* data);*/
 	Transform * getRoot();
+	unordered_map<unsigned int, Transform *> serverSceneGraphMap;
 
 private:
 	Transform * root;

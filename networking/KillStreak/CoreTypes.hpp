@@ -9,7 +9,7 @@ typedef glm::vec3 Point;
 
 typedef enum {INIT_CONN, MOVEMENT, SKILL, ATTACK} InputType;
 
-typedef enum {INIT_SCENE, UPDATE_SCENE_GRAPH} ServerPacketType;
+typedef enum {WELCOME, INIT_SCENE, UPDATE_SCENE_GRAPH} ServerPacketType;
 
 /*
 	Packet send from the client to the server.

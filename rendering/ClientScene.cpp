@@ -1,5 +1,4 @@
 #include "ClientScene.h"
-
 ClientScene * Window_static::scene = new ClientScene();
 
 void ClientScene::initialize_objects(ClientGame * game)
@@ -121,7 +120,7 @@ void ClientScene::display_callback(GLFWwindow* window)
 	//cube->draw(shader, glm::mat4(1.0f), camera->GetViewProjectMtx());
 
 	// Now send these values to the shader program
-	root->draw(shader, models, glm::mat4(1.0f), camera->GetViewProjectMtx());
+	root->draw(shader, models, glm::mat4(1.0f), camera->GetViewProjectMtx(), clientSceneGraphMap);
 	//models[0].model->draw(models[0].shader, player.playerRoot->M, camera->GetViewProjectMtx());
 	//models[0].model->draw(models[0].shader, glm::mat4(1.0f), camera->GetViewProjectMtx());
 
@@ -208,23 +207,20 @@ glm::vec3 ClientScene::viewToWorldCoordTransform(int mouse_x, int mouse_y) {
 	return realPos;
 }
 
-char * ClientScene::deserializeInitScene(char * data, unsigned int size) {
+
+void ClientScene::handleInitScenePacket(char * data) {
 	memcpy(&player.player_id, data, sizeof(unsigned int));
 	data += sizeof(unsigned int);
 	memcpy(&player.root_id, data, sizeof(unsigned int));
 	data += sizeof(unsigned int);
-	size -= 2 * sizeof(unsigned int);
-	root = new Transform(glm::mat4(1.0f));
-	char * retval = deserializeSceneGraph(data, size);
-	for (auto child : root->children) {
-		if (player.root_id == child.first) {
-			this->player.playerRoot = child.second;
-			break;
-		}
-	}
-	return retval;
+	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap);
 }
 
+void ClientScene::handleServerTickPacket(char * data) {
+	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap);
+}
+
+/*
 char * ClientScene::deserializeSceneGraph(char * data, unsigned int size) {
 	auto log = logger();
 	
@@ -284,5 +280,11 @@ void ClientScene::removeTransform(Transform * parent, const unsigned int node_id
 	for (auto model_id : to_remove->model_ids) {
 	}
 	parent->removeChild(node_id);
+} */
+
+
+
+void ClientScene::setRoot(Transform * newRoot) {
+	root = newRoot;
 }
 

@@ -7,7 +7,7 @@
 #include <process.h>				// threads
 #include <windows.h>				// sleep
 
-#define GAME_SIZE			1		// total players required to start game
+#define GAME_SIZE			2		// total players required to start game
 #define LOBBY_START_TIME	2000	// wait this long (ms) after all players connect
 
 static int game_start = 0;			// game ready to begin?
@@ -80,7 +80,7 @@ void client_session(void *arg)
 
 	// TODO: send pre-game data to client telling them they're accepted ( meta data and lobby info )
 	char buf[1024] = { 0 };
-	ServerInputPacket welcome_packet = network->createServerPacket(INIT_SCENE, 0, buf);
+	ServerInputPacket welcome_packet = network->createServerPacket(WELCOME, 0, buf);
 	int bytes_sent = network->sendToClient(client_id, welcome_packet);
 
 	if (!bytes_sent) {	// error? 
@@ -185,9 +185,10 @@ void ServerGame::game_match()
 	for (auto client_data : client_data_list) {
 		unsigned int client_id = client_data->id;
 		char buf[1024] = { 0 };
-		unsigned int size = scene->serializeInitScene(buf, client_id, scene->players[client_id]->root_id);
-		ServerInputPacket welcome_packet = network->createServerPacket(INIT_SCENE, size, buf);
-		int bytes_sent = network->sendToClient(client_id, welcome_packet);
+		/* unsigned int size = scene->serializeInitScene(buf, client_id, scene->players[client_id]->root_id);
+		ServerInputPacket welcome_packet = network->createServerPacket(INIT_SCENE, size, buf); */
+		ServerInputPacket initScene_packet = createInitScenePacket(client_id, scene->players[client_id]->root_id);
+		int bytes_sent = network->sendToClient(client_id, initScene_packet);
 	}
 
 	// all clients connected, wait LOBBY_START_TIME (ms) before starting character selection
@@ -323,11 +324,11 @@ void ServerGame::updateKillPhase() {
 	scene->update();
 
 	// Serialize scene graph and send packet to clients
-	char buf[1024] = { 0 };
+	/*char buf[1024] = { 0 };
 	int size = scene->serializeSceneGraph(buf);
-	ServerInputPacket sceneGraphPacket = network->createServerPacket(UPDATE_SCENE_GRAPH, size, buf);
-
-	network->broadcastSend(sceneGraphPacket);
+	ServerInputPacket sceneGraphPacket = network->createServerPacket(UPDATE_SCENE_GRAPH, size, buf); */
+	ServerInputPacket serverTickPacket = createServerTickPacket();
+	network->broadcastSend(serverTickPacket);
 
 	/*
 	
@@ -354,6 +355,28 @@ void ServerGame::updateKillPhase() {
 void ServerGame::updatePreparePhase() {
 	auto log = logger();
 	log->info("MT: Game server update prepare phase...");
+}
+
+
+ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsigned int playerRootId) {
+	unsigned int sgSize;
+	char buf[1024] = { 0 };
+	char * bufPtr = buf;
+	memcpy(bufPtr, &playerId, sizeof(unsigned int));
+	bufPtr += sizeof(unsigned int);
+	memcpy(bufPtr, &playerRootId, sizeof(unsigned int));
+	bufPtr += sizeof(unsigned int);
+	Transform * root = scene->getRoot();
+	sgSize = Serialization::serializeSceneGraph(root, bufPtr, scene->serverSceneGraphMap);
+	return network->createServerPacket(INIT_SCENE, 2 * sizeof(unsigned int) + sgSize, buf);
+}
+
+ServerInputPacket ServerGame::createServerTickPacket() {
+	unsigned int sgSize;
+	char buf[1024] = { 0 };
+	char * bufPtr = buf;
+	sgSize = Serialization::serializeSceneGraph(scene->getRoot(), bufPtr, scene->serverSceneGraphMap);
+	return network->createServerPacket(UPDATE_SCENE_GRAPH, sgSize, buf);
 }
 
 

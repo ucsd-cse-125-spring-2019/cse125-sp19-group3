@@ -36,6 +36,7 @@
     <ClInclude Include="..\Mesh.h" />
     <ClInclude Include="..\Model.h" />
     <ClInclude Include="..\Player.h" />
+    <ClInclude Include="..\Serialization.h" />
     <ClInclude Include="..\ServerScene.h" />
     <ClInclude Include="..\shader.h" />
     <ClInclude Include="..\Transform.h" />
@@ -53,6 +54,7 @@
     <ClCompile Include="..\Cube.cpp" />
     <ClCompile Include="..\Model.cpp" />
     <ClCompile Include="..\Player.cpp" />
+    <ClCompile Include="..\Serialization.cpp" />
     <ClCompile Include="..\ServerScene.cpp" />
     <ClCompile Include="..\shader.cpp" />
     <ClCompile Include="..\Transform.cpp" />
