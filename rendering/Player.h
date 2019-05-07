@@ -12,7 +12,8 @@ public:
 	Player() {};
 	Player(unsigned int playerId, unsigned int playerRootId, MODEL_TYPE modelType, Transform * playerRoot) 
 	{
-		this->player_id = playerId; this->root_id = playerRootId; this->modelType = modelType; this->playerRoot = playerRoot;
+		this->player_id = playerId; this->root_id = playerRootId; this->modelType = modelType; this->playerRoot = playerRoot; 
+		this->destination = this->currentPos = { playerRoot->translation[3][0], playerRoot->translation[3][1], playerRoot->translation[3][2] };
 	};
 	~Player() {};
 

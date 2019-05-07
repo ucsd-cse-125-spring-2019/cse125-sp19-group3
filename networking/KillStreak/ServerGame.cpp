@@ -7,7 +7,7 @@
 #include <process.h>				// threads
 #include <windows.h>				// sleep
 
-#define GAME_SIZE			2		// total players required to start game
+#define GAME_SIZE			1		// total players required to start game
 #define LOBBY_START_TIME	2000	// wait this long (ms) after all players connect
 
 static int game_start = 0;			// game ready to begin?

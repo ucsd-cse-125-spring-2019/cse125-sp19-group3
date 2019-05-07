@@ -23,7 +23,7 @@ public:
 	int height;
 
 	std::vector<Player *> players;
-
+	std::vector<Transform *> env_objs;
 	ServerScene();
 	~ServerScene();
 	void addPlayer(unsigned int playerId);
@@ -34,6 +34,7 @@ public:
 	std::pair<char *, unsigned int> serializeSceneGraph(Transform* t, char* data);*/
 	Transform * getRoot();
 	unordered_map<unsigned int, Transform *> serverSceneGraphMap;
+	void initEnv();
 
 private:
 	Transform * root;

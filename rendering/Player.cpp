@@ -36,4 +36,3 @@ void Player::update(double currTime) {
 	move();
 	playerRoot->update();
 }
-

@@ -4,15 +4,27 @@ ServerScene::ServerScene()
 {
 	root = new Transform(0, glm::mat4(1.0f));
 	serverSceneGraphMap.insert({ root->node_id, root });
+	initEnv();
 }
 
 ServerScene::~ServerScene() {
 	delete root;
 }
 
+void ServerScene::initEnv() {
+	nodeIdCounter++;
+	Transform * envRoot = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 0, 0)),
+		glm::rotate(glm::mat4(1.0f), -90 / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)),
+		glm::scale(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, 0.05f)));
+	envRoot->model_ids.insert(PLAYER);
+	root->addChild(nodeIdCounter);
+	serverSceneGraphMap.insert({ nodeIdCounter, envRoot });
+	env_objs.push_back(envRoot);
+}
+
 void ServerScene::addPlayer(unsigned int playerId) {
 	nodeIdCounter++;
-	Transform * playerRoot = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)),
+	Transform * playerRoot = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), glm::vec3(-10.0f, 0, 0)),
 		glm::rotate(glm::mat4(1.0f), -90 / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)),
 		glm::scale(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, 0.05f)));
 	playerRoot->model_ids.insert(PLAYER);

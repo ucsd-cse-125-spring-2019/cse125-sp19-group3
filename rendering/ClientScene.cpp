@@ -19,6 +19,7 @@ void ClientScene::initialize_objects(ClientGame * game)
 	//cube = new Cube();
 	//cube->toWorld = glm::translate(glm::mat4(1.0f), glm::vec3(0, 5, 10)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.5f)); 
 	//			// * glm::scale(glm::mat4(1.0f), glm::vec3(100, 0.01, 100)) * cube->toWorld;
+	//TODO: IMPORTANT: CHANGE MODELS TO MAP SO IT IS INDEPENDENT FROM THE INDEX!!!!!!!!
 
 	models.push_back(ModelData{player_m, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), shader, COLOR, 0});
 
