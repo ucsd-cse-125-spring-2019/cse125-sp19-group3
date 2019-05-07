@@ -13,7 +13,7 @@ void ClientScene::initialize_objects(ClientGame * game)
 
 
 	// TODO: add more models
-	player_m = new Model(std::string("../dog_animation.fbx"));
+	player_m = new Model(std::string("../BaseMesh_Anim.fbx"));
 
 	//player = new Player(player_t, player_m);
 
@@ -106,7 +106,7 @@ void ClientScene::idle_callback()
 	//cube->update();
 	time += 1.0 / 60;
 	camera->Update();
-	//models[0].model->BoneTransform("idlerunning", time);
+	models[0].model->BoneTransform("Root|Walk_loop", time);
 }
 
 void ClientScene::display_callback(GLFWwindow* window)

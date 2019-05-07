@@ -29,9 +29,9 @@ void main() {
 		//finalColor = vec4(sqrt(reflectance), 1);
 		//finalColor = vec4(normalize(2.0f * fragNormal), 1);
 
-		//finalColor = pos;
+		finalColor = pos;
 		//finalColor = vec4(sqrt(pow(boneIDs.x, 2) + pow(boneIDs.y, 2) + pow(boneIDs.z, 2)), 0, 0, 1);
-		finalColor = vec4(normalize(vec3(boneIDs.xyz)), 1.0f);
+		//finalColor = vec4(normalize(vec3(boneIDs.xyz)), 1.0f);
 	}
 	else {
 		finalColor = texture(Texture, TexCoord);

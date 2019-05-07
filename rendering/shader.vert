@@ -52,6 +52,6 @@ void main() {
 	//boneIDs = Weights;
 	boneIDs_2 = vec4(1.0f * BoneIDs_2[0], 1.0f * BoneIDs_2[1], 1.0f * BoneIDs_2[2], 1.0f * BoneIDs_2[3]);
 	//boneIDs_2 = Weights_2;
-	//pos = vec4(normalize(vec3(PosL.x, PosL.y, PosL.z)), 1.0);
-	pos = vec4(normalize(position), 1.0);
+	pos = vec4(normalize(vec3(PosL.x, PosL.y, PosL.z)), 1.0);
+	//pos = vec4(normalize(position), 1.0);
 }

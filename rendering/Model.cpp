@@ -9,7 +9,7 @@ Model::Model(string const &path, bool gamma)
 {
 	gammaCorrection = gamma;
 	loadModel(path);
-	BoneTransform("Root|Idle", 0.0f);
+	BoneTransform("Root|Walk_loop", 0.0f);
 }
 
 //TODO
@@ -36,10 +36,17 @@ void Model::BoneTransform(string AnimationName, float TimeInSeconds)
 {
 	glm::mat4 Identity = glm::mat4(1.0f);
 
-	float TicksPerSecond = scene->mAnimations[0]->mTicksPerSecond != 0 ?
-		scene->mAnimations[0]->mTicksPerSecond : 25.0f;
+	unsigned int animationClipIndex = 0;
+	for (unsigned int i = 0; i < scene->mNumAnimations; i++) {
+		if (scene->mAnimations[i]->mName.data == AnimationName) {
+			animationClipIndex = i;
+			break;
+		}
+	}
+	float TicksPerSecond = scene->mAnimations[animationClipIndex]->mTicksPerSecond != 0 ?
+		scene->mAnimations[animationClipIndex]->mTicksPerSecond : 25.0f;
 	float TimeInTicks = TimeInSeconds * TicksPerSecond;
-	float AnimationTime = fmod(TimeInTicks, scene->mAnimations[0]->mDuration);
+	float AnimationTime = fmod(TimeInTicks, scene->mAnimations[animationClipIndex]->mDuration);
 
 	ReadNodeHeirarchy(AnimationName, AnimationTime, scene->mRootNode, Identity);
 
@@ -59,7 +66,7 @@ void Model::BoneTransform(string AnimationName, float TimeInSeconds)
 void Model::loadModel(string const &path)
 {
 	// read file via ASSIMP
-	scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals);
+	scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs); // | aiProcess_GenSmoothNormals);
 	// check for errors
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
 	{
@@ -285,7 +292,7 @@ void Model::LoadBones(unsigned int meshIndex, const aiMesh* mesh, vector<Vertex>
 			BoneInfo bi;
 			m_BoneInfo.push_back(bi);
 			m_BoneMapping[BoneName] = BoneIndex;
-			m_BoneInfo[BoneIndex].BoneOffset = mat4_cast(mesh->mBones[i]->mOffsetMatrix);
+			m_BoneInfo[BoneIndex].BoneOffset = aiM4x4toGlmMat4(mesh->mBones[i]->mOffsetMatrix);
 			m_BoneInfo[BoneIndex].BoneLocation = "BoneMtx[";
 			m_BoneInfo[BoneIndex].BoneLocation.append(std::to_string(BoneIndex));
 			m_BoneInfo[BoneIndex].BoneLocation.append("]");
@@ -333,7 +340,7 @@ void Model::ReadNodeHeirarchy(string AnimationName, float AnimationTime, const a
 
 	const aiAnimation* pAnimation = scene->mAnimations[m_AnimationMapping[AnimationName]];
 
-	glm::mat4 NodeTransformation = mat4_cast(pNode->mTransformation);
+	glm::mat4 NodeTransformation = aiM4x4toGlmMat4(pNode->mTransformation);
 
 	const aiNodeAnim* pNodeAnim = pAnimation->mChannels[m_ChannelMapping[m_AnimationMapping[AnimationName]][NodeName]];
 
@@ -346,7 +353,7 @@ void Model::ReadNodeHeirarchy(string AnimationName, float AnimationTime, const a
 		// Interpolate rotation and generate rotation transformation matrix
 		aiQuaternion RotationQ;
 		CalcInterpolatedRotation(RotationQ, AnimationTime, pNodeAnim);
-		glm::mat4 RotationM = mat4_cast(aiMatrix4x4(RotationQ.GetMatrix()));
+		glm::mat4 RotationM = aiM4x4toGlmMat4(aiMatrix4x4(RotationQ.GetMatrix()));
 
 		// Interpolate translation and generate translation transformation matrix
 		aiVector3D Translation;
@@ -364,7 +371,7 @@ void Model::ReadNodeHeirarchy(string AnimationName, float AnimationTime, const a
 
 	if (m_BoneMapping.find(NodeName) != m_BoneMapping.end()) {
 		unsigned int BoneIndex = m_BoneMapping[NodeName];
-		m_BoneInfo[BoneIndex].FinalTransformation = globalInverseTransform * WorldTransformation *
+		m_BoneInfo[BoneIndex].FinalTransformation = globalInverseTransform * //WorldTransformation *
 			m_BoneInfo[BoneIndex].BoneOffset;
 	}
 
@@ -390,7 +397,7 @@ void Model::CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const 
 	const aiVector3D& StartScalingV = pNodeAnim->mScalingKeys[ScalingIndex].mValue;
 	const aiVector3D& EndScalingV = pNodeAnim->mScalingKeys[NextScalingIndex].mValue;
 	Out = Factor * StartScalingV + (1 - Factor) * EndScalingV;
-	Out = Out.Normalize();
+	//Out = Out.Normalize();
 }
 
 unsigned int Model::FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim)
