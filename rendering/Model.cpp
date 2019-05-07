@@ -3,7 +3,7 @@
 glm::mat4 aiM4x4toGlmMat4(aiMatrix4x4 m);
 glm::mat4 aiM3x3toGlmMat4(aiMatrix3x3 m);
 
-static inline glm::mat4 mat4_cast(const aiMatrix4x4& m) { return glm::transpose(glm::make_mat4(&m.a1)); }
+//static inline glm::mat4 mat4_cast(const aiMatrix4x4& m) { return glm::transpose(glm::make_mat4(&m.a1)); }
 
 Model::Model(string const &path, bool gamma)
 {
@@ -78,7 +78,7 @@ void Model::loadModel(string const &path)
 
 	// store global inverse transform matrix
 	if (scene) {
-		globalInverseTransform = glm::inverse(mat4_cast(scene->mRootNode->mTransformation));
+		globalInverseTransform = glm::inverse(aiM4x4toGlmMat4(scene->mRootNode->mTransformation));
 	}
 
 	unsigned int numVertices = 0;
@@ -371,7 +371,7 @@ void Model::ReadNodeHeirarchy(string AnimationName, float AnimationTime, const a
 
 	if (m_BoneMapping.find(NodeName) != m_BoneMapping.end()) {
 		unsigned int BoneIndex = m_BoneMapping[NodeName];
-		m_BoneInfo[BoneIndex].FinalTransformation = globalInverseTransform * //WorldTransformation *
+		m_BoneInfo[BoneIndex].FinalTransformation = globalInverseTransform * WorldTransformation *
 			m_BoneInfo[BoneIndex].BoneOffset;
 	}
 
@@ -468,7 +468,7 @@ void Model::CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const
 	const aiVector3D& StartPositionV = pNodeAnim->mPositionKeys[PositionIndex].mValue;
 	const aiVector3D& EndPositionV = pNodeAnim->mPositionKeys[NextPositionIndex].mValue;
 	Out = Factor * StartPositionV + (1 - Factor) * EndPositionV;
-	if (Out.SquareLength() != 0) Out = Out.Normalize();
+	//if (Out.SquareLength() != 0) Out = Out.Normalize();
 }
 
 unsigned int Model::FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim)
