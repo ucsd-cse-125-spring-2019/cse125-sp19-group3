@@ -12,7 +12,7 @@ void ClientScene::initialize_objects(ClientGame * game)
 
 
 	// TODO: add more models
-	player_m = new Model(std::string("../BaseMesh_Anim.fbx"));
+	player_m = new Model(std::string("../models/BaseMesh_Anim.fbx"));
 
 	//player = new Player(player_t, player_m);
 
@@ -21,7 +21,7 @@ void ClientScene::initialize_objects(ClientGame * game)
 	//			// * glm::scale(glm::mat4(1.0f), glm::vec3(100, 0.01, 100)) * cube->toWorld;
 	//TODO: IMPORTANT: CHANGE MODELS TO MAP SO IT IS INDEPENDENT FROM THE INDEX!!!!!!!!
 
-	models.push_back(ModelData{player_m, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), shader, COLOR, 0});
+	models[PLAYER] = ModelData{player_m, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), shader, COLOR, 0};
 
 	this->game = game;
 }

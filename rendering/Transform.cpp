@@ -109,7 +109,7 @@ void Transform::removeChild(unsigned int id) {
 	children_ids.erase(id);
 }
 
-void Transform::draw(Shader * shader, const std::vector<ModelData> &models, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx, unordered_map<unsigned int, Transform *> &sceneGraphMap) {
+void Transform::draw(Shader * shader,  std::unordered_map<unsigned int, ModelData> &models, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx, unordered_map<unsigned int, Transform *> &sceneGraphMap) {
 	if (!enabled)
 		return;
 
@@ -120,7 +120,7 @@ void Transform::draw(Shader * shader, const std::vector<ModelData> &models, cons
 		child->draw(shader, models, childMtx, viewProjMtx, sceneGraphMap);
 	}
 
-	for (auto model_id : model_ids) {
+	for (unsigned int model_id : model_ids) {
 		if (models[model_id].renderMode == COLOR) {
 			models[model_id].shader->use();
 			models[model_id].shader->setVec4("color", models[model_id].color);

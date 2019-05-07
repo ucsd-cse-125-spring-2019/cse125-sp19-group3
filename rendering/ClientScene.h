@@ -52,7 +52,7 @@ private:
 	Transform * root;
 	// Transform * player_t;
 
-	std::vector<ModelData> models;
+	std::unordered_map<unsigned int, ModelData> models;
 	std::unordered_set<unsigned int> updated_ids;
 
 	double time = 0.0;
