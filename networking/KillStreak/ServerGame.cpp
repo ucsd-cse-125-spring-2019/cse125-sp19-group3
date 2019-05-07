@@ -116,7 +116,7 @@ void client_session(void *arg)
 
 		// acquire queue lock & push packet 
 		client_arg->q_lock->lock();
-		input_queue->push(*packet);		
+		input_queue->push(packet);		
 		client_arg->q_lock->unlock();
 
 	} while (keep_conn);				// connection-closed/error? 
@@ -284,9 +284,9 @@ void ServerGame::updateKillPhase() {
 	// log->info("MT: Game server kill phase update...");
 
 	// create temp vectors for each client to dump all incoming packets into
-	vector<vector<ClientInputPacket>> inputPackets;
+	vector<vector<ClientInputPacket*>> inputPackets;
 	for (int i = 0; i < GAME_SIZE; i++) {
-		inputPackets.push_back(vector<ClientInputPacket>());
+		inputPackets.push_back(vector<ClientInputPacket*>());
 	}
 
 	// TODO: BE SURE TO FREE PACKETS AFTER PROCESSING THEM, OTHERWISE THE PACKETS WILL EVENTUALLY
@@ -309,16 +309,20 @@ void ServerGame::updateKillPhase() {
 
 	// Handle packets
 	for (int i = 0; i < GAME_SIZE; i++) {
-		for (auto packet : inputPackets[i]) {
+		for (auto &packet : inputPackets[i]) {
 
 			//log->info("Server received packet with input type {}, finalLocation of {}, {}, {}", 
 			//	packet.inputType, packet.finalLocation.x, packet.finalLocation.y, packet.finalLocation.z);
 
-			switch (packet.inputType) {
+			switch (packet->inputType) {
 			case MOVEMENT:
 				log->info("Handling movement packet on server");
-				scene->handlePlayerMovement(i, packet.finalLocation);
+				scene->handlePlayerMovement(i, packet->finalLocation);
+				break;
+			default:
+				break;
 			}
+			free(packet);
 		}
 	}
 	scene->update();
@@ -360,7 +364,7 @@ void ServerGame::updatePreparePhase() {
 
 ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsigned int playerRootId) {
 	unsigned int sgSize;
-	char buf[1024] = { 0 };
+	char buf[4096] = { 0 };
 	char * bufPtr = buf;
 	memcpy(bufPtr, &playerId, sizeof(unsigned int));
 	bufPtr += sizeof(unsigned int);
@@ -368,15 +372,15 @@ ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsig
 	bufPtr += sizeof(unsigned int);
 	Transform * root = scene->getRoot();
 	sgSize = Serialization::serializeSceneGraph(root, bufPtr, scene->serverSceneGraphMap);
-	return network->createServerPacket(INIT_SCENE, 2 * sizeof(unsigned int) + sgSize, buf);
+	return network->createServerPacket(INIT_SCENE, 4096, buf);
 }
 
 ServerInputPacket ServerGame::createServerTickPacket() {
 	unsigned int sgSize;
-	char buf[1024] = { 0 };
+	char buf[4096] = { 0 };
 	char * bufPtr = buf;
 	sgSize = Serialization::serializeSceneGraph(scene->getRoot(), bufPtr, scene->serverSceneGraphMap);
-	return network->createServerPacket(UPDATE_SCENE_GRAPH, sgSize, buf);
+	return network->createServerPacket(UPDATE_SCENE_GRAPH, 4096, buf);
 }
 
 

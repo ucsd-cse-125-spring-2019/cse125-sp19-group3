@@ -1,4 +1,9 @@
 #include "ClientScene.h"
+#include "nlohmann\json.hpp"
+#include <fstream>
+
+using json = nlohmann::json;
+
 ClientScene * Window_static::scene = new ClientScene();
 
 void ClientScene::initialize_objects(ClientGame * game)
@@ -12,7 +17,6 @@ void ClientScene::initialize_objects(ClientGame * game)
 
 
 	// TODO: add more models
-	player_m = new Model(std::string("../models/BaseMesh_Anim.fbx"));
 
 	//player = new Player(player_t, player_m);
 
@@ -20,8 +24,11 @@ void ClientScene::initialize_objects(ClientGame * game)
 	//cube->toWorld = glm::translate(glm::mat4(1.0f), glm::vec3(0, 5, 10)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.5f)); 
 	//			// * glm::scale(glm::mat4(1.0f), glm::vec3(100, 0.01, 100)) * cube->toWorld;
 	//TODO: IMPORTANT: CHANGE MODELS TO MAP SO IT IS INDEPENDENT FROM THE INDEX!!!!!!!!
-
-	models[PLAYER] = ModelData{player_m, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), shader, COLOR, 0};
+	ifstream json_file("../model_paths.json");
+	json pathObjs = json::parse(json_file);
+	for (auto & obj : pathObjs["data"]) {
+		models[(unsigned int)obj["model_id"]] = ModelData{ new Model(obj["path"]), glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), shader, COLOR, 0 };
+	}
 
 	this->game = game;
 }
@@ -39,7 +46,7 @@ void ClientScene::clean_up()
 {
 	delete(camera);
 	//delete(cube);
-	delete(player_m);
+	//delete(player_m);
 	//delete(player_t);
 	delete(root);
 	delete(shader);

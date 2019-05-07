@@ -38,6 +38,9 @@ public:
 
 private:
 	Transform * root;
+	Transform * envRoot;
+	Transform * playerRoot;
+	Transform * skillRoot;
 
 	double time = 0.0;
 	unsigned int nodeIdCounter = 0;

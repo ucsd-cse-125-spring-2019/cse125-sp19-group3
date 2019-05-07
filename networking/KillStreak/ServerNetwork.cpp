@@ -313,7 +313,7 @@ ServerInputPacket ServerNetwork::createServerPacket(ServerPacketType type, int s
 	ServerInputPacket packet;
 	packet.packetType = type;
 	packet.size = size;
-	auto log = logger();
+	// auto log = logger();
 	// log->info("Size of scene graph packet is {}", (size + 2));
 	memcpy(packet.data, data, size);
 

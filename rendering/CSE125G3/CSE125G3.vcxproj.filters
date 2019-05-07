@@ -149,5 +149,11 @@
     <None Include="..\shader.vert">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\model_paths.json">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\env_model_locations.json">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

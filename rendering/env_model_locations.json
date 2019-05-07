@@ -1,0 +1,84 @@
+{
+  "data": [
+    {
+      "model_id": 104,
+      "translate": [
+        0.0,
+        0.0,
+        -50.0
+      ],
+      "rotate": 0,
+      "scale": 0.035
+    },
+    {
+      "model_id": 102,
+      "translate": [
+        -17.0,
+        0.0,
+        9.0
+      ],
+      "rotate": -45.0,
+      "scale": 0.07
+    },
+    {
+      "model_id": 103,
+      "translate": [
+        15.0,
+        0.0,
+        10.0
+      ],
+      "rotate": 45.0,
+      "scale": 0.05
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        12,
+        0,
+        -27
+      ],
+      "rotate": 0,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        -12,
+        0,
+        -27
+      ],
+      "rotate": 180,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        16.5,
+        0,
+        -24.5
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        -16.5,
+        0,
+        -24.5
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 101,
+      "translate": [
+        0,
+        0,
+        -24.5
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    }
+  ]
+}

@@ -341,4 +341,6 @@ void ClientGame::handleServerInputPacket(ServerInputPacket * packet) {
 	default:
 		break;
 	}
+	// deallocate the packet here
+	free(packet);
 }

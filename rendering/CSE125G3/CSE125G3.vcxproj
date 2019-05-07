@@ -64,6 +64,8 @@
   <ItemGroup>
     <None Include="..\..\networking\KillStreak\client_config.ini" />
     <None Include="..\..\networking\KillStreak\config.ini" />
+    <None Include="..\env_model_locations.json" />
+    <None Include="..\model_paths.json" />
     <None Include="..\shader.frag" />
     <None Include="..\shader.vert" />
     <None Include="packages.config" />

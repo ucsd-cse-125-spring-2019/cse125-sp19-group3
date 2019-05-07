@@ -33,7 +33,7 @@ typedef struct {
 typedef struct {
 	ServerPacketType packetType;
 	int size;
-	char data[1024];
+	char data[4096];
 	// TODO: Add data!!! 
 } ServerInputPacket;
 
@@ -42,7 +42,7 @@ typedef std::chrono::high_resolution_clock Clock;
 typedef std::chrono::nanoseconds nanoseconds;
 typedef std::chrono::duration<double> dsec;
 
-typedef std::queue<ClientInputPacket> ClientThreadQueue;
+typedef std::queue<ClientInputPacket*> ClientThreadQueue;
 typedef std::queue<ServerInputPacket> ServerInputQueue;
 
 /* Server scheduling queue event */

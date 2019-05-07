@@ -48,7 +48,6 @@ private:
 
 	Cube * cube;
 	Player player;
-	Model * player_m;
 	Transform * root;
 	// Transform * player_t;
 

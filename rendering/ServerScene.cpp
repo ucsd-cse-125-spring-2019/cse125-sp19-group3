@@ -1,9 +1,25 @@
 #include "ServerScene.h"
+#include "nlohmann\json.hpp"
+#include <fstream>
+
+using json = nlohmann::json;
 
 ServerScene::ServerScene()
 {
 	root = new Transform(0, glm::mat4(1.0f));
 	serverSceneGraphMap.insert({ root->node_id, root });
+	nodeIdCounter++;
+	envRoot = new Transform(nodeIdCounter, glm::mat4(1.0f));
+	serverSceneGraphMap.insert({ envRoot->node_id, envRoot });
+	root->addChild(nodeIdCounter);
+	nodeIdCounter++;
+	playerRoot = new Transform(nodeIdCounter, glm::mat4(1.0f));
+	serverSceneGraphMap.insert({ playerRoot->node_id, playerRoot });
+	root->addChild(nodeIdCounter);
+	nodeIdCounter++;
+	skillRoot = new Transform(nodeIdCounter, glm::mat4(1.0f));
+	serverSceneGraphMap.insert({ skillRoot->node_id, skillRoot });
+	root->addChild(nodeIdCounter);
 	initEnv();
 }
 
@@ -12,29 +28,35 @@ ServerScene::~ServerScene() {
 }
 
 void ServerScene::initEnv() {
-	nodeIdCounter++;
-	Transform * envRoot = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), glm::vec3(10.0f, 0, 0)),
-		glm::rotate(glm::mat4(1.0f), -90 / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)),
-		glm::scale(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, 0.05f)));
-	envRoot->model_ids.insert(PLAYER);
-	root->addChild(nodeIdCounter);
-	serverSceneGraphMap.insert({ nodeIdCounter, envRoot });
-	env_objs.push_back(envRoot);
+	ifstream json_file("../env_model_locations.json");
+	json jsonObjs = json::parse(json_file);
+	for (auto & obj : jsonObjs["data"]) {
+		nodeIdCounter++;
+		Transform * envobj = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), glm::vec3((float)(obj["translate"][0]), (float)(obj["translate"][1]), (float)(obj["translate"][2]))),
+		glm::rotate(glm::mat4(1.0f), (float)obj["rotate"] / 180.0f * glm::pi<float>(), glm::vec3(0, 1, 0)),
+		glm::scale(glm::mat4(1.0f), glm::vec3((float)obj["scale"], (float)obj["scale"], (float)obj["scale"])));
+		
+		envobj->model_ids.insert((int)obj["model_id"]);
+
+		envRoot->addChild(nodeIdCounter);
+		serverSceneGraphMap.insert({ nodeIdCounter, envobj });
+		env_objs.push_back(envobj);
+	}
 }
 
 void ServerScene::addPlayer(unsigned int playerId) {
 	nodeIdCounter++;
-	Transform * playerRoot = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), glm::vec3(-10.0f, 0, 0)),
+	Transform * playerObj = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), glm::vec3(-10.0f, 0, 0)),
 		glm::rotate(glm::mat4(1.0f), -90 / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)),
 		glm::scale(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, 0.05f)));
-	playerRoot->model_ids.insert(PLAYER);
+	playerObj->model_ids.insert(PLAYER);
 
-	root->addChild(nodeIdCounter);
-	serverSceneGraphMap.insert({ nodeIdCounter, playerRoot });
+	playerRoot->addChild(nodeIdCounter);
+	serverSceneGraphMap.insert({ nodeIdCounter, playerObj });
 
 	// TODO: need to set model type based on player selection in lobby
 
-	Player * player = new Player(playerId, nodeIdCounter, HUMAN, playerRoot);
+	Player * player = new Player(playerId, nodeIdCounter, HUMAN, playerObj);
 	//playerMap.insert(std::pair<unsigned int, Player *>(playerId, player));
 	players.push_back(player);
 }

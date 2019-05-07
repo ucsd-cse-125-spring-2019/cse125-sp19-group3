@@ -7,7 +7,8 @@ Model::Model(string const &path, bool gamma)
 {
 	gammaCorrection = gamma;
 	loadModel(path);
-	BoneTransform("Root|Idle", 0.0f);
+	if(m_NumBones)
+		BoneTransform("Root|Idle", 0.0f);
 }
 
 //TODO
@@ -22,7 +23,8 @@ void Model::draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &v
 	shader->use();
 	shader->setMat4("ModelMtx", modelMtx);
 	shader->setMat4("ModelViewProjMtx", viewProjMtx * modelMtx);
-	shader->setNMat4("BoneMtx", boneTransforms[0], boneTransforms.size());
+	if(boneTransforms.size())
+		shader->setNMat4("BoneMtx", boneTransforms[0], boneTransforms.size());
 	for (unsigned int i = 0; i < meshes.size(); i++)
 		meshes[i].draw(shader, viewProjMtx);
 }
