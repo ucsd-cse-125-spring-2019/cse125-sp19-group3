@@ -281,7 +281,7 @@ void ServerNetwork::broadcastSend(ServerInputPacket packet)
 	{
 		currentSocket = x.second;
 		int sentLength = send(currentSocket, serialized, sizeof(ServerInputPacket), 0);
-		log->info("Sent packet of length {} to client {}", sentLength, x.first);
+		// log->info("Sent packet of length {} to client {}", sentLength, x.first);
 		//iSendResult = NetworkServices::sendMessage(currentSocket, packets, totalSize);
 
 		//if (iSendResult == SOCKET_ERROR)
@@ -333,9 +333,11 @@ ServerInputPacket ServerNetwork::createServerPacket(ServerPacketType type, int s
 	ServerInputPacket packet;
 	packet.packetType = type;
 	packet.size = size;
-	auto log = logger();
-	log->info("Size of scene graph packet is {}", (size + 2));
-	memcpy(packet.data, data, sizeof(glm::mat4));
+	// auto log = logger();
+	// log->info("Size of scene graph packet is {}", (size + 2));
+	memcpy(packet.data, data, size);
 
 	return packet;
 }
+
+

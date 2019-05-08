@@ -1,12 +1,4 @@
-#include "logger.hpp"
-#include "sysexits.h"
-#include "INIReader.h"
-#include "ClientGame.h"
-#include "ServerGame.hpp"
-
-#include <stdlib.h>
-#include <iostream>
-#include <process.h>
+#include "main.h"
 using namespace std;
 
 
@@ -40,6 +32,7 @@ int main(int argc, char** argv) {
 		return EX_CONFIG;
 	}
 
+
 	INIReader meta_data(argv[2]);
 
 	if (config.ParseError() < 0) {
@@ -49,8 +42,9 @@ int main(int argc, char** argv) {
 	}
 
 	/*
-	// Multi-threaded approach ************************************************
 
+	// Multi-threaded approach ************************************************
+	
 	// create new thread and run server
 	log->info("Launching Killstreak server");
 	server = new ServerGame(config);
@@ -62,7 +56,7 @@ int main(int argc, char** argv) {
 	client->run();
 
 	// ************************************************************************
-	*/
+	
 
 
 

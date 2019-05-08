@@ -5,10 +5,16 @@
 #include "Model.h"
 #include "Transform.h"
 
+typedef enum {HUMAN, MAGE, WARRIOR, ASSASIN} MODEL_TYPE;
+
 class Player {
 public:
 	Player() {};
-	Player(Transform * playerRoot, Model * model) { this->playerRoot = playerRoot; this->model = model; };
+	Player(unsigned int playerId, unsigned int playerRootId, MODEL_TYPE modelType, Transform * playerRoot) 
+	{
+		this->player_id = playerId; this->root_id = playerRootId; this->modelType = modelType; this->playerRoot = playerRoot; 
+		this->destination = this->currentPos = { playerRoot->translation[3][0], playerRoot->translation[3][1], playerRoot->translation[3][2] };
+	};
 	~Player() {};
 
 	void move();
@@ -17,12 +23,15 @@ public:
 	void translate(glm::vec3 forward);
 	void update(double currTime);
 
+	unsigned int player_id;
+	unsigned int root_id;
+	MODEL_TYPE modelType;
 	Transform * playerRoot;
 	Model * model;
 	glm::vec3 destination = glm::vec3(0.0f);
 	glm::vec3 currentPos = glm::vec3(0.0f);
 	glm::vec3 currentOri = glm::vec3(0.0f, 0.0f, 1.0f);
-	float speed = 0.2f;
+	float speed = 0.3f;
 };
 
 #endif

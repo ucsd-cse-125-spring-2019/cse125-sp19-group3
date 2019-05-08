@@ -9,13 +9,14 @@
 class ClientGame {
 public:
 	ClientGame(INIReader& t_config);
-	~ClientGame(void);
+	//~ClientGame(void);
 
 	ClientNetwork * network;
 
 	void run();
 	int join_game();
 	void sendPacket(InputType inputType, Point finalLocation, int skillType, int attackType);
+	void handleServerInputPacket(ServerInputPacket* packet);
 
 protected:
 	INIReader & config;

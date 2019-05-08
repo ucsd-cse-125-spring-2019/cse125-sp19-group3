@@ -59,7 +59,7 @@ ServerGame::ServerGame(INIReader& t_config, INIReader& t_meta_data) : config(t_c
 	readMetaDataForSkills();
 
 	scene = new ServerScene();
-	scene->initialize_objects();
+
 
 	network = new ServerNetwork(host, port);
 	scheduledEvent = ScheduledEvent(END_KILLPHASE, 10000000); // default huge value
@@ -90,9 +90,9 @@ void client_session(void *arg)
 
 	log->info("CT <{}>: Launching new client thread", client_id);
 
-	// send pre-game data to client telling them they're accepted ( meta data and lobby info )
+	// TODO: send pre-game data to client telling them they're accepted ( meta data and lobby info )
 	char buf[1024] = { 0 };
-	ServerInputPacket welcome_packet = network->createServerPacket(INIT_SCENE, 0, buf);
+	ServerInputPacket welcome_packet = network->createServerPacket(WELCOME, 0, buf);
 	int bytes_sent = network->sendToClient(client_id, welcome_packet);
 
 	if (!bytes_sent) {	// error? 
@@ -215,12 +215,27 @@ void ServerGame::game_match()
 	// TODO: broadcast game start to all clients once all characters selected
 	//	--> ATTACH MODEL IDS TO SCENE GRAPH AND BROADCAST TO ALL CLIENTS in start_game packet from server
 	//
-	// Graphics this is where to send init scene graph!!
+	// TODO: Fix: Graphics this is where to send init scene graph!!
 	// ....
 	// ....
 	// ....
 	// ....
 
+
+	for (auto client_data : client_data_list) {
+		unsigned int client_id = client_data->id;
+		scene->addPlayer(client_id);
+	}
+
+	// Init players in the scene
+	for (auto client_data : client_data_list) {
+		unsigned int client_id = client_data->id;
+		char buf[1024] = { 0 };
+		/* unsigned int size = scene->serializeInitScene(buf, client_id, scene->players[client_id]->root_id);
+		ServerInputPacket welcome_packet = network->createServerPacket(INIT_SCENE, size, buf); */
+		ServerInputPacket initScene_packet = createInitScenePacket(client_id, scene->players[client_id]->root_id);
+		int bytes_sent = network->sendToClient(client_id, initScene_packet);
+	}
 
 
 	// schedule end of kill phase
@@ -322,7 +337,7 @@ void ServerGame::launch() {
 */
 void ServerGame::updateKillPhase() {
 	auto log = logger();
-	log->info("MT: Game server kill phase update...");
+	// log->info("MT: Game server kill phase update...");
 
 	// create temp vectors for each client to dump all incoming packets into
 	vector<vector<ClientInputPacket*>> inputPackets;
@@ -348,24 +363,31 @@ void ServerGame::updateKillPhase() {
 
 	// Handle packets
 	for (int i = 0; i < GAME_SIZE; i++) {
-		for (auto packet : inputPackets[i]) {
 
-			log->info("Server received packet with input type {}, finalLocation of {}, {}, {}", 
-				packet->inputType, packet->finalLocation.x, packet->finalLocation.y, packet->finalLocation.z);
+		for (auto &packet : inputPackets[i]) {
+
+			//log->info("Server received packet with input type {}, finalLocation of {}, {}, {}", 
+			//	packet.inputType, packet.finalLocation.x, packet.finalLocation.y, packet.finalLocation.z);
 
 			switch (packet->inputType) {
-			MOVEMENT:
-				scene->handlePlayerMovement(packet->finalLocation);
+			case MOVEMENT:
+				log->info("Handling movement packet on server");
+				scene->handlePlayerMovement(i, packet->finalLocation);
+				break;
+			default:
+				break;
 			}
+			free(packet);
 		}
 	}
+	scene->update();
 
 	// Serialize scene graph and send packet to clients
-	char buf[1024] = { 0 };
+	/*char buf[1024] = { 0 };
 	int size = scene->serializeSceneGraph(buf);
-	ServerInputPacket sceneGraphPacket = network->createServerPacket(UPDATE_SCENE_GRAPH, size, buf);
-
-	network->broadcastSend(sceneGraphPacket);
+	ServerInputPacket sceneGraphPacket = network->createServerPacket(UPDATE_SCENE_GRAPH, size, buf); */
+	ServerInputPacket serverTickPacket = createServerTickPacket();
+	network->broadcastSend(serverTickPacket);
 
 	/*
 	
@@ -411,6 +433,30 @@ void ServerGame::readMetaDataForSkills() {
 	skill_map[ArcheType::WARRIOR].push_back(Skill::getAoe(meta_data, "WARRIOR"));
 	skill_map[ArcheType::WARRIOR].push_back(Skill::getCharge(meta_data, "WARRIOR"));
 }
+
+
+ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsigned int playerRootId) {
+	unsigned int sgSize;
+	char buf[4096] = { 0 };
+	char * bufPtr = buf;
+	memcpy(bufPtr, &playerId, sizeof(unsigned int));
+	bufPtr += sizeof(unsigned int);
+	memcpy(bufPtr, &playerRootId, sizeof(unsigned int));
+	bufPtr += sizeof(unsigned int);
+	Transform * root = scene->getRoot();
+	sgSize = Serialization::serializeSceneGraph(root, bufPtr, scene->serverSceneGraphMap);
+	return network->createServerPacket(INIT_SCENE, 4096, buf);
+}
+
+ServerInputPacket ServerGame::createServerTickPacket() {
+	unsigned int sgSize;
+	char buf[4096] = { 0 };
+	char * bufPtr = buf;
+	sgSize = Serialization::serializeSceneGraph(scene->getRoot(), bufPtr, scene->serverSceneGraphMap);
+	return network->createServerPacket(UPDATE_SCENE_GRAPH, 4096, buf);
+}
+
+
 
 
 

@@ -55,10 +55,16 @@ protected:
 	unordered_map<ArcheType, vector<Skill>> skill_map;
 
 	ServerScene * scene;
+
 	ServerNetwork* network;					// ptr to servers network
 
 	void readMetaDataForSkills();
 
+
+
+
+	ServerInputPacket createInitScenePacket(unsigned int playerId, unsigned int playerRootid);
+	ServerInputPacket createServerTickPacket();
 };
 
 #endif // SURFSTORESERVER_HPP

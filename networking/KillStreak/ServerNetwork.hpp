@@ -6,6 +6,7 @@
 #include "CoreTypes.hpp"
 #include <ws2tcpip.h>
 #include <map>
+#include "../../rendering/Serialization.h"
 
 using namespace std;
 #pragma comment (lib, "Ws2_32.lib")

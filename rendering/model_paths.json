@@ -1,0 +1,58 @@
+{
+  "data": [
+    {
+      "path": "../models/BaseMesh_Anim.fbx",
+      "model_id": 0,
+      "color_rgb": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "path": "../models/fence_element_1.fbx",
+      "model_id": 100,
+      "color_rgb": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "path": "../models/fence_element_2.fbx",
+      "model_id": 101,
+      "color_rgb": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "path": "../models/grave_stone_1.fbx",
+      "model_id": 102,
+      "color_rgb": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "path": "../models/grave_stone_3.fbx",
+      "model_id": 103,
+      "color_rgb": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "path": "../models/dungeon_entrance.fbx",
+      "model_id": 104,
+      "color_rgb": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    }
+  ]
+}

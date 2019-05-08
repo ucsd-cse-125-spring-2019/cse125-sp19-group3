@@ -4,7 +4,9 @@
 #include "sysexits.h"
 #include <chrono>
 
-#include "../../rendering/main.h"
+#include "main.h"
+#include "../../rendering/ClientScene.h"
+#include "../../rendering/Serialization.h"
 
 
 /*
@@ -200,21 +202,29 @@ int ClientGame::join_game()
 
 
 	// block until receive servers welcome package (telling us we're accepted and in lobby)
-	ServerInputPacket* welcome_packet = network->receivePacket();
-	if (!welcome_packet)									// error 
+	ServerInputPacket* packet = network->receivePacket();
+	if (!packet)									// error 
 	{
 		log->error("Error receiving servers initialization packet");
 		return 0;
 	}
-	if (welcome_packet->packetType != INIT_SCENE)			// not initialization packet
+
+	// a little bit hardcoded imo but ok
+	if (packet->packetType != WELCOME)			// not initialization packet
 	{
 		log->error("Invalid initialization packet sent from server");
-		free(welcome_packet);
+		free(packet);
 		return 0;
 	}
-	free(welcome_packet);		// deallocate welcome packet
 
 
+	// TODO: deserialize INIT_SCENE packet, then call playerInit() on ClientScene
+	//Window_static::scene->initialize_objects(this);
+
+	handleServerInputPacket(packet);
+	
+
+	/* TODO: Client officially in the LOBBY. 
 	/* 
 	CLIENT JOINED LOBBY ************************************************
 		--> Block on recv() until server sends confirmation that all players joined 
@@ -362,9 +372,9 @@ void ClientGame::run() {
 
 		// TODO: REMOVE ME!!! (new thread should handle incoming packets
 		ServerInputPacket* packet = network->receivePacket();
-		log->info("client received packet of size {}", packet->size);
-		Window_static::window->deserializeSceneGraph(packet->data, packet->size);
-
+		//log->info("client received packet of size {}", packet->size);
+		//log->info("client received packet of size {}", packet->size);
+		handleServerInputPacket(packet);
 
 		// Main render display callback. Rendering of objects is done here.
 		Window_static::display_callback(window);
@@ -385,4 +395,19 @@ void ClientGame::run() {
 void ClientGame::sendPacket(InputType inputType, Point finalLocation, int skillType, int attackType) {
 	ClientInputPacket packet = network->createClientPacket(inputType, finalLocation, skillType, attackType);
 	network->sendToServer(packet);
+}
+
+void ClientGame::handleServerInputPacket(ServerInputPacket * packet) {
+	switch (packet->packetType) {
+	case INIT_SCENE:
+		Window_static::scene->handleInitScenePacket(packet->data);
+		break;
+	case UPDATE_SCENE_GRAPH:
+		Window_static::scene->handleServerTickPacket(packet->data);
+		break;
+	default:
+		break;
+	}
+	// deallocate the packet here
+	free(packet);
 }
