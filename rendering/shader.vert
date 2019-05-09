@@ -40,7 +40,7 @@ void main() {
 	//gl_Position = ModelViewProjMtx * vec4(position, 1.0);
 
 	fragPosition = vec3(ModelMtx * PosL);
-	fragNormal = vec3(ModelMtx * NormalL);
+	fragNormal = normalize(vec3(ModelMtx * NormalL));
 	//fragPosition = vec3(ModelMtx * vec4(position, 1.0));
 	//fragNormal = vec3(ModelMtx * vec4(normal, 0.0));
 
