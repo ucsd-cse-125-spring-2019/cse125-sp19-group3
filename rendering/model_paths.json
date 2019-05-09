@@ -53,6 +53,15 @@
         0.0,
         0.0
       ]
+    },
+    {
+      "path": "../models/candle_arrangement_2.fbx",
+      "model_id": 105,
+      "color_rgb": [
+        1.0,
+        0.0,
+        0.0
+      ]
     }
   ]
 }
