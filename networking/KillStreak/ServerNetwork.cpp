@@ -270,26 +270,38 @@ int ServerNetwork::receiveData(unsigned int client_id, char * recvbuf, size_t pa
 // send data to all clients
 void ServerNetwork::broadcastSend(ServerInputPacket packet)
 {
-	auto log = logger();
 	SOCKET currentSocket;
-	int iSendResult;
-
-	char serialized[sizeof(ServerInputPacket)];
-	memcpy(serialized, &packet, sizeof(ServerInputPacket));
 
 	for (auto const& x : sessions)
 	{
 		currentSocket = x.second;
-		int sentLength = send(currentSocket, serialized, sizeof(ServerInputPacket), 0);
-		// log->info("Sent packet of length {} to client {}", sentLength, x.first);
-		//iSendResult = NetworkServices::sendMessage(currentSocket, packets, totalSize);
-
-		//if (iSendResult == SOCKET_ERROR)
-		//{
-		//	log->error("send failed with error: {}", WSAGetLastError());
-		//	closesocket(currentSocket);
-		//}
+		
+		int toSend = packet.size;
+		char buf[4096];
+		char * packetPtr = packet.data;
+		unsigned int static_size = sizeof(ServerPacketType) + sizeof(int);
+		memcpy(buf, &packet, static_size);
+		char * bufPtr = &buf[static_size];
+		int bufCapacity = sizeof(buf) - static_size;
+		while (toSend > 0) {
+			// calculate the remaining size left in the buf
+			memcpy(bufPtr, packetPtr, bufCapacity);
+			int sent = send(currentSocket, buf, min((int)sizeof(buf), toSend), 0);
+			if (sent == SOCKET_ERROR) {
+				wprintf(L"send failed with error: %d\n", WSAGetLastError());
+				closesocket(currentSocket);
+				WSACleanup();
+				free(packet.data);
+				return;
+			}
+			toSend -= sent;
+			bufCapacity = min((int)sizeof(buf), toSend);
+			bufPtr = buf;
+			packetPtr += sent;
+		}
 	}
+
+	free(packet.data);
 }
 
 
@@ -303,14 +315,39 @@ int ServerNetwork::sendToClient(unsigned int client_id, ServerInputPacket packet
 	if (sessions.find(client_id) != sessions.end())		// find client 
 	{
 		SOCKET currentSocket = sessions[client_id];		// get client socket
-		char serialized[sizeof(ServerInputPacket)];
-		memcpy(serialized, &packet, sizeof(ServerInputPacket));
-
-		int sentLength = send(currentSocket, serialized, sizeof(ServerInputPacket), 0);
-		return sentLength;
+		
+		int toSend = packet.size;
+		// char serialized[sizeof(packet.packetType) + sizeof(int) + sizeof(*(packet.data)];
+		//memcpy(serialized, &packet, sizeof(serialized));
+		char buf[4096];
+		char * packetPtr = packet.data;
+		unsigned int static_size = sizeof(ServerPacketType) + sizeof(int);
+		memcpy(buf, &packet, static_size);
+		char * bufPtr = &buf[static_size];
+		int bufCapacity = sizeof(buf) - static_size;
+		while (toSend > 0) {
+			// calculate the remaining size left in the buf
+			memcpy(bufPtr, packetPtr, bufCapacity);
+			int sent = send(currentSocket, buf, min((int)sizeof(buf), toSend), 0);
+			if (sent == SOCKET_ERROR) {
+				wprintf(L"send failed with error: %d\n", WSAGetLastError());
+				closesocket(currentSocket);
+				WSACleanup();
+				free(packet.data);
+				return 0;
+			}
+			toSend -= sent;
+			bufCapacity = min((int)sizeof(buf), toSend);
+			bufPtr = buf;
+			packetPtr += sent;
+		}
+		
+		free(packet.data);
+		return packet.size + static_size;
 	}
 
 	log->error("Receive error: Client mapping not found -> ID: {}", client_id);
+	free(packet.data);
 	return 0;
 }
 
@@ -335,7 +372,8 @@ ServerInputPacket ServerNetwork::createServerPacket(ServerPacketType type, int s
 	packet.size = size;
 	// auto log = logger();
 	// log->info("Size of scene graph packet is {}", (size + 2));
-	memcpy(packet.data, data, size);
+	//memcpy(packet.data, data, size);
+	packet.data = data;
 
 	return packet;
 }

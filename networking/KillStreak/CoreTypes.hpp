@@ -47,7 +47,7 @@ typedef struct {
 typedef struct {
 	ServerPacketType packetType;
 	int size;
-	char data[4096];
+	char* data;
 	// TODO: Add data!!! 
 } ServerInputPacket;
 

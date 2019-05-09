@@ -99,7 +99,7 @@ void client_session(void *arg)
 
 	if (!bytes_sent) {	// error? 
 		log->error("CT <{}>: Sending init packet to client failed, closing connection", client_id);
-		network->closeClientSocket(client_id);
+		//network->closeClientSocket(client_id);
 		return;
 	}
 
@@ -455,10 +455,12 @@ ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsig
 
 ServerInputPacket ServerGame::createServerTickPacket() {
 	unsigned int sgSize;
-	char buf[4096] = { 0 };
-	char * bufPtr = buf;
+	unsigned int size = scene->serverSceneGraphMap.size*(sizeof(Transform) + 20);
+	char* bufPtr = (char*)malloc(size);
+	memset(bufPtr, 0, size);
 	sgSize = Serialization::serializeSceneGraph(scene->getRoot(), bufPtr, scene->serverSceneGraphMap);
-	return network->createServerPacket(UPDATE_SCENE_GRAPH, 4096, buf);
+	
+	return network->createServerPacket(UPDATE_SCENE_GRAPH, size, bufPtr);
 }
 
 
