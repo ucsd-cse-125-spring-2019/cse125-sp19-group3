@@ -5,7 +5,7 @@
 #include "Model.h"
 #include "Transform.h"
 
-typedef enum {HUMAN, MAGE, WARRIOR, ASSASIN} MODEL_TYPE;
+typedef enum {HUMAN_MODEL, MAGE_MODEL, WARRIOR_MODEL, ASSASIN_MODEL} MODEL_TYPE;
 
 class Player {
 public:

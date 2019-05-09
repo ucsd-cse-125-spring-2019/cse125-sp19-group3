@@ -170,7 +170,7 @@ int ClientNetwork::receiveData(char * recvbuf)
 			return rsz;
 		}
 
-		if (rsz == SOCKET_ERROR) {
+		if (rsz <= SOCKET_ERROR) {
 			log->error("recv() failed {}", WSAGetLastError());
 			closesocket(ConnectSocket);
 			return rsz;

@@ -123,6 +123,8 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\networking\KillStreak\PlayerData.cpp">
+	<Filter>Source Files</Filter>
+	</ClCompile>
     <ClCompile Include="..\ClientScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -134,7 +136,7 @@
     </ClCompile>
     <ClCompile Include="..\Sphere.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
+	  </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

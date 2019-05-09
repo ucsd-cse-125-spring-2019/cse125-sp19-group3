@@ -335,7 +335,7 @@ void ClientGame::run() {
 		return;
 	}
 
-	while (1) {}; // TODO: REMOVE ME!!
+	//while (1) {}; // TODO: REMOVE ME!!
 
 	// GAME STARTING ******************************************************
 	// This part will run after all players have selected their characters!
