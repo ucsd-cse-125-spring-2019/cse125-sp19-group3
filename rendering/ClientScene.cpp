@@ -12,7 +12,7 @@ void ClientScene::initialize_objects(ClientGame * game)
 	camera->SetAspect(width / height);
 	camera->Reset();
 
-	shader = new Shader(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
+	shader = new Shader(TOON_VERTEX_SHADER_PATH, TOON_FRAGMENT_SHADER_PATH);
 
 	ifstream json_model_paths("../model_paths.json");
 	json pathObjs = json::parse(json_model_paths);

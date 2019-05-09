@@ -23,8 +23,8 @@ void Model::draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &v
 	shader->use();
 	shader->setMat4("ModelMtx", modelMtx);
 	shader->setMat4("ModelViewProjMtx", viewProjMtx * modelMtx);
-	if(boneTransforms.size())
-		shader->setNMat4("BoneMtx", boneTransforms[0], boneTransforms.size());
+	//if(boneTransforms.size())
+	//	shader->setNMat4("BoneMtx", boneTransforms[0], boneTransforms.size());
 	for (unsigned int i = 0; i < meshes.size(); i++)
 		meshes[i].draw(shader, viewProjMtx);
 }

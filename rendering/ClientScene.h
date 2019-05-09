@@ -19,6 +19,9 @@
 #define VERTEX_SHADER_PATH "../shader.vert"
 #define FRAGMENT_SHADER_PATH "../shader.frag"
 
+#define TOON_VERTEX_SHADER_PATH "../toonshader.vert"
+#define TOON_FRAGMENT_SHADER_PATH "../toonshader.frag"
+
 class ClientScene {
 public:
 	int width;

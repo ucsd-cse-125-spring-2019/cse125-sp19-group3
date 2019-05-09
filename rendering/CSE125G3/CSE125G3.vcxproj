@@ -69,6 +69,8 @@
     <None Include="..\model_paths.json" />
     <None Include="..\shader.frag" />
     <None Include="..\shader.vert" />
+    <None Include="..\toonshader.frag" />
+    <None Include="..\toonshader.vert" />
     <None Include="packages.config" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
