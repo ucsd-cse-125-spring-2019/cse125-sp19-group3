@@ -154,8 +154,8 @@ void constantListenFromServer(void *arg)
 		}
 
 		// TODO: REMOVE ME!!!
-		log->debug("--> Receiving packet from server size: {}", packet->size);
-		log->debug("--> Packet Type: {}", packet->packetType);
+		//log->debug("--> Receiving packet from server size: {}", packet->size);
+		//log->debug("--> Packet Type: {}", packet->packetType);
 
 		// acquire queue lock & push packet 
 		q_lock->lock();
