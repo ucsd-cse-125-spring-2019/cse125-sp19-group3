@@ -10,7 +10,7 @@
 #include "Model.h"
 #include "Camera.h"
 #include "Transform.h"
-#include "Player.h"
+#include "ScenePlayer.h"
 #include "../networking/KillStreak/ClientGame.h"
 #include "../networking/KillStreak/CoreTypes.hpp"
 #include "../rendering/Serialization.h"
@@ -27,7 +27,7 @@ public:
 	std::unordered_map<unsigned int, Transform *> clientSceneGraphMap;
 
 	void initialize_objects(ClientGame * game);
-	void playerInit(const Player &player);
+	void playerInit(const ScenePlayer &player);
 	void clean_up();
 	GLFWwindow * create_window(int width, int height);
 	void resize_callback(GLFWwindow* window, int width, int height);
@@ -47,9 +47,8 @@ private:
 	Camera * camera;
 
 	Cube * cube;
-	Player player;
+	ScenePlayer player;
 	Transform * root;
-	// Transform * player_t;
 
 	std::unordered_map<unsigned int, ModelData> models;
 	std::unordered_set<unsigned int> updated_ids;
@@ -57,6 +56,7 @@ private:
 	double time = 0.0;
 
 	ClientGame * game;
+	vector<Transform *> env_objs;
 
 	// void removeTransform(Transform * parent, const unsigned int node_id);
 	

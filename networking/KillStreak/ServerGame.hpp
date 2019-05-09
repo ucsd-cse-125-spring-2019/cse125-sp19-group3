@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 #include <mutex>
-#include "PlayerData.hpp"
 
 using namespace std;
 
@@ -51,7 +50,7 @@ protected:
 	vector<client_data*> client_data_list;	// list of pointers to all client meta-data
 	ScheduledEvent scheduledEvent;
   
-	vector<ClientPlayer> players;
+	unordered_map<unsigned int, PlayerMetadata> playerMetadatas;
 	unordered_map<ArcheType, vector<Skill>> skill_map;
 
 	ServerScene * scene;

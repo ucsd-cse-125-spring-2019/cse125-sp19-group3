@@ -7,9 +7,11 @@
 
 typedef glm::vec3 Point;
 
-typedef enum {INIT_CONN, MOVEMENT, SKILL, ATTACK} InputType;
+typedef enum {INIT_CONN, CHAR_SELECT, MOVEMENT, SKILL, ATTACK} InputType;
 
 typedef enum { WELCOME, INIT_SCENE, UPDATE_SCENE_GRAPH, CHAR_SELECT_PHASE } ServerPacketType;
+
+typedef enum { MAGE, ASSASSIN, WARRIOR, HUMAN } ArcheType;
 
 
 /*
@@ -17,12 +19,10 @@ typedef enum { WELCOME, INIT_SCENE, UPDATE_SCENE_GRAPH, CHAR_SELECT_PHASE } Serv
 	selects username and character in lobby.
 */
 typedef struct {
+	InputType inputType;
 	std::string username;
-	std::string character;
+	ArcheType type;
 } ClientSelectionPacket;
-
-
-
 
 
 /*

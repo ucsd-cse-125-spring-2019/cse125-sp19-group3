@@ -184,7 +184,7 @@ int ClientGame::join_game()
 	log->info("Sending initialization packet...");
 
 	// send initial request to server (ask to join game, start my thread on the server!)
-	ClientInputPacket init_packet = network->createClientPacket(INIT_CONN, NULL_POINT, 0, 0);
+	ClientInputPacket init_packet = network->createClientInputPacket(INIT_CONN, NULL_POINT, 0, 0);
 	int iResult = network->sendToServer(init_packet);
 
 	// error?
@@ -216,86 +216,24 @@ int ClientGame::join_game()
 		free(packet);
 		return 0;
 	}
-
-
-	// TODO: deserialize INIT_SCENE packet, then call playerInit() on ClientScene
-	//Window_static::scene->initialize_objects(this);
-
 	handleServerInputPacket(packet);
-	
 
-	/* TODO: Client officially in the LOBBY. 
+
 	/* 
 	CLIENT JOINED LOBBY ************************************************
 		--> Block on recv() until server sends confirmation that all players joined 
 			and its starting character selection 
 	*/
-
-	log->info("Received servers init package, waiting in lobby for all players to join...");
-
-	// block on recv() until server starts character selection phase 
+	log->info("Received servers welcome packet, waiting in lobby for all players to join...");
+	
 	ServerInputPacket* char_select_packet = network->receivePacket();
-	while (char_select_packet->packetType != CHAR_SELECT_PHASE)
-	{
-		free(char_select_packet);							// deallocate invalid packet
-		char_select_packet = network->receivePacket();		// get another packet
-	}
-	free(char_select_packet);								// deallocate packet
+	log->info("received character selection packet from server");
 
+	handleServerInputPacket(char_select_packet);
 
-	log->info("All players joined, selecting character and username.");
-	std::string username;			// user selected username
-	std::string selected_char;		// user selected character
+	ServerInputPacket * initScenePacket = network->receivePacket();
+	handleServerInputPacket(initScenePacket);
 
-	// countdown until character selection phase is over
-	auto Start = std::chrono::high_resolution_clock::now();
-	while (1)
-	{
-		// time up? 
-		auto End = std::chrono::high_resolution_clock::now();
-		std::chrono::duration<double, std::milli> Elapsed = End - Start;
-		if (Elapsed.count() >= char_select_time)		
-			break;
-
-		// TODO: Display UI (enter username, pick character) --> update values
-		username = "Snake";		// TODO: REMOVE ME
-		selected_char = "Link";	// TODO: REMOVE ME
-
-	}
-
-	log->info("Time up, sending selection data to server, waiting for game to start.");
-
-	// create character selection packet & send to server
-	ClientSelectionPacket selection_packet;
-	selection_packet.username = username; 
-	selection_packet.character = selected_char; 
-	iResult = network->sendToServer(selection_packet);	// send
-
-	// error?
-	if (iResult != sizeof(ClientSelectionPacket))
-	{
-		log->error("Failure sending packet, only sent {} of {} bytes", iResult, sizeof(ClientSelectionPacket));
-		return 0;
-	} 
-	if (iResult == SOCKET_ERROR)
-	{
-		log->error("Send failed with error: {}", WSAGetLastError());
-		WSACleanup();
-		return 0;
-	}
-
-
-	log->debug("Sent character data, waiting for game to start message from server!");
-
-
-	// TODO: Block on recv() until server sends start_game packet
-	// --> This packet will include init scene graph
-	// 
-	// Graphics this is where the client will recv() the init scene graph! 
-	// ....
-	// ....
-	// ....
-	// ....
 
 
 
@@ -334,8 +272,6 @@ void ClientGame::run() {
 		closesocket(network->ConnectSocket);
 		return;
 	}
-
-	//while (1) {}; // TODO: REMOVE ME!!
 
 	// GAME STARTING ******************************************************
 	// This part will run after all players have selected their characters!
@@ -393,12 +329,68 @@ void ClientGame::run() {
 }
 
 void ClientGame::sendPacket(InputType inputType, Point finalLocation, int skillType, int attackType) {
-	ClientInputPacket packet = network->createClientPacket(inputType, finalLocation, skillType, attackType);
+	ClientInputPacket packet = network->createClientInputPacket(inputType, finalLocation, skillType, attackType);
 	network->sendToServer(packet);
+}
+
+int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
+	auto log = logger();
+	std::string username;			// user selected username
+	ArcheType selected_type;		// user selected character
+
+	// countdown until character selection phase is over
+	auto Start = std::chrono::high_resolution_clock::now();
+	while (1)
+	{
+		// time up? 
+		auto End = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double, std::milli> Elapsed = End - Start;
+		if (Elapsed.count() >= char_select_time)
+			break;
+
+		// TODO: Display UI (enter username, pick character) --> update values
+		username = "Snake";		// TODO: REMOVE ME
+		selected_type = MAGE;	// TODO: REMOVE ME
+
+	}
+
+	log->info("Time up, sending selection data to server, waiting for game to start.");
+
+	// create character selection packet & send to server
+	ClientSelectionPacket selection_packet = createCharacterSelectedPacket(username, selected_type);
+	int iResult = network->sendToServer(selection_packet);	// send
+
+	// error?
+	if (iResult != sizeof(ClientSelectionPacket))
+	{
+		log->error("Failure sending packet, only sent {} of {} bytes", iResult, sizeof(ClientSelectionPacket));
+		return 0;
+	}
+	if (iResult == SOCKET_ERROR)
+	{
+		log->error("Send failed with error: {}", WSAGetLastError());
+		WSACleanup();
+		return 0;
+	}
+
+	log->debug("Sent character data, waiting for game to start message from server!");
+	return iResult;
+}
+
+ClientSelectionPacket ClientGame::createCharacterSelectedPacket(std::string username, ArcheType type) {
+	ClientSelectionPacket packet;
+	packet.username = username;
+	packet.type = type;
+	return packet;
 }
 
 void ClientGame::handleServerInputPacket(ServerInputPacket * packet) {
 	switch (packet->packetType) {
+	case WELCOME:
+		break;
+	case CHAR_SELECT_PHASE:
+		handleCharacterSelectionPacket(packet);
+		break;
 	case INIT_SCENE:
 		Window_static::scene->handleInitScenePacket(packet->data);
 		break;

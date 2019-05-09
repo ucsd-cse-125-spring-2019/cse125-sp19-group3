@@ -4,18 +4,19 @@
 #include "Cube.h"
 #include "Model.h"
 #include "Transform.h"
+#include "../networking/KillStreak/CoreTypes.hpp"
 
 typedef enum {HUMAN_MODEL, MAGE_MODEL, WARRIOR_MODEL, ASSASIN_MODEL} MODEL_TYPE;
 
-class Player {
+class ScenePlayer {
 public:
-	Player() {};
-	Player(unsigned int playerId, unsigned int playerRootId, MODEL_TYPE modelType, Transform * playerRoot) 
+	ScenePlayer() {};
+	ScenePlayer(unsigned int playerId, unsigned int playerRootId, ArcheType modelType, Transform * playerRoot) 
 	{
 		this->player_id = playerId; this->root_id = playerRootId; this->modelType = modelType; this->playerRoot = playerRoot; 
 		this->destination = this->currentPos = { playerRoot->translation[3][0], playerRoot->translation[3][1], playerRoot->translation[3][2] };
 	};
-	~Player() {};
+	~ScenePlayer() {};
 
 	void move();
 	void rotate(float angle, glm::vec3 axis);
@@ -25,7 +26,7 @@ public:
 
 	unsigned int player_id;
 	unsigned int root_id;
-	MODEL_TYPE modelType;
+	ArcheType modelType;
 	Transform * playerRoot;
 	Model * model;
 	glm::vec3 destination = glm::vec3(0.0f);

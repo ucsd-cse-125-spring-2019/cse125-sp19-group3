@@ -11,7 +11,8 @@
 #include "Model.h"
 #include "Camera.h"
 #include "Transform.h"
-#include "Player.h"
+#include "ScenePlayer.h"
+#include "../networking/KillStreak/PlayerData.hpp"
 
 // On some systems you need to change this to the absolute path
 #define VERTEX_SHADER_PATH "../shader.vert"
@@ -22,11 +23,11 @@ public:
 	int width;
 	int height;
 
-	std::vector<Player *> players;
+	unordered_map<unsigned int, ScenePlayer> scenePlayers;
 	std::vector<Transform *> env_objs;
 	ServerScene();
 	~ServerScene();
-	void addPlayer(unsigned int playerId);
+	void addPlayer(unsigned int playerId, ArcheType modelType);
 	void update();
 	void handlePlayerMovement(unsigned int player_id, glm::vec3 destination);
 	/*unsigned int serializeInitScene(char* data, unsigned int playerId, unsigned int playerRootId);
@@ -38,7 +39,6 @@ public:
 
 private:
 	Transform * root;
-	Transform * envRoot;
 	Transform * playerRoot;
 	Transform * skillRoot;
 

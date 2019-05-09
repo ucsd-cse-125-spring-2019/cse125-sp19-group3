@@ -109,7 +109,7 @@ int ClientNetwork::sendToServer(ClientInputPacket packet) {
 /*
 	Initialize a packet to send to the server. 
 */
-ClientInputPacket ClientNetwork::createClientPacket(InputType type, Point finalLocation,
+ClientInputPacket ClientNetwork::createClientInputPacket(InputType type, Point finalLocation,
 	int skillType, int attackType)
 {
 	ClientInputPacket packet;

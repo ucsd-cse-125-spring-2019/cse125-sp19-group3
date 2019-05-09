@@ -17,6 +17,9 @@ public:
 	int join_game();
 	void sendPacket(InputType inputType, Point finalLocation, int skillType, int attackType);
 	void handleServerInputPacket(ServerInputPacket* packet);
+	int handleCharacterSelectionPacket(ServerInputPacket* packet);
+
+	ClientSelectionPacket createCharacterSelectedPacket(std::string username, ArcheType type);
 
 protected:
 	INIReader & config;

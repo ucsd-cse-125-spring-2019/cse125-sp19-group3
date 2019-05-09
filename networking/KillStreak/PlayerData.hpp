@@ -3,10 +3,7 @@
 #include <string>
 #include <algorithm>    // std::sort
 #include <vector>
-#include "../../ServerScene.h"
 #include "INIReader.h"
-
-// #define PLAYERNUM 4;
 
 using namespace std;
 
@@ -48,56 +45,79 @@ public:
 	static Skill getCharge(INIReader & meta_data, string archetype);
 };
 
-typedef enum{MAGE, ASSASSIN, WARRIOR} ArcheType;
 class Arche {
 public:
 	Arche(){}
 	~Arche(){}
 	void addSkill(Skill s) { skills.push_back(s); }
-	virtual void useSkill(int skillIndex, Point finalLocation, ServerScene * scene) {}
+	// virtual void useSkill(int skillIndex, Point finalLocation) {}
 protected:
 	vector<Skill> skills;
 };
 
-class Mage: Arche {
+class Mage: public Arche {
+public: 
 	Mage() {}
 	~Mage() {}
-	void useSkill(int skillIndex, Point finalLocation, ServerScene * scene) override;
-	void melee(ServerScene * scene);
-	void projectile(Point finalLocation, ServerScene * scene);
-	void aoe(ServerScene * scene);
-	void coneAoe(Point finalLocation, ServerScene * scene);
+	// void useSkill(int skillIndex, Point finalLocation) override;
+	void melee();
+	void projectile(Point finalLocation);
+	void aoe();
+	void coneAoe(Point finalLocation);
 };
 
-class Assassin: Arche {
+class Assassin: public Arche {
+public:
 	Assassin() {}
 	~Assassin() {}
-	void useSkill(int skillIndex, Point finalLocation, ServerScene * scene) override;
-	void melee(ServerScene * scene);
-	void projectile(Point finalLocation, ServerScene * scene);
-	void aoe(ServerScene * scene);
+	// void useSkill(int skillIndex, Point finalLocation) override;
+	void melee();
+	void projectile(Point finalLocation);
+	void aoe();
 	void minimap();
 	void invisibility();
 };
 
-class Warrior: Arche {
+class Warrior: public Arche {
+public: 
 	Warrior() {}
 	~Warrior() {}
-	void useSkill(int skillIndex, Point finalLocation, ServerScene * scene) override;
-	void melee(ServerScene * scene);
-	void projectile(Point finalLocation, ServerScene * scene);
-	void aoe(ServerScene * scene);
-	void coneAoe(Point finalLocation, ServerScene * scene);
+	// void useSkill(int skillIndex, Point finalLocation) override;
+	void melee();
+	void projectile(Point finalLocation);
+	void aoe();
+	void coneAoe(Point finalLocation);
 };
 
-class ClientPlayer {
+class PlayerMetadata {
 public:
-	ClientPlayer() {}
-	~ClientPlayer() {}
+	PlayerMetadata(unsigned int clientId, std::string username, ArcheType type) : clientId(clientId), username(username), type(type) {
+		switch (type) {
+		case MAGE:
+			arche = Mage();
+			break;
+		case ASSASSIN:
+			arche = Assassin();
+			break;
+		case WARRIOR:
+			arche = Warrior();
+			break;
+		default:
+			arche = Mage();
+			break;
+		}
+		alive = true;
+		gold = 0;
+		currKillStreak = 0;
+		currLoseStreak = 0;
+		
+	}
+	PlayerMetadata() {}
+	~PlayerMetadata() {}
 
-protected:
-	int clientId;
-
+	unsigned int clientId;
+	std::string username;
+	ArcheType type;
 	Arche arche;
 
 	bool alive;

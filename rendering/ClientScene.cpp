@@ -14,26 +14,28 @@ void ClientScene::initialize_objects(ClientGame * game)
 
 	shader = new Shader(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
 
-
-
-	// TODO: add more models
-
-	//player = new Player(player_t, player_m);
-
-	//cube = new Cube();
-	//cube->toWorld = glm::translate(glm::mat4(1.0f), glm::vec3(0, 5, 10)) * glm::scale(glm::mat4(1.0f), glm::vec3(0.5f)); 
-	//			// * glm::scale(glm::mat4(1.0f), glm::vec3(100, 0.01, 100)) * cube->toWorld;
-	//TODO: IMPORTANT: CHANGE MODELS TO MAP SO IT IS INDEPENDENT FROM THE INDEX!!!!!!!!
-	ifstream json_file("../model_paths.json");
-	json pathObjs = json::parse(json_file);
+	ifstream json_model_paths("../model_paths.json");
+	json pathObjs = json::parse(json_model_paths);
 	for (auto & obj : pathObjs["data"]) {
 		models[(unsigned int)obj["model_id"]] = ModelData{ new Model(obj["path"]), glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), shader, COLOR, 0 };
+	}
+
+	ifstream json_model_locations("../env_model_locations.json");
+	unsigned int envCounter = 4000000000;
+	json jsonObjs = json::parse(json_model_locations);
+	for (auto & obj : jsonObjs["data"]) {
+		Transform * envobj = new Transform(envCounter++, glm::translate(glm::mat4(1.0f), glm::vec3((float)(obj["translate"][0]), (float)(obj["translate"][1]), (float)(obj["translate"][2]))),
+			glm::rotate(glm::mat4(1.0f), (float)obj["rotate"] / 180.0f * glm::pi<float>(), glm::vec3(0, 1, 0)),
+			glm::scale(glm::mat4(1.0f), glm::vec3((float)obj["scale"], (float)obj["scale"], (float)obj["scale"])));
+
+		envobj->model_ids.insert((int)obj["model_id"]);
+		env_objs.push_back(envobj);
 	}
 
 	this->game = game;
 }
 
-void ClientScene::playerInit(const Player &player) {
+void ClientScene::playerInit(const ScenePlayer &player) {
 	this->player = player;
 	
 	// TODO: move to here: 
@@ -124,13 +126,15 @@ void ClientScene::display_callback(GLFWwindow* window)
 	// Use the shader of programID
 	shader->use();
 	
-	// Render the cube
-	//cube->draw(shader, glm::mat4(1.0f), camera->GetViewProjectMtx());
+	auto vpMatrix = camera->GetViewProjectMtx();
+	// Use the shader to draw all player + skill objects
+	root->draw(shader, models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
 
-	// Now send these values to the shader program
-	root->draw(shader, models, glm::mat4(1.0f), camera->GetViewProjectMtx(), clientSceneGraphMap);
-	//models[0].model->draw(models[0].shader, player.playerRoot->M, camera->GetViewProjectMtx());
-	//models[0].model->draw(models[0].shader, glm::mat4(1.0f), camera->GetViewProjectMtx());
+	// Use the shader to draw all environment objects
+	for (auto &env_obj : env_objs) {
+		env_obj->draw(shader, models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
+	}
+
 
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();

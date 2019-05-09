@@ -2,6 +2,8 @@
 #include "logger.hpp"
 #include "ServerGame.hpp"
 #include "ServerNetwork.hpp"
+#include "nlohmann\json.hpp"
+#include <fstream>
 
 #include <string>
 #include <process.h>				// threads
@@ -11,7 +13,7 @@
 #define LOBBY_START_TIME	2000	// wait this long (ms) after all players connect
 
 static int game_start = 0;			// game ready to begin?
-
+using json = nlohmann::json;
 
 /*
 	Parse data from config file for server. Then initialize 
@@ -202,12 +204,15 @@ void ServerGame::game_match()
 	for (auto client_data : client_data_list) {		
 		int client_id = client_data->id;
 		ClientSelectionPacket* selection_packet = network->receiveSelectionPacket(client_id);
-
+		log->debug("received selection packet from a client");
 		// TODO: Store this data somewhere on the server mapped to client
 		std::string username = selection_packet->username;
-		std::string character_selection = selection_packet->character;
+		ArcheType character_type = selection_packet->type;
+		PlayerMetadata player = PlayerMetadata(client_id, username, character_type);
+		playerMetadatas.insert({ client_id, player });
 
-		log->debug("Client {}: Username {}, Character: {}", client_id, username, character_selection);
+
+		log->debug("Client {}: Username {}, Character: {}", client_id, username, character_type);
 	}
 
 
@@ -224,25 +229,25 @@ void ServerGame::game_match()
 
 	for (auto client_data : client_data_list) {
 		unsigned int client_id = client_data->id;
-		scene->addPlayer(client_id);
+		scene->addPlayer(client_id, playerMetadatas[client_id].type);
 	}
 
 	// Init players in the scene
 	for (auto client_data : client_data_list) {
 		unsigned int client_id = client_data->id;
 		char buf[1024] = { 0 };
-		/* unsigned int size = scene->serializeInitScene(buf, client_id, scene->players[client_id]->root_id);
-		ServerInputPacket welcome_packet = network->createServerPacket(INIT_SCENE, size, buf); */
-		ServerInputPacket initScene_packet = createInitScenePacket(client_id, scene->players[client_id]->root_id);
+		ServerInputPacket initScene_packet = createInitScenePacket(client_id, scene->scenePlayers[client_id].root_id);
 		int bytes_sent = network->sendToClient(client_id, initScene_packet);
 	}
+
+	scene->initEnv();
 
 
 	// schedule end of kill phase
 	ScheduledEvent initKillPhase(END_KILLPHASE, 60); // play with values in config file
 
 	// Tell all client threads to begin the game!
-	game_start = 1;	
+	game_start = 1;
 }
 
 
@@ -285,7 +290,7 @@ void ServerGame::launch() {
 	log->debug("MT: All three packets sent to client");
 	*/
 
-	while (1) {};	// TODO: REMOVE ME!!!!
+	//while (1) {};	// TODO: REMOVE ME!!!!
 
 
 
@@ -437,7 +442,7 @@ void ServerGame::readMetaDataForSkills() {
 
 ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsigned int playerRootId) {
 	unsigned int sgSize;
-	char buf[4096] = { 0 };
+	char buf[1024] = { 0 };
 	char * bufPtr = buf;
 	memcpy(bufPtr, &playerId, sizeof(unsigned int));
 	bufPtr += sizeof(unsigned int);
@@ -445,7 +450,7 @@ ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsig
 	bufPtr += sizeof(unsigned int);
 	Transform * root = scene->getRoot();
 	sgSize = Serialization::serializeSceneGraph(root, bufPtr, scene->serverSceneGraphMap);
-	return network->createServerPacket(INIT_SCENE, 4096, buf);
+	return network->createServerPacket(INIT_SCENE, 1024, buf);
 }
 
 ServerInputPacket ServerGame::createServerTickPacket() {

@@ -10,7 +10,7 @@
 #include "Model.h"
 #include "Camera.h"
 #include "Transform.h"
-#include "Player.h"
+#include "ScenePlayer.h"
 #include "ServerScene.h"
 
 struct Serialization

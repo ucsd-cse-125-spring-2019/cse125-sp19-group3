@@ -9,10 +9,6 @@ ServerScene::ServerScene()
 	root = new Transform(0, glm::mat4(1.0f));
 	serverSceneGraphMap.insert({ root->node_id, root });
 	nodeIdCounter++;
-	envRoot = new Transform(nodeIdCounter, glm::mat4(1.0f));
-	serverSceneGraphMap.insert({ envRoot->node_id, envRoot });
-	root->addChild(nodeIdCounter);
-	nodeIdCounter++;
 	playerRoot = new Transform(nodeIdCounter, glm::mat4(1.0f));
 	serverSceneGraphMap.insert({ playerRoot->node_id, playerRoot });
 	root->addChild(nodeIdCounter);
@@ -20,7 +16,6 @@ ServerScene::ServerScene()
 	skillRoot = new Transform(nodeIdCounter, glm::mat4(1.0f));
 	serverSceneGraphMap.insert({ skillRoot->node_id, skillRoot });
 	root->addChild(nodeIdCounter);
-	initEnv();
 }
 
 ServerScene::~ServerScene() {
@@ -29,58 +24,55 @@ ServerScene::~ServerScene() {
 
 void ServerScene::initEnv() {
 	ifstream json_file("../env_model_locations.json");
+	unsigned int envCounter = 4000000000;
 	json jsonObjs = json::parse(json_file);
 	for (auto & obj : jsonObjs["data"]) {
-		nodeIdCounter++;
-		Transform * envobj = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), glm::vec3((float)(obj["translate"][0]), (float)(obj["translate"][1]), (float)(obj["translate"][2]))),
+		Transform * envobj = new Transform(envCounter++, glm::translate(glm::mat4(1.0f), glm::vec3((float)(obj["translate"][0]), (float)(obj["translate"][1]), (float)(obj["translate"][2]))),
 		glm::rotate(glm::mat4(1.0f), (float)obj["rotate"] / 180.0f * glm::pi<float>(), glm::vec3(0, 1, 0)),
 		glm::scale(glm::mat4(1.0f), glm::vec3((float)obj["scale"], (float)obj["scale"], (float)obj["scale"])));
 		
 		envobj->model_ids.insert((int)obj["model_id"]);
-
-		envRoot->addChild(nodeIdCounter);
-		serverSceneGraphMap.insert({ nodeIdCounter, envobj });
 		env_objs.push_back(envobj);
 	}
 }
 
-void ServerScene::addPlayer(unsigned int playerId) {
+void ServerScene::addPlayer(unsigned int playerId, ArcheType modelType) {
 	nodeIdCounter++;
 	Transform * playerObj = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), glm::vec3(-10.0f, 0, 0)),
 		glm::rotate(glm::mat4(1.0f), -90 / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)),
 		glm::scale(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, 0.05f)));
-	playerObj->model_ids.insert(PLAYER);
+	playerObj->model_ids.insert(modelType);
 
 	playerRoot->addChild(nodeIdCounter);
 	serverSceneGraphMap.insert({ nodeIdCounter, playerObj });
 
 	// TODO: need to set model type based on player selection in lobby
 
-	Player * player = new Player(playerId, nodeIdCounter, HUMAN_MODEL, playerObj);
+	ScenePlayer player = ScenePlayer(playerId, nodeIdCounter, modelType, playerObj);
 	//playerMap.insert(std::pair<unsigned int, Player *>(playerId, player));
-	players.push_back(player);
+	scenePlayers.insert({ playerId, player });
 }
 
 void ServerScene::update()
 {
 	time += 1.0 / 60;
-	for (Player * player : players) {
-		player->update(time);
+	for (auto &element : scenePlayers) {
+		element.second.update(time);
 	}
 }
 
 void ServerScene::handlePlayerMovement(unsigned int playerId, glm::vec3 destination)
 {
-	Player * player = players[playerId];
-	player->setDestination(destination);
-	float dotResult = glm::dot(glm::normalize(destination - player->currentPos), player->currentOri);
+	ScenePlayer player = scenePlayers[playerId];
+	player.setDestination(destination);
+	float dotResult = glm::dot(glm::normalize(destination - player.currentPos), player.currentOri);
 
 	if (abs(dotResult) < 1.0) {
 		float angle = glm::acos(dotResult);
 		printf("rotate angle = %f", angle);
-		glm::vec3 axis = glm::cross(player->currentOri, glm::normalize(destination - player->currentPos));
+		glm::vec3 axis = glm::cross(player.currentOri, glm::normalize(destination - player.currentPos));
 		if (glm::length(axis) != 0) {
-			player->rotate(angle, axis);
+			player.rotate(angle, axis);
 		}
 	}
 }
