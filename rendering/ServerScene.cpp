@@ -63,7 +63,7 @@ void ServerScene::update()
 
 void ServerScene::handlePlayerMovement(unsigned int playerId, glm::vec3 destination)
 {
-	ScenePlayer player = scenePlayers[playerId];
+	ScenePlayer &player = scenePlayers[playerId];
 	player.setDestination(destination);
 	float dotResult = glm::dot(glm::normalize(destination - player.currentPos), player.currentOri);
 
