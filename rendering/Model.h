@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -22,6 +23,13 @@
 #include <vector>
 using namespace std;
 
+typedef struct{
+	unsigned int texIndex;
+	unsigned int numIndices;
+	unsigned int baseVertex;
+	unsigned int baseIndex;
+} MeshData;
+
 //unsigned int TextureFromFile(const char *path, const string &directory, bool gamma = false);
 
 class Model
@@ -29,6 +37,7 @@ class Model
 public:
 	/*  Model Data */
 	vector<Texture> textures_loaded;	// stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
+	vector<MeshData> meshesData;
 	vector<Mesh> meshes;
 	string directory;
 	bool gammaCorrection;
@@ -69,13 +78,13 @@ private:
 
 	void normalize(vector<Vertex>& vertices);
 
-	Mesh processMesh(aiMesh *mesh, const aiScene *scene);
+	void processMesh(vector<Vertex>& vertices, vector<unsigned int>& indices, vector<Texture>& textures, unsigned int meshIndex, aiMesh *mesh, const aiScene *scene);
 
 	// checks all material textures of a given type and loads the textures if they're not loaded yet.
 	// the required info is returned as a Texture struct.
 	vector<Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName);
 	
-	void LoadBones(const aiMesh* mesh, vector<Vertex> &vertices);
+	void LoadBones(unsigned int meshIndex, const aiMesh* mesh, vector<Vertex> &vertices);
 
 	void ReadNodeHeirarchy(string AnimationName, float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform);
 

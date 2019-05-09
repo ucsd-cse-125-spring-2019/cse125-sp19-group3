@@ -42,7 +42,6 @@ void ServerScene::addPlayer(unsigned int playerId, ArcheType modelType) {
 		glm::rotate(glm::mat4(1.0f), -90 / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)),
 		glm::scale(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, 0.05f)));
 	playerObj->model_ids.insert(modelType);
-
 	playerRoot->addChild(nodeIdCounter);
 	serverSceneGraphMap.insert({ nodeIdCounter, playerObj });
 
@@ -57,7 +56,8 @@ void ServerScene::update()
 {
 	time += 1.0 / 60;
 	for (auto &element : scenePlayers) {
-		element.second.update(time);
+		element.second.update();
+
 	}
 }
 

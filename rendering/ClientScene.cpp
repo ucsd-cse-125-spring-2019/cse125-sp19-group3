@@ -37,7 +37,7 @@ void ClientScene::initialize_objects(ClientGame * game)
 
 void ClientScene::playerInit(const ScenePlayer &player) {
 	this->player = player;
-	
+	this->player.model = models[this->player.modelType].model;
 	// TODO: move to here: 
 	// 1) init player model
 	// 2) create corresponding shader based on player data
@@ -115,7 +115,7 @@ void ClientScene::idle_callback()
 	//cube->update();
 	time += 1.0 / 60;
 	camera->Update();
-	//player.update(time);
+	models[0].model->BoneTransform("Root|Walk_loop", time);
 }
 
 void ClientScene::display_callback(GLFWwindow* window)
