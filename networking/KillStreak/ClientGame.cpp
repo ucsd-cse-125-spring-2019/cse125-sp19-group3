@@ -240,7 +240,7 @@ int ClientGame::join_game()
 
 
 	// allocate new data for server thread & launch (will recv() indefinitely)
-	server_data* server_arg = (server_data *)malloc(sizeof(server_data));
+	/*server_data* server_arg = (server_data *)malloc(sizeof(server_data));
 	if (server_arg)
 	{
 		server_arg->q_lock = q_lock;				// ptr to queue lock
@@ -253,7 +253,7 @@ int ClientGame::join_game()
 		log->error("Error allocating server metadata");
 		closesocket(network->ConnectSocket);
 		return 0;
-	}
+	}*/
 
 
 	return 1;
@@ -401,5 +401,6 @@ void ClientGame::handleServerInputPacket(ServerInputPacket * packet) {
 		break;
 	}
 	// deallocate the packet here
+	free(packet->data);
 	free(packet);
 }

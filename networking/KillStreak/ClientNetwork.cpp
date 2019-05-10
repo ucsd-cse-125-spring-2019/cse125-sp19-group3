@@ -130,19 +130,32 @@ ClientInputPacket ClientNetwork::createClientInputPacket(InputType type, Point f
 */
 ServerInputPacket* ClientNetwork::receivePacket()
 {
-	unsigned int packetSize;
-	recv(ConnectSocket, (char *)&packetSize, sizeof(unsigned int), 0);
-
+	ServerInputPacket * incomingPacket = new ServerInputPacket();
+	recv(ConnectSocket, (char *)&(incomingPacket->packetType), sizeof(ServerPacketType), 0);
+	recv(ConnectSocket, (char *)&(incomingPacket->size), sizeof(int), 0);
 	// allocate buffer & receive data from client
-	char* temp_buff = (char*)malloc(packetSize);
-	int bytes_read = receiveData(temp_buff, packetSize);
+	char* data = (char*)malloc(incomingPacket->size);
+	char * dataPtr = data;
+	int toRead = incomingPacket->size;
+	while (toRead > 0) {
+		int amountRead = recv(ConnectSocket, dataPtr, toRead, 0);
+		if (amountRead == 0 || amountRead <= SOCKET_ERROR) {
+			closesocket(ConnectSocket);
+			return 0;
+		}
+		dataPtr += amountRead;
+		toRead -= amountRead;
+	}
+
+	// int bytes_read = receiveData(data, incomingPacket->size);
 
 	// client closed conection/error?
-	if (!bytes_read || bytes_read == SOCKET_ERROR) return 0;
+	// if ((!bytes_read || bytes_read == SOCKET_ERROR) && incomingPacket->size != 0) return 0;
 
 	// deserialize data into memory, point packet to it
-	ServerInputPacket* packet = deserializeSP(temp_buff);
-	return packet;
+	// ServerInputPacket* packet = deserializeSP(temp_buff);
+	incomingPacket->data = data;
+	return incomingPacket;
 }
 
 

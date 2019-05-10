@@ -59,11 +59,10 @@ protected:
 
 	void readMetaDataForSkills();
 
-
-
-
 	ServerInputPacket createInitScenePacket(unsigned int playerId, unsigned int playerRootid);
 	ServerInputPacket createServerTickPacket();
+	ServerInputPacket createWelcomePacket();
+	ServerInputPacket createCharSelectPacket();
 };
 
 #endif // SURFSTORESERVER_HPP

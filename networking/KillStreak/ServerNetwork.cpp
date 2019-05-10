@@ -271,37 +271,55 @@ int ServerNetwork::receiveData(unsigned int client_id, char * recvbuf, size_t pa
 void ServerNetwork::broadcastSend(ServerInputPacket packet)
 {
 	SOCKET currentSocket;
-
+	unsigned int static_size = sizeof(ServerPacketType) + sizeof(int);
+	int data_size = packet.size;
+	char * serialized = (char *)malloc(static_size + data_size);
+	char * serializedPtr = serialized;
+	memcpy(serializedPtr, &packet.packetType, sizeof(ServerPacketType));
+	serializedPtr += sizeof(ServerPacketType);
+	memcpy(serializedPtr, &packet.size, sizeof(int));
+	serializedPtr += sizeof(int);
+	memcpy(serializedPtr, packet.data, data_size);
 	for (auto const& x : sessions)
 	{
 		currentSocket = x.second;
-		
-		int toSend = packet.size;
-		char buf[4096];
-		char * packetPtr = packet.data;
-		unsigned int static_size = sizeof(ServerPacketType) + sizeof(int);
-		unsigned int totalSize = static_size + toSend;
-		send(currentSocket, (const char*)&totalSize, sizeof(unsigned int), 0);
-		memcpy(buf, &packet, static_size);
-		char * bufPtr = &buf[static_size];
-		int bufCapacity = sizeof(buf) - static_size;
+		int toSend = sizeof(serialized);
+		serializedPtr = serialized;
 		while (toSend > 0) {
-			// calculate the remaining size left in the buf
-			memcpy(bufPtr, packetPtr, bufCapacity);
-			int sent = send(currentSocket, buf, min((int)sizeof(buf), toSend), 0);
-			if (sent == SOCKET_ERROR) {
-				wprintf(L"send failed with error: %d\n", WSAGetLastError());
-				closesocket(currentSocket);
-				WSACleanup();
-				free(packet.data);
-				return;
-			}
-			toSend -= sent;
-			bufCapacity = min((int)sizeof(buf), toSend);
-			bufPtr = buf;
-			packetPtr += sent;
+			int amountSent = send(currentSocket, (const char*)serializedPtr, toSend, 0);
+			serializedPtr += amountSent;
+			toSend -= amountSent;
 		}
+		//int toSend = packet.size;
+		//char buf[4096];
+		//char * packetPtr = packet.data;
+		//unsigned int static_size = sizeof(ServerPacketType) + sizeof(int);
+		//unsigned int totalSize = static_size + toSend;
+		//send(currentSocket, (const char*)&totalSize, sizeof(unsigned int), 0);
+		//memcpy(buf, &packet, static_size);
+		//char * bufPtr = &buf[static_size];
+		//int bufCapacity = sizeof(buf) - static_size;
+		//if (toSend == 0) {
+		//	send(currentSocket, buf, static_size, 0);
+		//}
+		//while (toSend > 0) {
+		//	// calculate the remaining size left in the buf
+		//	memcpy(bufPtr, packetPtr, bufCapacity);
+		//	int sent = send(currentSocket, buf, min((int)sizeof(buf), toSend), 0);
+		//	if (sent == SOCKET_ERROR) {
+		//		wprintf(L"send failed with error: %d\n", WSAGetLastError());
+		//		closesocket(currentSocket);
+		//		WSACleanup();
+		//		free(packet.data);
+		//		return;
+		//	}
+		//	toSend -= sent;
+		//	bufCapacity = min((int)sizeof(buf), toSend);
+		//	bufPtr = buf;
+		//	packetPtr += sent;
+		//}
 	}
+	free(serialized);
 
 	//free(packet.data);
 }
@@ -316,40 +334,62 @@ int ServerNetwork::sendToClient(unsigned int client_id, ServerInputPacket packet
 
 	if (sessions.find(client_id) != sessions.end())		// find client 
 	{
-		SOCKET currentSocket = sessions[client_id];		// get client socket
-
-		
-		int toSend = packet.size;
-		// char serialized[sizeof(packet.packetType) + sizeof(int) + sizeof(*(packet.data)];
-		//memcpy(serialized, &packet, sizeof(serialized));
-		char buf[4096];
-		char * packetPtr = packet.data;
+		SOCKET currentSocket = sessions[client_id];	
 		unsigned int static_size = sizeof(ServerPacketType) + sizeof(int);
-		unsigned int totalSize = static_size + toSend;
-		send(currentSocket, (const char*)&totalSize, sizeof(unsigned int), 0);
-		
-		memcpy(buf, &packet, static_size);
-		char * bufPtr = &buf[static_size];
-		int bufCapacity = sizeof(buf) - static_size;
+		int data_size = packet.size;
+		// char * serialized = (char *)malloc(data_size);
+		// char * serializedPtr = serialized;
+		char * dataPtr = packet.data;
+		ServerPacketType packetType = packet.packetType;
+		int dataSize = packet.size;
+		send(currentSocket, (const char*)&packetType, sizeof(ServerPacketType), 0);
+		send(currentSocket, (const char*)&dataSize, sizeof(int), 0);
+		// memcpy(serialized, packet.data, data_size);
+		int toSend = static_size + data_size;
+		// serializedPtr = serialized;
 		while (toSend > 0) {
-			// calculate the remaining size left in the buf
-			memcpy(bufPtr, packetPtr, bufCapacity);
-			int sent = send(currentSocket, buf, min((int)sizeof(buf), toSend), 0);
-			if (sent == SOCKET_ERROR) {
-				wprintf(L"send failed with error: %d\n", WSAGetLastError());
-				closesocket(currentSocket);
-				WSACleanup();
-				free(packet.data);
-				return 0;
-			}
-			toSend -= sent;
-			bufCapacity = min((int)sizeof(buf), toSend);
-			bufPtr = buf;
-			packetPtr += sent;
+			int amountSent = send(currentSocket, (const char*)dataPtr, toSend, 0);
+			dataPtr += amountSent;
+			toSend -= amountSent;
 		}
-		
-		//free(packet.data);
-		return totalSize;
+		// free(serialized);
+		return data_size + static_size;
+
+		//int toSend = packet.size;
+		//// char serialized[sizeof(packet.packetType) + sizeof(int) + sizeof(*(packet.data)];
+		////memcpy(serialized, &packet, sizeof(serialized));
+		//char buf[4096];
+		//char * packetPtr = packet.data;
+		//unsigned int static_size = sizeof(ServerPacketType) + sizeof(int);
+		//unsigned int totalSize = static_size + toSend;
+		//send(currentSocket, (const char*)&totalSize, sizeof(unsigned int), 0);
+		//
+		//memcpy(buf, &packet, static_size);
+		//char * bufPtr = &buf[static_size];
+		//int bufCapacity = sizeof(buf) - static_size;
+
+		//if (toSend == 0) {
+		//	send(currentSocket, buf, static_size, 0);
+		//}
+		//while (toSend > 0) {
+		//	// calculate the remaining size left in the buf
+		//	memcpy(bufPtr, packetPtr, bufCapacity);
+		//	int sent = send(currentSocket, buf, min((int)sizeof(buf), toSend), 0);
+		//	if (sent == SOCKET_ERROR) {
+		//		wprintf(L"send failed with error: %d\n", WSAGetLastError());
+		//		closesocket(currentSocket);
+		//		WSACleanup();
+		//		free(packet.data);
+		//		return 0;
+		//	}
+		//	toSend -= sent;
+		//	bufCapacity = min((int)sizeof(buf), toSend);
+		//	bufPtr = buf;
+		//	packetPtr += sent;
+		//}
+		//
+		////free(packet.data);
+		//return totalSize;
 	}
 
 	log->error("Receive error: Client mapping not found -> ID: {}", client_id);
