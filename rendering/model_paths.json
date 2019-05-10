@@ -7,7 +7,18 @@
         0.5,
         0.5,
         0.5
-      ]
+      ],
+      "animated": true
+    },
+    {
+      "path": "../models/grunt/allinone.fbx",
+      "model_id": 1,
+      "color_rgb": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "animated": true
     },
     {
       "path": "../models/fence_element_1.fbx",
@@ -16,7 +27,8 @@
         0.5,
         0.5,
         0.5
-      ]
+      ],
+      "animated": false
     },
     {
       "path": "../models/fence_element_2.fbx",
@@ -25,7 +37,8 @@
         0.5,
         0.5,
         0.5
-      ]
+      ],
+      "animated": false
     },
     {
       "path": "../models/grave_stone_1.fbx",
@@ -34,7 +47,8 @@
         0.5,
         0.5,
         0.5
-      ]
+      ],
+      "animated": false
     },
     {
       "path": "../models/grave_stone_3.fbx",
@@ -43,7 +57,8 @@
         0.5,
         0.5,
         0.5
-      ]
+      ],
+      "animated": false
     },
     {
       "path": "../models/dungeon_entrance.fbx",
@@ -52,7 +67,8 @@
         1.0,
         0.0,
         0.0
-      ]
+      ],
+      "animated": false
     },
     {
       "path": "../models/candle_arrangement_2.fbx",
@@ -61,7 +77,8 @@
         1.0,
         0.0,
         0.0
-      ]
+      ],
+      "animated": false
     }
   ]
 }

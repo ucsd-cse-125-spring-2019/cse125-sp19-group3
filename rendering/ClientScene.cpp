@@ -12,12 +12,17 @@ void ClientScene::initialize_objects(ClientGame * game)
 	camera->SetAspect(width / height);
 	camera->Reset();
 
-	shader = new Shader(TOON_VERTEX_SHADER_PATH, TOON_FRAGMENT_SHADER_PATH);
-
+	animationShader = new Shader(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
+	staticShader = new Shader(TOON_VERTEX_SHADER_PATH, TOON_FRAGMENT_SHADER_PATH);
 	ifstream json_model_paths("../model_paths.json");
 	json pathObjs = json::parse(json_model_paths);
 	for (auto & obj : pathObjs["data"]) {
-		models[(unsigned int)obj["model_id"]] = ModelData{ new Model(obj["path"]), glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), shader, COLOR, 0 };
+		if (obj["animated"]) {
+			models[(unsigned int)obj["model_id"]] = ModelData{ new Model(obj["path"],true), glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), animationShader, COLOR, 0 };
+		}
+		else {
+			models[(unsigned int)obj["model_id"]] = ModelData{ new Model(obj["path"],false), glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), staticShader, COLOR, 0 };
+		}
 	}
 
 	ifstream json_model_locations("../env_model_locations.json");
@@ -51,7 +56,8 @@ void ClientScene::clean_up()
 	//delete(player_m);
 	//delete(player_t);
 	delete(root);
-	delete(shader);
+	delete(staticShader);
+	delete(animationShader);
 }
 
 GLFWwindow* ClientScene::create_window(int width, int height)
@@ -115,7 +121,10 @@ void ClientScene::idle_callback()
 	//cube->update();
 	time += 1.0 / 60;
 	camera->Update();
-	models[0].model->BoneTransform("Root|Walk_loop", time);
+	for (auto &model : models) {
+		if(model.second.model->isAnimated)
+			model.second.model->BoneTransform("Take 001", time);
+	}
 }
 
 void ClientScene::display_callback(GLFWwindow* window)
@@ -124,15 +133,15 @@ void ClientScene::display_callback(GLFWwindow* window)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Use the shader of programID
-	shader->use();
+	//shader->use();
 	
 	auto vpMatrix = camera->GetViewProjectMtx();
 	// Use the shader to draw all player + skill objects
-	root->draw(shader, models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
+	root->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
 
 	// Use the shader to draw all environment objects
 	for (auto &env_obj : env_objs) {
-		env_obj->draw(shader, models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
+		env_obj->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
 	}
 
 

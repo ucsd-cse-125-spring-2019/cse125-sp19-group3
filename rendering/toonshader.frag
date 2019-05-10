@@ -1,38 +1,43 @@
 #version 330 core
 
-uniform vec3 LightDir=normalize(vec3(1,0,1));
-uniform vec3 LightColor=vec3(0.6, 0.2, 0.3);
-uniform int UseTex = 0;
-
+in vec3 fragPosition;
 in vec3 fragNormal;
-in vec3 fragPos;
-in float edge;
-in vec3 world_pos;
-out vec4 color;
+in vec2 TexCoord;
 
+uniform int UseTex = 0;
+uniform sampler2D Texture;
 
-void main()
-{
-	float intensity;
-	vec4 colorResult;
-	intensity = dot(LightDir,fragNormal);
-	if(UseTex == 1){
-		colorResult = vec4(LightColor,1.0);
-	}
-	else if(edge<0.1){
-		colorResult = vec4(0,0,0,1.0);
+uniform vec3 AmbientColor = vec3(0.22, 0.02, 0.01);
+uniform vec3 LightDirection=normalize(vec3(10, 5, 10));
+uniform vec3 LightColor=vec3(0.84, 0.68, 0.63);
+uniform vec3 DiffuseColor = vec3(0.2, 0.2, 0.2);
+
+out vec4 finalColor;
+
+float getLightFactor(float intensity) {
+	float factor = 0.1;
+	if (intensity > 0.8) factor = 1.0;
+	else if (intensity > 0.3) factor = 0.6;
+	else if (intensity > 0.0) factor = 0.3;
+	return factor;
+}
+
+void main() {
+	if (UseTex == 0) {
+		// Compute irradiance (sum of ambient & direct lighting)
+		float intensity = dot(LightDirection, fragNormal);
+		float lightFactor = getLightFactor(intensity);
+
+		vec3 irradiance = AmbientColor + LightColor * max(0, intensity);
+
+		// Diffuse reflectance
+		vec3 reflectance = irradiance * DiffuseColor;
+
+		// Gamma correction
+		finalColor = vec4(lightFactor * sqrt(irradiance), 1);
+		//finalColor = vec4(normalize(fragNormal), 1);
 	}
 	else {
-		if (intensity > 0.95)
-			colorResult = vec4(LightColor,1.0);
-		else if (intensity > 0.7)
-			colorResult = vec4(LightColor*0.85,1.0);
-		else if (intensity > 0.5)
-			colorResult = vec4(LightColor*0.65,1.0);
-		else if (intensity > 0.2)
-			colorResult = vec4(LightColor*0.4,1.0);
-		else 
-			colorResult = vec4(LightColor*0.1,1.0);
+		finalColor = texture(Texture, TexCoord);
 	}
-	color = colorResult;
 }

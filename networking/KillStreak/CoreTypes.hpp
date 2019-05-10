@@ -11,7 +11,7 @@ typedef enum {INIT_CONN, CHAR_SELECT, MOVEMENT, SKILL, ATTACK} InputType;
 
 typedef enum { WELCOME, INIT_SCENE, UPDATE_SCENE_GRAPH, CHAR_SELECT_PHASE } ServerPacketType;
 
-typedef enum { MAGE, ASSASSIN, WARRIOR, HUMAN } ArcheType;
+typedef enum { HUMAN, MAGE, ASSASSIN, WARRIOR } ArcheType;
 
 
 /*

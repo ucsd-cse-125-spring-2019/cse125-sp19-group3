@@ -54,7 +54,7 @@ public:
 	void removeChild(unsigned int id);
 	unsigned int serialize(char * data);
 	unsigned deserializeAndUpdate(char * data);
-	void draw(Shader * shader, std::unordered_map<unsigned int, ModelData> &models, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx, unordered_map<unsigned int, Transform *> &sceneGraphMap);
+	void draw(std::unordered_map<unsigned int, ModelData> &models, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx, unordered_map<unsigned int, Transform *> &sceneGraphMap);
 	void update();
 };
 

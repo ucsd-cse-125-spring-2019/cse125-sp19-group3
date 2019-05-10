@@ -40,11 +40,11 @@ public:
 	vector<MeshData> meshesData;
 	vector<Mesh> meshes;
 	string directory;
-	bool gammaCorrection;
+	bool gammaCorrection, isAnimated;
 	Sphere * bounding_sphere;
 	/*  Functions   */
 	// constructor, expects a filepath to a 3D model.
-	Model(string const &path, bool gamma = false);
+	Model(string const &path, bool animated=false, bool gamma = false);
 
 	// draws the model, and thus all its meshes
 	void draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx);

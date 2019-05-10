@@ -16,8 +16,8 @@
 #include "../rendering/Serialization.h"
 
 // On some systems you need to change this to the absolute path
-#define VERTEX_SHADER_PATH "../shader.vert"
-#define FRAGMENT_SHADER_PATH "../shader.frag"
+#define VERTEX_SHADER_PATH "../animatedShader.vert"
+#define FRAGMENT_SHADER_PATH "../animatedShader.frag"
 
 #define TOON_VERTEX_SHADER_PATH "../toonshader.vert"
 #define TOON_FRAGMENT_SHADER_PATH "../toonshader.frag"
@@ -46,7 +46,7 @@ public:
 
 private:
 	const char* window_title = "CSE 125 Group 3";
-	Shader * shader;
+	Shader * animationShader, * staticShader;
 	Camera * camera;
 
 	Cube * cube;

@@ -109,7 +109,7 @@ void Transform::removeChild(unsigned int id) {
 	children_ids.erase(id);
 }
 
-void Transform::draw(Shader * shader,  std::unordered_map<unsigned int, ModelData> &models, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx, unordered_map<unsigned int, Transform *> &sceneGraphMap) {
+void Transform::draw( std::unordered_map<unsigned int, ModelData> &models, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx, unordered_map<unsigned int, Transform *> &sceneGraphMap) {
 	if (!enabled)
 		return;
 
@@ -117,7 +117,7 @@ void Transform::draw(Shader * shader,  std::unordered_map<unsigned int, ModelDat
 
 	for (unsigned int child_id : children_ids) {
 		Transform * child = sceneGraphMap[child_id];
-		child->draw(shader, models, childMtx, viewProjMtx, sceneGraphMap);
+		child->draw( models, childMtx, viewProjMtx, sceneGraphMap);
 	}
 
 	for (unsigned int model_id : model_ids) {

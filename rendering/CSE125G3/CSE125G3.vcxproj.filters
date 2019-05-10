@@ -146,12 +146,6 @@
     <None Include="..\..\networking\KillStreak\config.ini">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\shader.frag">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\shader.vert">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="..\model_paths.json">
       <Filter>Resource Files</Filter>
     </None>
@@ -162,6 +156,12 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="..\toonshader.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\animatedShader.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\animatedShader.frag">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

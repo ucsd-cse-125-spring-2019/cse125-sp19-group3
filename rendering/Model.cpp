@@ -5,13 +5,14 @@ glm::mat4 aiM3x3toGlmMat4(aiMatrix3x3 m);
 
 //static inline glm::mat4 mat4_cast(const aiMatrix4x4& m) { return glm::transpose(glm::make_mat4(&m.a1)); }
 
-Model::Model(string const &path, bool gamma)
+Model::Model(string const &path, bool animated, bool gamma)
 {
+	isAnimated = animated;
 	gammaCorrection = gamma;
 	loadModel(path);
 
 	if(m_NumBones)
-		BoneTransform("Root|Walk_loop", 0.0f);
+		BoneTransform("Take 001", 0.0f);
 
 }
 
@@ -177,7 +178,7 @@ void Model::normalize(vector<Vertex>& vertices) {
 	//printf("The model is centered at : %f %f %f \n", mid_x, mid_y, mid_z);
 	for (int i = 0; i < vertices.size(); i++) {
 		vertices[i].Position.x = (vertices[i].Position.x - mid_x);// *2 / max;
-		vertices[i].Position.y = (vertices[i].Position.y - mid_y);// *2 / max;
+		vertices[i].Position.y = (vertices[i].Position.y - mid_y) + range_y/2;// *2 / max;
 		vertices[i].Position.z = (vertices[i].Position.z - mid_z);// *2 / max;
 	}
 }
@@ -215,8 +216,8 @@ void Model::processMesh(vector<Vertex>& vertices, vector<unsigned int>& indices,
 		vertices.push_back(vertex);
 	}
 	//printf("size of vertices is %d", vertices.size());
-
-	//normalize(vertices);
+	if(!isAnimated)
+		normalize(vertices);
 	// now wak through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
 	{
