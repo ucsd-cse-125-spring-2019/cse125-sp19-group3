@@ -29,7 +29,7 @@ public:
 	ServerInputPacket* receivePacket();
 
 	// receive data from server into buffer
-	int receiveData(char* recvbuf);
+	int receiveData(char* recvbuf, unsigned int packetSize);
 
 	// deserialize data from server back into ServerInputPacket struct
 	ServerInputPacket* deserializeSP(char* temp_buff);

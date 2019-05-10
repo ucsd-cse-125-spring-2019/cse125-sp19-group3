@@ -280,6 +280,8 @@ void ServerNetwork::broadcastSend(ServerInputPacket packet)
 		char buf[4096];
 		char * packetPtr = packet.data;
 		unsigned int static_size = sizeof(ServerPacketType) + sizeof(int);
+		unsigned int totalSize = static_size + toSend;
+		send(currentSocket, (const char*)&totalSize, sizeof(unsigned int), 0);
 		memcpy(buf, &packet, static_size);
 		char * bufPtr = &buf[static_size];
 		int bufCapacity = sizeof(buf) - static_size;
@@ -301,7 +303,7 @@ void ServerNetwork::broadcastSend(ServerInputPacket packet)
 		}
 	}
 
-	free(packet.data);
+	//free(packet.data);
 }
 
 
@@ -315,6 +317,7 @@ int ServerNetwork::sendToClient(unsigned int client_id, ServerInputPacket packet
 	if (sessions.find(client_id) != sessions.end())		// find client 
 	{
 		SOCKET currentSocket = sessions[client_id];		// get client socket
+
 		
 		int toSend = packet.size;
 		// char serialized[sizeof(packet.packetType) + sizeof(int) + sizeof(*(packet.data)];
@@ -322,6 +325,9 @@ int ServerNetwork::sendToClient(unsigned int client_id, ServerInputPacket packet
 		char buf[4096];
 		char * packetPtr = packet.data;
 		unsigned int static_size = sizeof(ServerPacketType) + sizeof(int);
+		unsigned int totalSize = static_size + toSend;
+		send(currentSocket, (const char*)&totalSize, sizeof(unsigned int), 0);
+		
 		memcpy(buf, &packet, static_size);
 		char * bufPtr = &buf[static_size];
 		int bufCapacity = sizeof(buf) - static_size;
@@ -342,8 +348,8 @@ int ServerNetwork::sendToClient(unsigned int client_id, ServerInputPacket packet
 			packetPtr += sent;
 		}
 		
-		free(packet.data);
-		return packet.size + static_size;
+		//free(packet.data);
+		return totalSize;
 	}
 
 	log->error("Receive error: Client mapping not found -> ID: {}", client_id);

@@ -455,7 +455,7 @@ ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsig
 
 ServerInputPacket ServerGame::createServerTickPacket() {
 	unsigned int sgSize;
-	unsigned int size = scene->serverSceneGraphMap.size*(sizeof(Transform) + 20);
+	unsigned int size = (scene->serverSceneGraphMap.size())*(sizeof(Transform) + 20);
 	char* bufPtr = (char*)malloc(size);
 	memset(bufPtr, 0, size);
 	sgSize = Serialization::serializeSceneGraph(scene->getRoot(), bufPtr, scene->serverSceneGraphMap);

@@ -130,10 +130,12 @@ ClientInputPacket ClientNetwork::createClientInputPacket(InputType type, Point f
 */
 ServerInputPacket* ClientNetwork::receivePacket()
 {
+	unsigned int packetSize;
+	recv(ConnectSocket, (char *)&packetSize, sizeof(unsigned int), 0);
 
 	// allocate buffer & receive data from client
-	char* temp_buff = (char*)malloc(sizeof(ServerInputPacket));
-	int bytes_read = receiveData(temp_buff);
+	char* temp_buff = (char*)malloc(packetSize);
+	int bytes_read = receiveData(temp_buff, packetSize);
 
 	// client closed conection/error?
 	if (!bytes_read || bytes_read == SOCKET_ERROR) return 0;
@@ -152,12 +154,12 @@ ServerInputPacket* ClientNetwork::receivePacket()
 	SOCKET_ERROR otherwise. Updates 'recbuf' pointer passed by 
 	reference with data read. 
 */
-int ClientNetwork::receiveData(char * recvbuf)
+int ClientNetwork::receiveData(char * recvbuf, unsigned int packetSize)
 {
 	auto log = logger();
 
 	SOCKET currentSocket = ConnectSocket;			// get client socket
-	size_t toRead = sizeof(ServerInputPacket);		// amount of data to read
+	size_t toRead = packetSize;		// amount of data to read
 	char  *curr_bufptr = (char*) recvbuf;			// ptr to output buffer
 
 	while (toRead > 0)								// read entire packet
@@ -180,7 +182,7 @@ int ClientNetwork::receiveData(char * recvbuf)
 		curr_bufptr += rsz;  /* Next buffer position to read into */
 	}
 
-	return sizeof(ServerInputPacket);
+	return packetSize;
 
 }
 
