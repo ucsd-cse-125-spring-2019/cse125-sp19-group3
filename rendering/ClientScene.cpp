@@ -152,8 +152,14 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 	// Check for a key press
 	if (action == GLFW_PRESS)
 	{
+		// 'q' pressed? Change state from movement to projectile or vice-versa
+		if (key == GLFW_KEY_Q)		
+		{
+			player.action_state = (player.action_state == ACTION_MOVEMENT) ? ACTION_PROJECTILE : ACTION_MOVEMENT;
+			logger()->debug("Changing action state to: {}", player.action_state);
+		}
 		// Check if escape was pressed
-		if (key == GLFW_KEY_ESCAPE)
+		else if (key == GLFW_KEY_ESCAPE) 
 		{
 			// Close the window. This causes the program to also terminate.
 			glfwSetWindowShouldClose(window, GL_TRUE);
@@ -171,13 +177,27 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 {
 	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
 	{
-		double xpos, ypos;
-		//getting cursor position
-		glfwGetCursorPos(window, &xpos, &ypos);
-		printf("Cursor Position at %f: %f \n", xpos, ypos);
-		glm::vec3 new_dest = viewToWorldCoordTransform(xpos, ypos);
-		ClientInputPacket movementPacket = game->createMovementPacket(new_dest);
-		network->sendToServer(movementPacket);
+
+		// TODO: Check if state is projectile mode; 
+		// if it is shoot, otherwise move
+		// if shoot do we want to automatically go back to movement mode or stay in projectile mode? 
+		if ( player.action_state == ACTION_MOVEMENT )
+		{
+			double xpos, ypos;
+			//getting cursor position
+			glfwGetCursorPos(window, &xpos, &ypos);
+			printf("Cursor Position at %f: %f \n", xpos, ypos);
+			glm::vec3 new_dest = viewToWorldCoordTransform(xpos, ypos);
+			ClientInputPacket movementPacket = game->createMovementPacket(new_dest);
+			network->sendToServer(movementPacket);
+		}
+		else if (player.action_state == ACTION_PROJECTILE)
+		{
+			logger()->debug("SHOOTING!");
+			// TODO: Do we want to change action_state to moving after shooting?
+			// player.action_state = ACTION_MOVEMENT;
+		}
+
 	}
 }
 
