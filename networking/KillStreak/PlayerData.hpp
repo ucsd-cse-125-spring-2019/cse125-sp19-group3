@@ -89,6 +89,9 @@ public:
 	void coneAoe(Point finalLocation);
 };
 
+/*
+	Stores players metadata (id, name, type, gold, killstreak, death status).
+*/
 class PlayerMetadata {
 public:
 	PlayerMetadata(unsigned int clientId, std::string username, ArcheType type) : clientId(clientId), username(username), type(type) {

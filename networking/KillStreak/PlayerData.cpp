@@ -29,9 +29,14 @@ vector<int>* LeaderBoard::roundSummary() {
 	return rankings;
 }
 
+/*
+	Initialize values of skill based on data taken from meta_data config.
+*/
 void Skill::update(SkillType skillType, int range, int cooldown, int duration, int speed) {
 	this->skillType = skillType;
 	this->cooldown = cooldown;
+
+	// TODO: Missing Melee & Projectile
 	switch (skillType) {
 	case AOE:
 		this->range = range;
@@ -61,6 +66,11 @@ double getDoubleField(INIReader & meta_data, string archetype, string field) {
 	return temp;
 }
 
+/*
+	Initialize corresponding skill by getting values from meta_data config.
+	-- Return skill with data initialized
+*/
+// TODO: Missing cooldown on most of these
 Skill Skill::getMelee(INIReader & meta_data, string archetype) {
 	
 	Skill temp = Skill();

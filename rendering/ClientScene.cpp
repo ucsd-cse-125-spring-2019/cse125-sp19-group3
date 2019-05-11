@@ -213,6 +213,9 @@ glm::vec3 ClientScene::viewToWorldCoordTransform(int mouse_x, int mouse_y) {
 }
 
 
+/*
+	Deserialize init scene packet from server, initialize player_id, root_id, root. 
+*/
 void ClientScene::handleInitScenePacket(char * data) {
 	memcpy(&player.player_id, data, sizeof(unsigned int));
 	data += sizeof(unsigned int);
@@ -221,6 +224,9 @@ void ClientScene::handleInitScenePacket(char * data) {
 	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap);
 }
 
+/*
+	Deserialize updated scene graph from server.
+*/
 void ClientScene::handleServerTickPacket(char * data) {
 	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap);
 }
