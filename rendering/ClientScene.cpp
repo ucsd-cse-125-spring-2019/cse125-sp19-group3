@@ -9,6 +9,7 @@ ClientScene * Window_static::scene = new ClientScene();
 void ClientScene::initialize_objects(ClientGame * game)
 {
 	camera = new Camera();
+	initCamPos = camera->cam_pos;
 	camera->SetAspect(width / height);
 	camera->Reset();
 
@@ -120,6 +121,9 @@ void ClientScene::idle_callback()
 	// Call the update function the cube
 	//cube->update();
 	time += 1.0 / 60;
+	glm::mat4 playerNode = clientSceneGraphMap[player.root_id]->M;
+	camera->cam_look_at = { playerNode[3][0],playerNode[3][1],playerNode[3][2] };
+	camera->cam_pos = initCamPos + glm::vec3({ playerNode[3][0],playerNode[3][1],playerNode[3][2] });
 	camera->Update();
 	for (auto &model : models) {
 		if(model.second.model->isAnimated)
@@ -167,7 +171,8 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 
 void ClientScene::scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
 	glm::vec3 z_dir = camera->cam_look_at - camera->cam_pos;
-	camera->cam_pos -= ((float)-yoffset * glm::normalize(z_dir));
+	if (!((camera->cam_pos.y < min_scroll && yoffset > 0) || (camera->cam_pos.y > max_scroll && yoffset < 0)))
+		initCamPos -= ((float)-yoffset * glm::normalize(z_dir));
 }
 
 void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)

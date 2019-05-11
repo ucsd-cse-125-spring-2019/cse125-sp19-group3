@@ -26,7 +26,7 @@ class ClientScene {
 public:
 	int width;
 	int height;
-
+	glm::vec3 initCamPos;
 	std::unordered_map<unsigned int, Transform *> clientSceneGraphMap;
 
 	void initialize_objects(ClientGame * game);
@@ -45,6 +45,8 @@ public:
 	void setRoot(Transform * newRoot);
 
 private:
+	float min_scroll = 20.0f;
+	float max_scroll = 60.0f;
 	const char* window_title = "CSE 125 Group 3";
 	Shader * animationShader, * staticShader;
 	Camera * camera;
