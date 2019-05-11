@@ -49,7 +49,7 @@ void ServerScene::initEnv() {
 
 void ServerScene::addPlayer(unsigned int playerId, ArcheType modelType) {
 	nodeIdCounter++;
-	Transform * playerObj = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), glm::vec3(-10.0f, 0, 0)),
+	Transform * playerObj = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)),
 		glm::rotate(glm::mat4(1.0f), -90/ 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)),
 		glm::scale(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, 0.05f)));
 	playerObj->model_ids.insert(modelType);

@@ -87,6 +87,39 @@
       ],
       "animated": false,
       "radius": 3.0
+    },
+    {
+      "path": "../models/cube_01_hue_1.fbx",
+      "model_id": 106,
+      "color_rgb": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "animated": false,
+      "radius": 3.0
+    },
+    {
+      "path": "../models/cube_02_hue_1.fbx",
+      "model_id": 107,
+      "color_rgb": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "animated": false,
+      "radius": 3.0
+    },
+    {
+      "path": "../models/cube_05_hue_1.fbx",
+      "model_id": 108,
+      "color_rgb": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "animated": false,
+      "radius": 3.0
     }
   ]
 }

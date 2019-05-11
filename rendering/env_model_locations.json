@@ -7,7 +7,7 @@
         0.0,
         -45.0
       ],
-      "rotate": 180,
+      "rotate": 0.0,
       "scale": 0.035
     },
     {
@@ -33,9 +33,9 @@
     {
       "model_id": 100,
       "translate": [
-        12,
+        7,
         0,
-        -27
+        -29.5
       ],
       "rotate": 0,
       "scale": 0.035
@@ -43,9 +43,9 @@
     {
       "model_id": 100,
       "translate": [
-        -12,
+        -7,
         0,
-        -27
+        -29.5
       ],
       "rotate": 180,
       "scale": 0.035
@@ -53,39 +53,9 @@
     {
       "model_id": 100,
       "translate": [
-        16.5,
+        14,
         0,
-        -24.5
-      ],
-      "rotate": -90,
-      "scale": 0.035
-    },
-    {
-      "model_id": 100,
-      "translate": [
-        -16.5,
-        0,
-        -24.5
-      ],
-      "rotate": -90,
-      "scale": 0.035
-    },
-    {
-      "model_id": 101,
-      "translate": [
-        0,
-        0,
-        -24.5
-      ],
-      "rotate": -90,
-      "scale": 0.035
-    },
-    {
-      "model_id": 100,
-      "translate": [
-        19,
-        0,
-        -19.5
+        -29.5
       ],
       "rotate": 0,
       "scale": 0.035
@@ -93,202 +63,472 @@
     {
       "model_id": 100,
       "translate": [
-        -19,
+        21,
         0,
-        -19.5
+        -29.5
+      ],
+      "rotate": 0,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        28,
+        0,
+        -29.5
+      ],
+      "rotate": 0,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        35,
+        0,
+        -29.5
+      ],
+      "rotate": 0,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        42,
+        0,
+        -29.5
+      ],
+      "rotate": 0,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        49,
+        0,
+        -29.5
+      ],
+      "rotate": 0,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        56,
+        0,
+        -29.5
+      ],
+      "rotate": 0,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        63,
+        0,
+        -29.5
+      ],
+      "rotate": 0,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        70,
+        0,
+        -29.5
+      ],
+      "rotate": 0,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        77,
+        0,
+        -29.5
+      ],
+      "rotate": 0,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        84,
+        0,
+        -29.5
+      ],
+      "rotate": 0,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        91,
+        0,
+        -29.5
+      ],
+      "rotate": 0,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        98,
+        0,
+        -29.5
+      ],
+      "rotate": 0,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        105,
+        0,
+        -29.5
+      ],
+      "rotate": 0,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        -10.5,
+        0,
+        -27
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        -10.5,
+        0,
+        -20
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        -10.5,
+        0,
+        -13
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        -10.5,
+        0,
+        -6
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        -10.5,
+        0,
+        1
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        -10.5,
+        0,
+        8
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        -10.5,
+        0,
+        15
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        -10.5,
+        0,
+        22
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        -10.5,
+        0,
+        29
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        -10.5,
+        0,
+        36
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        -10.5,
+        0,
+        43
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        -10.5,
+        0,
+        50
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        -10.5,
+        0,
+        57
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        -10.5,
+        0,
+        64
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        -10.5,
+        0,
+        71
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        -10.5,
+        0,
+        78
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        11.5,
+        0,
+        -6
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        11.5,
+        0,
+        1
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        11.5,
+        0,
+        8
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        11.5,
+        0,
+        15
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        11.5,
+        0,
+        22
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        11.5,
+        0,
+        29
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        11.5,
+        0,
+        36
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        11.5,
+        0,
+        43
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        11.5,
+        0,
+        50
+      ],
+      "rotate": -90,
+      "scale": 0.035
+    },
+    {
+      "model_id": 100,
+      "translate": [
+        16,
+        0,
+        -8.5
       ],
       "rotate": 180,
       "scale": 0.035
     },
     {
-      "model_id": 101,
+      "model_id": 100,
       "translate": [
-        24.5,
+        23,
         0,
-        -19.5
+        -8.5
       ],
-      "rotate": 0,
-      "scale": 0.035
-    },
-    {
-      "model_id": 101,
-      "translate": [
-        -24.5,
-        0,
-        -19.5
-      ],
-      "rotate": 0,
-      "scale": 0.035
-    },
-    {
-      "model_id": 101,
-      "translate": [
-        29,
-        0,
-        -19.5
-      ],
-      "rotate": 0,
-      "scale": 0.035
-    },
-    {
-      "model_id": 101,
-      "translate": [
-        -29,
-        0,
-        -19.5
-      ],
-      "rotate": 0,
+      "rotate": 180,
       "scale": 0.035
     },
     {
       "model_id": 100,
       "translate": [
-        -32.5,
+        30,
         0,
-        -17
+        -8.5
       ],
-      "rotate": -90,
+      "rotate": 180,
       "scale": 0.035
     },
     {
       "model_id": 100,
       "translate": [
-        32.5,
+        37,
         0,
-        -17
+        -8.5
       ],
-      "rotate": -90,
+      "rotate": 180,
       "scale": 0.035
     },
     {
-      "model_id": 101,
+      "model_id": 100,
       "translate": [
-        32.5,
+        44,
         0,
-        -11.5
+        -8.5
       ],
-      "rotate": -90,
+      "rotate": 180,
       "scale": 0.035
     },
     {
-      "model_id": 101,
+      "model_id": 100,
       "translate": [
-        -32.5,
+        51,
         0,
-        -11.5
+        -8.5
       ],
-      "rotate": -90,
+      "rotate": 180,
       "scale": 0.035
     },
     {
-      "model_id": 101,
+      "model_id": 100,
       "translate": [
-        -32.5,
+        58,
         0,
-        -7
+        -8.5
       ],
-      "rotate": -90,
+      "rotate": 180,
       "scale": 0.035
     },
     {
-      "model_id": 101,
+      "model_id": 100,
       "translate": [
-        32.5,
+        65,
         0,
-        -7
+        -8.5
       ],
-      "rotate": -90,
+      "rotate": 180,
       "scale": 0.035
     },
     {
-      "model_id": 101,
+      "model_id": 100,
       "translate": [
-        32.5,
+        72,
         0,
-        -2.5
+        -8.5
       ],
-      "rotate": -90,
+      "rotate": 180,
       "scale": 0.035
-    },
-    {
-      "model_id": 101,
-      "translate": [
-        -32.5,
-        0,
-        -2.5
-      ],
-      "rotate": -90,
-      "scale": 0.035
-    },
-    {
-      "model_id": 101,
-      "translate": [
-        -32.5,
-        0,
-        2
-      ],
-      "rotate": -90,
-      "scale": 0.035
-    },
-    {
-      "model_id": 101,
-      "translate": [
-        32.5,
-        0,
-        2
-      ],
-      "rotate": -90,
-      "scale": 0.035
-    },
-    {
-      "model_id": 101,
-      "translate": [
-        32.5,
-        0,
-        6.5
-      ],
-      "rotate": -90,
-      "scale": 0.035
-    },
-    {
-      "model_id": 101,
-      "translate": [
-        -32.5,
-        0,
-        6.5
-      ],
-      "rotate": -90,
-      "scale": 0.035
-    },
-    {
-      "model_id": 101,
-      "translate": [
-        -32.5,
-        0,
-        11
-      ],
-      "rotate": -90,
-      "scale": 0.035
-    },
-    {
-      "model_id": 101,
-      "translate": [
-        32.5,
-        0,
-        11
-      ],
-      "rotate": -90,
-      "scale": 0.035
-    },
-    {
-      "model_id": 105,
-      "translate": [
-        0,
-        0,
-        -10
-      ],
-      "rotate": 0,
-      "scale": 0.1
     }
   ]
 }
