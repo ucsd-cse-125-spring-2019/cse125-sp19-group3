@@ -24,18 +24,21 @@ public:
 	int height;
 
 	unordered_map<unsigned int, ScenePlayer> scenePlayers;
+	unordered_map<unsigned int, float> model_radius;
 	std::vector<Transform *> env_objs;
 	ServerScene();
 	~ServerScene();
 	void addPlayer(unsigned int playerId, ArcheType modelType);
 	void update();
 	void handlePlayerMovement(unsigned int player_id, glm::vec3 destination);
+	void checkAndHandleCollision(unsigned int playerId);
 	/*unsigned int serializeInitScene(char* data, unsigned int playerId, unsigned int playerRootId);
 	unsigned int serializeSceneGraph(char* data);
 	std::pair<char *, unsigned int> serializeSceneGraph(Transform* t, char* data);*/
 	Transform * getRoot();
 	unordered_map<unsigned int, Transform *> serverSceneGraphMap;
 	void initEnv();
+	void initModelRadius();
 
 private:
 	Transform * root;

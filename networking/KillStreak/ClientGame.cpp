@@ -350,7 +350,7 @@ int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
 
 		// TODO: Display UI (enter username, pick character) --> update values
 		username = "Snake";		// TODO: REMOVE ME
-		selected_type = MAGE;	// TODO: REMOVE ME
+		selected_type = HUMAN;	// TODO: REMOVE ME
 
 	}
 

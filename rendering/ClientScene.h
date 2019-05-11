@@ -30,7 +30,7 @@ public:
 	std::unordered_map<unsigned int, Transform *> clientSceneGraphMap;
 
 	void initialize_objects(ClientGame * game);
-	void playerInit(const ScenePlayer &player);
+	//void playerInit(const ScenePlayer &player);
 	void clean_up();
 	GLFWwindow * create_window(int width, int height);
 	void resize_callback(GLFWwindow* window, int width, int height);

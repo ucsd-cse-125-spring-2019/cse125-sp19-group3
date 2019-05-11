@@ -39,7 +39,6 @@
     <ClInclude Include="..\Serialization.h" />
     <ClInclude Include="..\ServerScene.h" />
     <ClInclude Include="..\shader.h" />
-    <ClInclude Include="..\Sphere.h" />
     <ClInclude Include="..\Transform.h" />
   </ItemGroup>
   <ItemGroup>
@@ -59,7 +58,6 @@
     <ClCompile Include="..\Serialization.cpp" />
     <ClCompile Include="..\ServerScene.cpp" />
     <ClCompile Include="..\shader.cpp" />
-    <ClCompile Include="..\Sphere.cpp" />
     <ClCompile Include="..\Transform.cpp" />
   </ItemGroup>
   <ItemGroup>

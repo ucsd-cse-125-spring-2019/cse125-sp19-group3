@@ -40,14 +40,14 @@ void ClientScene::initialize_objects(ClientGame * game)
 	this->game = game;
 }
 
-void ClientScene::playerInit(const ScenePlayer &player) {
-	this->player = player;
-	this->player.model = models[this->player.modelType].model;
-	// TODO: move to here: 
-	// 1) init player model
-	// 2) create corresponding shader based on player data
-	// 3) move camera
-}
+//void ClientScene::playerInit(const ScenePlayer &player) {
+//	this->player = player;
+//	this->player.model = models[this->player.modelType].model;
+//	 TODO: move to here: 
+//	 1) init player model
+//	 2) create corresponding shader based on player data
+//	 3) move camera
+//}
 
 void ClientScene::clean_up()
 {

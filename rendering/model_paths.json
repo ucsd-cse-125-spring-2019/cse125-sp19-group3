@@ -8,7 +8,8 @@
         0.5,
         0.5
       ],
-      "animated": true
+      "animated": true,
+      "radius": 2.0
     },
     {
       "path": "../models/grunt/allinone.fbx",
@@ -18,7 +19,8 @@
         0.5,
         0.5
       ],
-      "animated": true
+      "animated": true,
+      "radius": 3.0
     },
     {
       "path": "../models/fence_element_1.fbx",
@@ -28,7 +30,8 @@
         0.5,
         0.5
       ],
-      "animated": false
+      "animated": false,
+      "radius": 3.0
     },
     {
       "path": "../models/fence_element_2.fbx",
@@ -38,7 +41,8 @@
         0.5,
         0.5
       ],
-      "animated": false
+      "animated": false,
+      "radius": 3.0
     },
     {
       "path": "../models/grave_stone_1.fbx",
@@ -48,7 +52,8 @@
         0.5,
         0.5
       ],
-      "animated": false
+      "animated": false,
+      "radius": 2.0
     },
     {
       "path": "../models/grave_stone_3.fbx",
@@ -58,7 +63,8 @@
         0.5,
         0.5
       ],
-      "animated": false
+      "animated": false,
+      "radius": 2.0
     },
     {
       "path": "../models/dungeon_entrance.fbx",
@@ -68,7 +74,8 @@
         0.0,
         0.0
       ],
-      "animated": false
+      "animated": false,
+      "radius": 40.0
     },
     {
       "path": "../models/candle_arrangement_2.fbx",
@@ -78,7 +85,8 @@
         0.0,
         0.0
       ],
-      "animated": false
+      "animated": false,
+      "radius": 4.0
     }
   ]
 }

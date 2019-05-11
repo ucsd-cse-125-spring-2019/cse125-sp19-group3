@@ -24,12 +24,11 @@ public:
 	void translate(glm::vec3 forward);
 	void update();
 	void animate(double currTime);
-
 	unsigned int player_id;
 	unsigned int root_id;
 	ArcheType modelType;
 	Transform * playerRoot;
-	Model * model;
+	//Model * model;
 	glm::vec3 destination = glm::vec3(0.0f);
 	glm::vec3 currentPos = glm::vec3(0.0f);
 	glm::vec3 currentOri = glm::vec3(0.0f, 0.0f, 1.0f);

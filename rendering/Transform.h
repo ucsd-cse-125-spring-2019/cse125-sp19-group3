@@ -56,6 +56,8 @@ public:
 	unsigned deserializeAndUpdate(char * data);
 	void draw(std::unordered_map<unsigned int, ModelData> &models, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx, unordered_map<unsigned int, Transform *> &sceneGraphMap);
 	void update();
+
+	bool isCollided(glm::vec3 forwardVector, unordered_map<unsigned int, float> &modelRadius, unordered_map<unsigned int, Transform *> &sceneGraphMap, Transform * otherNode);
 };
 
 #endif

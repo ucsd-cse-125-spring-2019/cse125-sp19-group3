@@ -16,11 +16,22 @@ ServerScene::ServerScene()
 	skillRoot = new Transform(nodeIdCounter, glm::mat4(1.0f));
 	serverSceneGraphMap.insert({ skillRoot->node_id, skillRoot });
 	root->addChild(nodeIdCounter);
+
+	initModelRadius();
 }
 
 ServerScene::~ServerScene() {
 	delete root;
 }
+
+void ServerScene::initModelRadius() {
+	ifstream json_file("../model_paths.json");
+	json jsonObjs = json::parse(json_file);
+	for (auto & obj : jsonObjs["data"]) {
+		model_radius.insert({ (unsigned int)obj["model_id"], (float)obj["radius"] });
+	}
+}
+
 
 void ServerScene::initEnv() {
 	ifstream json_file("../env_model_locations.json");
@@ -39,7 +50,7 @@ void ServerScene::initEnv() {
 void ServerScene::addPlayer(unsigned int playerId, ArcheType modelType) {
 	nodeIdCounter++;
 	Transform * playerObj = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), glm::vec3(-10.0f, 0, 0)),
-		glm::rotate(glm::mat4(1.0f), 0 / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)),
+		glm::rotate(glm::mat4(1.0f), -90/ 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)),
 		glm::scale(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, 0.05f)));
 	playerObj->model_ids.insert(modelType);
 	playerRoot->addChild(nodeIdCounter);
@@ -56,9 +67,23 @@ void ServerScene::update()
 {
 	time += 1.0 / 60;
 	for (auto &element : scenePlayers) {
+		checkAndHandleCollision(element.first);
 		element.second.update();
-
+		
 	}
+}
+
+//TODO: Refactoring, moving collision check to player??? Also find radius for various objs.
+void ServerScene::checkAndHandleCollision(unsigned int playerId) {
+	ScenePlayer &player = scenePlayers[playerId];
+	for (auto& envObj : env_objs) {
+		glm::vec3 forwardVector = glm::normalize(player.destination - player.currentPos)* player.speed;
+		if (player.playerRoot->isCollided(forwardVector, model_radius, serverSceneGraphMap, envObj)) {
+			player.setDestination(player.currentPos);
+			break;
+		}
+	}
+
 }
 
 void ServerScene::handlePlayerMovement(unsigned int playerId, glm::vec3 destination)

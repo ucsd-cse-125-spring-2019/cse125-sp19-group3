@@ -17,9 +17,9 @@ Model::Model(string const &path, bool animated, bool gamma)
 }
 
 //TODO
-bool Model::isCollided(glm::vec3 myPos, Model * other, glm::vec3 otherPos) {
-	return true;
-}
+//bool Model::isCollided(glm::vec3 myPos, Model * other, glm::vec3 otherPos) {
+//	return bounding_sphere->isCollided(myPos, other->bounding_sphere, otherPos);
+//}
 
 // draws the model, and thus all its meshes
 void Model::draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx)
@@ -114,7 +114,14 @@ void Model::loadModel(string const &path)
 	for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
 		processMesh(vertices, indices, textures, i, scene->mMeshes[i], scene);
 	}
-
+	if(!isAnimated)
+		normalize(vertices);
+	/*std::vector<glm::vec3> verticePosVector;
+	for (auto& vertex : vertices) {
+		verticePosVector.push_back(vertex.Position);
+	}
+	const float * flat_array = &verticePosVector[0].x;
+	bounding_sphere = new Sphere(flat_array, (unsigned)vertices.size(), sizeof(float[3]), 3, NULL, 500, 36, 18, true);*/
 	meshes.push_back(Mesh(vertices, indices, textures));
 
 	for (unsigned int i = 0; i < scene->mNumAnimations; i++) {
@@ -216,8 +223,8 @@ void Model::processMesh(vector<Vertex>& vertices, vector<unsigned int>& indices,
 		vertices.push_back(vertex);
 	}
 	//printf("size of vertices is %d", vertices.size());
-	if(!isAnimated)
-		normalize(vertices);
+	//if(!isAnimated)
+	//	normalize(vertices);
 	// now wak through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
 	{

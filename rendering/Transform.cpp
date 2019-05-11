@@ -135,6 +135,51 @@ void Transform::draw( std::unordered_map<unsigned int, ModelData> &models, const
 	}
 }
 
+bool collision(glm::vec3 myNextPos, float myRadius, glm::vec3 otherPos, float otherRadius) {
+	const glm::vec3 checkObjPos = otherPos;
+	//printf(" other location calculated: %f \n", checkObjPos.x);
+	float distX = myNextPos.x - checkObjPos.x;
+	float distY = myNextPos.y - checkObjPos.y;
+	float distZ = myNextPos.z - checkObjPos.z;
+
+	float distToObject = sqrt(distX*distX + distY * distY + distZ * distZ);
+
+	float threshhold = myRadius + otherRadius;
+
+	//printf("distToObject is %f, threshold is %f \n", distToObject,threshhold);
+	if (distToObject < threshhold) {
+		printf("entering other's body\n");
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+
+bool Transform::isCollided(glm::vec3 forwardVector, unordered_map<unsigned int,float> &modelRadius, unordered_map<unsigned int, Transform *> &sceneGraphMap, Transform * otherNode) {
+	bool result = false;
+	for (unsigned int child_id : otherNode->children_ids) {
+		Transform * child = sceneGraphMap[child_id];
+		result |= isCollided(forwardVector, modelRadius,sceneGraphMap, child);
+		if (result)
+			return result;
+	}
+	glm::vec3 nextPos = glm::vec3({ translation[3][0], translation[3][1], translation[3][2] })+forwardVector;
+	for (unsigned int model_id : model_ids) {
+		float currModelRadius = modelRadius[model_id];
+		for (unsigned int other_id : otherNode->model_ids) {
+			float otherModelRadius = modelRadius[model_id];
+			result |= collision(nextPos, currModelRadius,
+				{ otherNode->translation[3][0], otherNode->translation[3][1], otherNode->translation[3][2] }, otherModelRadius);
+			if (result)
+				return result;
+		}
+	}
+	return result;
+}
+
+
 void Transform::update() {
 	M = translation * rotation * scale;
 }
