@@ -169,7 +169,7 @@ bool Transform::isCollided(glm::vec3 forwardVector, unordered_map<unsigned int,f
 	for (unsigned int model_id : model_ids) {
 		float currModelRadius = modelRadius[model_id];
 		for (unsigned int other_id : otherNode->model_ids) {
-			float otherModelRadius = modelRadius[model_id];
+			float otherModelRadius = modelRadius[other_id];
 			result |= collision(nextPos, currModelRadius,
 				{ otherNode->translation[3][0], otherNode->translation[3][1], otherNode->translation[3][2] }, otherModelRadius);
 			if (result)
