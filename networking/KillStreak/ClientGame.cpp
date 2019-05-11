@@ -386,6 +386,13 @@ ClientInputPacket ClientGame::createMovementPacket(Point newLocation) {
 	return createClientInputPacket(MOVEMENT, newLocation, 0, 0);
 }
 
+ClientInputPacket ClientGame::createProjectilePacket(Point newLocation) {
+	// TODO: Do we want to name this type SKILL_PROJECTILE? 
+	// TODO: ClientInputPacket 'skillType' is just an integer??? How are we handling that?
+	// TODO: Do we still want attack-type? Attack-type = 1 --> projectile
+	return createClientInputPacket(SKILL_PROJECTILE, newLocation, 0, 1);
+}
+
 ClientInputPacket ClientGame::createInitPacket() {
 	return createClientInputPacket(INIT_CONN, NULL_POINT, 0, 0);
 }

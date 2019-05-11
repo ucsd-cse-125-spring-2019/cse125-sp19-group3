@@ -9,7 +9,7 @@
 
 typedef glm::vec3 Point;
 
-typedef enum {INIT_CONN, CHAR_SELECT, MOVEMENT, SKILL, ATTACK} InputType;
+typedef enum {INIT_CONN, CHAR_SELECT, MOVEMENT, SKILL_PROJECTILE, ATTACK} InputType;
 
 typedef enum { WELCOME, INIT_SCENE, UPDATE_SCENE_GRAPH, CHAR_SELECT_PHASE } ServerPacketType;
 

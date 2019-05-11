@@ -443,6 +443,9 @@ void ServerGame::handleClientInputPacket(ClientInputPacket* packet, int client_i
 	case MOVEMENT:
 		scene->handlePlayerMovement(client_id, packet->finalLocation);
 		break;
+	case SKILL_PROJECTILE:
+		scene->handlePlayerProjectile();  // TODO: Need to complete this functionality
+		break;
 	default:
 		break;
 	}

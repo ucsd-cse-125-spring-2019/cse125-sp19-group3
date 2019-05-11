@@ -156,7 +156,6 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 		if (key == GLFW_KEY_Q)		
 		{
 			player.action_state = (player.action_state == ACTION_MOVEMENT) ? ACTION_PROJECTILE : ACTION_MOVEMENT;
-			logger()->debug("Changing action state to: {}", player.action_state);
 		}
 		// Check if escape was pressed
 		else if (key == GLFW_KEY_ESCAPE) 
@@ -178,9 +177,7 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
 	{
 
-		// TODO: Check if state is projectile mode; 
-		// if it is shoot, otherwise move
-		// if shoot do we want to automatically go back to movement mode or stay in projectile mode? 
+		// player moving
 		if ( player.action_state == ACTION_MOVEMENT )
 		{
 			double xpos, ypos;
@@ -191,11 +188,24 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 			ClientInputPacket movementPacket = game->createMovementPacket(new_dest);
 			network->sendToServer(movementPacket);
 		}
+		// player shooting projectile
 		else if (player.action_state == ACTION_PROJECTILE)
 		{
 			logger()->debug("SHOOTING!");
+
+			double xpos, ypos;
+			//getting cursor position
+			glfwGetCursorPos(window, &xpos, &ypos);
+			printf("Cursor Position at %f: %f \n", xpos, ypos);
+			glm::vec3 new_dest = viewToWorldCoordTransform(xpos, ypos);
+
+			// create projectile packet & send to server
+			ClientInputPacket projectilePacket = game->createProjectilePacket(new_dest);
+			network->sendToServer(projectilePacket);
+
+			// TODO: Handle server receiving projectile packet!
 			// TODO: Do we want to change action_state to moving after shooting?
-			// player.action_state = ACTION_MOVEMENT;
+			player.action_state = ACTION_MOVEMENT;
 		}
 
 	}
