@@ -34,9 +34,6 @@ public:
 	// close socket associated with client
 	bool closeClientSocket(unsigned int id);
 
-	// create packet for server to send to client
-	ServerInputPacket createServerPacket(ServerPacketType type, int temp, char * data);
-
 	// receive incoming data and deserialize into ClientSelectionPacket
 	ClientSelectionPacket* receiveSelectionPacket(unsigned int client_id);
 

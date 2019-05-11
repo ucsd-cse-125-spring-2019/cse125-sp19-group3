@@ -21,10 +21,6 @@ public:
 	// Serialize packet & send to server
 	int sendToServer(ClientInputPacket packet);
 
-	// initialize packet 
-	ClientInputPacket createClientInputPacket(InputType type, Point finalLocation, 
-		int skillType, int attackType);
-
 	// receive data from server then deserialize into ServerInputPacket struct 
 	ServerInputPacket* receivePacket();
 

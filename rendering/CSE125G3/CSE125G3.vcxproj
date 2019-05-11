@@ -74,33 +74,33 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EBF1E546-3F93-49DB-BD9A-B629C3C6DCB0}</ProjectGuid>
     <RootNamespace>CSE125G3</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>CSE125G3</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -183,22 +183,22 @@
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\nlohmann.json.3.6.1\build\native\nlohmann.json.targets" Condition="Exists('..\packages\nlohmann.json.3.6.1\build\native\nlohmann.json.targets')" />
     <Import Project="..\packages\glm.0.9.9.500\build\native\glm.targets" Condition="Exists('..\packages\glm.0.9.9.500\build\native\glm.targets')" />
     <Import Project="..\packages\nupengl.core.redist.0.1.0.1\build\native\nupengl.core.redist.targets" Condition="Exists('..\packages\nupengl.core.redist.0.1.0.1\build\native\nupengl.core.redist.targets')" />
     <Import Project="..\packages\nupengl.core.0.1.0.1\build\native\nupengl.core.targets" Condition="Exists('..\packages\nupengl.core.0.1.0.1\build\native\nupengl.core.targets')" />
     <Import Project="..\packages\spdlog.native.1.0.0\build\native\spdlog.native.targets" Condition="Exists('..\packages\spdlog.native.1.0.0\build\native\spdlog.native.targets')" />
     <Import Project="..\packages\spdlog-native.0.17.0\build\native\spdlog-native.targets" Condition="Exists('..\packages\spdlog-native.0.17.0\build\native\spdlog-native.targets')" />
-    <Import Project="..\packages\nlohmann.json.3.6.1\build\native\nlohmann.json.targets" Condition="Exists('..\packages\nlohmann.json.3.6.1\build\native\nlohmann.json.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
+    <Error Condition="!Exists('..\packages\nlohmann.json.3.6.1\build\native\nlohmann.json.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\nlohmann.json.3.6.1\build\native\nlohmann.json.targets'))" />
     <Error Condition="!Exists('..\packages\glm.0.9.9.500\build\native\glm.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\glm.0.9.9.500\build\native\glm.targets'))" />
     <Error Condition="!Exists('..\packages\nupengl.core.redist.0.1.0.1\build\native\nupengl.core.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\nupengl.core.redist.0.1.0.1\build\native\nupengl.core.redist.targets'))" />
     <Error Condition="!Exists('..\packages\nupengl.core.0.1.0.1\build\native\nupengl.core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\nupengl.core.0.1.0.1\build\native\nupengl.core.targets'))" />
     <Error Condition="!Exists('..\packages\spdlog.native.1.0.0\build\native\spdlog.native.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\spdlog.native.1.0.0\build\native\spdlog.native.targets'))" />
     <Error Condition="!Exists('..\packages\spdlog-native.0.17.0\build\native\spdlog-native.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\spdlog-native.0.17.0\build\native\spdlog-native.targets'))" />
-    <Error Condition="!Exists('..\packages\nlohmann.json.3.6.1\build\native\nlohmann.json.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\nlohmann.json.3.6.1\build\native\nlohmann.json.targets'))" />
   </Target>
 </Project>

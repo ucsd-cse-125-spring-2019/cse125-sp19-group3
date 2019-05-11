@@ -2,8 +2,10 @@
 #include <glm/glm.hpp>
 #include <chrono>
 #include <queue>
+#include <string>
 
 #define NULL_POINT Point(0.0,0.0,0.0)
+#define SERVER_TICK_PACKET_SIZE 10000
 
 typedef glm::vec3 Point;
 
@@ -47,7 +49,7 @@ typedef struct {
 typedef struct {
 	ServerPacketType packetType;
 	int size;
-	char data[4096];
+	char data[SERVER_TICK_PACKET_SIZE];
 	// TODO: Add data!!! 
 } ServerInputPacket;
 

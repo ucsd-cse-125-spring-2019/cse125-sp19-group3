@@ -6,7 +6,7 @@ using json = nlohmann::json;
 
 ClientScene * Window_static::scene = new ClientScene();
 
-void ClientScene::initialize_objects(ClientGame * game)
+void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network)
 {
 	camera = new Camera();
 	initCamPos = camera->cam_pos;
@@ -39,16 +39,8 @@ void ClientScene::initialize_objects(ClientGame * game)
 	}
 
 	this->game = game;
+	this->network = network;
 }
-
-//void ClientScene::playerInit(const ScenePlayer &player) {
-//	this->player = player;
-//	this->player.model = models[this->player.modelType].model;
-//	 TODO: move to here: 
-//	 1) init player model
-//	 2) create corresponding shader based on player data
-//	 3) move camera
-//}
 
 void ClientScene::clean_up()
 {
@@ -184,8 +176,8 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 		glfwGetCursorPos(window, &xpos, &ypos);
 		printf("Cursor Position at %f: %f \n", xpos, ypos);
 		glm::vec3 new_dest = viewToWorldCoordTransform(xpos, ypos);
-		// I need to send the server a packet...
-		game->sendPacket(MOVEMENT, new_dest, 0, 0);
+		ClientInputPacket movementPacket = game->createMovementPacket(new_dest);
+		network->sendToServer(movementPacket);
 	}
 }
 
@@ -232,69 +224,6 @@ void ClientScene::handleInitScenePacket(char * data) {
 void ClientScene::handleServerTickPacket(char * data) {
 	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap);
 }
-
-/*
-char * ClientScene::deserializeSceneGraph(char * data, unsigned int size) {
-	auto log = logger();
-	
-	char * retval = deserializeSceneGraph(root, data, size);
-	//if(this->player.playerRoot)
-	//	log->info("Player {}: Client root is {} {} {}, after deserialization.", player.player_id, player.playerRoot->M[0][0], player.playerRoot->M[0][1], player.playerRoot->M[0][2]);
-	return retval;
-}
-
-char * ClientScene::deserializeSceneGraph(Transform * t, char * data, unsigned int size) {
-	memcpy(glm::value_ptr(t->M), data, sizeof(glm::mat4));
-	data += sizeof(glm::mat4);
-	size -= sizeof(glm::mat4);
-
-	t->model_ids.clear();
-
-	while (*data && size > 0) {
-		char c = *data;
-		data++;
-		size -= sizeof(char);
-		if (c == 'T') {
-			unsigned int node_id;
-			memcpy(&node_id, data, sizeof(unsigned int));
-			data += sizeof(unsigned int);
-			size -= sizeof(unsigned int);
-			if (t->children.find(node_id) == t->children.end())
-				t->addChild(node_id, new Transform());
-			updated_ids.insert(node_id);
-			data = deserializeSceneGraph(t->children[node_id], data, size);
-		}
-		else if (c == 'M') {
-			unsigned int model_id;
-			memcpy(&model_id, data, sizeof(unsigned int));
-			data += sizeof(unsigned int);
-			size -= sizeof(unsigned int);
-			t->model_ids.insert(model_id);
-		}
-	}
-
-	std::vector<unsigned int> to_remove;
-	for (auto child : t->children) {
-		if (updated_ids.find(child.first) == updated_ids.end()) {
-			to_remove.push_back(child.first);
-		}
-	}
-	for (unsigned int i : to_remove) {
-		removeTransform(t, i);
-	}
-	return data;
-}
-
-void ClientScene::removeTransform(Transform * parent, const unsigned int node_id) {
-	auto to_remove = parent->children[node_id];
-	for (auto child : to_remove->children) {
-		removeTransform(to_remove, child.first);
-	}
-	for (auto model_id : to_remove->model_ids) {
-	}
-	parent->removeChild(node_id);
-} */
-
 
 
 void ClientScene::setRoot(Transform * newRoot) {

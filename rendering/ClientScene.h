@@ -12,6 +12,7 @@
 #include "Transform.h"
 #include "ScenePlayer.h"
 #include "../networking/KillStreak/ClientGame.h"
+#include "../networking/KillStreak/ClientNetwork.hpp"
 #include "../networking/KillStreak/CoreTypes.hpp"
 #include "../rendering/Serialization.h"
 
@@ -29,7 +30,7 @@ public:
 	glm::vec3 initCamPos;
 	std::unordered_map<unsigned int, Transform *> clientSceneGraphMap;
 
-	void initialize_objects(ClientGame * game);
+	void initialize_objects(ClientGame * game, ClientNetwork* network);
 	//void playerInit(const ScenePlayer &player);
 	void clean_up();
 	GLFWwindow * create_window(int width, int height);
@@ -61,6 +62,7 @@ private:
 	double time = 0.0;
 
 	ClientGame * game;
+	ClientNetwork * network;
 	vector<Transform *> env_objs;
 
 	// void removeTransform(Transform * parent, const unsigned int node_id);
@@ -71,7 +73,7 @@ class Window_static
 {
 public:
 	static ClientScene * scene;
-	static void initialize_objects(ClientGame * game) { scene->initialize_objects(game); };
+	static void initialize_objects(ClientGame * game, ClientNetwork * network) { scene->initialize_objects(game, network); };
 	static void clean_up() { scene->clean_up(); };
 	static GLFWwindow * create_window(int width, int height) { return scene->create_window(width, height); };
 	static void resize_callback(GLFWwindow* win, int width, int height) {

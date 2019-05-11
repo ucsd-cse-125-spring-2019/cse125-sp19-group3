@@ -107,22 +107,6 @@ int ClientNetwork::sendToServer(ClientInputPacket packet) {
 
 
 /*
-	Initialize a packet to send to the server. 
-*/
-ClientInputPacket ClientNetwork::createClientInputPacket(InputType type, Point finalLocation,
-	int skillType, int attackType)
-{
-	ClientInputPacket packet;
-	packet.inputType = type;
-	packet.finalLocation = finalLocation;
-	packet.skillType = skillType;
-	packet.attackType = attackType;
-
-	return packet;
-}
-
-
-/*
 	Calls the receiveData function to receive a packet sized amount of data 
 	from the client. On success will deserialize the data and return the packet. 
 

@@ -15,10 +15,14 @@ public:
 
 	void run();
 	int join_game();
-	void sendPacket(InputType inputType, Point finalLocation, int skillType, int attackType);
 	void handleServerInputPacket(ServerInputPacket* packet);
 	int handleCharacterSelectionPacket(ServerInputPacket* packet);
 
+	// initialize packet 
+	ClientInputPacket createClientInputPacket(InputType type, Point finalLocation,
+		int skillType, int attackType);
+	ClientInputPacket createMovementPacket(Point newLocation);
+	ClientInputPacket createInitPacket();
 	ClientSelectionPacket createCharacterSelectedPacket(std::string username, ArcheType type);
 
 protected:

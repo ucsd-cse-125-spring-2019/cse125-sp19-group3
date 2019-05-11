@@ -133,7 +133,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="..\..\networking\KillStreak\client_config.ini">
       <Filter>Resource Files</Filter>
     </None>
@@ -158,5 +157,6 @@
     <None Include="..\animatedShader.frag">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

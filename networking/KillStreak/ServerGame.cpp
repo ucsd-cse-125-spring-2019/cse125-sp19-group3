@@ -92,17 +92,6 @@ void client_session(void *arg)
 
 	log->info("CT <{}>: Launching new client thread", client_id);
 
-	// TODO: send pre-game data to client telling them they're accepted ( meta data and lobby info )
-	char buf[1024] = { 0 };
-	ServerInputPacket welcome_packet = network->createServerPacket(WELCOME, 0, buf);
-	int bytes_sent = network->sendToClient(client_id, welcome_packet);
-
-	if (!bytes_sent) {	// error? 
-		log->error("CT <{}>: Sending init packet to client failed, closing connection", client_id);
-		network->closeClientSocket(client_id);
-		return;
-	}
-
 	// game hasn't started yet; wait until ready
 	if (!game_start) log->info("CT <{}>: Waiting for game to start", client_arg->id);
 	while (!game_start) {};	 
@@ -173,6 +162,16 @@ void ServerGame::game_match()
 			client_arg->q_lock = client_lock;			// pointer to queue lock
 
 			client_data_list.push_back(client_arg);		// add pointer to this clients data
+
+			ServerInputPacket welcome_packet = createWelcomePacket();
+			int bytes_sent = network->sendToClient(client_id - 1, welcome_packet);
+
+			if (!bytes_sent) {	// error? 
+				log->error("CT <{}>: Sending init packet to client failed, closing connection", client_id);
+				network->closeClientSocket(client_id);
+				return;
+			}
+
 			_beginthread(client_session, 0, (void*) client_arg);
 		}
 		else	// error allocating client data; decrement client_id, close socket, deallocate
@@ -195,8 +194,7 @@ void ServerGame::game_match()
 	log->info("MT: Broadcasting character selection packet to all clients!");
 
 	// broadcast character selection packet to all clients (tell them to select username/character)
-	char buf[1024] = { 0 };
-	ServerInputPacket char_select_packet = network->createServerPacket(CHAR_SELECT_PHASE, 0, buf);
+	ServerInputPacket char_select_packet = createCharSelectPacket();
 	network->broadcastSend(char_select_packet);
 
 
@@ -368,21 +366,8 @@ void ServerGame::updateKillPhase() {
 
 	// Handle packets
 	for (int i = 0; i < GAME_SIZE; i++) {
-
 		for (auto &packet : inputPackets[i]) {
-
-			//log->info("Server received packet with input type {}, finalLocation of {}, {}, {}", 
-			//	packet.inputType, packet.finalLocation.x, packet.finalLocation.y, packet.finalLocation.z);
-
-			switch (packet->inputType) {
-			case MOVEMENT:
-				log->info("Handling movement packet on server");
-				scene->handlePlayerMovement(i, packet->finalLocation);
-				break;
-			default:
-				break;
-			}
-			free(packet);
+			handleClientInputPacket(packet, i);
 		}
 	}
 	scene->update();
@@ -450,15 +435,46 @@ ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsig
 	bufPtr += sizeof(unsigned int);
 	Transform * root = scene->getRoot();
 	sgSize = Serialization::serializeSceneGraph(root, bufPtr, scene->serverSceneGraphMap);
-	return network->createServerPacket(INIT_SCENE, 1024, buf);
+	return createServerPacket(INIT_SCENE, 1024, buf);
 }
 
 ServerInputPacket ServerGame::createServerTickPacket() {
 	unsigned int sgSize;
-	char buf[4096] = { 0 };
+	char buf[SERVER_TICK_PACKET_SIZE] = { 0 };
 	char * bufPtr = buf;
 	sgSize = Serialization::serializeSceneGraph(scene->getRoot(), bufPtr, scene->serverSceneGraphMap);
-	return network->createServerPacket(UPDATE_SCENE_GRAPH, 4096, buf);
+	return createServerPacket(UPDATE_SCENE_GRAPH, SERVER_TICK_PACKET_SIZE, buf);
+}
+
+
+ServerInputPacket ServerGame::createServerPacket(ServerPacketType type, int size, char* data)
+{
+	ServerInputPacket packet;
+	packet.packetType = type;
+	packet.size = size;
+	memcpy(packet.data, data, size);
+	return packet;
+}
+
+ServerInputPacket ServerGame::createWelcomePacket() {
+	char buf[1024] = { 0 };
+	return createServerPacket(WELCOME, 0, buf);
+}
+
+ServerInputPacket ServerGame::createCharSelectPacket() {
+	char buf[1024] = { 0 };
+	return createServerPacket(CHAR_SELECT_PHASE, 0, buf);
+}
+
+void ServerGame::handleClientInputPacket(ClientInputPacket* packet, int client_id) {
+	switch (packet->inputType) {
+	case MOVEMENT:
+		scene->handlePlayerMovement(client_id, packet->finalLocation);
+		break;
+	default:
+		break;
+	}
+	free(packet);
 }
 
 

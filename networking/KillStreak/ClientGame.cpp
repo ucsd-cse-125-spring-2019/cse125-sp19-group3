@@ -186,7 +186,7 @@ int ClientGame::join_game()
 	log->info("Sending initialization packet...");
 
 	// send initial request to server (ask to join game, start my thread on the server!)
-	ClientInputPacket init_packet = network->createClientInputPacket(INIT_CONN, NULL_POINT, 0, 0);
+	ClientInputPacket init_packet = createInitPacket();
 	int iResult = network->sendToServer(init_packet);
 
 	// error?
@@ -237,10 +237,6 @@ int ClientGame::join_game()
 	handleServerInputPacket(initScenePacket);
 
 
-
-
-
-
 	// allocate new data for server thread & launch (will recv() indefinitely)
 	server_data* server_arg = (server_data *)malloc(sizeof(server_data));
 	if (server_arg)
@@ -287,31 +283,14 @@ void ClientGame::run() {
 	// Setup callbacks
 	setup_callbacks();
 	// Initialize objects/pointers for rendering
-	Window_static::initialize_objects(this);
+	Window_static::initialize_objects(this, network);
 
 	// Loop while GLFW window should stay open
 	while (!glfwWindowShouldClose(window))
 	{
-		/*
-		1) grab a packet from the serverInputQueue
-		2) render scene based off of packet + update any game state UI / variable based on packet.
-		*/
-
-		/*
-		// acquire lock & get next packet from queue
-		q_lock->lock();
-		if (!(serverPackets->empty())) {
-			ServerInputPacket* packet = serverPackets->front();
-			serverPackets->pop();
-			Window_static::window->deserializeSceneGraph(packet->data, packet->size);
-		}
-		q_lock->unlock();
-		*/
 
 		// TODO: REMOVE ME!!! (new thread should handle incoming packets
 		ServerInputPacket* packet = network->receivePacket();
-		//log->info("client received packet of size {}", packet->size);
-		//log->info("client received packet of size {}", packet->size);
 		handleServerInputPacket(packet);
 
 		// Main render display callback. Rendering of objects is done here.
@@ -328,11 +307,6 @@ void ClientGame::run() {
 
 	exit(EXIT_SUCCESS);
 	
-}
-
-void ClientGame::sendPacket(InputType inputType, Point finalLocation, int skillType, int attackType) {
-	ClientInputPacket packet = network->createClientInputPacket(inputType, finalLocation, skillType, attackType);
-	network->sendToServer(packet);
 }
 
 int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
@@ -384,6 +358,26 @@ ClientSelectionPacket ClientGame::createCharacterSelectedPacket(std::string user
 	packet.username = username;
 	packet.type = type;
 	return packet;
+}
+
+ClientInputPacket ClientGame::createClientInputPacket(InputType type, Point finalLocation,
+	int skillType, int attackType)
+{
+	ClientInputPacket packet;
+	packet.inputType = type;
+	packet.finalLocation = finalLocation;
+	packet.skillType = skillType;
+	packet.attackType = attackType;
+
+	return packet;
+}
+
+ClientInputPacket ClientGame::createMovementPacket(Point newLocation) {
+	return createClientInputPacket(MOVEMENT, newLocation, 0, 0);
+}
+
+ClientInputPacket ClientGame::createInitPacket() {
+	return createClientInputPacket(INIT_CONN, NULL_POINT, 0, 0);
 }
 
 void ClientGame::handleServerInputPacket(ServerInputPacket * packet) {

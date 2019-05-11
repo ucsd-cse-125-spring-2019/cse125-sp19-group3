@@ -280,15 +280,13 @@ void ServerNetwork::broadcastSend(ServerInputPacket packet)
 	for (auto const& x : sessions)
 	{
 		currentSocket = x.second;
-		int sentLength = send(currentSocket, serialized, sizeof(ServerInputPacket), 0);
-		// log->info("Sent packet of length {} to client {}", sentLength, x.first);
-		//iSendResult = NetworkServices::sendMessage(currentSocket, packets, totalSize);
-
-		//if (iSendResult == SOCKET_ERROR)
-		//{
-		//	log->error("send failed with error: {}", WSAGetLastError());
-		//	closesocket(currentSocket);
-		//}
+		int toSend = sizeof(ServerInputPacket);
+		char* serializedPtr = serialized;
+		while (toSend > 0) {
+			int sentLength = send(currentSocket, serializedPtr, sizeof(ServerInputPacket), 0);
+			toSend -= sentLength;
+			serializedPtr += sentLength;
+		}
 	}
 }
 
@@ -305,9 +303,15 @@ int ServerNetwork::sendToClient(unsigned int client_id, ServerInputPacket packet
 		SOCKET currentSocket = sessions[client_id];		// get client socket
 		char serialized[sizeof(ServerInputPacket)];
 		memcpy(serialized, &packet, sizeof(ServerInputPacket));
+		char* serializedPtr = serialized;
+		int toSend = sizeof(ServerInputPacket);
+		while (toSend > 0) {
+			int sentLength = send(currentSocket, serializedPtr, sizeof(ServerInputPacket), 0);
+			toSend -= sentLength;
+			serializedPtr += sentLength;
+		}
 
-		int sentLength = send(currentSocket, serialized, sizeof(ServerInputPacket), 0);
-		return sentLength;
+		return sizeof(ServerInputPacket);
 	}
 
 	log->error("Receive error: Client mapping not found -> ID: {}", client_id);
@@ -324,20 +328,5 @@ ClientInputPacket* ServerNetwork::deserializeCP(char* temp_buff)
 	return reinterpret_cast<ClientInputPacket*>(temp_buff);
 }
 
-
-/*
-	Initialize a packet to send to the client. 
-*/
-ServerInputPacket ServerNetwork::createServerPacket(ServerPacketType type, int size, char * data)
-{
-	ServerInputPacket packet;
-	packet.packetType = type;
-	packet.size = size;
-	// auto log = logger();
-	// log->info("Size of scene graph packet is {}", (size + 2));
-	memcpy(packet.data, data, size);
-
-	return packet;
-}
 
 
