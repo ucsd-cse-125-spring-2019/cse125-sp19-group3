@@ -77,6 +77,8 @@ void setup_callbacks()
 	glfwSetKeyCallback(window, Window_static::key_callback);
 	// Set the mouse callback
 	glfwSetMouseButtonCallback(window, Window_static::mouse_button_callback);
+	// Set the scroll callback
+	glfwSetScrollCallback(window, Window_static::scroll_callback);
 	// Set the window resize callback
 	glfwSetFramebufferSizeCallback(window, Window_static::resize_callback);
 }

@@ -181,19 +181,6 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 		glm::vec3 new_dest = viewToWorldCoordTransform(xpos, ypos);
 		// I need to send the server a packet...
 		game->sendPacket(MOVEMENT, new_dest, 0, 0);
-
-		/*
-		player->setDestination(new_dest);
-		float dotResult = glm::dot(glm::normalize(new_dest - player->currentPos), player->currentOri);
-
-		if (abs(dotResult) < 1.0) {
-			float angle = glm::acos(dotResult);
-			printf("rotate angle = %f", angle);
-			glm::vec3 axis = glm::cross(player->currentOri, glm::normalize(new_dest - player->currentPos));
-			if (glm::length(axis) != 0) {
-				player->rotate(angle, axis);
-			}
-		}*/
 	}
 }
 
