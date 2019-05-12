@@ -1,0 +1,83 @@
+{
+
+  "MAGE": [
+    {
+      "skill_type"   : "MELEE",
+      "cooldown"     : "5",
+      "range"        : "5"
+    },
+    {
+      "skill_type"   : "PROJECTILE",
+      "cooldown"     : "5",
+      "speed"        : "5"
+    },
+    {
+      "skill_type"   : "AOE",
+      "cooldown"     : "5",
+      "range"        : "5",
+      "duration"     : "5"
+    },
+    {
+      "skill_type"   : "AOE",
+      "cooldown"     : "5",
+      "range"        : "10",
+      "duration"     : "5"
+    }
+  ],
+
+  "ASSASSIN": [
+    {
+      "skill_type"   : "MELEE",
+      "cooldown"     : "5",
+      "range"        : "5"
+    },
+    {
+      "skill_type"   : "PROJECTILE",
+      "cooldown"     : "5",
+      "speed"        : "5"
+    },
+    {
+      "skill_type"   : "AOE",
+      "cooldown"     : "5",
+      "range"        : "5",
+      "duration"     : "5"
+    },
+    {
+      "skill_type"   : "MINIMAP",
+      "cooldown"     : "5",
+      "duration"     : "5"
+    },
+    {
+      "skill_type"   : "INVISIBLE",
+      "cooldown"     : "5",
+      "duration"     : "5",
+      "speed"        : "5"
+    }
+  ],
+
+  "WARRIOR": [
+    {
+      "skill_type"   : "MELEE",
+      "cooldown"     : "5",
+      "range"        : "5"
+    },
+    {
+      "skill_type"   : "PROJECTILE",
+      "cooldown"     : "5",
+      "speed"        : "5"
+    },
+    {
+      "skill_type"   : "AOE",
+      "cooldown"     : "5",
+      "range"        : "5",
+      "duration"     : "5"
+    },
+    {
+      "skill_type"   : "CHARGE",
+      "cooldown"     : "5",
+      "range"        : "5",
+      "speed"        : "5"
+    }
+  ]
+
+}
