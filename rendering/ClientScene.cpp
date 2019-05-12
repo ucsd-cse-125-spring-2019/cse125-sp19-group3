@@ -119,7 +119,7 @@ void ClientScene::idle_callback()
 	camera->Update();
 	for (auto &model : models) {
 		if(model.second.model->isAnimated)
-			model.second.model->BoneTransform("Take 001", time);
+			model.second.model->BoneTransform(model.second.model->animationMode, time);
 	}
 }
 
@@ -260,7 +260,6 @@ void ClientScene::handleInitScenePacket(char * data) {
 void ClientScene::handleServerTickPacket(char * data) {
 	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap);
 }
-
 
 void ClientScene::setRoot(Transform * newRoot) {
 	root = newRoot;
