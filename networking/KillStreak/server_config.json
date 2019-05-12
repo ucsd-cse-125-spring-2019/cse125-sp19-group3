@@ -1,0 +1,11 @@
+{
+
+  "server": 
+    {
+      "enabled"   : "true",
+      "host"      : "localhost",
+      "port" 	  : "6666",
+      "tick_rate" : "60"
+    }
+
+}

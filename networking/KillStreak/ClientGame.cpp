@@ -26,9 +26,11 @@ GLFWwindow * window = 0;
 /*
 	Constructor: parse config and initialize all data.
 */
-ClientGame::ClientGame(INIReader& t_config) : config(t_config) {
+ClientGame::ClientGame(string host, string port, int char_select_time) 
+{
 	auto log = logger();
 
+	/*
 	// get client data from config file
 	string servconf = config.Get("client", "host", "");
 	if (servconf == "") {
@@ -55,10 +57,14 @@ ClientGame::ClientGame(INIReader& t_config) : config(t_config) {
 		log->error("Invalid char_select_time in config file");
 		exit(EX_CONFIG);
 	}
+	*/
+	this->host = host.c_str();
+	this->serverPort = port.c_str();
+	this->char_select_time = char_select_time;
 
 	q_lock = new mutex();
 	serverPackets = new ServerInputQueue();
-	network = new ClientNetwork(host, serverPort);
+	network = new ClientNetwork(this->host, this->serverPort);
 }
 
 

@@ -1,0 +1,15 @@
+{
+
+  "client": 
+    {
+      "enabled"   : "true",
+      "host"      : "127.0.0.1",
+      "port"      : "6666"
+    },
+
+  "game":
+    {
+      "char_select_time" : "1000"
+    }
+
+}

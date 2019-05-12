@@ -19,17 +19,19 @@ using json = nlohmann::json;
 	Parse data from config file for server. Then initialize 
 	server network (create socket) and initialize data.
 */
-ServerGame::ServerGame(INIReader& t_config, INIReader& t_meta_data) : config(t_config), meta_data(t_meta_data) {
+ServerGame::ServerGame(string host, string port, double tick_rate) 
+{
 	auto log = logger();
 
 	// get server data from config file
+	/*
 	string servconf = config.Get("server", "host", "");
 	if (servconf == "") {
 		log->error("Host line not found in config file");
 		exit(EX_CONFIG);
 	}
 
-	size_t idx = servconf.find(":");		// delimiter index
+	size_t idx = servconf.find(":");		
 	if (idx == string::npos) {
 		log->error("Config line {} is invalid", servconf);
 		exit(EX_CONFIG);
@@ -49,6 +51,11 @@ ServerGame::ServerGame(INIReader& t_config, INIReader& t_meta_data) : config(t_c
 		log->error("Invalid tick_rate in config file");
 		exit(EX_CONFIG);
 	}
+	*/
+
+	this->host = host.c_str();
+	this->port = port.c_str();
+	this->tick_rate = tick_rate;
 
 	// initialize skills map
 	vector<Skill> mage_skills;
@@ -63,7 +70,7 @@ ServerGame::ServerGame(INIReader& t_config, INIReader& t_meta_data) : config(t_c
 	scene = new ServerScene();
 
 
-	network = new ServerNetwork(host, port);
+	network = new ServerNetwork(this->host, this->port);
 	scheduledEvent = ScheduledEvent(END_KILLPHASE, 10000000); // default huge value
 
 }
@@ -407,6 +414,7 @@ void ServerGame::updatePreparePhase() {
 }
 
 void ServerGame::readMetaDataForSkills() {
+	/*
 	skill_map[ArcheType::MAGE].push_back(Skill::getMelee(meta_data, "MAGE"));
 	skill_map[ArcheType::MAGE].push_back(Skill::getProjectile(meta_data, "MAGE"));
 	skill_map[ArcheType::MAGE].push_back(Skill::getAoe(meta_data, "MAGE"));
@@ -422,6 +430,7 @@ void ServerGame::readMetaDataForSkills() {
 	skill_map[ArcheType::WARRIOR].push_back(Skill::getProjectile(meta_data, "WARRIOR"));
 	skill_map[ArcheType::WARRIOR].push_back(Skill::getAoe(meta_data, "WARRIOR"));
 	skill_map[ArcheType::WARRIOR].push_back(Skill::getCharge(meta_data, "WARRIOR"));
+	*/
 }
 
 
