@@ -1,0 +1,112 @@
+{
+  "ArcheTypes":
+  [
+	  { 
+	  "ArcheType" : "MAGE",
+	  "Skills"   : [
+	    {
+	      "skill_type"   : "MELEE",
+	      "cooldown"     : "5",
+	      "range"        : "5",
+	      "speed" 	     : "0",
+	      "duration"     : "0"
+	    },
+	    {
+	      "skill_type"   : "PROJECTILE",
+	      "cooldown"     : "5",
+	      "range"        : "0",
+	      "speed"        : "5",
+	      "duration"     : "0"
+	    },
+	    {
+	      "skill_type"   : "AOE",
+	      "cooldown"     : "5",
+	      "range"        : "5",
+	      "speed"        : "0",
+	      "duration"     : "5"
+	    },
+	    {
+	      "skill_type"   : "AOE",
+	      "cooldown"     : "5",
+	      "range"        : "10",
+	      "speed"        : "0",
+	      "duration"     : "5"
+	    }
+	  ]
+	  },
+
+	  {
+	  "ArcheType": "ASSASSIN",
+	  "Skills"  : [
+	    {
+	      "skill_type"   : "MELEE",
+	      "cooldown"     : "5",
+	      "range"        : "5",
+	      "speed"        : "0",
+	      "duration"     : "0"
+	    },
+	    {
+	      "skill_type"   : "PROJECTILE",
+	      "cooldown"     : "5",
+	      "range"        : "0",
+	      "speed"        : "5",
+	      "duration"     : "0"
+	    },
+	    {
+	      "skill_type"   : "AOE",
+	      "cooldown"     : "5",
+	      "range"        : "5",
+	      "speed"        : "0",
+	      "duration"     : "5"
+	    },
+	    {
+	      "skill_type"   : "MINIMAP",
+	      "cooldown"     : "5",
+	      "range"        : "0",
+	      "speed"        : "0",
+	      "duration"     : "5"
+	    },
+	    {
+	      "skill_type"   : "INVISIBLE",
+	      "cooldown"     : "5",
+	      "range"        : "0",
+	      "speed"        : "5",
+	      "duration"     : "5"
+	    }
+	  ]},
+
+	  {
+	  "ArcheType": "WARRIOR",
+	  "Skills"  : [
+	    {
+	      "skill_type"   : "MELEE",
+	      "cooldown"     : "5",
+	      "range"        : "5",
+	      "speed"        : "0",
+	      "duration"     : "0"
+	    },
+	    {
+	      "skill_type"   : "PROJECTILE",
+	      "cooldown"     : "5",
+	      "range"        : "0",
+	      "speed"        : "5",
+	      "duration"     : "0"
+	    },
+	    {
+	      "skill_type"   : "AOE",
+	      "cooldown"     : "5",
+	      "range"        : "5",
+	      "speed"        : "0",
+	      "duration"     : "5"
+	    },
+	    {
+	      "skill_type"   : "CHARGE",
+	      "cooldown"     : "5",
+	      "range"        : "5",
+	      "speed"        : "5",
+	      "duration"     : "0"
+	    }
+	  ]}
+  ]
+
+}

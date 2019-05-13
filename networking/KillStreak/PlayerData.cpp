@@ -1,6 +1,32 @@
 #include "PlayerData.hpp"
 #include "logger.hpp"
 #include "sysexits.h"
+#include "nlohmann\json.hpp"
+
+#include <fstream>
+#include <string>
+
+#define META_CONF "../../networking/KillStreak/meta_data.json"
+
+using json = nlohmann::json;
+using namespace std;
+
+// map string to archtype
+unordered_map<string, ArcheType> archetype_map = {
+	{"MAGE", MAGE},
+	{"ASSASSIN", ASSASSIN},
+	{"WARRIOR", WARRIOR}
+};
+
+// map string to skilltype
+unordered_map<string, SkillType> skilltype_map = { 
+	{"MELEE", MELEE},
+	{"PROJECTILE", PROJECTILE},
+	{"AOE", AOE},
+	{"MINIMAP", MINIMAP },
+	{"INVISIBLE", INVISIBLE},
+	{"CHARGE", CHARGE}
+};		
 
 vector<int>* LeaderBoard::roundSummary() {
 	// get the ranking result of this round
@@ -29,31 +55,13 @@ vector<int>* LeaderBoard::roundSummary() {
 	return rankings;
 }
 
-/*
-	Initialize values of skill based on data taken from meta_data config.
-*/
-void Skill::update(SkillType skillType, int range, int cooldown, int duration, int speed) {
+
+void Skill::update(SkillType skillType, double cooldown, double range, double speed, double duration) {
 	this->skillType = skillType;
 	this->cooldown = cooldown;
-
-	// TODO: Missing Melee & Projectile
-	switch (skillType) {
-	case AOE:
-		this->range = range;
-		this->duration = duration;
-		break;
-	case MINIMAP:
-		this->duration = duration;
-		break;
-	case INVISIBLE:
-		this->duration = duration;
-		this->speed = speed;
-		break;
-	case CHARGE:
-		this->range = range;
-		this->speed = speed;
-		break;
-	}
+	this->range = range;
+	this->speed = speed;
+	this->duration = duration;
 }
 
 double getDoubleField(INIReader & meta_data, string archetype, string field) {
@@ -66,53 +74,45 @@ double getDoubleField(INIReader & meta_data, string archetype, string field) {
 	return temp;
 }
 
-/*
-	Initialize corresponding skill by getting values from meta_data config.
-	-- Return skill with data initialized
-*/
-// TODO: Missing cooldown on most of these
-Skill Skill::getMelee(INIReader & meta_data, string archetype) {
-	
-	Skill temp = Skill();
-	temp.update(SkillType::MELEE, getDoubleField(meta_data, archetype, "range"));
-	return temp;
-}
 
-Skill Skill::getProjectile(INIReader & meta_data, string archetype) {
-	Skill temp = Skill();
-	double cooldown = getDoubleField(meta_data, archetype, "cooldown");
-	double speed = getDoubleField(meta_data, archetype, "speed");
-	temp.update(SkillType::PROJECTILE, 0, cooldown, 0, speed);
-	return temp;
-}
+// Parse all archtypes from config and upload values to skill_map for each corresponding type.
+void Skill::load_archtype_data(unordered_map<ArcheType, vector<Skill>> &skill_map) {
 
-Skill Skill::getAoe(INIReader & meta_data, string archetype) {
-	Skill temp = Skill();
-	double range = getDoubleField(meta_data, archetype, "range");
-	double duration = getDoubleField(meta_data, archetype, "duration");
-	temp.update(SkillType::AOE, range, 0, duration, 0);
-	return temp;
-}
+	// open config for reading
+	ifstream json_file(META_CONF);
+	json jsonObjs = json::parse(json_file);
 
-Skill Skill::getMinimap(INIReader & meta_data, string archetype) {
-	Skill temp = Skill();
-	double duration = getDoubleField(meta_data, archetype, "duration");
-	temp.update(SkillType::MINIMAP, 0, 0, duration, 0);
-	return temp;
-}
+	for (auto cur_char : jsonObjs["ArcheTypes"])		  	// parse each archtype
+	{
+		string current_archetype = cur_char["ArcheType"];	 // mage, assassin, warrior? 
 
-Skill Skill::getInvisible(INIReader & meta_data, string archetype) {
-	Skill temp = Skill();
-	double speed = getDoubleField(meta_data, archetype, "speed");
-	double duration = getDoubleField(meta_data, archetype, "duration");
-	temp.update(SkillType::INVISIBLE, 0, 0, duration, speed);
-	return temp;
-}
+		for (auto skill : cur_char["Skills"])			// each skill set (MELEE, PROJECTILE, ETC)
+		{
 
-Skill Skill::getCharge(INIReader & meta_data, string archetype) {
-	Skill temp = Skill();
-	double speed = getDoubleField(meta_data, archetype, "speed");
-	double range = getDoubleField(meta_data, archetype, "range");
-	temp.update(SkillType::CHARGE, range, 0, 0, speed);
-	return temp;
+			Skill cur_skill		= Skill();
+
+			// get skills from config
+			string sk_t			= skill["skill_type"];
+			string str_cooldown = skill["cooldown"];
+			string str_range    = skill["range"];
+			string str_speed	= skill["speed"];
+			string str_duration = skill["duration"];
+
+			// convert strings to doubles
+			double cooldown = atof(str_cooldown.c_str());
+			double range	= atof(str_range.c_str());
+			double speed	= atof(str_speed.c_str());
+			double duration = atof(str_duration.c_str());
+
+			// get skilltype and archetype
+			SkillType skill_type = skilltype_map[sk_t];
+			ArcheType arche_type = archetype_map[current_archetype];
+
+			// update skill with values and push to corresponding type skill map
+			cur_skill.update(skill_type, cooldown, range, speed, duration);
+			skill_map[arche_type].push_back(cur_skill);
+		}
+
+	}
+
 }

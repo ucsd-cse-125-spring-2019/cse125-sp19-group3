@@ -26,7 +26,7 @@ typedef struct {
 
 class ServerGame {
 public:
-	ServerGame(INIReader& t_config, INIReader& t_meta_data);
+	ServerGame(string host, string port, double tick_rate);
 
 	void launch();
 
@@ -39,8 +39,6 @@ public:
 	const int NUM_THREADS = 8;
 
 protected:
-	INIReader & config;
-	INIReader & meta_data;
 	PCSTR host;
 	PCSTR port;
   
