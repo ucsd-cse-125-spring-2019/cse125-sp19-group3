@@ -39,8 +39,6 @@ public:
 	const int NUM_THREADS = 8;
 
 protected:
-	//INIReader & config;
-	//INIReader & meta_data;
 	PCSTR host;
 	PCSTR port;
   

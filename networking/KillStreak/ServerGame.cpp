@@ -23,36 +23,6 @@ ServerGame::ServerGame(string host, string port, double tick_rate)
 {
 	auto log = logger();
 
-	// get server data from config file
-	/*
-	string servconf = config.Get("server", "host", "");
-	if (servconf == "") {
-		log->error("Host line not found in config file");
-		exit(EX_CONFIG);
-	}
-
-	size_t idx = servconf.find(":");		
-	if (idx == string::npos) {
-		log->error("Config line {} is invalid", servconf);
-		exit(EX_CONFIG);
-	}
-	
-	// get host (config)
-	string get_host = servconf.substr(0, idx);
-	host = get_host.c_str();
-
-	// get port (config)
-	string get_port = servconf.substr(idx + 1);
-	port = get_port.c_str();
-
-	// get tick_rate (config)
-	tick_rate = (double)(config.GetInteger("server", "tick_rate", -1));
-	if (tick_rate == -1) {
-		log->error("Invalid tick_rate in config file");
-		exit(EX_CONFIG);
-	}
-	*/
-
 	this->host = host.c_str();
 	this->port = port.c_str();
 	this->tick_rate = tick_rate;
@@ -413,26 +383,9 @@ void ServerGame::updatePreparePhase() {
 	log->info("MT: Game server update prepare phase...");
 }
 
+// update skill_map with all archtype meta_data
 void ServerGame::readMetaDataForSkills() {
-	Skill::load_archtype_data(skill_map); // update skill_map with all archtype meta_data
-
-	/*
-	skill_map[ArcheType::MAGE].push_back(Skill::getMelee(meta_data, "MAGE"));
-	skill_map[ArcheType::MAGE].push_back(Skill::getProjectile(meta_data, "MAGE"));
-	skill_map[ArcheType::MAGE].push_back(Skill::getAoe(meta_data, "MAGE"));
-	skill_map[ArcheType::MAGE].push_back(Skill::getAoe(meta_data, "MAGE"));
-
-	skill_map[ArcheType::ASSASSIN].push_back(Skill::getMelee(meta_data, "ASSASSIN"));
-	skill_map[ArcheType::ASSASSIN].push_back(Skill::getProjectile(meta_data, "ASSASSIN"));
-	skill_map[ArcheType::ASSASSIN].push_back(Skill::getAoe(meta_data, "ASSASSIN"));
-	skill_map[ArcheType::ASSASSIN].push_back(Skill::getMinimap(meta_data, "ASSASSIN"));
-	skill_map[ArcheType::ASSASSIN].push_back(Skill::getInvisible(meta_data, "ASSASSIN"));
-
-	skill_map[ArcheType::WARRIOR].push_back(Skill::getMelee(meta_data, "WARRIOR"));
-	skill_map[ArcheType::WARRIOR].push_back(Skill::getProjectile(meta_data, "WARRIOR"));
-	skill_map[ArcheType::WARRIOR].push_back(Skill::getAoe(meta_data, "WARRIOR"));
-	skill_map[ArcheType::WARRIOR].push_back(Skill::getCharge(meta_data, "WARRIOR"));
-	*/
+	Skill::load_archtype_data(skill_map); 
 }
 
 

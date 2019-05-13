@@ -99,8 +99,8 @@ void Skill::load_archtype_data(unordered_map<ArcheType, vector<Skill>> &skill_ma
 
 			// convert strings to doubles
 			double cooldown = atof(str_cooldown.c_str());
-			double range = atof(str_range.c_str());
-			double speed = atof(str_speed.c_str());
+			double range	= atof(str_range.c_str());
+			double speed	= atof(str_speed.c_str());
 			double duration = atof(str_duration.c_str());
 
 			// get skilltype and archetype

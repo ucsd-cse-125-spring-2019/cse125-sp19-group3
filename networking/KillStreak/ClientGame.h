@@ -26,7 +26,6 @@ public:
 	ClientSelectionPacket createCharacterSelectedPacket(std::string username, ArcheType type);
 
 protected:
-	//INIReader & config;
 	PCSTR host;
 	PCSTR serverPort;
 
