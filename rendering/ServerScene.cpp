@@ -1,7 +1,8 @@
 #include "ServerScene.h"
 #include "nlohmann\json.hpp"
 #include <fstream>
-
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
 using json = nlohmann::json;
 
 ServerScene::ServerScene()
@@ -17,18 +18,121 @@ ServerScene::ServerScene()
 	serverSceneGraphMap.insert({ skillRoot->node_id, skillRoot });
 	root->addChild(nodeIdCounter);
 
-	initModelRadius();
+	initModelPhysics();
 }
 
 ServerScene::~ServerScene() {
 	delete root;
 }
 
-void ServerScene::initModelRadius() {
+void processMesh(vector<Vertex>& vertices, vector<unsigned int>& indices, aiMesh *mesh)
+{
+	// Walk through each of the mesh's vertices
+	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
+	{
+		Vertex vertex;
+		glm::vec3 vector; // we declare a placeholder vector since assimp uses its own vector class that doesn't directly convert to glm's vec3 class so we transfer the data to this placeholder glm::vec3 first.
+						  // positions
+		vector.x = mesh->mVertices[i].x;
+		vector.y = mesh->mVertices[i].y;
+		vector.z = mesh->mVertices[i].z;
+		vertex.Position = vector;
+		// normals
+		vector.x = mesh->mNormals[i].x;
+		vector.y = mesh->mNormals[i].y;
+		vector.z = mesh->mNormals[i].z;
+		vertex.Normal = vector;
+		// texture coordinates
+		if (mesh->mTextureCoords[0]) // does the mesh contain texture coordinates?
+		{
+			glm::vec2 vec;
+			// a vertex can contain up to 8 different texture coordinates. We thus make the assumption that we won't 
+			// use models where a vertex can have multiple texture coordinates so we always take the first set (0).
+			vec.x = mesh->mTextureCoords[0][i].x;
+			vec.y = mesh->mTextureCoords[0][i].y;
+			vertex.TexCoords = vec;
+		}
+		else
+			vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+		vertices.push_back(vertex);
+	}
+	
+	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+	{
+		aiFace face = mesh->mFaces[i];
+		// retrieve all indices of the face and store them in the indices vector
+		for (unsigned int j = 0; j < face.mNumIndices; j++)
+			indices.push_back(face.mIndices[j]);
+	}
+}
+	// process materials
+glm::vec3 findDimensions(vector<Vertex>& vertices) {
+	float min_x, max_x, min_y, max_y, min_z, max_z;
+	min_x = 100000.0f;
+	max_x = -100000.0f;
+	min_y = 100000.0f;
+	max_y = -100000.0f;
+	min_z = 100000.0f;
+	max_z = -100000.0f;
+	for (int i = 0; i < vertices.size(); i++) {
+		if (min_x > vertices[i].Position.x)
+			min_x = vertices[i].Position.x;
+		if (max_x < vertices[i].Position.x)
+			max_x = vertices[i].Position.x;
+
+		if (min_y > vertices[i].Position.y)
+			min_y = vertices[i].Position.y;
+		if (max_y < vertices[i].Position.y)
+			max_y = vertices[i].Position.y;
+
+		if (min_z > vertices[i].Position.z)
+			min_z = vertices[i].Position.z;
+		if (max_z < vertices[i].Position.z)
+			max_z = vertices[i].Position.z;
+	}
+	float mid_x = (min_x + max_x) / 2;
+	float mid_y = (min_y + max_y) / 2;
+	float mid_z = (min_z + max_z) / 2;
+
+	float range_x = max_x - min_x;
+	float max = range_x;
+	float range_y = max_y - min_y;
+	float range_z = max_z - min_z;
+	return glm::vec3(range_x, range_y, range_z);
+}
+
+
+glm::vec3 findCubeDimensions(string const &path) {
+	Assimp::Importer importer;
+	auto scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs); // | aiProcess_GenSmoothNormals);
+																				// check for errors
+	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) // if is Not Zero
+	{
+		cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << endl;
+		return glm::vec3(1.0f);
+	}
+	vector<Vertex> vertices;
+	vector<unsigned int> indices;
+	vector<Texture> textures;
+
+	for (unsigned int i = 0; i < scene->mNumMeshes; i++) {
+		processMesh(vertices, indices, scene->mMeshes[i]);
+	}
+	return findDimensions(vertices);
+	
+}
+
+void ServerScene::initModelPhysics() {
 	ifstream json_file("../model_paths.json");
 	json jsonObjs = json::parse(json_file);
 	for (auto & obj : jsonObjs["data"]) {
 		model_radius.insert({ (unsigned int)obj["model_id"], (float)obj["radius"] });
+		if (!obj["animated"]) {
+			glm::vec3 size = findCubeDimensions(obj["path"]);
+			printf("current processing model %ud \n", (unsigned int)obj["model_id"]);
+			printf("size of box is: %f %f %f \n", size.x, size.y, size.z);
+			model_boundingbox.insert({ (unsigned int)obj["model_id"],  size });
+		}
 	}
 }
 
@@ -41,7 +145,7 @@ void ServerScene::initEnv() {
 		Transform * envobj = new Transform(envCounter++, glm::translate(glm::mat4(1.0f), glm::vec3((float)(obj["translate"][0]), (float)(obj["translate"][1]), (float)(obj["translate"][2]))),
 		glm::rotate(glm::mat4(1.0f), (float)obj["rotate"] / 180.0f * glm::pi<float>(), glm::vec3(0, 1, 0)),
 		glm::scale(glm::mat4(1.0f), glm::vec3((float)obj["scale"], (float)obj["scale"], (float)obj["scale"])));
-		
+		envobj->initialRotation = (float)obj["rotate"];
 		envobj->model_ids.insert((int)obj["model_id"]);
 		env_objs.push_back(envobj);
 	}
@@ -78,7 +182,7 @@ void ServerScene::checkAndHandleCollision(unsigned int playerId) {
 	ScenePlayer &player = scenePlayers[playerId];
 	for (auto& envObj : env_objs) {
 		glm::vec3 forwardVector = glm::normalize(player.destination - player.currentPos)* player.speed;
-		if (player.playerRoot->isCollided(forwardVector, model_radius, serverSceneGraphMap, envObj)) {
+		if (player.playerRoot->isCollided(forwardVector, model_radius, serverSceneGraphMap, envObj, model_boundingbox, true)) {
 			player.setDestination(player.currentPos);
 			break;
 		}
@@ -94,7 +198,7 @@ void ServerScene::handlePlayerMovement(unsigned int playerId, glm::vec3 destinat
 
 	if (abs(dotResult) < 1.0) {
 		float angle = glm::acos(dotResult);
-		printf("rotate angle = %f", angle);
+		//printf("rotate angle = %f", angle);
 		glm::vec3 axis = glm::cross(player.currentOri, glm::normalize(destination - player.currentPos));
 		if (glm::length(axis) != 0) {
 			player.rotate(angle, axis);
@@ -112,65 +216,3 @@ void ServerScene::handlePlayerProjectile()
 Transform * ServerScene::getRoot() {
 	return root;
 }
-
-/*
-unsigned int ServerScene::serializeInitScene(char* data, unsigned int playerId, unsigned int playerRootId) {
-	memcpy(data, &playerId, sizeof(unsigned int));
-	data += sizeof(unsigned int);
-	memcpy(data, &playerRootId, sizeof(unsigned int));
-	data += sizeof(unsigned int);
-	return 2 * sizeof(unsigned int) + serializeSceneGraph(data);
-
-}
-
-unsigned int ServerScene::serializeSceneGraph(char* data) {
-	return serializeSceneGraph(root, data).second;
-}
-
-//std::pair<char *, unsigned int> ServerScene::serializeSceneGraph(Transform* t, char* data) {
-//	memcpy(data, &(t->M[0][0]), sizeof(glm::mat4));
-//	data += sizeof(glm::mat4);
-//	unsigned int size = sizeof(glm::mat4);
-//
-//	for (auto child : t->children) {
-//		*data++ = 'T';
-//		size += sizeof(char);
-//		memcpy(data, &child.first, sizeof(unsigned int));
-//		data += sizeof(unsigned int);
-//		size += sizeof(unsigned int);
-//		auto retval = serializeSceneGraph(child.second, data);
-//		data = retval.first;
-//		size += retval.second;
-//	}
-//
-//	for (auto model_id : t->model_ids) {
-//		*data++ = 'M';
-//		size += sizeof(char);
-//		memcpy(data, &model_id, sizeof(unsigned int));
-//		data += sizeof(unsigned int);
-//		size += sizeof(unsigned int);
-//	}
-//
-//	//*data++ = '\0';
-//	//size += sizeof(char);
-//	return std::pair<char *, unsigned int>(data, size);
-//}
-
-
-std::pair<char *, unsigned int> ServerScene::serializeSceneGraph(Transform* t, char* data) {
-	std::queue<Transform *> toSerialize;
-	toSerialize.push(t);
-	unsigned int size = 0;
-	while (!toSerialize.empty()) {
-		Transform * currNode = toSerialize.front();
-		toSerialize.pop();
-		unsigned int serialized_size = currNode->serialize(data);
-		data += serialized_size;
-		size += serialized_size;
-		for (auto child : currNode->children) {
-			toSerialize.push(child.second);
-		}
-	}
-	return std::pair<char *, unsigned int>(data, size);
-}
-*/

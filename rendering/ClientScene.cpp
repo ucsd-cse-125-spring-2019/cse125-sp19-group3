@@ -183,7 +183,7 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 			double xpos, ypos;
 			//getting cursor position
 			glfwGetCursorPos(window, &xpos, &ypos);
-			printf("Cursor Position at %f: %f \n", xpos, ypos);
+			//printf("Cursor Position at %f: %f \n", xpos, ypos);
 			glm::vec3 new_dest = viewToWorldCoordTransform(xpos, ypos);
 			ClientInputPacket movementPacket = game->createMovementPacket(new_dest);
 			network->sendToServer(movementPacket);
@@ -196,7 +196,7 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 			double xpos, ypos;
 			//getting cursor position
 			glfwGetCursorPos(window, &xpos, &ypos);
-			printf("Cursor Position at %f: %f \n", xpos, ypos);
+			//printf("Cursor Position at %f: %f \n", xpos, ypos);
 			glm::vec3 new_dest = viewToWorldCoordTransform(xpos, ypos);
 
 			// create projectile packet & send to server

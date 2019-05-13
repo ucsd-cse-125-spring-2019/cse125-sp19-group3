@@ -86,7 +86,7 @@
         0.0
       ],
       "animated": false,
-      "radius": 19.0
+      "radius": 1000.0
     },
     {
       "path": "../models/candle_arrangement_2.fbx",

@@ -135,7 +135,7 @@ void Transform::draw( std::unordered_map<unsigned int, ModelData> &models, const
 	}
 }
 
-bool collision(glm::vec3 myNextPos, float myRadius, glm::vec3 otherPos, float otherRadius) {
+bool collisionSphere2Sphere(glm::vec3 myNextPos, float myRadius, glm::vec3 otherPos, float otherRadius) {
 	const glm::vec3 checkObjPos = otherPos;
 	//printf(" other location calculated: %f \n", checkObjPos.x);
 	float distX = myNextPos.x - checkObjPos.x;
@@ -147,21 +147,38 @@ bool collision(glm::vec3 myNextPos, float myRadius, glm::vec3 otherPos, float ot
 	float threshhold = myRadius + otherRadius;
 
 	//printf("distToObject is %f, threshold is %f \n", distToObject,threshhold);
-	if (distToObject < threshhold) {
-		printf("entering other's body\n");
-		return true;
-	}
-	else {
-		return false;
-	}
+	return distToObject < threshhold;
+}
+
+float clamp(float value, float min, float max) {
+	return std::max(min, std::min(max, value));
+}
+
+bool collisionSphere2Box(glm::vec3 myNextPos, float myRadius, glm::vec3 otherPos, glm::vec3 otherSize) {
+	glm::vec3 center(myNextPos);
+	// Calculate AABB info (center, half-extents)
+	glm::vec3 aabb_half_extents(otherSize.x / 2, otherSize.y / 2, otherSize.z/2);
+	glm::vec3 aabb_center(
+		otherPos.x,
+		otherPos.y,
+		otherPos.z
+	);
+	// Get difference vector between both centers
+	glm::vec3 difference = center - aabb_center;
+	glm::vec3 clamped = glm::clamp(difference, -aabb_half_extents, aabb_half_extents);
+	// Add clamped value to AABB_center and we get the value of box closest to circle
+	glm::vec3 closest = aabb_center + clamped;
+	// Retrieve vector between center circle and closest point AABB and check if length <= radius
+	difference = closest - center;
+	return glm::length(difference) < myRadius;
 }
 
 
-bool Transform::isCollided(glm::vec3 forwardVector, unordered_map<unsigned int,float> &modelRadius, unordered_map<unsigned int, Transform *> &sceneGraphMap, Transform * otherNode) {
+bool Transform::isCollided(glm::vec3 forwardVector, unordered_map<unsigned int,float>& modelRadius, unordered_map<unsigned int, Transform *> &sceneGraphMap, Transform * otherNode, unordered_map<unsigned int, glm::vec3> &modelBoundingBoxes, bool toEnv) {
 	bool result = false;
 	for (unsigned int child_id : otherNode->children_ids) {
 		Transform * child = sceneGraphMap[child_id];
-		result |= isCollided(forwardVector, modelRadius,sceneGraphMap, child);
+		result |= isCollided(forwardVector, modelRadius,sceneGraphMap, child, modelBoundingBoxes,toEnv);
 		if (result)
 			return result;
 	}
@@ -169,11 +186,29 @@ bool Transform::isCollided(glm::vec3 forwardVector, unordered_map<unsigned int,f
 	for (unsigned int model_id : model_ids) {
 		float currModelRadius = modelRadius[model_id];
 		for (unsigned int other_id : otherNode->model_ids) {
-			float otherModelRadius = modelRadius[other_id];
-			result |= collision(nextPos, currModelRadius,
-				{ otherNode->translation[3][0], otherNode->translation[3][1], otherNode->translation[3][2] }, otherModelRadius);
-			if (result)
+			if (!toEnv) {
+				float otherModelRadius = modelRadius[other_id];
+				result |= collisionSphere2Sphere(nextPos, currModelRadius,
+					{ otherNode->translation[3][0], otherNode->translation[3][1], otherNode->translation[3][2] }, otherModelRadius);
+			}
+			else {
+				glm::vec3 otherSize = glm::vec3(glm::vec4(modelBoundingBoxes[other_id],1.0f)*otherNode->scale);
+				if ((int)otherNode->initialRotation % 180 != 0)
+					otherSize = { otherSize.z,otherSize.y,otherSize.x };
+
+				result |= collisionSphere2Box(nextPos, currModelRadius,
+					{ otherNode->translation[3][0], otherNode->translation[3][1], otherNode->translation[3][2] }, otherSize);
+				if(result)
+				{
+
+					printf("Collision Detected: Collided with model id %d, %f, %f, %f \n", other_id, otherSize.x, otherSize.y, otherSize.z);
+					printf("Player's next Pos will be: %f, %f, %f \n", nextPos.x, nextPos.y, nextPos.z);
+					printf("Model at %f,%f,%f \n", otherNode->translation[3][0], otherNode->translation[3][1], otherNode->translation[3][2]);
+				}
+			}
+			if (result) {
 				return result;
+			}
 		}
 	}
 	return result;

@@ -36,7 +36,7 @@ class Transform
 public:
 	unsigned int node_id;
 	bool enabled = true;
-
+	float initialRotation;
 	glm::mat4 M;
 	glm::mat4 translation;
 	glm::mat4 rotation;
@@ -57,7 +57,7 @@ public:
 	void draw(std::unordered_map<unsigned int, ModelData> &models, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx, unordered_map<unsigned int, Transform *> &sceneGraphMap);
 	void update();
 
-	bool isCollided(glm::vec3 forwardVector, unordered_map<unsigned int, float> &modelRadius, unordered_map<unsigned int, Transform *> &sceneGraphMap, Transform * otherNode);
+	bool isCollided(glm::vec3 forwardVector, unordered_map<unsigned int, float> &modelRadius, unordered_map<unsigned int, Transform *> &sceneGraphMap, Transform * otherNode, unordered_map<unsigned int, glm::vec3> &modelBoundingBoxes, bool toEnv);
 };
 
 #endif

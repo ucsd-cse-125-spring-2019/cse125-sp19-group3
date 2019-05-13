@@ -24,7 +24,10 @@ public:
 	int height;
 
 	unordered_map<unsigned int, ScenePlayer> scenePlayers;
+	//for player and projectiles
 	unordered_map<unsigned int, float> model_radius;
+	//for envs
+	std::unordered_map<unsigned int, Point> model_boundingbox;
 	std::vector<Transform *> env_objs;
 	ServerScene();
 	~ServerScene();
@@ -39,7 +42,7 @@ public:
 	Transform * getRoot();
 	unordered_map<unsigned int, Transform *> serverSceneGraphMap;
 	void initEnv();
-	void initModelRadius();
+	void initModelPhysics();
 
 private:
 	Transform * root;
