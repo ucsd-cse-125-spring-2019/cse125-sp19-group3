@@ -1,5 +1,6 @@
 #include "CoreTypes.hpp"
 #include <unordered_set>
+#include <unordered_map>
 #include <string>
 #include <algorithm>    // std::sort
 #include <vector>
@@ -36,13 +37,8 @@ protected:
 public:
 	Skill() : skillType(DEFAULT_SKILLTYPE), range(-1), cooldown(-1), duration(-1), speed(-1) {}
 	~Skill(){}
-	void update(SkillType skillType, int range=0, int cooldown=0, int duration=0, int speed=0);
-	static Skill getMelee(INIReader & meta_data, string archeType);
-	static Skill getProjectile(INIReader & meta_data, string archeType);
-	static Skill getAoe(INIReader & meta_data, string archetype);
-	static Skill getMinimap(INIReader & meta_data, string archetype);
-	static Skill getInvisible(INIReader & meta_data, string archetype);
-	static Skill getCharge(INIReader & meta_data, string archetype);
+	void update(SkillType skillType, double cooldown, double range, double speed, double duration);
+	static void load_archtype_data(unordered_map<ArcheType, vector<Skill>> &skill_map);
 };
 
 class Arche {

@@ -8,7 +8,7 @@
 
 class ClientGame {
 public:
-	ClientGame(INIReader& t_config);
+	ClientGame(string host, string port, int char_select_time);
 	//~ClientGame(void);
 
 	ClientNetwork * network;
@@ -27,7 +27,6 @@ public:
 	ClientSelectionPacket createCharacterSelectedPacket(std::string username, ArcheType type);
 
 protected:
-	INIReader & config;
 	PCSTR host;
 	PCSTR serverPort;
 

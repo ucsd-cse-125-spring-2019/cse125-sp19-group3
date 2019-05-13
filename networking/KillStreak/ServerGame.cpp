@@ -19,36 +19,13 @@ using json = nlohmann::json;
 	Parse data from config file for server. Then initialize 
 	server network (create socket) and initialize data.
 */
-ServerGame::ServerGame(INIReader& t_config, INIReader& t_meta_data) : config(t_config), meta_data(t_meta_data) {
+ServerGame::ServerGame(string host, string port, double tick_rate) 
+{
 	auto log = logger();
 
-	// get server data from config file
-	string servconf = config.Get("server", "host", "");
-	if (servconf == "") {
-		log->error("Host line not found in config file");
-		exit(EX_CONFIG);
-	}
-
-	size_t idx = servconf.find(":");		// delimiter index
-	if (idx == string::npos) {
-		log->error("Config line {} is invalid", servconf);
-		exit(EX_CONFIG);
-	}
-	
-	// get host (config)
-	string get_host = servconf.substr(0, idx);
-	host = get_host.c_str();
-
-	// get port (config)
-	string get_port = servconf.substr(idx + 1);
-	port = get_port.c_str();
-
-	// get tick_rate (config)
-	tick_rate = (double)(config.GetInteger("server", "tick_rate", -1));
-	if (tick_rate == -1) {
-		log->error("Invalid tick_rate in config file");
-		exit(EX_CONFIG);
-	}
+	this->host = host.c_str();
+	this->port = port.c_str();
+	this->tick_rate = tick_rate;
 
 	// initialize skills map
 	vector<Skill> mage_skills;
@@ -61,7 +38,8 @@ ServerGame::ServerGame(INIReader& t_config, INIReader& t_meta_data) : config(t_c
 	readMetaDataForSkills();	// load skills from config into skills maps
 
 	scene = new ServerScene();
-	network = new ServerNetwork(host, port);
+
+	network = new ServerNetwork(this->host, this->port);
 	scheduledEvent = ScheduledEvent(END_KILLPHASE, 10000000); // default huge value
 
 }
@@ -365,25 +343,10 @@ void ServerGame::updatePreparePhase() {
 	log->info("MT: Game server update prepare phase...");
 }
 
-/*
-	Read data from config and insert into mapping from ArchType to skills.
-*/
+
+// update skill_map with all archtype meta_data
 void ServerGame::readMetaDataForSkills() {
-	skill_map[ArcheType::MAGE].push_back(Skill::getMelee(meta_data, "MAGE"));
-	skill_map[ArcheType::MAGE].push_back(Skill::getProjectile(meta_data, "MAGE"));
-	skill_map[ArcheType::MAGE].push_back(Skill::getAoe(meta_data, "MAGE"));
-	skill_map[ArcheType::MAGE].push_back(Skill::getAoe(meta_data, "MAGE"));
-
-	skill_map[ArcheType::ASSASSIN].push_back(Skill::getMelee(meta_data, "ASSASSIN"));
-	skill_map[ArcheType::ASSASSIN].push_back(Skill::getProjectile(meta_data, "ASSASSIN"));
-	skill_map[ArcheType::ASSASSIN].push_back(Skill::getAoe(meta_data, "ASSASSIN"));
-	skill_map[ArcheType::ASSASSIN].push_back(Skill::getMinimap(meta_data, "ASSASSIN"));
-	skill_map[ArcheType::ASSASSIN].push_back(Skill::getInvisible(meta_data, "ASSASSIN"));
-
-	skill_map[ArcheType::WARRIOR].push_back(Skill::getMelee(meta_data, "WARRIOR"));
-	skill_map[ArcheType::WARRIOR].push_back(Skill::getProjectile(meta_data, "WARRIOR"));
-	skill_map[ArcheType::WARRIOR].push_back(Skill::getAoe(meta_data, "WARRIOR"));
-	skill_map[ArcheType::WARRIOR].push_back(Skill::getCharge(meta_data, "WARRIOR"));
+	Skill::load_archtype_data(skill_map); 
 }
 
 

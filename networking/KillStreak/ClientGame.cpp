@@ -26,39 +26,17 @@ GLFWwindow * window = 0;
 /*
 	Constructor: parse config and initialize all data.
 */
-ClientGame::ClientGame(INIReader& t_config) : config(t_config) {
+ClientGame::ClientGame(string host, string port, int char_select_time) 
+{
 	auto log = logger();
 
-	// get client data from config file
-	string servconf = config.Get("client", "host", "");
-	if (servconf == "") {
-		log->error("Host line not found in config file");
-		exit(EX_CONFIG);
-	}
-	size_t idx = servconf.find(":");
-	if (idx == string::npos) {
-		log->error("Config line {} is invalid", servconf);
-		exit(EX_CONFIG);
-	}
-
-	// get host (config)
-	string get_host = servconf.substr(0, idx);
-	host = get_host.c_str();
-
-	// get port (config)
-	string get_port = servconf.substr(idx + 1);
-	serverPort = get_port.c_str();
-
-	// get character selection time (config)
-	char_select_time = (int) (config.GetInteger("game", "char_select_time", -1));
-	if (char_select_time == -1) {
-		log->error("Invalid char_select_time in config file");
-		exit(EX_CONFIG);
-	}
+	this->host = host.c_str();
+	this->serverPort = port.c_str();
+	this->char_select_time = char_select_time;
 
 	q_lock = new mutex();
 	serverPackets = new ServerInputQueue();
-	network = new ClientNetwork(host, serverPort);
+	network = new ClientNetwork(this->host, this->serverPort);
 }
 
 

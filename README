@@ -4,10 +4,11 @@
 
 2.) From the solution explorer right click on the solution then...
 
-	a.) Set path to config file as the command line argument:
+	a.) Provide command line arguments
 		i.) Select properties -> Debugging -> command arguments 
-			-->  For Server: ../../networking/KillStreak/config.ini ../../networking/KillStreak/meta_data.ini
-			-->  For Client: ../../networking/KillStreak/client_config.ini ../../networking/KillStreak/meta_data.ini
+			-->  For Server: server
+			-->  For Client: client
+			-->  To run a Client and Server on same process: multi
 
 	b.) Ignore specific warnings
 		i.) Select properties -> C/C++ -> Preprocessor
