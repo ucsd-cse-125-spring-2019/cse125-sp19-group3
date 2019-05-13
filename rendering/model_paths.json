@@ -131,6 +131,28 @@
       ],
       "animated": false,
       "radius": 3.0
+    },
+    {
+      "path": "../models/gate.fbx",
+      "model_id": 109,
+      "color_rgb": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "animated": false,
+      "radius": 3.0
+    },
+    {
+      "path": "../models/fence_pillar_1.fbx",
+      "model_id": 110,
+      "color_rgb": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "animated": false,
+      "radius": 1.0
     }
   ]
 }
