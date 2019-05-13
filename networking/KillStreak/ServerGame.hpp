@@ -45,11 +45,11 @@ protected:
 	double tick_rate;
 	int char_select_time;					// time for character selection phase
 
-	vector<client_data*> client_data_list;	// list of pointers to all client meta-data
+	vector<client_data*> client_data_list;	// list of pointers to all client data (queue, id, lock, etc.)
 	ScheduledEvent scheduledEvent;
   
-	unordered_map<unsigned int, PlayerMetadata> playerMetadatas;
-	unordered_map<ArcheType, vector<Skill>> skill_map;
+	unordered_map<unsigned int, PlayerMetadata> playerMetadatas;	// map client_id to player meta_data
+	unordered_map<ArcheType, vector<Skill>> skill_map;				// Map ArchType to list of skills
 
 	ServerScene * scene;
 

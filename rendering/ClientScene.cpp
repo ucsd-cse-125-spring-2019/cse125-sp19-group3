@@ -119,7 +119,7 @@ void ClientScene::idle_callback()
 	camera->Update();
 	for (auto &model : models) {
 		if(model.second.model->isAnimated)
-			model.second.model->BoneTransform("Take 001", time);
+			model.second.model->BoneTransform(model.second.model->animationMode, time);
 	}
 }
 
@@ -152,8 +152,13 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 	// Check for a key press
 	if (action == GLFW_PRESS)
 	{
+		// 'q' pressed? Change state from movement to projectile or vice-versa
+		if (key == GLFW_KEY_Q)		
+		{
+			player.action_state = (player.action_state == ACTION_MOVEMENT) ? ACTION_PROJECTILE : ACTION_MOVEMENT;
+		}
 		// Check if escape was pressed
-		if (key == GLFW_KEY_ESCAPE)
+		else if (key == GLFW_KEY_ESCAPE) 
 		{
 			// Close the window. This causes the program to also terminate.
 			glfwSetWindowShouldClose(window, GL_TRUE);
@@ -171,13 +176,38 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 {
 	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
 	{
-		double xpos, ypos;
-		//getting cursor position
-		glfwGetCursorPos(window, &xpos, &ypos);
-		printf("Cursor Position at %f: %f \n", xpos, ypos);
-		glm::vec3 new_dest = viewToWorldCoordTransform(xpos, ypos);
-		ClientInputPacket movementPacket = game->createMovementPacket(new_dest);
-		network->sendToServer(movementPacket);
+
+		// player moving
+		if ( player.action_state == ACTION_MOVEMENT )
+		{
+			double xpos, ypos;
+			//getting cursor position
+			glfwGetCursorPos(window, &xpos, &ypos);
+			printf("Cursor Position at %f: %f \n", xpos, ypos);
+			glm::vec3 new_dest = viewToWorldCoordTransform(xpos, ypos);
+			ClientInputPacket movementPacket = game->createMovementPacket(new_dest);
+			network->sendToServer(movementPacket);
+		}
+		// player shooting projectile
+		else if (player.action_state == ACTION_PROJECTILE)
+		{
+			logger()->debug("SHOOTING!");
+
+			double xpos, ypos;
+			//getting cursor position
+			glfwGetCursorPos(window, &xpos, &ypos);
+			printf("Cursor Position at %f: %f \n", xpos, ypos);
+			glm::vec3 new_dest = viewToWorldCoordTransform(xpos, ypos);
+
+			// create projectile packet & send to server
+			ClientInputPacket projectilePacket = game->createProjectilePacket(new_dest);
+			network->sendToServer(projectilePacket);
+
+			// TODO: Handle server receiving projectile packet!
+			// TODO: Do we want to change action_state to moving after shooting?
+			player.action_state = ACTION_MOVEMENT;
+		}
+
 	}
 }
 
@@ -213,6 +243,9 @@ glm::vec3 ClientScene::viewToWorldCoordTransform(int mouse_x, int mouse_y) {
 }
 
 
+/*
+	Deserialize init scene packet from server, initialize player_id, root_id, root. 
+*/
 void ClientScene::handleInitScenePacket(char * data) {
 	memcpy(&player.player_id, data, sizeof(unsigned int));
 	data += sizeof(unsigned int);
@@ -221,10 +254,12 @@ void ClientScene::handleInitScenePacket(char * data) {
 	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap);
 }
 
+/*
+	Deserialize updated scene graph from server.
+*/
 void ClientScene::handleServerTickPacket(char * data) {
 	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap);
 }
-
 
 void ClientScene::setRoot(Transform * newRoot) {
 	root = newRoot;

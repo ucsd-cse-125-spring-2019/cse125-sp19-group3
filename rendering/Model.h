@@ -41,6 +41,9 @@ public:
 	vector<Mesh> meshes;
 	string directory;
 	bool gammaCorrection, isAnimated;
+	vector<string> m_Animations;
+	unsigned int animationMode = 0;
+
 	//Sphere * bounding_sphere;
 	/*  Functions   */
 	// constructor, expects a filepath to a 3D model.
@@ -49,7 +52,7 @@ public:
 	// draws the model, and thus all its meshes
 	void draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx);
 
-	void BoneTransform(string AnimationName, float TimeInSeconds);
+	void BoneTransform(unsigned int AnimationMode, float TimeInSeconds);
 
 	//TODO: collision detection. when doing collision detection, pass in location data(could get from translate matrix)
 	//bool isCollided(glm::vec3 myPos, Model * other, glm::vec3 otherPos);
@@ -86,7 +89,7 @@ private:
 	
 	void LoadBones(unsigned int meshIndex, const aiMesh* mesh, vector<Vertex> &vertices);
 
-	void ReadNodeHeirarchy(string AnimationName, float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform);
+	void ReadNodeHeirarchy(unsigned int AnimationMode, float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform);
 
 	void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
 

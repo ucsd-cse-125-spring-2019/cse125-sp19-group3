@@ -102,6 +102,13 @@ void ServerScene::handlePlayerMovement(unsigned int playerId, glm::vec3 destinat
 	}
 }
 
+// TODO: Complete me!!!
+void ServerScene::handlePlayerProjectile()
+{
+	return;
+}
+
+
 Transform * ServerScene::getRoot() {
 	return root;
 }

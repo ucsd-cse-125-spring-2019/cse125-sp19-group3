@@ -190,7 +190,7 @@ int ClientGame::join_game()
 	}
 
 	// a little bit hardcoded imo but ok
-	if (packet->packetType != WELCOME)			// not initialization packet
+	if (packet->packetType != WELCOME)			// not welcome packet
 	{
 		log->error("Invalid initialization packet sent from server");
 		free(packet);
@@ -206,14 +206,16 @@ int ClientGame::join_game()
 	*/
 	log->info("Received servers welcome packet, waiting in lobby for all players to join...");
 	
+	// block until server sends Character selection packet
 	ServerInputPacket* char_select_packet = network->receivePacket();
 	log->info("received character selection packet from server");
 
+	// select username and character & send to server
 	handleServerInputPacket(char_select_packet);
 
+	// block until recv() init scene packet from server marking game start
 	ServerInputPacket * initScenePacket = network->receivePacket();
 	handleServerInputPacket(initScenePacket);
-
 
 	// allocate new data for server thread & launch (will recv() indefinitely)
 	server_data* server_arg = (server_data *)malloc(sizeof(server_data));
@@ -268,6 +270,7 @@ void ClientGame::run() {
 	{
 
 		// TODO: REMOVE ME!!! (new thread should handle incoming packets
+		// recv() and process UPDATE_SCENE_GRAPH packet from server 
 		ServerInputPacket* packet = network->receivePacket();
 		handleServerInputPacket(packet);
 
@@ -287,6 +290,10 @@ void ClientGame::run() {
 	
 }
 
+/*
+	Give client 'x' amount of time to make character and username selection. 
+	Send packet to server once time is up.
+*/
 int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
 	auto log = logger();
 	std::string username;			// user selected username
@@ -331,6 +338,9 @@ int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
 	return iResult;
 }
 
+/*
+	Create packet with username and Archtype selection to send to server.
+*/
 ClientSelectionPacket ClientGame::createCharacterSelectedPacket(std::string username, ArcheType type) {
 	ClientSelectionPacket packet;
 	packet.username = username;
@@ -354,10 +364,21 @@ ClientInputPacket ClientGame::createMovementPacket(Point newLocation) {
 	return createClientInputPacket(MOVEMENT, newLocation, 0, 0);
 }
 
+ClientInputPacket ClientGame::createProjectilePacket(Point newLocation) {
+	// TODO: Do we want to name this type SKILL_PROJECTILE? 
+	// TODO: ClientInputPacket 'skillType' is just an integer??? How are we handling that?
+	// TODO: Do we still want attack-type? Attack-type = 1 --> projectile
+	return createClientInputPacket(SKILL_PROJECTILE, newLocation, 0, 1);
+}
+
 ClientInputPacket ClientGame::createInitPacket() {
 	return createClientInputPacket(INIT_CONN, NULL_POINT, 0, 0);
 }
 
+/*
+	Delegates to function corresponding to packet-type. Handles each specific 
+	packet accordingly.
+*/
 void ClientGame::handleServerInputPacket(ServerInputPacket * packet) {
 	switch (packet->packetType) {
 	case WELCOME:

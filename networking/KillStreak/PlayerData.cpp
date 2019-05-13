@@ -55,6 +55,7 @@ vector<int>* LeaderBoard::roundSummary() {
 	return rankings;
 }
 
+
 void Skill::update(SkillType skillType, double cooldown, double range, double speed, double duration) {
 	this->skillType = skillType;
 	this->cooldown = cooldown;

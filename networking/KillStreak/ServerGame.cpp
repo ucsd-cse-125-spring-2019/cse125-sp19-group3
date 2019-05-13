@@ -35,10 +35,9 @@ ServerGame::ServerGame(string host, string port, double tick_rate)
 	skill_map[ArcheType::ASSASSIN] = assassin_skills;
 	skill_map[ArcheType::WARRIOR] = warrior_skills;
 
-	readMetaDataForSkills();
+	readMetaDataForSkills();	// load skills from config into skills maps
 
 	scene = new ServerScene();
-
 
 	network = new ServerNetwork(this->host, this->port);
 	scheduledEvent = ScheduledEvent(END_KILLPHASE, 10000000); // default huge value
@@ -175,39 +174,31 @@ void ServerGame::game_match()
 	network->broadcastSend(char_select_packet);
 
 
-	// wait for character selection packet from each client (block on recv())
+	// wait for character selection packet from each client (block on recv()) & save MetaData
 	for (auto client_data : client_data_list) {		
 		int client_id = client_data->id;
 		ClientSelectionPacket* selection_packet = network->receiveSelectionPacket(client_id);
-		log->debug("received selection packet from a client");
-		// TODO: Store this data somewhere on the server mapped to client
+		log->info("received character selection packet from a client {}", client_id);
+
+		// get client metadata from packet and map to client_id
 		std::string username = selection_packet->username;
 		ArcheType character_type = selection_packet->type;
 		PlayerMetadata player = PlayerMetadata(client_id, username, character_type);
 		playerMetadatas.insert({ client_id, player });
 
-
-		log->debug("Client {}: Username {}, Character: {}", client_id, username, character_type);
+		log->info("Client {}: Username {}, Character: {}", client_id, username, character_type);
 	}
 
 
-	log->info("All client character selections received, starting game...");
-	// TODO: broadcast game start to all clients once all characters selected
-	//	--> ATTACH MODEL IDS TO SCENE GRAPH AND BROADCAST TO ALL CLIENTS in start_game packet from server
-	//
-	// TODO: Fix: Graphics this is where to send init scene graph!!
-	// ....
-	// ....
-	// ....
-	// ....
+	log->info("All client character selections received, initializing game...");
 
-
+	// add each player to scene based on character selection
 	for (auto client_data : client_data_list) {
 		unsigned int client_id = client_data->id;
 		scene->addPlayer(client_id, playerMetadatas[client_id].type);
 	}
 
-	// Init players in the scene
+	// Init players in the scene; send initScene packet to all clients (tells players game is initializing)
 	for (auto client_data : client_data_list) {
 		unsigned int client_id = client_data->id;
 		char buf[1024] = { 0 };
@@ -240,35 +231,6 @@ void ServerGame::launch() {
 	// launch lobby; accept players until game full
 	log->info("MT: Game server live - Launching lobby!");
 	game_match();	
-
-	// TESTING: Sending multiple different packets to client testing their queue
-	/*
-	log->debug("MT: Sending test packets to client");
-	char buf[1024] = "The first packet!";
-	ServerInputPacket welcome_packet = network->createServerPacket(INIT_SCENE, 0, buf);
-	int bytes_sent = network->sendToClient(0, welcome_packet);
-	log->debug("MT: Type: {}", INIT_SCENE);
-	log->debug("MT: Sending packet data: {}", bytes_sent);
-
-	char buf2[1024] = "The second packet!";
-	ServerInputPacket welcome_packet2 = network->createServerPacket(UPDATE_SCENE_GRAPH, 0, buf2);
-	int bytes_sent2 = network->sendToClient(0, welcome_packet2);
-	log->debug("MT: Type: {}", UPDATE_SCENE_GRAPH);
-	log->debug("MT: Sending packet data: {}", buf2);
-
-	char buf3[1024] = "The third packet!";
-	ServerInputPacket welcome_packet3 = network->createServerPacket(INIT_SCENE, 0, buf3);
-	int bytes_sent3 = network->sendToClient(0, welcome_packet3);
-	log->debug("MT: Type: {}", INIT_SCENE);
-	log->debug("MT: Sending packet data: {}", buf3);
-
-	log->debug("MT: All three packets sent to client");
-	*/
-
-	//while (1) {};	// TODO: REMOVE ME!!!!
-
-
-
 
 	// GAME START *************************************************
 
@@ -325,8 +287,6 @@ void ServerGame::updateKillPhase() {
 		inputPackets.push_back(vector<ClientInputPacket*>());
 	}
 
-	// TODO: BE SURE TO FREE PACKETS AFTER PROCESSING THEM, OTHERWISE THE PACKETS WILL EVENTUALLY
-	// FILL MEMORY!
 	// Drain all packets from all client inputs
 	for (auto client_data : client_data_list) {
 		int i = client_data->id;
@@ -341,13 +301,13 @@ void ServerGame::updateKillPhase() {
 		client_data->q_lock->unlock();
 	}
 
-	// Handle packets
+	// Process packets from client (movement, attack, etc..)
 	for (int i = 0; i < GAME_SIZE; i++) {
 		for (auto &packet : inputPackets[i]) {
 			handleClientInputPacket(packet, i);
 		}
 	}
-	scene->update();
+	scene->update();	// update scene graph
 
 	// Serialize scene graph and send packet to clients
 	/*char buf[1024] = { 0 };
@@ -383,6 +343,7 @@ void ServerGame::updatePreparePhase() {
 	log->info("MT: Game server update prepare phase...");
 }
 
+
 // update skill_map with all archtype meta_data
 void ServerGame::readMetaDataForSkills() {
 	Skill::load_archtype_data(skill_map); 
@@ -402,6 +363,9 @@ ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsig
 	return createServerPacket(INIT_SCENE, 1024, buf);
 }
 
+/*
+	Create packet with serialized scene graph.
+*/
 ServerInputPacket ServerGame::createServerTickPacket() {
 	unsigned int sgSize;
 	char buf[SERVER_TICK_PACKET_SIZE] = { 0 };
@@ -425,15 +389,25 @@ ServerInputPacket ServerGame::createWelcomePacket() {
 	return createServerPacket(WELCOME, 0, buf);
 }
 
+/*
+	Create packet telling clients to select their username and character.
+*/
 ServerInputPacket ServerGame::createCharSelectPacket() {
 	char buf[1024] = { 0 };
 	return createServerPacket(CHAR_SELECT_PHASE, 0, buf);
 }
 
+/*
+	Process client input (movement, attack, etc..). 
+	Delegates to function corresponding to packet-type. 
+*/
 void ServerGame::handleClientInputPacket(ClientInputPacket* packet, int client_id) {
 	switch (packet->inputType) {
 	case MOVEMENT:
 		scene->handlePlayerMovement(client_id, packet->finalLocation);
+		break;
+	case SKILL_PROJECTILE:
+		scene->handlePlayerProjectile();  // TODO: Need to complete this functionality
 		break;
 	default:
 		break;

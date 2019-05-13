@@ -22,6 +22,7 @@ public:
 	ClientInputPacket createClientInputPacket(InputType type, Point finalLocation,
 		int skillType, int attackType);
 	ClientInputPacket createMovementPacket(Point newLocation);
+	ClientInputPacket createProjectilePacket(Point newLocation);
 	ClientInputPacket createInitPacket();
 	ClientSelectionPacket createCharacterSelectedPacket(std::string username, ArcheType type);
 
