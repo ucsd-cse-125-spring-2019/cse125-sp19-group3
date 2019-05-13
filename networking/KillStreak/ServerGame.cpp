@@ -414,6 +414,8 @@ void ServerGame::updatePreparePhase() {
 }
 
 void ServerGame::readMetaDataForSkills() {
+	Skill::load_archtype_data(skill_map); // update skill_map with all archtype meta_data
+
 	/*
 	skill_map[ArcheType::MAGE].push_back(Skill::getMelee(meta_data, "MAGE"));
 	skill_map[ArcheType::MAGE].push_back(Skill::getProjectile(meta_data, "MAGE"));
