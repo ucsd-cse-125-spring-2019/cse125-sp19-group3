@@ -10,7 +10,7 @@
 #include <windows.h>				// sleep
 
 #define GAME_SIZE			1		// total players required to start game
-#define LOBBY_START_TIME	2000	// wait this long (ms) after all players connect
+#define LOBBY_START_TIME	500	// wait this long (ms) after all players connect
 
 static int game_start = 0;			// game ready to begin?
 using json = nlohmann::json;
@@ -407,7 +407,7 @@ void ServerGame::handleClientInputPacket(ClientInputPacket* packet, int client_i
 		scene->handlePlayerMovement(client_id, packet->finalLocation);
 		break;
 	case SKILL_PROJECTILE:
-		scene->handlePlayerProjectile();  // TODO: Need to complete this functionality
+		scene->handlePlayerProjectile(client_id, packet->initialLocation, packet->finalLocation);  // TODO: Need to complete this functionality
 		break;
 	default:
 		break;

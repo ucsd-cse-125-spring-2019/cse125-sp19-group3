@@ -155,7 +155,8 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 		// 'q' pressed? Change state from movement to projectile or vice-versa
 		if (key == GLFW_KEY_Q)		
 		{
-			player.action_state = (player.action_state == ACTION_MOVEMENT) ? ACTION_PROJECTILE : ACTION_MOVEMENT;
+			// player.action_state = (player.action_state == ACTION_MOVEMENT) ? ACTION_PROJECTILE : ACTION_MOVEMENT;
+			player.action_state = ACTION_PROJECTILE;
 		}
 		// Check if escape was pressed
 		else if (key == GLFW_KEY_ESCAPE) 
@@ -191,7 +192,7 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 		// player shooting projectile
 		else if (player.action_state == ACTION_PROJECTILE)
 		{
-			logger()->debug("SHOOTING!");
+			// logger()->debug("SHOOTING!");
 
 			double xpos, ypos;
 			//getting cursor position
@@ -199,8 +200,12 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 			//printf("Cursor Position at %f: %f \n", xpos, ypos);
 			glm::vec3 new_dest = viewToWorldCoordTransform(xpos, ypos);
 
+			glm::mat4 M = clientSceneGraphMap[player.root_id]->M;
+			Point initPoint = Point(M[0].x, M[0].y, M[0].z);
+			logger()->debug("init Point: {}, {}, {}", initPoint.x, initPoint.y, initPoint.z);
+
 			// create projectile packet & send to server
-			ClientInputPacket projectilePacket = game->createProjectilePacket(new_dest);
+			ClientInputPacket projectilePacket = game->createProjectilePacket(initPoint, new_dest);
 			network->sendToServer(projectilePacket);
 
 			// TODO: Handle server receiving projectile packet!

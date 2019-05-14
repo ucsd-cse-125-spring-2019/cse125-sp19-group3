@@ -19,10 +19,10 @@ public:
 	int handleCharacterSelectionPacket(ServerInputPacket* packet);
 
 	// initialize packet 
-	ClientInputPacket createClientInputPacket(InputType type, Point finalLocation,
+	ClientInputPacket createClientInputPacket(InputType type, Point initLocation, Point finalLocation,
 		int skillType, int attackType);
 	ClientInputPacket createMovementPacket(Point newLocation);
-	ClientInputPacket createProjectilePacket(Point newLocation);
+	ClientInputPacket createProjectilePacket(Point initLocation, Point newLocation);
 	ClientInputPacket createInitPacket();
 	ClientSelectionPacket createCharacterSelectedPacket(std::string username, ArcheType type);
 

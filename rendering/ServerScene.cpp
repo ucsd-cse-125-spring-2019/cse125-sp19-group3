@@ -170,10 +170,23 @@ void ServerScene::addPlayer(unsigned int playerId, ArcheType modelType) {
 void ServerScene::update()
 {
 	time += 1.0 / 60;
-	for (auto &element : scenePlayers) {
+	for (auto& element : scenePlayers) {
 		checkAndHandleCollision(element.first);
 		element.second.update();
-		
+	}
+	auto skillIter = skills.begin();
+	while (skillIter != skills.end()) {
+		auto skill = *skillIter;
+		if (skill.outOfRange()) {
+			serverSceneGraphMap.erase(skill.ownerId);
+			skillRoot->removeChild(skill.node->node_id);
+			delete(skill.node);
+			skillIter = skills.erase(skillIter);
+		}
+		else {
+			skill.update();
+			skillIter++;
+		}
 	}
 }
 
@@ -207,8 +220,15 @@ void ServerScene::handlePlayerMovement(unsigned int playerId, glm::vec3 destinat
 }
 
 // TODO: Complete me!!!
-void ServerScene::handlePlayerProjectile()
+void ServerScene::handlePlayerProjectile(unsigned int player_id, Point initPoint, Point finalPoint)
 {
+	// create new SceneProjectile, initialize with initPoint, finalPoint, owner, speed (from level)
+	// add SceneProjectile to vector
+	nodeIdCounter++;
+	initPoint = scenePlayers[player_id].currentPos;
+	SceneProjectile projectile = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot);
+	serverSceneGraphMap.insert({ nodeIdCounter, projectile.node });
+	skills.push_back(projectile);
 	return;
 }
 

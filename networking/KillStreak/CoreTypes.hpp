@@ -32,6 +32,7 @@ typedef struct {
 */
 typedef struct {
 	InputType inputType;
+	Point initialLocation;
 	// Movement Data
 	Point finalLocation;
 
