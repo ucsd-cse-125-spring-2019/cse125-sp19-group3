@@ -9,10 +9,10 @@ void ScenePlayer::translate(glm::vec3 forward) {
 void ScenePlayer::rotate(float angle, glm::vec3 axis) {
 	currentOri = glm::normalize(glm::vec3(glm::rotate(glm::mat4(1.0f), angle, axis) * glm::vec4(currentOri, 0)));
 	axis = glm::normalize(glm::vec3(glm::inverse(playerRoot->rotation) * glm::vec4(axis, 0)));
-	printf("axis is: %f, %f, %f\n", axis.x, axis.y, axis.z);
+	// printf("axis is: %f, %f, %f\n", axis.x, axis.y, axis.z);
 	glm::mat4 rotM = glm::rotate(glm::mat4(1.0f), angle, axis);
 	playerRoot->rotation = playerRoot->rotation * rotM;
-	printf("current orientation is: %f, %f, %f\n", currentOri.x, currentOri.y, currentOri.z);
+	// printf("current orientation is: %f, %f, %f\n", currentOri.x, currentOri.y, currentOri.z);
 }
 
 void ScenePlayer::move() {

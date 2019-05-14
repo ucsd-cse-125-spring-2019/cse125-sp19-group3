@@ -12,6 +12,7 @@
 #include "Camera.h"
 #include "Transform.h"
 #include "ScenePlayer.h"
+#include "SceneProjectile.h"
 #include "../networking/KillStreak/PlayerData.hpp"
 
 // On some systems you need to change this to the absolute path
@@ -29,12 +30,13 @@ public:
 	//for envs
 	std::unordered_map<unsigned int, Point> model_boundingbox;
 	std::vector<Transform *> env_objs;
+	std::vector<SceneProjectile> skills;
 	ServerScene();
 	~ServerScene();
 	void addPlayer(unsigned int playerId, ArcheType modelType);
 	void update();
 	void handlePlayerMovement(unsigned int player_id, glm::vec3 destination);
-	void handlePlayerProjectile();
+	void handlePlayerProjectile(unsigned int player_id, Point initPoint, Point finalPoint);
 	void checkAndHandleCollision(unsigned int playerId);
 	/*unsigned int serializeInitScene(char* data, unsigned int playerId, unsigned int playerRootId);
 	unsigned int serializeSceneGraph(char* data);

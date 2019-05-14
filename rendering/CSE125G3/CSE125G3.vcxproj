@@ -36,6 +36,7 @@
     <ClInclude Include="..\Mesh.h" />
     <ClInclude Include="..\Model.h" />
     <ClInclude Include="..\ScenePlayer.h" />
+    <ClInclude Include="..\SceneProjectile.h" />
     <ClInclude Include="..\Serialization.h" />
     <ClInclude Include="..\ServerScene.h" />
     <ClInclude Include="..\shader.h" />
@@ -55,6 +56,7 @@
     <ClCompile Include="..\Cube.cpp" />
     <ClCompile Include="..\Model.cpp" />
     <ClCompile Include="..\ScenePlayer.cpp" />
+    <ClCompile Include="..\SceneProjectile.cpp" />
     <ClCompile Include="..\Serialization.cpp" />
     <ClCompile Include="..\ServerScene.cpp" />
     <ClCompile Include="..\shader.cpp" />
@@ -62,7 +64,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\networking\KillStreak\client_config.ini" />
+    <None Include="..\..\networking\KillStreak\client_config.json" />
     <None Include="..\..\networking\KillStreak\config.ini" />
+    <None Include="..\..\networking\KillStreak\meta_data.json" />
+    <None Include="..\..\networking\KillStreak\server_config.json" />
     <None Include="..\env_model_locations.json" />
     <None Include="..\model_paths.json" />
     <None Include="..\animatedShader.frag" />
@@ -74,7 +79,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EBF1E546-3F93-49DB-BD9A-B629C3C6DCB0}</ProjectGuid>
     <RootNamespace>CSE125G3</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>CSE125G3</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -94,7 +99,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">

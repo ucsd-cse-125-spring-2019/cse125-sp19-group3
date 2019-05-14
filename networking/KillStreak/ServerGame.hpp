@@ -65,8 +65,7 @@ protected:
 	ServerInputPacket createCharSelectPacket();
 
 	
-	void handleClientInputPacket(ClientInputPacket* packet, int client_id
-	);
+	void handleClientInputPacket(ClientInputPacket* packet, int client_id);
 };
 
 #endif // SURFSTORESERVER_HPP
