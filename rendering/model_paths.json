@@ -89,7 +89,7 @@
       "radius": 1000.0
     },
     {
-      "path": "../models/candle_arrangement_2.fbx",
+      "path": "../models/candle_arrangement_3.fbx",
       "model_id": 105,
       "color_rgb": [
         1.0,
@@ -111,7 +111,7 @@
       "radius": 3.0
     },
     {
-      "path": "../models/cube_02_hue_1.fbx",
+      "path": "../models/skull_stone_01_hue_1.fbx",
       "model_id": 107,
       "color_rgb": [
         1.0,
@@ -146,6 +146,17 @@
     {
       "path": "../models/fence_pillar_1.fbx",
       "model_id": 110,
+      "color_rgb": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "animated": false,
+      "radius": 1.0
+    },
+    {
+      "path": "../models/tomb.fbx",
+      "model_id": 111,
       "color_rgb": [
         1.0,
         0.0,
