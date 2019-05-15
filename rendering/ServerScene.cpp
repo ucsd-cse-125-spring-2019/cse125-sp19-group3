@@ -229,7 +229,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point initPoint, Poi
 		nodeIdCounter++;
 		initPoint = scenePlayers[player_id].currentPos + glm::vec3({ 0.0f,5.0f,0.0f });
 		finalPoint += glm::vec3({ 0.0f,5.0f,0.0f });
-		SceneProjectile projectile = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot);
+		SceneProjectile projectile = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range);
 		serverSceneGraphMap.insert({ nodeIdCounter, projectile.node });
 		skills.push_back(projectile);
 		return;

@@ -15,7 +15,7 @@ using namespace std;
 // map string to archtype
 unordered_map<string, ArcheType> archetype_map = {
 	{"MAGE", MAGE},
-	{"ASSASSIN", ASSASSIN},
+	{"ASSASSIN", HUMAN}, // FOR NOW
 	{"WARRIOR", WARRIOR},
 	{"KING", KING}
 };	
@@ -67,7 +67,7 @@ void Skill::load_archtype_data(unordered_map<unsigned int, Skill> &skill_map,
 		float speed                 = skill["speed"];
 		float duration              = skill["duration"];
 
-		Skill curr_skill = Skill(skill_id, initial_level, skill_name, cooldown, range, speed, duration);
+		Skill curr_skill = Skill(skill_id, initial_level, skill_name, range, cooldown, duration, speed);
 		skill_map.insert({ skill_id, curr_skill });
 	}
 

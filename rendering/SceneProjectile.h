@@ -9,13 +9,14 @@
 class SceneProjectile {
 	const static unsigned int KUNAI_ID = 101;
 public:
-		SceneProjectile(unsigned int nodeIdCounter, unsigned int ownerId, Point initPoint, Point finalPoint, Transform * skillRoot) {
+		SceneProjectile(unsigned int nodeIdCounter, unsigned int ownerId, Point initPoint, Point finalPoint, Transform * skillRoot, float speed, float range) {
 			this->ownerId = ownerId;
 			this->currentPos = initPoint;
 			this->direction = glm::normalize(finalPoint - initPoint);
 			this->initPos = initPoint;
 			this->currentOri = Point(0.0f, 1.0f, 0.0f);
-
+			this->speed = speed;
+			this->range = range;
 			node = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), currentPos),
 				glm::rotate(glm::mat4(1.0f), -90 / 180.f * glm::pi<float>(), glm::vec3(1, 0, 0)),
 				glm::scale(glm::mat4(1.0f), Point(0.01f, 0.01f, 0.01f))
@@ -42,8 +43,7 @@ public:
 		Point direction;
 		Transform* node;
 		float speed = 0.6f;
-		unsigned int level = 1;
-		float range = 20.0f;
+		float range = 1.0f;
 };
 
 

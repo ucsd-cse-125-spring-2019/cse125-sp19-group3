@@ -50,8 +50,8 @@
       "initial_level": 1,
       "skill_name": "ASSASSIN PROJECTILE",
       "cooldown": 5.0,
-      "range": 0.0,
-      "speed": 5.0,
+      "range": 25.0,
+      "speed": 0.6,
       "duration": 0.0
     },
     {
