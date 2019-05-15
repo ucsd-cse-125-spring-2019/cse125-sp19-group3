@@ -14,7 +14,7 @@ public:
 			this->currentPos = initPoint;
 			this->direction = glm::normalize(finalPoint - initPoint);
 			this->initPos = initPoint;
-			this->currentOri = Point(initPoint.x, initPoint.y, 1.0f);
+			this->currentOri = Point(0.0f, 1.0f, 0.0f);
 
 			node = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), currentPos),
 				glm::rotate(glm::mat4(1.0f), -90 / 180.f * glm::pi<float>(), glm::vec3(1, 0, 0)),
@@ -41,8 +41,9 @@ public:
 		Point currentOri;
 		Point direction;
 		Transform* node;
-		float speed = 0.4f;
-
+		float speed = 0.6f;
+		unsigned int level = 1;
+		float range = 20.0f;
 };
 
 

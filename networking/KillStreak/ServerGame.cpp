@@ -27,14 +27,7 @@ ServerGame::ServerGame(string host, string port, double tick_rate)
 	this->port = port.c_str();
 	this->tick_rate = tick_rate;
 
-	// initialize skills map
-	vector<Skill> mage_skills;
-	vector<Skill> assassin_skills;
-	vector<Skill> warrior_skills;
-	skill_map[ArcheType::MAGE] = mage_skills;
-	skill_map[ArcheType::ASSASSIN] = assassin_skills;
-	skill_map[ArcheType::WARRIOR] = warrior_skills;
-
+	// initialize global skill map
 	readMetaDataForSkills();	// load skills from config into skills maps
 
 	scene = new ServerScene();
@@ -183,7 +176,7 @@ void ServerGame::game_match()
 		// get client metadata from packet and map to client_id
 		std::string username = selection_packet->username;
 		ArcheType character_type = selection_packet->type;
-		PlayerMetadata player = PlayerMetadata(client_id, username, character_type);
+		PlayerMetadata player = PlayerMetadata(client_id, username, character_type, skill_map, archetype_skillset);
 		playerMetadatas.insert({ client_id, player });
 
 		log->info("Client {}: Username {}, Character: {}", client_id, username, character_type);
@@ -346,7 +339,7 @@ void ServerGame::updatePreparePhase() {
 
 // update skill_map with all archtype meta_data
 void ServerGame::readMetaDataForSkills() {
-	Skill::load_archtype_data(skill_map); 
+	Skill::load_archtype_data(skill_map, archetype_skillset);
 }
 
 
@@ -402,12 +395,18 @@ ServerInputPacket ServerGame::createCharSelectPacket() {
 	Delegates to function corresponding to packet-type. 
 */
 void ServerGame::handleClientInputPacket(ClientInputPacket* packet, int client_id) {
+	auto playerMetadata = playerMetadatas[client_id];
 	switch (packet->inputType) {
 	case MOVEMENT:
 		scene->handlePlayerMovement(client_id, packet->finalLocation);
 		break;
 	case SKILL_PROJECTILE:
-		scene->handlePlayerProjectile(client_id, packet->initialLocation, packet->finalLocation);  // TODO: Need to complete this functionality
+		scene->handlePlayerSkill(client_id, 
+			                     packet->initialLocation, 
+			                     packet->finalLocation, 
+			                     packet->skill_id,
+			                     skill_map,
+			                     playerMetadata);
 		break;
 	default:
 		break;

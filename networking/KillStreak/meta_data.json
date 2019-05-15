@@ -1,112 +1,184 @@
 {
-  "ArcheTypes":
-  [
-	  { 
-	  "ArcheType" : "MAGE",
-	  "Skills"   : [
-	    {
-	      "skill_type"   : "MELEE",
-	      "cooldown"     : "5",
-	      "range"        : "5",
-	      "speed" 	     : "0",
-	      "duration"     : "0"
-	    },
-	    {
-	      "skill_type"   : "PROJECTILE",
-	      "cooldown"     : "5",
-	      "range"        : "0",
-	      "speed"        : "5",
-	      "duration"     : "0"
-	    },
-	    {
-	      "skill_type"   : "AOE",
-	      "cooldown"     : "5",
-	      "range"        : "5",
-	      "speed"        : "0",
-	      "duration"     : "5"
-	    },
-	    {
-	      "skill_type"   : "AOE",
-	      "cooldown"     : "5",
-	      "range"        : "10",
-	      "speed"        : "0",
-	      "duration"     : "5"
-	    }
-	  ]
-	  },
-
-	  {
-	  "ArcheType": "ASSASSIN",
-	  "Skills"  : [
-	    {
-	      "skill_type"   : "MELEE",
-	      "cooldown"     : "5",
-	      "range"        : "5",
-	      "speed"        : "0",
-	      "duration"     : "0"
-	    },
-	    {
-	      "skill_type"   : "PROJECTILE",
-	      "cooldown"     : "5",
-	      "range"        : "0",
-	      "speed"        : "5",
-	      "duration"     : "0"
-	    },
-	    {
-	      "skill_type"   : "AOE",
-	      "cooldown"     : "5",
-	      "range"        : "5",
-	      "speed"        : "0",
-	      "duration"     : "5"
-	    },
-	    {
-	      "skill_type"   : "MINIMAP",
-	      "cooldown"     : "5",
-	      "range"        : "0",
-	      "speed"        : "0",
-	      "duration"     : "5"
-	    },
-	    {
-	      "skill_type"   : "INVISIBLE",
-	      "cooldown"     : "5",
-	      "range"        : "0",
-	      "speed"        : "5",
-	      "duration"     : "5"
-	    }
-	  ]},
-
-	  {
-	  "ArcheType": "WARRIOR",
-	  "Skills"  : [
-	    {
-	      "skill_type"   : "MELEE",
-	      "cooldown"     : "5",
-	      "range"        : "5",
-	      "speed"        : "0",
-	      "duration"     : "0"
-	    },
-	    {
-	      "skill_type"   : "PROJECTILE",
-	      "cooldown"     : "5",
-	      "range"        : "0",
-	      "speed"        : "5",
-	      "duration"     : "0"
-	    },
-	    {
-	      "skill_type"   : "AOE",
-	      "cooldown"     : "5",
-	      "range"        : "5",
-	      "speed"        : "0",
-	      "duration"     : "5"
-	    },
-	    {
-	      "skill_type"   : "CHARGE",
-	      "cooldown"     : "5",
-	      "range"        : "5",
-	      "speed"        : "5",
-	      "duration"     : "0"
-	    }
-	  ]}
-  ]
-
+  "Skills": [
+    {
+      "skill_id": 0,
+      "initial_level": 1,
+      "skill_name": "MAGE MELEE",
+      "cooldown": 5.0,
+      "range": 5.0,
+      "speed": 0.0,
+      "duration": 0.0
+    },
+    {
+      "skill_id": 1,
+      "initial_level": 1,
+      "skill_name": "MAGE PROJECTILE",
+      "cooldown": 5.0,
+      "range": 0.0,
+      "speed": 5.0,
+      "duration": 0.0
+    },
+    {
+      "skill_id": 2,
+      "initial_level": 1,
+      "skill_name": "MAGE OMNIDIRECTIONAL AOE",
+      "cooldown": 5.0,
+      "range": 5.0,
+      "speed": 0.0,
+      "duration": 5.0
+    },
+    {
+      "skill_id": 3,
+      "initial_level": 1,
+      "skill_name": "MAGE DIRECTIONAL AOE",
+      "cooldown": 5.0,
+      "range": 10.0,
+      "speed": 0.0,
+      "duration": 5.0
+    },
+    {
+      "skill_id": 10,
+      "initial_level": 1,
+      "skill_name": "ASSASSIN MELEE",
+      "cooldown": 5.0,
+      "range": 5.0,
+      "speed": 0.0,
+      "duration": 0.0
+    },
+    {
+      "skill_id": 11,
+      "initial_level": 1,
+      "skill_name": "ASSASSIN PROJECTILE",
+      "cooldown": 5.0,
+      "range": 0.0,
+      "speed": 5.0,
+      "duration": 0.0
+    },
+    {
+      "skill_id": 12,
+      "initial_level": 1,
+      "skill_name": "ASSASSIN AOE",
+      "cooldown": 5.0,
+      "range": 5.0,
+      "speed": 0.0,
+      "duration": 5.0
+    },
+    {
+      "skill_id": 13,
+      "initial_level": 1,
+      "skill_name": "ASSASSIN MINIMAP",
+      "cooldown": 5.0,
+      "range": 0.0,
+      "speed": 0.0,
+      "duration": 5.0
+    },
+    {
+      "skill_id": 14,
+      "initial_level": 1,
+      "skill_name": "ASSASSIN INVISIBLE",
+      "cooldown": 5.0,
+      "range": 0.0,
+      "speed": 5.0,
+      "duration": 5.0
+    },
+    {
+      "skill_id": 20,
+      "initial_level": 1,
+      "skill_name": "WARRIOR MELEE",
+      "cooldown": 5.0,
+      "range": 5.0,
+      "speed": 0.0,
+      "duration": 0.0
+    },
+    {
+      "skill_id": 21,
+      "initial_level": 1,
+      "skill_name": "WARRIOR PROJECTILE",
+      "cooldown": 5.0,
+      "range": 0.0,
+      "speed": 5.0,
+      "duration": 0.0
+    },
+    {
+      "skill_id": 22,
+      "initial_level": 1,
+      "skill_name": "WARRIOR AOE",
+      "cooldown": 5.0,
+      "range": 5.0,
+      "speed": 0.0,
+      "duration": 5.0
+    },
+    {
+      "skill_id": 23,
+      "initial_level": 1,
+      "skill_name": "WARRIOR CHARGE",
+      "cooldown": 5.0,
+      "range": 5.0,
+      "speed": 5.0,
+      "duration": 0.0
+    },
+    {
+      "skill_id": 30,
+      "initial_level": 1,
+      "skill_name": "KING MELEE",
+      "cooldown": 5.0,
+      "range": 5.0,
+      "speed": 0.0,
+      "duration": 0.0
+    },
+    {
+      "skill_id": 31,
+      "initial_level": 1,
+      "skill_name": "KING PROJECTILE",
+      "cooldown": 5.0,
+      "range": 0.0,
+      "speed": 5.0,
+      "duration": 0.0
+    },
+    {
+      "skill_id": 32,
+      "initial_level": 1,
+      "skill_name": "KING AOE",
+      "cooldown": 5.0,
+      "range": 5.0,
+      "speed": 0.0,
+      "duration": 5.0
+    },
+    {
+      "skill_id": 33,
+      "initial_level": 1,
+      "skill_name": "KING SILENCE",
+      "cooldown": 5.0,
+      "range": 5.0,
+      "speed": 5.0,
+      "duration": 0.0
+    }
+  ],
+  "ArcheTypes": {
+    "MAGE": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "ASSASSIN": [
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "WARRIOR": [
+      20,
+      21,
+      22,
+      23
+    ],
+    "KING": [
+      30,
+      31,
+      32,
+      33
+    ]
+  }
 }

@@ -5,6 +5,7 @@
 
 #include <fstream>
 #include <string>
+#include <cmath>
 
 #define META_CONF "../../networking/KillStreak/meta_data.json"
 
@@ -15,18 +16,9 @@ using namespace std;
 unordered_map<string, ArcheType> archetype_map = {
 	{"MAGE", MAGE},
 	{"ASSASSIN", ASSASSIN},
-	{"WARRIOR", WARRIOR}
-};
-
-// map string to skilltype
-unordered_map<string, SkillType> skilltype_map = { 
-	{"MELEE", MELEE},
-	{"PROJECTILE", PROJECTILE},
-	{"AOE", AOE},
-	{"MINIMAP", MINIMAP },
-	{"INVISIBLE", INVISIBLE},
-	{"CHARGE", CHARGE}
-};		
+	{"WARRIOR", WARRIOR},
+	{"KING", KING}
+};	
 
 vector<int>* LeaderBoard::roundSummary() {
 	// get the ranking result of this round
@@ -56,63 +48,46 @@ vector<int>* LeaderBoard::roundSummary() {
 }
 
 
-void Skill::update(SkillType skillType, double cooldown, double range, double speed, double duration) {
-	this->skillType = skillType;
-	this->cooldown = cooldown;
-	this->range = range;
-	this->speed = speed;
-	this->duration = duration;
-}
-
-double getDoubleField(INIReader & meta_data, string archetype, string field) {
-	auto log = logger();
-	double temp = (double)(meta_data.GetInteger(archetype, field, -1));
-	if (temp == -1) {
-		log->error("No {} for {}", field, archetype);
-		exit(EX_CONFIG);
-	}
-	return temp;
-}
-
-
 // Parse all archtypes from config and upload values to skill_map for each corresponding type.
-void Skill::load_archtype_data(unordered_map<ArcheType, vector<Skill>> &skill_map) {
+void Skill::load_archtype_data(unordered_map<unsigned int, Skill> &skill_map,
+	                           unordered_map<ArcheType, vector<unsigned int>> &archetype_skillsets) {
 
 	// open config for reading
 	ifstream json_file(META_CONF);
 	json jsonObjs = json::parse(json_file);
 
-	for (auto cur_char : jsonObjs["ArcheTypes"])		  	// parse each archtype
+	for (auto skill : jsonObjs["Skills"])		  	// parse each archtype
 	{
-		string current_archetype = cur_char["ArcheType"];	 // mage, assassin, warrior? 
+		// get skills from config
+		unsigned int skill_id       = skill["skill_id"];
+		unsigned int initial_level  = skill["initial_level"];
+		string skill_name			= skill["skill_name"];
+		float cooldown              = skill["cooldown"];
+		float range                 = skill["range"];
+		float speed                 = skill["speed"];
+		float duration              = skill["duration"];
 
-		for (auto skill : cur_char["Skills"])			// each skill set (MELEE, PROJECTILE, ETC)
-		{
-
-			Skill cur_skill		= Skill();
-
-			// get skills from config
-			string sk_t			= skill["skill_type"];
-			string str_cooldown = skill["cooldown"];
-			string str_range    = skill["range"];
-			string str_speed	= skill["speed"];
-			string str_duration = skill["duration"];
-
-			// convert strings to doubles
-			double cooldown = atof(str_cooldown.c_str());
-			double range	= atof(str_range.c_str());
-			double speed	= atof(str_speed.c_str());
-			double duration = atof(str_duration.c_str());
-
-			// get skilltype and archetype
-			SkillType skill_type = skilltype_map[sk_t];
-			ArcheType arche_type = archetype_map[current_archetype];
-
-			// update skill with values and push to corresponding type skill map
-			cur_skill.update(skill_type, cooldown, range, speed, duration);
-			skill_map[arche_type].push_back(cur_skill);
-		}
-
+		Skill curr_skill = Skill(skill_id, initial_level, skill_name, cooldown, range, speed, duration);
+		skill_map.insert({ skill_id, curr_skill });
 	}
 
+	for (auto iter = jsonObjs["ArcheTypes"].begin(); iter != jsonObjs["ArcheTypes"].end(); iter++) {
+		auto archetype_str = iter.key();
+		auto skill_ids = iter.value();
+		vector<unsigned int> available_skills;
+		for (auto skill_id : skill_ids) {
+			available_skills.push_back(skill_id);
+		}
+		archetype_skillsets.insert({ archetype_map[archetype_str], available_skills });
+	}
+}
+
+Skill Skill::calculateSkillBasedOnLevel(Skill &baseSkill, unsigned int level) {
+	return Skill(baseSkill.skill_id, 
+		         level, 
+		         baseSkill.skillName, 
+		         baseSkill.range * pow(1.2, level),
+		         baseSkill.cooldown * pow(0.7, level),
+		         baseSkill.duration, // worry about this for animation vs invisibility + evade
+		         baseSkill.speed * pow(1.1, level));
 }

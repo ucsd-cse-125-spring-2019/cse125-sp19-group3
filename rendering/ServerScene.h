@@ -13,7 +13,6 @@
 #include "Transform.h"
 #include "ScenePlayer.h"
 #include "SceneProjectile.h"
-#include "../networking/KillStreak/PlayerData.hpp"
 
 // On some systems you need to change this to the absolute path
 #define VERTEX_SHADER_PATH "../shader.vert"
@@ -36,7 +35,12 @@ public:
 	void addPlayer(unsigned int playerId, ArcheType modelType);
 	void update();
 	void handlePlayerMovement(unsigned int player_id, glm::vec3 destination);
-	void handlePlayerProjectile(unsigned int player_id, Point initPoint, Point finalPoint);
+	void handlePlayerSkill(unsigned int player_id, 
+		                   Point initPoint, 
+		                   Point finalPoint, 
+		                   unsigned int skill_id, 
+		                   unordered_map<unsigned int, Skill> &skill_map,
+		                   PlayerMetadata &playerMetadata);
 	void checkAndHandleCollision(unsigned int playerId);
 	/*unsigned int serializeInitScene(char* data, unsigned int playerId, unsigned int playerRootId);
 	unsigned int serializeSceneGraph(char* data);

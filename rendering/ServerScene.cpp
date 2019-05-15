@@ -176,9 +176,9 @@ void ServerScene::update()
 	}
 	auto skillIter = skills.begin();
 	while (skillIter != skills.end()) {
-		auto skill = *skillIter;
+		auto & skill = *skillIter;
 		if (skill.outOfRange()) {
-			serverSceneGraphMap.erase(skill.ownerId);
+			serverSceneGraphMap.erase(skill.node->node_id);
 			skillRoot->removeChild(skill.node->node_id);
 			delete(skill.node);
 			skillIter = skills.erase(skillIter);
@@ -219,17 +219,21 @@ void ServerScene::handlePlayerMovement(unsigned int playerId, glm::vec3 destinat
 	}
 }
 
-// TODO: Complete me!!!
-void ServerScene::handlePlayerProjectile(unsigned int player_id, Point initPoint, Point finalPoint)
+void ServerScene::handlePlayerSkill(unsigned int player_id, Point initPoint, Point finalPoint, unsigned int skill_id, unordered_map<unsigned int, Skill> &skill_map, PlayerMetadata &playerMetadata)
 {
-	// create new SceneProjectile, initialize with initPoint, finalPoint, owner, speed (from level)
-	// add SceneProjectile to vector
-	nodeIdCounter++;
-	initPoint = scenePlayers[player_id].currentPos;
-	SceneProjectile projectile = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot);
-	serverSceneGraphMap.insert({ nodeIdCounter, projectile.node });
-	skills.push_back(projectile);
-	return;
+	auto level = playerMetadata.skillLevels[skill_id];
+	Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(skill_map[skill_id], level);
+
+	// TODO: giant if else / switch case here
+	if (skill_id % 10 == 1) { // hardcoded projectile skill here
+		nodeIdCounter++;
+		initPoint = scenePlayers[player_id].currentPos + glm::vec3({ 0.0f,5.0f,0.0f });
+		finalPoint += glm::vec3({ 0.0f,5.0f,0.0f });
+		SceneProjectile projectile = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot);
+		serverSceneGraphMap.insert({ nodeIdCounter, projectile.node });
+		skills.push_back(projectile);
+		return;
+	}
 }
 
 

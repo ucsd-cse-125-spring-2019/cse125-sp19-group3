@@ -5,6 +5,7 @@
 #include "Model.h"
 #include "Transform.h"
 #include "../networking/KillStreak/CoreTypes.hpp"
+#include "../networking/KillStreak/PlayerData.hpp"
 
 typedef enum {HUMAN_MODEL, MAGE_MODEL, WARRIOR_MODEL, ASSASIN_MODEL} MODEL_TYPE;
 typedef enum {ACTION_MOVEMENT, ACTION_PROJECTILE} ACTION_STATE;		// client moving or in projectile mode? 
@@ -36,6 +37,7 @@ public:
 	glm::vec3 currentOri = glm::vec3(0.0f, 0.0f, 1.0f);
 	float speed = 0.3f;
 	ACTION_STATE action_state;
+	vector<Skill> availableSkills;
 };
 
 #endif

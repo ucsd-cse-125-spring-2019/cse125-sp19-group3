@@ -20,7 +20,7 @@ public:
 
 	// initialize packet 
 	ClientInputPacket createClientInputPacket(InputType type, Point initLocation, Point finalLocation,
-		int skillType, int attackType);
+		int skill_id);
 	ClientInputPacket createMovementPacket(Point newLocation);
 	ClientInputPacket createProjectilePacket(Point initLocation, Point newLocation);
 	ClientInputPacket createInitPacket();

@@ -349,31 +349,30 @@ ClientSelectionPacket ClientGame::createCharacterSelectedPacket(std::string user
 }
 
 ClientInputPacket ClientGame::createClientInputPacket(InputType type, Point initLocation, Point finalLocation,
-	int skillType, int attackType)
+	int skill_id)
 {
 	ClientInputPacket packet;
 	packet.inputType = type;
 	packet.initialLocation = initLocation;
 	packet.finalLocation = finalLocation;
-	packet.skillType = skillType;
-	packet.attackType = attackType;
+	packet.skill_id = skill_id;
 
 	return packet;
 }
 
 ClientInputPacket ClientGame::createMovementPacket(Point newLocation) {
-	return createClientInputPacket(MOVEMENT, NULL_POINT, newLocation, 0, 0);
+	return createClientInputPacket(MOVEMENT, NULL_POINT, newLocation, -1);
 }
 
 ClientInputPacket ClientGame::createProjectilePacket(Point initLocation, Point newLocation) {
 	// TODO: Do we want to name this type SKILL_PROJECTILE? 
 	// TODO: ClientInputPacket 'skillType' is just an integer??? How are we handling that?
 	// TODO: Do we still want attack-type? Attack-type = 1 --> projectile
-	return createClientInputPacket(SKILL_PROJECTILE, initLocation, newLocation, 0, 1);
+	return createClientInputPacket(SKILL_PROJECTILE, initLocation, newLocation, 11); // 11 MEANS PROJECTILE HARDCODED FOR NOW
 }
 
 ClientInputPacket ClientGame::createInitPacket() {
-	return createClientInputPacket(INIT_CONN, NULL_POINT, NULL_POINT, 0, 0);
+	return createClientInputPacket(INIT_CONN, NULL_POINT, NULL_POINT, -1);
 }
 
 /*

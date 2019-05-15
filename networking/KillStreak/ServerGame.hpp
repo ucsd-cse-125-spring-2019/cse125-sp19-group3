@@ -49,7 +49,9 @@ protected:
 	ScheduledEvent scheduledEvent;
   
 	unordered_map<unsigned int, PlayerMetadata> playerMetadatas;	// map client_id to player meta_data
-	unordered_map<ArcheType, vector<Skill>> skill_map;				// Map ArchType to list of skills
+
+	unordered_map<unsigned int, Skill> skill_map;				// Map ArchType to list of skills
+	unordered_map<ArcheType, vector<unsigned int>> archetype_skillset;
 
 	ServerScene * scene;
 

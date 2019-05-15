@@ -28,61 +28,28 @@ protected:
 
 typedef enum{MELEE, PROJECTILE, AOE, MINIMAP, INVISIBLE, CHARGE, DEFAULT_SKILLTYPE} SkillType;
 class Skill {
-protected:
-	SkillType skillType;
-	double range;
-	double cooldown;
-	double duration;
-	double speed;
 public:
-	Skill() : skillType(DEFAULT_SKILLTYPE), range(-1), cooldown(-1), duration(-1), speed(-1) {}
+	string skillName;
+	unsigned int initialLevel;
+	unsigned int skill_id;
+	float range;
+	float cooldown;
+	float duration;
+	float speed;
+	Skill(unsigned int skill_id, unsigned int initialLevel, string skillName, float range, float cooldown, float duration, float speed) {
+		this->skillName = skillName;
+		this->initialLevel = initialLevel;
+		this->skill_id = skill_id;
+		this->range = range;
+		this->cooldown = cooldown;
+		this->duration = duration;
+		this->speed = speed;
+	};
+	Skill() : skillName("Default Skill"), range(-1), cooldown(-1), duration(-1), speed(-1) {}
 	~Skill(){}
-	void update(SkillType skillType, double cooldown, double range, double speed, double duration);
-	static void load_archtype_data(unordered_map<ArcheType, vector<Skill>> &skill_map);
-};
-
-class Arche {
-public:
-	Arche(){}
-	~Arche(){}
-	void addSkill(Skill s) { skills.push_back(s); }
-	// virtual void useSkill(int skillIndex, Point finalLocation) {}
-protected:
-	vector<Skill> skills;
-};
-
-class Mage: public Arche {
-public: 
-	Mage() {}
-	~Mage() {}
-	// void useSkill(int skillIndex, Point finalLocation) override;
-	void melee();
-	void projectile(Point finalLocation);
-	void aoe();
-	void coneAoe(Point finalLocation);
-};
-
-class Assassin: public Arche {
-public:
-	Assassin() {}
-	~Assassin() {}
-	// void useSkill(int skillIndex, Point finalLocation) override;
-	void melee();
-	void projectile(Point finalLocation);
-	void aoe();
-	void minimap();
-	void invisibility();
-};
-
-class Warrior: public Arche {
-public: 
-	Warrior() {}
-	~Warrior() {}
-	// void useSkill(int skillIndex, Point finalLocation) override;
-	void melee();
-	void projectile(Point finalLocation);
-	void aoe();
-	void coneAoe(Point finalLocation);
+	static void load_archtype_data(unordered_map<unsigned int, Skill> &skill_map, 
+		                           unordered_map<ArcheType, vector<unsigned int>> &archetype_skill_set);
+	static Skill calculateSkillBasedOnLevel(Skill &baseSkill, unsigned int level);
 };
 
 /*
@@ -90,20 +57,14 @@ public:
 */
 class PlayerMetadata {
 public:
-	PlayerMetadata(unsigned int clientId, std::string username, ArcheType type) : clientId(clientId), username(username), type(type) {
-		switch (type) {
-		case MAGE:
-			arche = Mage();
-			break;
-		case ASSASSIN:
-			arche = Assassin();
-			break;
-		case WARRIOR:
-			arche = Warrior();
-			break;
-		default:
-			arche = Mage();
-			break;
+	PlayerMetadata(unsigned int clientId, 
+		           std::string username, 
+		           ArcheType type, 
+		           unordered_map<unsigned int, Skill> &skill_map, 
+		           unordered_map<ArcheType, vector<unsigned int>> &archetype_skillsets) : clientId(clientId), username(username), type(type) {
+		for (auto skill_id : archetype_skillsets[type]) {
+			auto initialLevel = skill_map[skill_id].initialLevel;
+			skillLevels.insert({ skill_id, initialLevel });
 		}
 		alive = true;
 		gold = 0;
@@ -117,7 +78,7 @@ public:
 	unsigned int clientId;
 	std::string username;
 	ArcheType type;
-	Arche arche;
+	unordered_map<unsigned int, unsigned int> skillLevels;
 
 	bool alive;
 	Point currLocation;

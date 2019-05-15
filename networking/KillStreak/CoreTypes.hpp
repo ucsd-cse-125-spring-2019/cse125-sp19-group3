@@ -13,7 +13,7 @@ typedef enum {INIT_CONN, CHAR_SELECT, MOVEMENT, SKILL_PROJECTILE, ATTACK} InputT
 
 typedef enum { WELCOME, INIT_SCENE, UPDATE_SCENE_GRAPH, CHAR_SELECT_PHASE } ServerPacketType;
 
-typedef enum { HUMAN, MAGE, ASSASSIN, WARRIOR } ArcheType;
+typedef enum { HUMAN, MAGE, ASSASSIN, WARRIOR, KING } ArcheType;
 
 
 /*
@@ -37,10 +37,7 @@ typedef struct {
 	Point finalLocation;
 
 	// Skill Data
-	int skillType; // indexes to which skill to access
-
-	// Attack Data
-	int attackType; // 0: melee, 1: projectile
+	int skill_id; // indexes to which skill to access
 } ClientInputPacket;
 
 
