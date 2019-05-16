@@ -41,7 +41,7 @@ public:
 		                   unsigned int skill_id, 
 		                   unordered_map<unsigned int, Skill> &skill_map,
 		                   PlayerMetadata &playerMetadata);
-	void checkAndHandleCollision(unsigned int playerId);
+	void checkAndHandlePlayerCollision(unsigned int playerId);
 	/*unsigned int serializeInitScene(char* data, unsigned int playerId, unsigned int playerRootId);
 	unsigned int serializeSceneGraph(char* data);
 	std::pair<char *, unsigned int> serializeSceneGraph(Transform* t, char* data);*/

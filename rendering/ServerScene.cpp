@@ -171,13 +171,20 @@ void ServerScene::update()
 {
 	time += 1.0 / 60;
 	for (auto& element : scenePlayers) {
-		checkAndHandleCollision(element.first);
+		checkAndHandlePlayerCollision(element.first);
 		element.second.update();
 	}
 	auto skillIter = skills.begin();
 	while (skillIter != skills.end()) {
 		auto & skill = *skillIter;
-		if (skill.outOfRange()) {
+		bool collided = false;
+		for (auto& envObj : env_objs) {
+			glm::vec3 forwardVector = skill.direction*skill.speed;
+			if (skill.node->isCollided(forwardVector, model_radius, serverSceneGraphMap, envObj, model_boundingbox, true)) {
+				collided = true;
+			}
+		}
+		if (skill.outOfRange() || collided) {
 			serverSceneGraphMap.erase(skill.node->node_id);
 			skillRoot->removeChild(skill.node->node_id);
 			delete(skill.node);
@@ -191,7 +198,7 @@ void ServerScene::update()
 }
 
 //TODO: Refactoring, moving collision check to player??? Also find radius for various objs.
-void ServerScene::checkAndHandleCollision(unsigned int playerId) {
+void ServerScene::checkAndHandlePlayerCollision(unsigned int playerId) {
 	ScenePlayer &player = scenePlayers[playerId];
 	for (auto& envObj : env_objs) {
 		glm::vec3 forwardVector = glm::normalize(player.destination - player.currentPos)* player.speed;
