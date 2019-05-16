@@ -40,7 +40,7 @@
       "skill_id": 10,
       "initial_level": 1,
       "skill_name": "ASSASSIN MELEE",
-      "cooldown": 5.0,
+      "cooldown": 10.0,
       "range": 5.0,
       "speed": 0.0,
       "duration": 0.0
@@ -49,7 +49,7 @@
       "skill_id": 11,
       "initial_level": 1,
       "skill_name": "ASSASSIN PROJECTILE",
-      "cooldown": 5.0,
+      "cooldown": 10.0,
       "range": 25.0,
       "speed": 0.6,
       "duration": 0.0

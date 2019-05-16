@@ -1,3 +1,4 @@
+#pragma once
 #include "CoreTypes.hpp"
 #include <unordered_set>
 #include <unordered_map>
@@ -26,11 +27,10 @@ protected:
 	float prizeChange;							// prizes increases per round (1.2)
 };
 
-typedef enum{MELEE, PROJECTILE, AOE, MINIMAP, INVISIBLE, CHARGE, DEFAULT_SKILLTYPE} SkillType;
 class Skill {
 public:
 	string skillName;
-	unsigned int initialLevel;
+	unsigned int level;
 	unsigned int skill_id;
 	float range;
 	float cooldown;
@@ -38,7 +38,7 @@ public:
 	float speed;
 	Skill(unsigned int skill_id, unsigned int initialLevel, string skillName, float range, float cooldown, float duration, float speed) {
 		this->skillName = skillName;
-		this->initialLevel = initialLevel;
+		this->level = initialLevel;
 		this->skill_id = skill_id;
 		this->range = range;
 		this->cooldown = cooldown;
@@ -63,8 +63,8 @@ public:
 		           unordered_map<unsigned int, Skill> &skill_map, 
 		           unordered_map<ArcheType, vector<unsigned int>> &archetype_skillsets) : clientId(clientId), username(username), type(type) {
 		for (auto skill_id : archetype_skillsets[type]) {
-			auto initialLevel = skill_map[skill_id].initialLevel;
-			skillLevels.insert({ skill_id, initialLevel });
+			auto level = skill_map[skill_id].level;
+			skillLevels.insert({ skill_id, level });
 		}
 		alive = true;
 		gold = 0;

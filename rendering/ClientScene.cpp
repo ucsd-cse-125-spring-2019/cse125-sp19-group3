@@ -42,6 +42,17 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network)
 	this->network = network;
 }
 
+void ClientScene::initialize_skills(ArcheType selected_type) {
+	unordered_map<unsigned int, Skill> skill_map;
+	unordered_map<ArcheType, vector<unsigned int>> archetype_skillset;
+	Skill::load_archtype_data(skill_map, archetype_skillset);
+	for (auto skill_id : archetype_skillset[selected_type]) {
+		personal_skills.push_back(skill_map[skill_id]);
+	}
+	skill_timers = vector<nanoseconds>(personal_skills.size(), nanoseconds::zero());
+	animation_timer = nanoseconds::zero();
+}
+
 void ClientScene::clean_up()
 {
 	delete(camera);
@@ -93,6 +104,24 @@ GLFWwindow* ClientScene::create_window(int width, int height)
 	glViewport(0, 0, width, height);
 
 	return window;
+}
+
+void ClientScene::updateTimers(nanoseconds timePassed) {
+	// update individual skill timers
+	for (int i = 0; i < skill_timers.size(); i++) {
+		if (skill_timers[i] > nanoseconds::zero()) {
+			skill_timers[i] -= timePassed;
+			if (skill_timers[i] < nanoseconds::zero()) {
+				skill_timers[i] = nanoseconds::zero();
+				logger()->debug("skill {} is ready to fire!", i);
+			}
+		}
+	}
+	// update global animation timer
+	animation_timer -= timePassed;
+	if (animation_timer < nanoseconds::zero()) {
+		animation_timer = nanoseconds::zero();
+	}
 }
 
 void ClientScene::resize_callback(GLFWwindow* window, int width, int height)
@@ -149,12 +178,25 @@ void ClientScene::display_callback(GLFWwindow* window)
 
 void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+	auto log = logger();
+	// are we even allowed to process input?
+	if (animation_timer > nanoseconds::zero()) {
+		return;
+	}
+
+
 	// Check for a key press
 	if (action == GLFW_PRESS)
 	{
 		// 'q' pressed? Change state from movement to projectile or vice-versa
 		if (key == GLFW_KEY_Q)		
 		{
+			// TODO: decide on how to map skills to input. for now, hardcode.
+			if (skill_timers[1] > nanoseconds::zero()) { // PROJECTILE
+				log->debug("cant fire projectile, {} seconds left", std::chrono::duration_cast<std::chrono::seconds>(skill_timers[1]).count());
+				return;
+			}
+
 			// player.action_state = (player.action_state == ACTION_MOVEMENT) ? ACTION_PROJECTILE : ACTION_MOVEMENT;
 			player.action_state = ACTION_PROJECTILE;
 		}
@@ -193,6 +235,11 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 	{
 		// logger()->debug("SHOOTING!");
 		if (player.action_state == ACTION_PROJECTILE) {
+			// set the cooldown. ASSUMPTION: if you are in this loop, cooldown is 0.
+			Skill projectileSkill = personal_skills[1];
+			Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(projectileSkill, projectileSkill.level);
+			std::chrono::seconds sec((int)adjustedSkill.cooldown);
+			skill_timers[1] = nanoseconds(sec);
 			double xpos, ypos;
 			//getting cursor position
 			glfwGetCursorPos(window, &xpos, &ypos);

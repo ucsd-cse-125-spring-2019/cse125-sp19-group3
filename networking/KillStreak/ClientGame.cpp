@@ -268,9 +268,8 @@ void ClientGame::run() {
 	// Loop while GLFW window should stay open
 	while (!glfwWindowShouldClose(window))
 	{
-
+		auto start = Clock::now();
 		// TODO: REMOVE ME!!! (new thread should handle incoming packets
-		// recv() and process UPDATE_SCENE_GRAPH packet from server 
 		ServerInputPacket* packet = network->receivePacket();
 		handleServerInputPacket(packet);
 
@@ -278,6 +277,9 @@ void ClientGame::run() {
 		Window_static::display_callback(window);
 		// Idle callback. Updating objects, etc. can be done here.
 		Window_static::idle_callback();
+		auto end = Clock::now();
+		nanoseconds elapsed = chrono::duration_cast<nanoseconds>(end - start);
+		Window_static::updateTimers(elapsed);
 	}
 
 	Window_static::clean_up();
@@ -316,6 +318,9 @@ int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
 	}
 
 	log->info("Time up, sending selection data to server, waiting for game to start.");
+
+	/* initialize skills*/
+	Window_static::initialize_skills(selected_type);
 
 	// create character selection packet & send to server
 	ClientSelectionPacket selection_packet = createCharacterSelectedPacket(username, selected_type);
