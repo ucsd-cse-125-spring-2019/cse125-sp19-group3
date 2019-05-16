@@ -179,8 +179,6 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 	{
 
 		// player moving
-		if ( player.action_state == ACTION_MOVEMENT )
-		{
 			double xpos, ypos;
 			//getting cursor position
 			glfwGetCursorPos(window, &xpos, &ypos);
@@ -188,12 +186,13 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 			glm::vec3 new_dest = viewToWorldCoordTransform(xpos, ypos);
 			ClientInputPacket movementPacket = game->createMovementPacket(new_dest);
 			network->sendToServer(movementPacket);
-		}
 		// player shooting projectile
-		else if (player.action_state == ACTION_PROJECTILE)
-		{
-			// logger()->debug("SHOOTING!");
 
+	}
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+	{
+		// logger()->debug("SHOOTING!");
+		if (player.action_state == ACTION_PROJECTILE) {
 			double xpos, ypos;
 			//getting cursor position
 			glfwGetCursorPos(window, &xpos, &ypos);
@@ -212,7 +211,6 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 			// TODO: Do we want to change action_state to moving after shooting?
 			player.action_state = ACTION_MOVEMENT;
 		}
-
 	}
 }
 
