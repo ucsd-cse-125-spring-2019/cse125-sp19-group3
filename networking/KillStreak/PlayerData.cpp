@@ -1,4 +1,4 @@
-#include "PlayerData.hpp"
+ #include "PlayerData.hpp"
 #include "logger.hpp"
 #include "sysexits.h"
 #include "nlohmann\json.hpp"
@@ -17,7 +17,7 @@ unordered_map<string, ArcheType> archetype_map = {
 	{"MAGE", MAGE},
 	{"ASSASSIN", HUMAN}, // FOR NOW
 	{"WARRIOR", WARRIOR},
-	{"KING", KING}
+	{"KING", KING},
 };	
 
 vector<int>* LeaderBoard::roundSummary() {
@@ -83,11 +83,15 @@ void Skill::load_archtype_data(unordered_map<unsigned int, Skill> &skill_map,
 }
 
 Skill Skill::calculateSkillBasedOnLevel(Skill &baseSkill, unsigned int level) {
-	return Skill(baseSkill.skill_id, 
-		         level, 
-		         baseSkill.skillName, 
-		         baseSkill.range * pow(1.2, level),
-		         baseSkill.cooldown * pow(0.7, level),
-		         baseSkill.duration, // worry about this for animation vs invisibility + evade
-		         baseSkill.speed * pow(1.1, level));
+	auto range = baseSkill.range * pow(1.2, level);
+	auto cooldown = baseSkill.cooldown * pow(0.7, level);
+	auto duration = baseSkill.duration;
+	auto speed = baseSkill.speed * pow(1.1, level);
+	return Skill(baseSkill.skill_id,
+		level,
+		baseSkill.skillName,
+		range,
+		cooldown,
+		duration, // worry about this for animation vs invisibility + evade
+		speed);
 }

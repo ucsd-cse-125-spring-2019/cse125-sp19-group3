@@ -31,6 +31,7 @@ public:
 	std::unordered_map<unsigned int, Transform *> clientSceneGraphMap;
 
 	void initialize_objects(ClientGame * game, ClientNetwork* network);
+	void initialize_skills(ArcheType selected_type);
 	//void playerInit(const ScenePlayer &player);
 	void clean_up();
 	GLFWwindow * create_window(int width, int height);
@@ -44,6 +45,7 @@ public:
 	void handleInitScenePacket(char * data);
 	void handleServerTickPacket(char* data);
 	void setRoot(Transform * newRoot);
+	void updateTimers(nanoseconds timePassed);
 
 private:
 	float min_scroll = 20.0f;
@@ -64,6 +66,9 @@ private:
 	ClientGame * game;
 	ClientNetwork * network;
 	vector<Transform *> env_objs;
+	vector<Skill> personal_skills;
+	vector<nanoseconds> skill_timers;
+	nanoseconds animation_timer;
 
 	// void removeTransform(Transform * parent, const unsigned int node_id);
 	
@@ -74,6 +79,8 @@ class Window_static
 public:
 	static ClientScene * scene;
 	static void initialize_objects(ClientGame * game, ClientNetwork * network) { scene->initialize_objects(game, network); };
+	static void initialize_skills(ArcheType selected_type) { scene->initialize_skills(selected_type); };
+	static void updateTimers(nanoseconds timePassed) { scene->updateTimers(timePassed); };
 	static void clean_up() { scene->clean_up(); };
 	static GLFWwindow * create_window(int width, int height) { return scene->create_window(width, height); };
 	static void resize_callback(GLFWwindow* win, int width, int height) {
