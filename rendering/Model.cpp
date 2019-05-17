@@ -12,7 +12,7 @@ Model::Model(string const &path, bool animated, bool gamma)
 	loadModel(path);
 
 	if(m_NumBones)
-		BoneTransform(animationMode, 0.0f);
+		BoneTransform(0.0f);
 
 }
 
@@ -37,7 +37,7 @@ void Model::draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &v
 		meshes[i].draw(shader, viewProjMtx);
 }
 
-void Model::BoneTransform(unsigned int AnimationMode, float TimeInSeconds)
+void Model::BoneTransform(float TimeInSeconds)
 {
 	glm::mat4 Identity = glm::mat4(1.0f);
 
@@ -48,12 +48,12 @@ void Model::BoneTransform(unsigned int AnimationMode, float TimeInSeconds)
 	//		break;
 	//	}
 	//}
-	float TicksPerSecond = scene->mAnimations[AnimationMode]->mTicksPerSecond != 0 ?
-		scene->mAnimations[AnimationMode]->mTicksPerSecond : 25.0f;
+	float TicksPerSecond = scene->mAnimations[animationMode]->mTicksPerSecond != 0 ?
+		scene->mAnimations[animationMode]->mTicksPerSecond : 25.0f;
 	float TimeInTicks = TimeInSeconds * TicksPerSecond;
-	float AnimationTime = fmod(TimeInTicks, scene->mAnimations[AnimationMode]->mDuration);
+	float AnimationTime = fmod(TimeInTicks, scene->mAnimations[animationMode]->mDuration);
 
-	ReadNodeHeirarchy(AnimationMode, AnimationTime, scene->mRootNode, Identity);
+	ReadNodeHeirarchy(AnimationTime, scene->mRootNode, Identity);
 
 	boneTransforms.resize(m_NumBones);
 
@@ -347,15 +347,15 @@ glm::mat4 aiM3x3toGlmMat4(aiMatrix3x3 m) {
 		0, 0, 0, 1);
 }
 
-void Model::ReadNodeHeirarchy(unsigned int AnimationMode, float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform)
+void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform)
 {
 	string NodeName(pNode->mName.data);
 
-	const aiAnimation* pAnimation = scene->mAnimations[AnimationMode];
+	const aiAnimation* pAnimation = scene->mAnimations[animationMode];
 
 	glm::mat4 NodeTransformation = aiM4x4toGlmMat4(pNode->mTransformation);
 
-	const aiNodeAnim* pNodeAnim = pAnimation->mChannels[m_ChannelMapping[AnimationMode][NodeName]];
+	const aiNodeAnim* pNodeAnim = pAnimation->mChannels[m_ChannelMapping[animationMode][NodeName]];
 
 	if (pNodeAnim) {
 		// Interpolate scaling and generate scaling transformation matrix
