@@ -236,7 +236,7 @@ void ServerScene::handlePlayerMovement(unsigned int playerId, glm::vec3 destinat
 	}
 }
 
-void ServerScene::handlePlayerSkill(unsigned int player_id, Point initPoint, Point finalPoint,
+void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 	unsigned int skill_id, unordered_map<unsigned int, Skill> *skill_map, PlayerMetadata &playerMetadata)
 {
 	auto level = playerMetadata.skillLevels[skill_id];
@@ -244,19 +244,20 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point initPoint, Poi
 	Skill cur_skill = s_it->second;
 	Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(cur_skill, level);
 
-	// TODO: giant if else / switch case here
 	if (skill_id % 10 == 1) { // hardcoded projectile skill here
 		nodeIdCounter++;
-		initPoint = scenePlayers[player_id].currentPos;
-		//finalPoint += glm::vec3({ 0.0f,5.0f,0.0f });
+
+		Point initPoint = scenePlayers[player_id].currentPos + glm::vec3({ 0.0f,5.0f,0.0f });
+		// finalPoint += glm::vec3({ 0.0f,5.0f,0.0f });
 		SceneProjectile projectile = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range);
 		serverSceneGraphMap.insert({ nodeIdCounter, projectile.node });
 		skills.push_back(projectile);
 		return;
 	}
-	// hardcoded mage omni aoe
+	// mage omni AOE (Pyroblast)
 	else if (skill_id == 2) {
-		initPoint = scenePlayers[player_id].currentPos;
+
+		Point initPoint = scenePlayers[player_id].currentPos;
 		for (int z = -1; z < 2; z++) {
 			for (int x = -1; x < 2; x++) {
 				if (x == 0 && z == 0) {
@@ -271,10 +272,11 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point initPoint, Poi
 		}
 		return;
 	}
+	// mage directional (Dragon's breath)
 	else if (skill_id == 3) {
 		nodeIdCounter++;
-		initPoint = scenePlayers[player_id].currentPos;
-		//finalPoint += Point({ 0.0f, 5.0f, 0.0f });
+		Point initPoint = scenePlayers[player_id].currentPos + Point({ 0.0f, 5.0f, 0.0f });
+		// finalPoint += Point({ 0.0f, 5.0f, 0.0f });
 		SceneProjectile dirAOE = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range);
 		dirAOE.node->scale = glm::scale(glm::mat4(1.0f), Point(0.08f, 0.08f, 0.08f));
 		serverSceneGraphMap.insert({ nodeIdCounter, dirAOE.node });

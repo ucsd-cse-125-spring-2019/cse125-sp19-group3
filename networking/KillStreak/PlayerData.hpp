@@ -81,8 +81,8 @@ public:
 		currLoseStreak = 0;
 		
 	}
-	PlayerMetadata() {}
-	~PlayerMetadata() {}
+	PlayerMetadata() {};
+	~PlayerMetadata() {};
 
 	unsigned int clientId;
 	std::string username;

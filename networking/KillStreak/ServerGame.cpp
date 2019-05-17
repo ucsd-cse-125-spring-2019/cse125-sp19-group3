@@ -529,9 +529,8 @@ void ServerGame::handleClientInputPacket(ClientInputPacket* packet, int client_i
 	case MOVEMENT:
 		scene->handlePlayerMovement(client_id, packet->finalLocation);
 		break;
-	case SKILL_PROJECTILE:
+	case SKILL:
 		scene->handlePlayerSkill(client_id, 
-			                     packet->initialLocation, 
 			                     packet->finalLocation, 
 			                     packet->skill_id,
 			                     skill_map,

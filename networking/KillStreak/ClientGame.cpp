@@ -401,12 +401,10 @@ ClientSelectionPacket ClientGame::createCharacterSelectedPacket(std::string user
 	return packet;
 }
 
-ClientInputPacket ClientGame::createClientInputPacket(InputType type, Point initLocation, Point finalLocation,
-	int skill_id)
+ClientInputPacket ClientGame::createClientInputPacket(InputType type, Point finalLocation, int skill_id)
 {
 	ClientInputPacket packet;
 	packet.inputType = type;
-	packet.initialLocation = initLocation;
 	packet.finalLocation = finalLocation;
 	packet.skill_id = skill_id;
 
@@ -414,26 +412,15 @@ ClientInputPacket ClientGame::createClientInputPacket(InputType type, Point init
 }
 
 ClientInputPacket ClientGame::createMovementPacket(Point newLocation) {
-	return createClientInputPacket(MOVEMENT, NULL_POINT, newLocation, -1);
+	return createClientInputPacket(MOVEMENT, newLocation, -1);
 }
 
-ClientInputPacket ClientGame::createProjectilePacket(Point initLocation, Point newLocation) {
-	// TODO: Do we want to name this type SKILL_PROJECTILE? 
-	// TODO: ClientInputPacket 'skillType' is just an integer??? How are we handling that?
-	// TODO: Do we still want attack-type? Attack-type = 1 --> projectile
-	return createClientInputPacket(SKILL_PROJECTILE, initLocation, newLocation, 11); // 11 MEANS PROJECTILE HARDCODED FOR NOW
-}
-
-ClientInputPacket ClientGame::createMageOmniAoePacket() {
-	return createClientInputPacket(SKILL_PROJECTILE, NULL_POINT, NULL_POINT, 2); // 2 IS MAGE OMNI AOE HARDCODED FOR NOW
-}
-
-ClientInputPacket ClientGame::createMageDirectionalAoePacket(Point initLocation, Point newLocation) {
-	return createClientInputPacket(SKILL_PROJECTILE, initLocation, newLocation, 3); // 3 IS MAGE DIR AOE HARDCODED FOR NOW
+ClientInputPacket ClientGame::createSkillPacket(Point destLocation, int skill_id) {
+	return createClientInputPacket(SKILL, destLocation, skill_id);
 }
 
 ClientInputPacket ClientGame::createInitPacket() {
-	return createClientInputPacket(INIT_CONN, NULL_POINT, NULL_POINT, -1);
+	return createClientInputPacket(INIT_CONN, NULL_POINT, -1);
 }
 
 /*
