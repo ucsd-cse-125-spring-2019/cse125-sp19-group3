@@ -43,6 +43,8 @@ public:
 	// deserialize client packet  
 	ClientInputPacket* deserializeCP(char* temp_buff);
 
+	ServerInputPacket createCharSelectPacket(char* data, int size);
+
 	// Socket to listen for new connections
 	SOCKET listenSocket;
 

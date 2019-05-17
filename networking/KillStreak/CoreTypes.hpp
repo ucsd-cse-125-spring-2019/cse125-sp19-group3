@@ -48,7 +48,6 @@ typedef struct {
 	ServerPacketType packetType;
 	int size;
 	char data[SERVER_TICK_PACKET_SIZE];
-	// TODO: Add data!!! 
 } ServerInputPacket;
 
 
@@ -60,7 +59,6 @@ typedef std::chrono::duration<double> dsec;
 typedef std::queue<ClientInputPacket*> ClientThreadQueue;	
 // queue for clients incoming packets from server (client)
 typedef std::queue<ServerInputPacket*> ServerInputQueue;    
-
 
 /* Server scheduling queue event */
 typedef enum {END_KILLPHASE, END_PREPAREPHASE} EventType;

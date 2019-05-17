@@ -18,10 +18,27 @@ using namespace std;
 Contains meta data for client passed to client thread.
 */
 typedef struct {
-	unsigned int id;				// client ID
-	ClientThreadQueue *q_ptr;		// queue pointer
-	ServerNetwork *network;			// Server network pointer
-	mutex* q_lock;					// lock for client queue
+
+	// client id
+	unsigned int id;				
+
+	// queue pointer and corresponding lock
+	ClientThreadQueue* q_ptr;
+	mutex* q_lock;
+
+	// Server network pointer
+	ServerNetwork* network;
+
+	// pointers to servers maps
+	unordered_map<unsigned int, Skill> *skill_map_ptr;					
+	unordered_map<ArcheType, int> *selected_chars_map_ptr;
+	unordered_map<unsigned int, PlayerMetadata> *playerMetadatas_ptr;		
+	unordered_map<ArcheType, vector<unsigned int>> *archetype_skillset_ptr;
+
+	// selected character mapping pointer & corresponding lock
+	mutex* char_lock;
+
+
 } client_data;
 
 class ServerGame {
@@ -30,11 +47,13 @@ public:
 
 	void launch();
 
+	void game_match();
+
 	void updateKillPhase();
 
 	void updatePreparePhase();
 
-	void game_match();
+	void launch_client_threads();
 
 	const int NUM_THREADS = 8;
 
@@ -43,19 +62,18 @@ protected:
 	PCSTR port;
   
 	double tick_rate;
-	int char_select_time;					// time for character selection phase
 
 	vector<client_data*> client_data_list;	// list of pointers to all client data (queue, id, lock, etc.)
 	ScheduledEvent scheduledEvent;
   
-	unordered_map<unsigned int, PlayerMetadata> playerMetadatas;	// map client_id to player meta_data
-
-	unordered_map<unsigned int, Skill> skill_map;				// Map ArchType to list of skills
-	unordered_map<ArcheType, vector<unsigned int>> archetype_skillset;
+	unordered_map<unsigned int, Skill> *skill_map;								// Map ArchType to list of skills
+	unordered_map<unsigned int, PlayerMetadata> *playerMetadatas;				// map client_id to player meta_data
+	unordered_map<ArcheType, int> *selected_characters;							// Map selected character to client_id
+	unordered_map<ArcheType, vector<unsigned int>> *archetype_skillset;
 
 	ServerScene * scene;
-
 	ServerNetwork* network;					// ptr to servers network
+	mutex* char_select_lock;				// lock for character selection
 
 	void readMetaDataForSkills();
 
@@ -64,7 +82,7 @@ protected:
 	ServerInputPacket createInitScenePacket(unsigned int playerId, unsigned int playerRootid);
 	ServerInputPacket createServerTickPacket();
 	ServerInputPacket createWelcomePacket();
-	ServerInputPacket createCharSelectPacket();
+	ServerInputPacket createCharSelectPacket(char* data, int size);
 
 	
 	void handleClientInputPacket(ClientInputPacket* packet, int client_id);

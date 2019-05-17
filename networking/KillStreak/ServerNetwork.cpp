@@ -329,4 +329,16 @@ ClientInputPacket* ServerNetwork::deserializeCP(char* temp_buff)
 }
 
 
+ServerInputPacket createServerPacket(ServerPacketType type, int size, char* data)
+{
+	ServerInputPacket packet;
+	packet.packetType = type;
+	packet.size = size;
+	memcpy(packet.data, data, size);
+	return packet;
+}
 
+ServerInputPacket ServerNetwork::createCharSelectPacket(char* data, int size)
+{
+	return createServerPacket(CHAR_SELECT_PHASE, size, data);
+}
