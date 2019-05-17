@@ -18,10 +18,21 @@ using namespace std;
 Contains meta data for client passed to client thread.
 */
 typedef struct {
-	unsigned int id;				// client ID
-	ClientThreadQueue *q_ptr;		// queue pointer
-	ServerNetwork *network;			// Server network pointer
-	mutex* q_lock;					// lock for client queue
+
+	// client id
+	unsigned int id;				
+
+	// queue pointer and corresponding lock
+	ClientThreadQueue* q_ptr;
+	mutex* q_lock;
+
+	// Server network pointer
+	ServerNetwork* network;
+
+	// selected character mapping pointer & corresponding lock
+	unordered_map<ArcheType, int> *selected_chars_ptr;
+	mutex* char_lock;
+
 } client_data;
 
 class ServerGame {
@@ -47,13 +58,14 @@ protected:
 	vector<client_data*> client_data_list;	// list of pointers to all client data (queue, id, lock, etc.)
 	ScheduledEvent scheduledEvent;
   
-	unordered_map<unsigned int, Skill> *skill_map;						// Map ArchType to list of skills
+	unordered_map<unsigned int, Skill> *skill_map;								// Map ArchType to list of skills
 	unordered_map<unsigned int, PlayerMetadata> *playerMetadatas;				// map client_id to player meta_data
+	unordered_map<ArcheType, int> *selected_characters;							// Map selected character to client_id
 	unordered_map<ArcheType, vector<unsigned int>> *archetype_skillset;
 
 	ServerScene * scene;
-
 	ServerNetwork* network;					// ptr to servers network
+	mutex* char_select_lock;				// lock for character selection
 
 	void readMetaDataForSkills();
 

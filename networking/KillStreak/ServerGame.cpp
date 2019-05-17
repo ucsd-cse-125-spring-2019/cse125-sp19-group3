@@ -28,9 +28,10 @@ ServerGame::ServerGame(string host, string port, double tick_rate)
 	this->tick_rate = tick_rate;
 
 	// initialize maps
-	skill_map = new unordered_map<unsigned int, Skill>();
-	playerMetadatas = new unordered_map<unsigned int, PlayerMetadata>();
-	archetype_skillset = new unordered_map<ArcheType, vector<unsigned int>>();
+	skill_map		    = new unordered_map<unsigned int, Skill>();
+	selected_characters = new unordered_map<ArcheType, int>();
+	playerMetadatas     = new unordered_map<unsigned int, PlayerMetadata>();
+	archetype_skillset  = new unordered_map<ArcheType, vector<unsigned int>>();
 
 	// initialize global skill map
 	readMetaDataForSkills();	// load skills from config into skills maps
@@ -39,6 +40,7 @@ ServerGame::ServerGame(string host, string port, double tick_rate)
 	network = new ServerNetwork(this->host, this->port);
 	scheduledEvent = ScheduledEvent(END_KILLPHASE, 10000000); // default huge value
 
+	char_select_lock = new mutex();
 }
 
 
@@ -133,6 +135,10 @@ void ServerGame::game_match()
 			client_arg->q_ptr = client_q;				// pointer to clients packet queue
 			client_arg->network = network;				// pointer to ServerNetwork
 			client_arg->q_lock = client_lock;			// pointer to queue lock
+
+			// pointer to selected characters map & lock
+			client_arg->selected_chars_ptr = selected_characters;
+			client_arg->char_lock = char_select_lock;
 
 			client_data_list.push_back(client_arg);		// add pointer to this clients data
 
