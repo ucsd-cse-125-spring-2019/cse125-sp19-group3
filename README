@@ -24,6 +24,7 @@
 		-> nupengl.core.redist
 		-> spdlog.native
 		-> spdlog-native
+		-> nlohmann.json
 
 4.) Try to compile and run. If an error shows up saying "assimp-vc140-mt.dll not found", do the following:
   Copy the file assimp-vc140-mt.dll
