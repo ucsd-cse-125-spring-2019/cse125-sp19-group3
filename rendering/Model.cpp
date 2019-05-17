@@ -366,7 +366,8 @@ void Model::ReadNodeHeirarchy(unsigned int AnimationMode, float AnimationTime, c
 		// Interpolate rotation and generate rotation transformation matrix
 		aiQuaternion RotationQ;
 		CalcInterpolatedRotation(RotationQ, AnimationTime, pNodeAnim);
-		glm::mat4 RotationM = aiM4x4toGlmMat4(aiMatrix4x4(RotationQ.GetMatrix()));
+		glm::mat4 RotationM = glm::mat4_cast(glm::quat(RotationQ.w, RotationQ.x, RotationQ.y, RotationQ.z));
+		//glm::mat4 RotationM = aiM4x4toGlmMat4(aiMatrix4x4(RotationQ.GetMatrix()));
 
 		// Interpolate translation and generate translation transformation matrix
 		aiVector3D Translation;
@@ -466,11 +467,6 @@ void Model::CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const
 		Out = pNodeAnim->mPositionKeys[0].mValue;
 		return;
 	}
-
-	/*if (AnimationTime == 0) {
-		Out = pNodeAnim->mPositionKeys[0].mValue;
-		return;
-	}*/
 
 	unsigned int PositionIndex = FindPosition(AnimationTime, pNodeAnim);
 	unsigned int NextPositionIndex = (PositionIndex + 1);

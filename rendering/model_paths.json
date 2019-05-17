@@ -1,7 +1,7 @@
 {
   "data": [
-    {
-      "path": "../models/swordman/swordman.fbx",
+	{
+      "path": "../models/king/allinone.fbx",
       "model_id": 0,
       "color_rgb": [
         0.5,
@@ -12,7 +12,7 @@
       "radius": 1.5
     },
     {
-      "path": "../models/grunt/allinone.fbx",
+      "path": "../models/BaseMesh_Anim.fbx",
       "model_id": 1,
       "color_rgb": [
         0.5,
@@ -20,7 +20,7 @@
         0.5
       ],
       "animated": true,
-      "radius": 3.0
+      "radius": 1.5
     },
     {
       "path": "../models/projectiles/kunai.fbx",
