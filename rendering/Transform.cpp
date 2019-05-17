@@ -200,10 +200,10 @@ bool Transform::isCollided(glm::vec3 forwardVector, unordered_map<unsigned int,f
 					{ otherNode->translation[3][0], otherNode->translation[3][1], otherNode->translation[3][2] }, otherSize);
 				if(result)
 				{
-
+					
 					printf("Collision Detected: Collided with model id %d, %f, %f, %f \n", other_id, otherSize.x, otherSize.y, otherSize.z);
-					printf("Player's next Pos will be: %f, %f, %f \n", nextPos.x, nextPos.y, nextPos.z);
-					printf("Model at %f,%f,%f \n", otherNode->translation[3][0], otherNode->translation[3][1], otherNode->translation[3][2]);
+					//printf("Player's next Pos will be: %f, %f, %f \n", nextPos.x, nextPos.y, nextPos.z);
+					//printf("Model at %f,%f,%f \n", otherNode->translation[3][0], otherNode->translation[3][1], otherNode->translation[3][2]);
 				}
 			}
 			if (result) {

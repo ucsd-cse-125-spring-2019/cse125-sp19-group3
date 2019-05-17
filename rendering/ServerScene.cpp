@@ -129,8 +129,6 @@ void ServerScene::initModelPhysics() {
 		model_radius.insert({ (unsigned int)obj["model_id"], (float)obj["radius"] });
 		if (!obj["animated"]) {
 			glm::vec3 size = findCubeDimensions(obj["path"]);
-			printf("current processing model %ud \n", (unsigned int)obj["model_id"]);
-			printf("size of box is: %f %f %f \n", size.x, size.y, size.z);
 			model_boundingbox.insert({ (unsigned int)obj["model_id"],  size });
 		}
 	}
@@ -170,21 +168,17 @@ void ServerScene::addPlayer(unsigned int playerId, ArcheType modelType) {
 void ServerScene::update()
 {
 	time += 1.0 / 60;
-	for (auto& element : scenePlayers) {
-		checkAndHandlePlayerCollision(element.first);
-		element.second.update();
-	}
 	auto skillIter = skills.begin();
 	while (skillIter != skills.end()) {
 		auto & skill = *skillIter;
-		bool collided = false;
+		bool skillCollidedEnv = false;
 		for (auto& envObj : env_objs) {
 			glm::vec3 forwardVector = skill.direction*skill.speed;
 			if (skill.node->isCollided(forwardVector, model_radius, serverSceneGraphMap, envObj, model_boundingbox, true)) {
-				collided = true;
+				skillCollidedEnv = true;
 			}
 		}
-		if (skill.outOfRange() || collided) {
+		if (skill.outOfRange() || skillCollidedEnv) {
 			serverSceneGraphMap.erase(skill.node->node_id);
 			skillRoot->removeChild(skill.node->node_id);
 			delete(skill.node);
@@ -195,13 +189,29 @@ void ServerScene::update()
 			skillIter++;
 		}
 	}
+	for (auto& element : scenePlayers) {
+		checkAndHandlePlayerCollision(element.first);
+		element.second.update();
+	}
 }
 
 //TODO: Refactoring, moving collision check to player??? Also find radius for various objs.
 void ServerScene::checkAndHandlePlayerCollision(unsigned int playerId) {
 	ScenePlayer &player = scenePlayers[playerId];
+	glm::vec3 forwardVector = (player.destination - player.currentPos)* player.speed;
+	if(glm::length(forwardVector)>1)
+		forwardVector = glm::normalize(player.destination - player.currentPos)* player.speed;
+	for (auto& skill : skills) {
+		if (skill.ownerId == playerId) {
+			continue;
+		}
+		else if (player.playerRoot->isCollided(forwardVector, model_radius, serverSceneGraphMap, skill.node, model_boundingbox, false)) {
+			player.setDestination(player.currentPos);
+			printf("Player %d killed Player %d \n", skill.ownerId, playerId);
+			return;
+		}
+	}
 	for (auto& envObj : env_objs) {
-		glm::vec3 forwardVector = glm::normalize(player.destination - player.currentPos)* player.speed;
 		if (player.playerRoot->isCollided(forwardVector, model_radius, serverSceneGraphMap, envObj, model_boundingbox, true)) {
 			player.setDestination(player.currentPos);
 			break;
@@ -237,8 +247,8 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point initPoint, Poi
 	// TODO: giant if else / switch case here
 	if (skill_id % 10 == 1) { // hardcoded projectile skill here
 		nodeIdCounter++;
-		initPoint = scenePlayers[player_id].currentPos + glm::vec3({ 0.0f,5.0f,0.0f });
-		finalPoint += glm::vec3({ 0.0f,5.0f,0.0f });
+		initPoint = scenePlayers[player_id].currentPos;
+		//finalPoint += glm::vec3({ 0.0f,5.0f,0.0f });
 		SceneProjectile projectile = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range);
 		serverSceneGraphMap.insert({ nodeIdCounter, projectile.node });
 		skills.push_back(projectile);
@@ -246,7 +256,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point initPoint, Poi
 	}
 	// hardcoded mage omni aoe
 	else if (skill_id == 2) {
-		initPoint = scenePlayers[player_id].currentPos + glm::vec3({ 0.0f, 5.0f, 0.0f });
+		initPoint = scenePlayers[player_id].currentPos;
 		for (int z = -1; z < 2; z++) {
 			for (int x = -1; x < 2; x++) {
 				if (x == 0 && z == 0) {
@@ -263,8 +273,8 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point initPoint, Poi
 	}
 	else if (skill_id == 3) {
 		nodeIdCounter++;
-		initPoint = scenePlayers[player_id].currentPos + Point({ 0.0f, 5.0f, 0.0f });
-		finalPoint += Point({ 0.0f, 5.0f, 0.0f });
+		initPoint = scenePlayers[player_id].currentPos;
+		//finalPoint += Point({ 0.0f, 5.0f, 0.0f });
 		SceneProjectile dirAOE = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range);
 		dirAOE.node->scale = glm::scale(glm::mat4(1.0f), Point(0.08f, 0.08f, 0.08f));
 		serverSceneGraphMap.insert({ nodeIdCounter, dirAOE.node });

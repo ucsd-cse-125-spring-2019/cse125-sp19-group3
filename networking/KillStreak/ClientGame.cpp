@@ -315,9 +315,23 @@ int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
 	{
 
 		// TODO: REMOVE ME!!! This will be from client input
-		username = "Snake";
-		selected_type = HUMAN;
-
+		int num = rand() % 4;
+		if (num == 0) {
+			username = "Snake";
+			selected_type = HUMAN;
+		}
+		else if(num == 1) {
+			username = "Roy";
+			selected_type = ASSASSIN;
+		}
+		else if (num == 2) {
+			username = "Drake";
+			selected_type = MAGE;
+		}
+		else {
+			username = "Kiki";
+			selected_type = WARRIOR;
+		}
 
 		log->info("Sending character selection to server: Username {}, ArcheType {}", username, selected_type);
 
