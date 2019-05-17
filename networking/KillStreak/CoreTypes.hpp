@@ -61,6 +61,11 @@ typedef std::queue<ClientInputPacket*> ClientThreadQueue;
 // queue for clients incoming packets from server (client)
 typedef std::queue<ServerInputPacket*> ServerInputQueue;    
 
+/*
+typedef std::unordered_map<unsigned int, Skill> Skill_Map;
+typedef std::unordered_map<unsigned int, PlayerMetadata> Metadata_Map;
+typedef std::unordered_map<ArcheType, vector<unsigned int>> Arche_Skill_Map;
+*/
 
 /* Server scheduling queue event */
 typedef enum {END_KILLPHASE, END_PREPAREPHASE} EventType;

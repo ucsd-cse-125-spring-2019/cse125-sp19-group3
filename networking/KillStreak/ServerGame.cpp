@@ -27,11 +27,15 @@ ServerGame::ServerGame(string host, string port, double tick_rate)
 	this->port = port.c_str();
 	this->tick_rate = tick_rate;
 
+	// initialize maps
+	skill_map = new unordered_map<unsigned int, Skill>();
+	playerMetadatas = new unordered_map<unsigned int, PlayerMetadata>();
+	archetype_skillset = new unordered_map<ArcheType, vector<unsigned int>>();
+
 	// initialize global skill map
 	readMetaDataForSkills();	// load skills from config into skills maps
 
 	scene = new ServerScene();
-
 	network = new ServerNetwork(this->host, this->port);
 	scheduledEvent = ScheduledEvent(END_KILLPHASE, 10000000); // default huge value
 
@@ -177,7 +181,7 @@ void ServerGame::game_match()
 		std::string username = selection_packet->username;
 		ArcheType character_type = selection_packet->type;
 		PlayerMetadata player = PlayerMetadata(client_id, username, character_type, skill_map, archetype_skillset);
-		playerMetadatas.insert({ client_id, player });
+		playerMetadatas->insert({ client_id, player });
 
 		log->info("Client {}: Username {}, Character: {}", client_id, username, character_type);
 	}
@@ -188,7 +192,12 @@ void ServerGame::game_match()
 	// add each player to scene based on character selection
 	for (auto client_data : client_data_list) {
 		unsigned int client_id = client_data->id;
-		scene->addPlayer(client_id, playerMetadatas[client_id].type);
+
+		// get type
+		unordered_map<unsigned int, PlayerMetadata>::iterator m_it = playerMetadatas->find(client_id);
+		ArcheType cur_type = m_it->second.type;
+
+		scene->addPlayer(client_id, cur_type);
 	}
 
 	// Init players in the scene; send initScene packet to all clients (tells players game is initializing)
@@ -397,7 +406,10 @@ ServerInputPacket ServerGame::createCharSelectPacket() {
 	Delegates to function corresponding to packet-type. 
 */
 void ServerGame::handleClientInputPacket(ClientInputPacket* packet, int client_id) {
-	auto playerMetadata = playerMetadatas[client_id];
+
+	unordered_map<unsigned int, PlayerMetadata>::iterator m_it = playerMetadatas->find(client_id);
+	auto playerMetadata = m_it->second;
+
 	switch (packet->inputType) {
 	case MOVEMENT:
 		scene->handlePlayerMovement(client_id, packet->finalLocation);

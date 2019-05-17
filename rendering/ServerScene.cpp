@@ -226,10 +226,13 @@ void ServerScene::handlePlayerMovement(unsigned int playerId, glm::vec3 destinat
 	}
 }
 
-void ServerScene::handlePlayerSkill(unsigned int player_id, Point initPoint, Point finalPoint, unsigned int skill_id, unordered_map<unsigned int, Skill> &skill_map, PlayerMetadata &playerMetadata)
+void ServerScene::handlePlayerSkill(unsigned int player_id, Point initPoint, Point finalPoint,
+	unsigned int skill_id, unordered_map<unsigned int, Skill> *skill_map, PlayerMetadata &playerMetadata)
 {
 	auto level = playerMetadata.skillLevels[skill_id];
-	Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(skill_map[skill_id], level);
+	unordered_map<unsigned int, Skill>::iterator s_it = skill_map->find(skill_id);
+	Skill cur_skill = s_it->second;
+	Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(cur_skill, level);
 
 	// TODO: giant if else / switch case here
 	if (skill_id % 10 == 1) { // hardcoded projectile skill here

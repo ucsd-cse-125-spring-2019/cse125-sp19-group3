@@ -43,12 +43,22 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network)
 }
 
 void ClientScene::initialize_skills(ArcheType selected_type) {
-	unordered_map<unsigned int, Skill> skill_map;
-	unordered_map<ArcheType, vector<unsigned int>> archetype_skillset;
+
+	unordered_map<unsigned int, Skill>* skill_map = new unordered_map<unsigned int, Skill>();
+	unordered_map<ArcheType, vector<unsigned int>> *archetype_skillset = new unordered_map<ArcheType, vector<unsigned int>>();
+
 	Skill::load_archtype_data(skill_map, archetype_skillset);
-	for (auto skill_id : archetype_skillset[selected_type]) {
-		personal_skills.push_back(skill_map[skill_id]);
+
+	// get list of skills for archetype
+	unordered_map<ArcheType, vector<unsigned int>>::iterator a_it = archetype_skillset->find(selected_type);
+	vector<unsigned int> vec = a_it->second;
+
+	// push each skill into personal skills
+	for (auto skill_id : vec) {
+		unordered_map<unsigned int, Skill>::iterator s_it = skill_map->find(skill_id);
+		personal_skills.push_back(s_it->second);
 	}
+
 	skill_timers = vector<nanoseconds>(personal_skills.size(), nanoseconds::zero());
 	animation_timer = nanoseconds::zero();
 }

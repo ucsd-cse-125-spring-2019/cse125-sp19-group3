@@ -35,12 +35,14 @@ public:
 	void addPlayer(unsigned int playerId, ArcheType modelType);
 	void update();
 	void handlePlayerMovement(unsigned int player_id, glm::vec3 destination);
+
 	void handlePlayerSkill(unsigned int player_id, 
 		                   Point initPoint, 
 		                   Point finalPoint, 
 		                   unsigned int skill_id, 
-		                   unordered_map<unsigned int, Skill> &skill_map,
+		                   unordered_map<unsigned int, Skill> *skill_map,
 		                   PlayerMetadata &playerMetadata);
+
 	void checkAndHandlePlayerCollision(unsigned int playerId);
 	/*unsigned int serializeInitScene(char* data, unsigned int playerId, unsigned int playerRootId);
 	unsigned int serializeSceneGraph(char* data);
