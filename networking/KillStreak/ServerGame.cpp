@@ -344,16 +344,18 @@ void ServerGame::readMetaDataForSkills() {
 
 
 ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsigned int playerRootId) {
+	// init scene packet will have the first scenegraph
 	unsigned int sgSize;
-	char buf[1024] = { 0 };
+	char buf[10000] = { 0 };
 	char * bufPtr = buf;
+
 	memcpy(bufPtr, &playerId, sizeof(unsigned int));
 	bufPtr += sizeof(unsigned int);
 	memcpy(bufPtr, &playerRootId, sizeof(unsigned int));
 	bufPtr += sizeof(unsigned int);
 	Transform * root = scene->getRoot();
 	sgSize = Serialization::serializeSceneGraph(root, bufPtr, scene->serverSceneGraphMap);
-	return createServerPacket(INIT_SCENE, 1024, buf);
+	return createServerPacket(INIT_SCENE, 10000, buf);
 }
 
 /*

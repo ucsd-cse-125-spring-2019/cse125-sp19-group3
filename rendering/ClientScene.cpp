@@ -206,6 +206,27 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 			// Close the window. This causes the program to also terminate.
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
+		// hardcoding mage omnidirectional aoe
+		else if (key == GLFW_KEY_W) {
+			if (skill_timers[2] > nanoseconds::zero()) { // OMNIDIRECTIONAL AOE
+				log->debug("can't trigger aoe, {} secs left", std::chrono::duration_cast<std::chrono::seconds>(skill_timers[2]).count());
+				return;
+			}
+			Skill omniAoeSkill = personal_skills[2];
+			Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(omniAoeSkill, omniAoeSkill.level);
+			std::chrono::seconds sec((int)adjustedSkill.cooldown);
+			skill_timers[2] = nanoseconds(sec);
+			ClientInputPacket mageOmniAoePacket = game->createMageOmniAoePacket();
+			network->sendToServer(mageOmniAoePacket);
+		}
+		// hardcoding mage directional aoe
+		else if (key == GLFW_KEY_E) {
+			if (skill_timers[3] > nanoseconds::zero()) {
+				log->debug("can't trigger aoe, {} secs left", std::chrono::duration_cast<std::chrono::seconds>(skill_timers[3]).count());
+				return;
+			}
+			player.action_state = ACTION_MAGE_DIRECTIONAL_AOE;
+		}
 	}
 }
 
@@ -257,6 +278,17 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 			// TODO: Handle server receiving projectile packet!
 			// TODO: Do we want to change action_state to moving after shooting?
 			player.action_state = ACTION_MOVEMENT;
+		}
+		else if (player.action_state == ACTION_MAGE_DIRECTIONAL_AOE) {
+			Skill aoeSkill = personal_skills[3];
+			Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(aoeSkill, aoeSkill.level);
+			std::chrono::seconds sec((int)adjustedSkill.cooldown);
+			skill_timers[3] = nanoseconds(sec);
+			double xpos, ypos;
+			glfwGetCursorPos(window, &xpos, &ypos);
+			Point new_dest = viewToWorldCoordTransform(xpos, ypos);
+			ClientInputPacket aoePacket = game->createMageDirectionalAoePacket(NULL_POINT, new_dest);
+			network->sendToServer(aoePacket);
 		}
 	}
 }

@@ -376,6 +376,14 @@ ClientInputPacket ClientGame::createProjectilePacket(Point initLocation, Point n
 	return createClientInputPacket(SKILL_PROJECTILE, initLocation, newLocation, 11); // 11 MEANS PROJECTILE HARDCODED FOR NOW
 }
 
+ClientInputPacket ClientGame::createMageOmniAoePacket() {
+	return createClientInputPacket(SKILL_PROJECTILE, NULL_POINT, NULL_POINT, 2); // 2 IS MAGE OMNI AOE HARDCODED FOR NOW
+}
+
+ClientInputPacket ClientGame::createMageDirectionalAoePacket(Point initLocation, Point newLocation) {
+	return createClientInputPacket(SKILL_PROJECTILE, initLocation, newLocation, 3); // 3 IS MAGE DIR AOE HARDCODED FOR NOW
+}
+
 ClientInputPacket ClientGame::createInitPacket() {
 	return createClientInputPacket(INIT_CONN, NULL_POINT, NULL_POINT, -1);
 }
