@@ -1,6 +1,10 @@
 #include "ClientScene.h"
 #include "nlohmann\json.hpp"
 #include <fstream>
+#define EVADE_INDEX 0
+#define PROJ_INDEX 1
+#define OMNI_SKILL_INDEX 2
+#define DIR_SKILL_INDEX 3
 
 using json = nlohmann::json;
 
@@ -61,6 +65,7 @@ void ClientScene::initialize_skills(ArcheType selected_type) {
 
 	skill_timers = vector<nanoseconds>(personal_skills.size(), nanoseconds::zero());
 	animation_timer = nanoseconds::zero();
+	player.modelType = selected_type;
 }
 
 void ClientScene::clean_up()
@@ -198,44 +203,77 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 	// Check for a key press
 	if (action == GLFW_PRESS)
 	{
-		// 'q' pressed? Change state from movement to projectile or vice-versa
-		if (key == GLFW_KEY_Q)		
-		{
-			// TODO: decide on how to map skills to input. for now, hardcode.
-			if (skill_timers[1] > nanoseconds::zero()) { // PROJECTILE
-				log->debug("cant fire projectile, {} seconds left", std::chrono::duration_cast<std::chrono::seconds>(skill_timers[1]).count());
-				return;
-			}
-
-			// player.action_state = (player.action_state == ACTION_MOVEMENT) ? ACTION_PROJECTILE : ACTION_MOVEMENT;
-			player.action_state = ACTION_PROJECTILE;
-		}
-		// Check if escape was pressed
-		else if (key == GLFW_KEY_ESCAPE) 
+		/*
+			Q --> Directional Skill (with the exception of King)
+			W --> Omni Directional Skill
+			E --> Evade (omni)
+			R --> Projectile (directional)
+		    
+			*******    In meta_data.json    ******
+			Skills MUST be in the order of: evade (0), projectile (1), omni (2), directional (3)
+		*/
+		if (key == GLFW_KEY_ESCAPE)
 		{
 			// Close the window. This causes the program to also terminate.
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
-		// hardcoding mage omnidirectional aoe
-		else if (key == GLFW_KEY_W) {
-			if (skill_timers[2] > nanoseconds::zero()) { // OMNIDIRECTIONAL AOE
-				log->debug("can't trigger aoe, {} secs left", std::chrono::duration_cast<std::chrono::seconds>(skill_timers[2]).count());
+		else if (key == GLFW_KEY_Q) // DIRECTIONAL SKILL		
+		{
+			// check cooldown
+			if (skill_timers[DIR_SKILL_INDEX] > nanoseconds::zero()) {
 				return;
 			}
-			Skill omniAoeSkill = personal_skills[2];
-			Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(omniAoeSkill, omniAoeSkill.level);
-			std::chrono::seconds sec((int)adjustedSkill.cooldown);
-			skill_timers[2] = nanoseconds(sec);
-			ClientInputPacket mageOmniAoePacket = game->createMageOmniAoePacket();
-			network->sendToServer(mageOmniAoePacket);
+			// prep for left mouse click
+			player.action_state = ACTION_DIRECTIONAL_SKILL;
+			player.isPrepProjectile = false;
 		}
-		// hardcoding mage directional aoe
-		else if (key == GLFW_KEY_E) {
-			if (skill_timers[3] > nanoseconds::zero()) {
-				log->debug("can't trigger aoe, {} secs left", std::chrono::duration_cast<std::chrono::seconds>(skill_timers[3]).count());
+		else if (key == GLFW_KEY_R) { // PROJECTILE SKILL
+			// check cooldown
+			if (skill_timers[PROJ_INDEX] > nanoseconds::zero()) {
 				return;
 			}
-			player.action_state = ACTION_MAGE_DIRECTIONAL_AOE;
+			// prep for left mouse click
+			player.action_state = ACTION_DIRECTIONAL_SKILL;
+			player.isPrepProjectile = true;
+		}
+		else if (key == GLFW_KEY_W) { // OMNIDIRECTIONAL SKILL
+			// check cooldown
+			if (skill_timers[OMNI_SKILL_INDEX] > nanoseconds::zero()) {
+				return;
+			}
+			// cancel prep mode if necessary
+			player.action_state = ACTION_MOVEMENT;
+
+			// get skill and adjust
+			Skill omniSkill = personal_skills[OMNI_SKILL_INDEX];
+			Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(omniSkill, omniSkill.level);
+			
+			// set cooldown
+			std::chrono::seconds sec((int)adjustedSkill.cooldown);
+			skill_timers[OMNI_SKILL_INDEX] = nanoseconds(sec);
+			
+			// send server skill packet
+			ClientInputPacket omniSkillPacket = game->createSkillPacket(NULL_POINT, adjustedSkill.skill_id);
+			network->sendToServer(omniSkillPacket);
+		}
+		else if (key == GLFW_KEY_E) { // EVADE SKILL
+			if (skill_timers[EVADE_INDEX] > nanoseconds::zero()) {
+				return;
+			}
+			// cancel prep mode if necessary
+			player.action_state = ACTION_MOVEMENT;
+
+			// get skill and adjust
+			Skill evadeSkill = personal_skills[EVADE_INDEX];
+			Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(evadeSkill, evadeSkill.level);
+
+			// set cooldown
+			std::chrono::seconds sec((int)adjustedSkill.cooldown);
+			skill_timers[EVADE_INDEX] = nanoseconds(sec);
+
+			// send server skill packet
+			ClientInputPacket evadeSkillPacket = game->createSkillPacket(NULL_POINT, adjustedSkill.skill_id);
+			network->sendToServer(evadeSkillPacket);
 		}
 	}
 }
@@ -264,41 +302,29 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 	}
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
 	{
-		// logger()->debug("SHOOTING!");
-		if (player.action_state == ACTION_PROJECTILE) {
-			// set the cooldown. ASSUMPTION: if you are in this loop, cooldown is 0.
-			Skill projectileSkill = personal_skills[1];
-			Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(projectileSkill, projectileSkill.level);
+		if (player.action_state == ACTION_DIRECTIONAL_SKILL) {
+			// get the right skill based on what skill was prepped (projectile vs directional skill)
+			Skill skill = player.isPrepProjectile ? personal_skills[PROJ_INDEX] : personal_skills[DIR_SKILL_INDEX];
+			Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(skill, skill.level);
+			
+			// set cooldown
 			std::chrono::seconds sec((int)adjustedSkill.cooldown);
-			skill_timers[1] = nanoseconds(sec);
+			if (player.isPrepProjectile) {
+				skill_timers[PROJ_INDEX] = nanoseconds(sec);
+			}
+			else {
+				skill_timers[ACTION_DIRECTIONAL_SKILL] = nanoseconds(sec);
+			}
+
+			// get cursor position and translate it to world point
 			double xpos, ypos;
-			//getting cursor position
 			glfwGetCursorPos(window, &xpos, &ypos);
-			//printf("Cursor Position at %f: %f \n", xpos, ypos);
 			glm::vec3 new_dest = viewToWorldCoordTransform(xpos, ypos);
 
-			glm::mat4 M = clientSceneGraphMap[player.root_id]->M;
-			Point initPoint = Point(M[0].x, M[0].y, M[0].z);
-			logger()->debug("init Point: {}, {}, {}", initPoint.x, initPoint.y, initPoint.z);
-
-			// create projectile packet & send to server
-			ClientInputPacket projectilePacket = game->createProjectilePacket(initPoint, new_dest);
-			network->sendToServer(projectilePacket);
-
-			// TODO: Handle server receiving projectile packet!
-			// TODO: Do we want to change action_state to moving after shooting?
+			// create skill packet and send to server
+			ClientInputPacket skillPacket = game->createSkillPacket(new_dest, adjustedSkill.skill_id);
+			network->sendToServer(skillPacket);
 			player.action_state = ACTION_MOVEMENT;
-		}
-		else if (player.action_state == ACTION_MAGE_DIRECTIONAL_AOE) {
-			Skill aoeSkill = personal_skills[3];
-			Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(aoeSkill, aoeSkill.level);
-			std::chrono::seconds sec((int)adjustedSkill.cooldown);
-			skill_timers[3] = nanoseconds(sec);
-			double xpos, ypos;
-			glfwGetCursorPos(window, &xpos, &ypos);
-			Point new_dest = viewToWorldCoordTransform(xpos, ypos);
-			ClientInputPacket aoePacket = game->createMageDirectionalAoePacket(NULL_POINT, new_dest);
-			network->sendToServer(aoePacket);
 		}
 	}
 }
