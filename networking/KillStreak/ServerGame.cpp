@@ -52,37 +52,19 @@ ServerGame::ServerGame(string host, string port, double tick_rate)
 
 
 /*
-	Launch thread for new client. Waits until all players connected and 
-	game starts. Will then consistently recv() data from client one packet size 
-	at a time into a buffer. Once full packet is read, its deserialzied into a 
-	ClientInputPacket struct and added to the client threads queue. Packets sent
-	to the client threads queue are ready to be processed by the server.
-
-	client_data passed to thread (arg), contains client ID & pointer to client
-	thread queue & server network.
-
-	Note: log->info( ... ) 'CT {}:' stands for 'Client Thread <ID>:' 
+	Receives clients packet to request a character and username. Checks if character 
+	has already been selected, if so sends packet to user informing them of unavailable 
+	characters. Will continue waiting for client input until the client selects a valid character.
 */
-void client_session(void *arg)
+void character_selection_phase(client_data* client_arg)
 {
-	auto log = logger();
 
-	// get client data
-	client_data *client_arg = (client_data*) arg;
-	int client_id = client_arg->id;
-	ServerNetwork * network = client_arg->network;
-
-	log->info("CT <{}>: Launching new client thread", client_id);
-
-	// block until character selection phase
-	while (character_select_start != START_CHAR_SELECTION);
-
-	// handle clients character selection
-	// TODO: figure otu how to move all this to a helper function once you get it working!
-	// character_selection(client_arg);
 	logger()->info("CT <{}>: Waiting for clients character selection", client_arg->id);
 
 	int selected = 0;
+	int client_id = client_arg->id;
+	ServerNetwork * network = client_arg->network;
+
 	do
 	{
 
@@ -129,14 +111,43 @@ void client_session(void *arg)
 					--> Successfull selection confirming they've picked their character
 			*/
 
-
-			
 			logger()->info("Client <{}>: Selected Username {} and ArcheType: {}", client_id, username, character_type);
 			selected = 1;		// end loop
 		}
 
 	} while (!selected);		// until unique character selected
 
+}
+
+
+/*
+	Launch thread for new client. Waits until all players connected and 
+	game starts. Will then consistently recv() data from client one packet size 
+	at a time into a buffer. Once full packet is read, its deserialzied into a 
+	ClientInputPacket struct and added to the client threads queue. Packets sent
+	to the client threads queue are ready to be processed by the server.
+
+	client_data passed to thread (arg), contains client ID & pointer to client
+	thread queue & server network.
+
+	Note: log->info( ... ) 'CT {}:' stands for 'Client Thread <ID>:' 
+*/
+void client_session(void *arg)
+{
+	auto log = logger();
+
+	// get client data
+	client_data *client_arg = (client_data*) arg;
+	int client_id = client_arg->id;
+	ServerNetwork * network = client_arg->network;
+
+	log->info("CT <{}>: Launching new client thread", client_id);
+
+	// block until character selection phase
+	while (character_select_start != START_CHAR_SELECTION);
+
+	// handle clients character selection
+	character_selection_phase(client_arg);
 
 	// end character selection phase if all characters selected
 	if (client_arg->selected_chars_map_ptr->size() == GAME_SIZE) character_select_over = END_CHAR_SELECTION;

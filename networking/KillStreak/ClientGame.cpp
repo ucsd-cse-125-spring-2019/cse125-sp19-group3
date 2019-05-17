@@ -338,7 +338,7 @@ int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
 		}
 
 		// block on recv() until server tells us if we got desired character
-		ServerInputPacket* char_select_packet = network->receivePacket();
+//		ServerInputPacket* char_select_packet = network->receivePacket();
 		// NOTE: This breaks movement.. must be because it 'steals' a packet that doesn't belong to it! 
 		// Be careful when handling these cases ... need to fill in the servers send it'll likely fix the issue
 
@@ -350,6 +350,10 @@ int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
 
 			--> else: Update UI greying out characters we cant choose & loop again asking for input
 		*/
+
+		// TODO: MOVE MEEE
+		selected = 1; 
+		// TODO: MOVE ME!!!!
 
 	} while (!selected);	// until successfully select character
 
