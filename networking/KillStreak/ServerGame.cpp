@@ -11,7 +11,7 @@
 #include <process.h>					// threads
 #include <windows.h>					// sleep
 
-#define GAME_SIZE			 3			// total players required to start game
+#define GAME_SIZE			 1			// total players required to start game
 #define LOBBY_START_TIME	 500		// wait this long (ms) after all players connect
 #define START_CHAR_SELECTION 1			// start value of char selection phase
 #define END_CHAR_SELECTION   2			// end value of char selection phase
@@ -114,17 +114,8 @@ void character_selection_phase(client_data* client_arg)
 
 			// allocate meta data 
 			std::string username = selection_packet->username;
-			/* 
 			PlayerMetadata player = PlayerMetadata(client_id, username, character_type, 
 				client_arg->skill_map_ptr, client_arg->archetype_skillset_ptr);
-				*/
-
-
-			// NOTE: REMOVE MEEEE!!!!
-			// This is just to test multiple clients since we only have one model
-			PlayerMetadata player = PlayerMetadata(client_id, username, HUMAN, 
-				client_arg->skill_map_ptr, client_arg->archetype_skillset_ptr);
-
 
 
 			// add to map & release lock

@@ -288,9 +288,10 @@ void ClientGame::run() {
 	
 }
 
+
 /*
-	Give client 'x' amount of time to make character and username selection. 
-	Send packet to server once time is up.
+	Client selects ArcheType and username. If character taken will be asked to 
+	choose again. 
 */
 int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
 	auto log = logger();
@@ -310,28 +311,13 @@ int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
 	//		next loop
 
 	// input character & username selection; send request to server; repeat if unavailable
-
-	int count = 0;// REMOVE ME
 	do
 	{
 
 		// TODO: REMOVE ME!!! This will be from client input
 		username = "Snake";
+		selected_type = HUMAN;
 
-		// REMOVE ME
-		if (count == 0)
-		{
-			log->debug("PICKING HOOMAN");
-			selected_type = HUMAN;
-		}
-		else if (count == 1) {
-			log->debug("PICKING MAGE");
-			selected_type = MAGE;
-		}
-		else {
-			log->debug("PICKING WARRIOR!");
-			selected_type = WARRIOR;
-		}
 
 		log->info("Sending character selection to server: Username {}, ArcheType {}", username, selected_type);
 
@@ -357,27 +343,35 @@ int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
 		int sz = char_select_packet->size;
 
 		if (sz == 1) selected = 1;  // character accepted; exit loop
+
 		else						// character unavailable; reselect 
 		{
-			for (int i = 0; i < sz; i++ )
+			for (int i = 1; i < sz; i++ )
 			{
-				log->debug("---> {}", char_select_packet->data[i]);
+				//log->debug("---> {}", char_select_packet->data[i]);
+
+				/* 
+				GRAPHICS: Grey out characters here and dont allow user to select them
+				
+				For each i in char_select_packet->data[i] it is an index 
+				into the enum of character types. So 0 is HUMAN, 1 is MAGE, 2 is WARRIOR, etc.. 
+				If this loop produces any numbers that index is not available so we would 
+				grey it out or something.
+
+				--> Example: If this loop produces
+					0 on the first loop
+					2 on the second loop
+					That means that HUMAN and WARRIOR models cannot be selected
+				*/
 			}
 
 		}
-		count++;	// TODO: REMOVE ME
 
 	} while (!selected);	// until successfully select character
 
 
 	/* initialize skills*/
-	//Window_static::initialize_skills(selected_type);
-
-	// TODO: CHANG ME BACK
-	Window_static::initialize_skills(HUMAN);
-	// TODO: CHANG ME BACK
-
-
+	Window_static::initialize_skills(selected_type);
 
 	return iResult;
 }
