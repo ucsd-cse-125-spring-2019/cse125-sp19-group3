@@ -3,6 +3,7 @@
 #include "ServerGame.hpp"
 #include "ServerNetwork.hpp"
 #include "PlayerData.hpp"
+#include "CoreTypes.hpp"
 #include "nlohmann\json.hpp"
 #include <fstream>
 
@@ -10,7 +11,7 @@
 #include <process.h>					// threads
 #include <windows.h>					// sleep
 
-#define GAME_SIZE			 2			// total players required to start game
+#define GAME_SIZE			 3			// total players required to start game
 #define LOBBY_START_TIME	 500		// wait this long (ms) after all players connect
 #define START_CHAR_SELECTION 1			// start value of char selection phase
 #define END_CHAR_SELECTION   2			// end value of char selection phase
@@ -20,6 +21,7 @@ static int character_select_start = 0;	// character selection ready to begin?
 static int character_select_over  = 0;	// character selection over?
 
 using json = nlohmann::json;
+using namespace std;
 
 
 /*
@@ -79,14 +81,29 @@ void character_selection_phase(client_data* client_arg)
 		// unavailable.. tell client what characters have been selected; loop again;
 		if (c_it != client_arg->selected_chars_map_ptr->end())	
 		{
-			logger()->info("Client <{}>: Requested character unavailable");
+			logger()->info("Client <{}>: Requested character unavailable", client_id);
+			
+			string data_str = "0";				// first byte 0 means failure
+
+			// find all unavailable characters & add to enum index to data
+			c_it = client_arg->selected_chars_map_ptr->begin();
+			while ( c_it != client_arg->selected_chars_map_ptr->end())
+			{
+				data_str += to_string(c_it->first);
+				c_it++;
+			}
 
 			client_arg->char_lock->unlock();	// release lock
 
-			/* TODO: Send packet to client telling them what characters have been selected
-						then loop again blocking on recv() for next selection
-			 */
+			// convert to char* 
+			int sz = data_str.length();
+			char data[1024];
+			strcpy(data, data_str.c_str());
+			logger()->info("Client <{}>: Sending request to pick again!", client_id);
 
+			// send packet
+			ServerInputPacket char_response_packet = network->createCharSelectPacket(data, sz);
+			network->sendToClient(client_id, char_response_packet);
 
 		}
 		else	// character available
@@ -97,19 +114,27 @@ void character_selection_phase(client_data* client_arg)
 
 			// allocate meta data 
 			std::string username = selection_packet->username;
+			/* 
 			PlayerMetadata player = PlayerMetadata(client_id, username, character_type, 
 				client_arg->skill_map_ptr, client_arg->archetype_skillset_ptr);
+				*/
 
-			// add meta_data to map & release lock
+
+			// NOTE: REMOVE MEEEE!!!!
+			// This is just to test multiple clients since we only have one model
+			PlayerMetadata player = PlayerMetadata(client_id, username, HUMAN, 
+				client_arg->skill_map_ptr, client_arg->archetype_skillset_ptr);
+
+
+
+			// add to map & release lock
 			client_arg->playerMetadatas_ptr->insert({ client_id, player });
-			client_arg->char_lock->unlock();	
+			client_arg->char_lock->unlock();		 
 
-			/* 
-			TODO: Send packet to client confirming character selection
-				*** Need to find way to send two different packets to client 
-					--> Failed selection with data stating which characters are gone 
-					--> Successfull selection confirming they've picked their character
-			*/
+			// send packet telling client of successful selection (1 as first byte of data)
+			char data[] = "1";		
+			ServerInputPacket char_response_packet = network->createCharSelectPacket(data,1);
+			network->sendToClient(client_id, char_response_packet);
 
 			logger()->info("Client <{}>: Selected Username {} and ArcheType: {}", client_id, username, character_type);
 			selected = 1;		// end loop
@@ -275,7 +300,8 @@ void ServerGame::game_match()
 
 	// broadcast character selection packet to all clients (tell them to select username/character)
 	log->info("MT: Broadcasting character selection packet to all clients!");
-	ServerInputPacket char_select_packet = createCharSelectPacket();
+	char buf[1024] = { 0 };
+	ServerInputPacket char_select_packet = createCharSelectPacket(buf,0);
 	network->broadcastSend(char_select_packet);
 
 	// start character selection & wait for it to complete (handled by client threads)
@@ -458,6 +484,7 @@ ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsig
 	return createServerPacket(INIT_SCENE, 10000, buf);
 }
 
+
 /*
 	Create packet with serialized scene graph.
 */
@@ -486,10 +513,16 @@ ServerInputPacket ServerGame::createWelcomePacket() {
 
 /*
 	Create packet telling clients to select their username and character.
+	Result of -1 is initial packet with no body, otherwise serialzie data. 
+	First integer is result (0 for failure, 1 for success).
+	Second integer is the concatenated indices that are unavailable in the 
+	character enum types. 
+		--> Example: If HUMAN and MAGE are unavailable then 01 will be the value
+		--> Can then read one byte at a time
 */
-ServerInputPacket ServerGame::createCharSelectPacket() {
-	char buf[1024] = { 0 };
-	return createServerPacket(CHAR_SELECT_PHASE, 0, buf);
+ServerInputPacket ServerGame::createCharSelectPacket(char* data, int size)
+{
+	return createServerPacket(CHAR_SELECT_PHASE, size, data);
 }
 
 /*

@@ -48,7 +48,6 @@ typedef struct {
 	ServerPacketType packetType;
 	int size;
 	char data[SERVER_TICK_PACKET_SIZE];
-	// TODO: Add data!!! 
 } ServerInputPacket;
 
 

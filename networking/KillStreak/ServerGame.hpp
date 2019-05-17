@@ -82,7 +82,7 @@ protected:
 	ServerInputPacket createInitScenePacket(unsigned int playerId, unsigned int playerRootid);
 	ServerInputPacket createServerTickPacket();
 	ServerInputPacket createWelcomePacket();
-	ServerInputPacket createCharSelectPacket();
+	ServerInputPacket createCharSelectPacket(char* data, int size);
 
 	
 	void handleClientInputPacket(ClientInputPacket* packet, int client_id);

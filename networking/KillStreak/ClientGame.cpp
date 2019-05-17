@@ -304,21 +304,34 @@ int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
 	//		 --> Make sure to tell clients decision is final!
 	//		 --> Need a 'submit' button (no timer)
 
+	// NOTE: Assuming this runs with the GUI, loop runs after 'submit' pressed
+	// (can test w/ hard-coded randomized values with a randomized sleep timer)
+	// BETTER TEST: Have list of characters choose first in list, if taken choose second on
+	//		next loop
+
 	// input character & username selection; send request to server; repeat if unavailable
+
+	int count = 0;// REMOVE ME
 	do
 	{
-		// NOTE: Assuming this runs immedietly after 'submit' pressed
-		// UI goes in this loop?!?!?!!?
-		// (can test w/ hard-coded randomized values with a randomized sleep timer)
-		// BETTER TEST: Have list of characters choose first in list, if taken choose second on
-		//		next loop
-		// ...	
-		// ...
-		// ...
 
 		// TODO: REMOVE ME!!! This will be from client input
 		username = "Snake";
-		selected_type = HUMAN;
+
+		// REMOVE ME
+		if (count == 0)
+		{
+			log->debug("PICKING HOOMAN");
+			selected_type = HUMAN;
+		}
+		else if (count == 1) {
+			log->debug("PICKING MAGE");
+			selected_type = MAGE;
+		}
+		else {
+			log->debug("PICKING WARRIOR!");
+			selected_type = WARRIOR;
+		}
 
 		log->info("Sending character selection to server: Username {}, ArcheType {}", username, selected_type);
 
@@ -340,31 +353,35 @@ int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
 		}
 
 		// block on recv() until server tells us if we got desired character
-//		ServerInputPacket* char_select_packet = network->receivePacket();
-		// NOTE: This breaks movement.. must be because it 'steals' a packet that doesn't belong to it! 
-		// Be careful when handling these cases ... need to fill in the servers send it'll likely fix the issue
+		ServerInputPacket* char_select_packet = network->receivePacket();
+		int sz = char_select_packet->size;
 
-		/* TODO: Need to extract data from packet 
-			--> If accepted selection then end the loop
-			* selected = 1
-			* initialize_skillzzzz
-			* anything else to do?
+		if (sz == 1) selected = 1;  // character accepted; exit loop
+		else						// character unavailable; reselect 
+		{
+			for (int i = 0; i < sz; i++ )
+			{
+				log->debug("---> {}", char_select_packet->data[i]);
+			}
 
-			--> else: Update UI greying out characters we cant choose & loop again asking for input
-		*/
-
-		// TODO: MOVE MEEE
-		selected = 1; 
-		// TODO: MOVE ME!!!!
+		}
+		count++;	// TODO: REMOVE ME
 
 	} while (!selected);	// until successfully select character
 
 
 	/* initialize skills*/
-	Window_static::initialize_skills(selected_type);
+	//Window_static::initialize_skills(selected_type);
+
+	// TODO: CHANG ME BACK
+	Window_static::initialize_skills(HUMAN);
+	// TODO: CHANG ME BACK
+
+
 
 	return iResult;
 }
+
 
 /*
 	Create packet with username and Archtype selection to send to server.
