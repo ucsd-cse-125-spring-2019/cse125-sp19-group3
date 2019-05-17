@@ -54,7 +54,7 @@ public:
 	// draws the model, and thus all its meshes
 	void draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx);
 
-	void BoneTransform(unsigned int AnimationMode, float TimeInSeconds);
+	void BoneTransform(float TimeInSeconds);
 
 	//TODO: collision detection. when doing collision detection, pass in location data(could get from translate matrix)
 	//bool isCollided(glm::vec3 myPos, Model * other, glm::vec3 otherPos);
@@ -91,7 +91,7 @@ private:
 	
 	void LoadBones(unsigned int meshIndex, const aiMesh* mesh, vector<Vertex> &vertices);
 
-	void ReadNodeHeirarchy(unsigned int AnimationMode, float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform);
+	void ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform);
 
 	void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
 
