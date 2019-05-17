@@ -29,9 +29,15 @@ typedef struct {
 	// Server network pointer
 	ServerNetwork* network;
 
+	// pointers to servers maps
+	unordered_map<unsigned int, Skill> *skill_map_ptr;					
+	unordered_map<ArcheType, int> *selected_chars_map_ptr;
+	unordered_map<unsigned int, PlayerMetadata> *playerMetadatas_ptr;		
+	unordered_map<ArcheType, vector<unsigned int>> *archetype_skillset_ptr;
+
 	// selected character mapping pointer & corresponding lock
-	unordered_map<ArcheType, int> *selected_chars_ptr;
 	mutex* char_lock;
+
 
 } client_data;
 

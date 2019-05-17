@@ -2,18 +2,25 @@
 #include "logger.hpp"
 #include "ServerGame.hpp"
 #include "ServerNetwork.hpp"
+#include "PlayerData.hpp"
 #include "nlohmann\json.hpp"
 #include <fstream>
 
 #include <string>
-#include <process.h>				// threads
-#include <windows.h>				// sleep
+#include <process.h>					// threads
+#include <windows.h>					// sleep
 
-#define GAME_SIZE			1		// total players required to start game
-#define LOBBY_START_TIME	500	// wait this long (ms) after all players connect
+#define GAME_SIZE			 1			// total players required to start game
+#define LOBBY_START_TIME	 500		// wait this long (ms) after all players connect
+#define START_CHAR_SELECTION 1			// start value of char selection phase
+#define END_CHAR_SELECTION   2			// end value of char selection phase
 
-static int game_start = 0;			// game ready to begin?
+static int game_start			  = 0;	// game ready to begin?
+static int character_select_start = 0;	// character selection ready to begin?
+static int character_select_over  = 0;	// character selection over?
+
 using json = nlohmann::json;
+
 
 /*
 	Parse data from config file for server. Then initialize 
@@ -67,7 +74,73 @@ void client_session(void *arg)
 
 	log->info("CT <{}>: Launching new client thread", client_id);
 
-	// game hasn't started yet; wait until ready
+	// block until character selection phase
+	while (character_select_start != START_CHAR_SELECTION);
+
+	// handle clients character selection
+	// TODO: figure otu how to move all this to a helper function once you get it working!
+	// character_selection(client_arg);
+	logger()->info("CT <{}>: Waiting for clients character selection", client_arg->id);
+
+	int selected = 0;
+	do
+	{
+
+		// block on recv() until get clients character selection
+		ClientSelectionPacket* selection_packet = network->receiveSelectionPacket(client_id);
+		ArcheType character_type = selection_packet->type;
+
+		// grap character select lock & check if character available
+		client_arg->char_lock->lock();
+		unordered_map<ArcheType, int>::iterator c_it = client_arg->selected_chars_map_ptr->find(character_type);
+
+		// unavailable.. tell client what characters have been selected; loop again;
+		if (c_it != client_arg->selected_chars_map_ptr->end())	
+		{
+
+			client_arg->char_lock->unlock();	// release lock
+
+			/* TODO: Send packet to client telling them what characters have been selected
+						then loop again blocking on recv() for next selection
+			 */
+
+
+		}
+		else	// character available
+		{
+
+			// make character unavailable
+			client_arg->selected_chars_map_ptr->insert({ character_type, client_id });
+
+			// allocate meta data 
+			std::string username = selection_packet->username;
+			PlayerMetadata player = PlayerMetadata(client_id, username, character_type, 
+				client_arg->skill_map_ptr, client_arg->archetype_skillset_ptr);
+
+			// add meta_data to map & release lock
+			client_arg->playerMetadatas_ptr->insert({ client_id, player });
+			client_arg->char_lock->unlock();	
+
+			/* 
+			TODO: Send packet to client confirming character selection
+				*** Need to find way to send two different packets to client 
+					--> Failed selection with data stating which characters are gone 
+					--> Successfull selection confirming they've picked their character
+			*/
+
+
+			
+			logger()->info("Client <{}>: Selected Username {} and ArcheType: {}", client_id, username, character_type);
+			selected = 1;		// end loop
+		}
+
+	} while (!selected);		// until unique character selected
+
+
+	// start game if all characters selected
+	game_start = (client_arg->selected_chars_map_ptr->size() == GAME_SIZE) ? 1 : 0;
+
+	// busy wait if game hasn't started yet...
 	if (!game_start) log->info("CT <{}>: Waiting for game to start", client_arg->id);
 	while (!game_start) {};	 
 
@@ -134,10 +207,15 @@ void ServerGame::game_match()
 			client_arg->id = client_id - 1;				// current clients ID
 			client_arg->q_ptr = client_q;				// pointer to clients packet queue
 			client_arg->network = network;				// pointer to ServerNetwork
-			client_arg->q_lock = client_lock;			// pointer to queue lock
 
-			// pointer to selected characters map & lock
-			client_arg->selected_chars_ptr = selected_characters;
+			// pointers to servers maps
+			client_arg->skill_map_ptr = skill_map;
+			client_arg->playerMetadatas_ptr = playerMetadatas;
+			client_arg->archetype_skillset_ptr = archetype_skillset;
+			client_arg->selected_chars_map_ptr = selected_characters;
+
+			// pointers to servers locks
+			client_arg->q_lock = client_lock;			
 			client_arg->char_lock = char_select_lock;
 
 			client_data_list.push_back(client_arg);		// add pointer to this clients data
@@ -170,28 +248,15 @@ void ServerGame::game_match()
 	log->info("MT: Character selection starting in {} seconds...", LOBBY_START_TIME/1000);
 	Sleep(LOBBY_START_TIME);					
 
-	log->info("MT: Broadcasting character selection packet to all clients!");
-
 	// broadcast character selection packet to all clients (tell them to select username/character)
+	log->info("MT: Broadcasting character selection packet to all clients!");
 	ServerInputPacket char_select_packet = createCharSelectPacket();
 	network->broadcastSend(char_select_packet);
 
-
-	// wait for character selection packet from each client (block on recv()) & save MetaData
-	for (auto client_data : client_data_list) {		
-		int client_id = client_data->id;
-		ClientSelectionPacket* selection_packet = network->receiveSelectionPacket(client_id);
-		log->info("received character selection packet from a client {}", client_id);
-
-		// get client metadata from packet and map to client_id
-		std::string username = selection_packet->username;
-		ArcheType character_type = selection_packet->type;
-		PlayerMetadata player = PlayerMetadata(client_id, username, character_type, skill_map, archetype_skillset);
-		playerMetadatas->insert({ client_id, player });
-
-		log->info("Client {}: Username {}, Character: {}", client_id, username, character_type);
-	}
-
+	// start character selection & wait for to complete (handled by client threads)
+	character_select_start = START_CHAR_SELECTION;		
+	logger()->info("MT: Waiting for character selection phase to end");
+	while (character_select_over != END_CHAR_SELECTION);
 
 	log->info("All client character selections received, initializing game...");
 

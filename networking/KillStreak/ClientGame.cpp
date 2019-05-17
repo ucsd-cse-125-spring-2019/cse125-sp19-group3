@@ -133,10 +133,6 @@ void constantListenFromServer(void *arg)
 			break;
 		}
 
-		// TODO: REMOVE ME!!!
-		//log->debug("--> Receiving packet from server size: {}", packet->size);
-		//log->debug("--> Packet Type: {}", packet->packetType);
-
 		// acquire queue lock & push packet 
 		q_lock->lock();
 		q_ptr->push(packet);			
@@ -213,7 +209,7 @@ int ClientGame::join_game()
 	// select username and character & send to server
 	handleServerInputPacket(char_select_packet);
 
-	// block until recv() init scene packet from server marking game start
+	// character selected; block until recv() init scene packet from server marking game start
 	ServerInputPacket * initScenePacket = network->receivePacket();
 	handleServerInputPacket(initScenePacket);
 
@@ -301,6 +297,30 @@ int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
 	std::string username;			// user selected username
 	ArcheType selected_type;		// user selected character
 
+	// TODO (GRAPHICS): Display UI for selecting character and username
+	//		 --> Make sure to tell clients decision is final!
+	//		 --> Need a 'submit' button (no timer)
+
+	/*
+
+		1. Once 'submit' is pressed send() character selection request to server
+		2. Block on recv() until..
+			a. Server says you got the character; end loop
+			b. Need to reselect character
+				--> Update the UI greying out any characters that have been selected already
+				--> Loop again waiting for 'submit' to be pressed
+
+	*/
+	do
+	{
+
+
+
+	} while (1);	// until successfully select character
+
+
+	/*
+
 	// countdown until character selection phase is over
 	auto Start = std::chrono::high_resolution_clock::now();
 	while (1)
@@ -319,8 +339,6 @@ int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
 
 	log->info("Time up, sending selection data to server, waiting for game to start.");
 
-	/* initialize skills*/
-	Window_static::initialize_skills(selected_type);
 
 	// create character selection packet & send to server
 	ClientSelectionPacket selection_packet = createCharacterSelectedPacket(username, selected_type);
@@ -340,6 +358,13 @@ int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
 	}
 
 	log->debug("Sent character data, waiting for game to start message from server!");
+
+	*/
+
+	// NOTE: This must occur after client successfully selects player 
+	/* initialize skills*/
+	Window_static::initialize_skills(selected_type);
+
 	return iResult;
 }
 
