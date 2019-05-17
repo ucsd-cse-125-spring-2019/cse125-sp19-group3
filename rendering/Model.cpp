@@ -402,6 +402,9 @@ void Model::CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const 
 		return;
 	}
 
+	AnimationTime = fmod(AnimationTime, ((float)pNodeAnim->mScalingKeys[pNodeAnim->mNumScalingKeys - 1].mTime - (float)pNodeAnim->mScalingKeys[0].mTime))
+		+ (float)pNodeAnim->mScalingKeys[0].mTime;
+
 	unsigned int ScalingIndex = FindScaling(AnimationTime, pNodeAnim);
 	unsigned int NextScalingIndex = (ScalingIndex + 1);
 	assert(NextScalingIndex < pNodeAnim->mNumScalingKeys);
@@ -435,6 +438,9 @@ void Model::CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, con
 		return;
 	}
 
+	AnimationTime = fmod(AnimationTime, ((float)pNodeAnim->mRotationKeys[pNodeAnim->mNumRotationKeys - 1].mTime - (float)pNodeAnim->mRotationKeys[0].mTime))
+		+ (float)pNodeAnim->mRotationKeys[0].mTime;
+
 	unsigned int RotationIndex = FindRotation(AnimationTime, pNodeAnim);
 	unsigned int NextRotationIndex = (RotationIndex + 1);
 	assert(NextRotationIndex < pNodeAnim->mNumRotationKeys);
@@ -467,6 +473,9 @@ void Model::CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const
 		Out = pNodeAnim->mPositionKeys[0].mValue;
 		return;
 	}
+
+	AnimationTime = fmod(AnimationTime, ((float)pNodeAnim->mPositionKeys[pNodeAnim->mNumPositionKeys - 1].mTime - (float)pNodeAnim->mPositionKeys[0].mTime))
+		+ (float)pNodeAnim->mPositionKeys[0].mTime;
 
 	unsigned int PositionIndex = FindPosition(AnimationTime, pNodeAnim);
 	unsigned int NextPositionIndex = (PositionIndex + 1);

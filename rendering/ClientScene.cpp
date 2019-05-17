@@ -112,7 +112,7 @@ void ClientScene::idle_callback()
 {
 	// Call the update function the cube
 	//cube->update();
-	time += 1.0 / 60;
+	time += 2.0 / 60;
 	glm::mat4 playerNode = clientSceneGraphMap[player.root_id]->M;
 	camera->cam_look_at = { playerNode[3][0],playerNode[3][1],playerNode[3][2] };
 	camera->cam_pos = initCamPos + glm::vec3({ playerNode[3][0],playerNode[3][1],playerNode[3][2] });

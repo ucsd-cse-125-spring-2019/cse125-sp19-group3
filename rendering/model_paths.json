@@ -1,6 +1,62 @@
 {
   "data": [
-	{
+    {
+      "path": "../models/BaseMesh_Anim.fbx",
+      "model_id": 4,
+      "color_rgb": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "rotate_angle": -90.0,
+      "rotate_axis": [ 1.0, 0.0, 0.0 ],
+      "scale": 0.05,
+      "animated": true,
+      "radius": 1.5
+    },
+    {
+      "path": "../models/mage/mage.dae",
+      "model_id": 1,
+      "color_rgb": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "rotate_angle": 0.0,
+      "rotate_axis": [ 0.0, 1.0, 0.0 ],
+      "scale": 0.0005,
+      "animated": true,
+      "radius": 1.5
+    },
+    {
+      "path": "../models/crossbowman/crossbowman.dae",
+      "model_id": 2,
+      "color_rgb": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "rotate_angle": 0.0,
+      "rotate_axis": [ 0.0, 1.0, 0.0 ],
+      "scale": 0.0005,
+      "animated": true,
+      "radius": 1.5
+    },
+    {
+      "path": "../models/swordman/swordman.dae",
+      "model_id": 3,
+      "color_rgb": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "rotate_angle": 0.0,
+      "rotate_axis": [ 0.0, 1.0, 0.0 ],
+      "scale": 0.00025,
+      "animated": true,
+      "radius": 1.5
+    },
+    {
       "path": "../models/king/allinone.fbx",
       "model_id": 0,
       "color_rgb": [
@@ -8,17 +64,9 @@
         0.5,
         0.5
       ],
-      "animated": true,
-      "radius": 1.5
-    },
-    {
-      "path": "../models/BaseMesh_Anim.fbx",
-      "model_id": 1,
-      "color_rgb": [
-        0.5,
-        0.5,
-        0.5
-      ],
+      "rotate_angle": 0.0,
+      "rotate_axis": [ 0.0, 1.0, 0.0 ],
+      "scale": 0.025,
       "animated": true,
       "radius": 1.5
     },
@@ -34,7 +82,7 @@
       "radius": 1.0
     },
     {
-      "path": "../models/fence_element_1.fbx",
+      "path": "../models/environment/fence_element_1.fbx",
       "model_id": 100,
       "color_rgb": [
         0.5,
@@ -45,7 +93,7 @@
       "radius": 2.5
     },
     {
-      "path": "../models/fence_element_2.fbx",
+      "path": "../models/environment/fence_element_2.fbx",
       "model_id": 101,
       "color_rgb": [
         0.5,
@@ -56,7 +104,7 @@
       "radius": 2.5
     },
     {
-      "path": "../models/grave_stone_1.fbx",
+      "path": "../models/environment/grave_stone_1.fbx",
       "model_id": 102,
       "color_rgb": [
         0.5,
@@ -67,7 +115,7 @@
       "radius": 1.0
     },
     {
-      "path": "../models/grave_stone_3.fbx",
+      "path": "../models/environment/grave_stone_3.fbx",
       "model_id": 103,
       "color_rgb": [
         0.5,
@@ -78,7 +126,7 @@
       "radius": 1.3
     },
     {
-      "path": "../models/dungeon_entrance.fbx",
+      "path": "../models/environment/dungeon_entrance.fbx",
       "model_id": 104,
       "color_rgb": [
         1.0,
@@ -89,7 +137,7 @@
       "radius": 1000.0
     },
     {
-      "path": "../models/candle_arrangement_3.fbx",
+      "path": "../models/environment/candle_arrangement_3.fbx",
       "model_id": 105,
       "color_rgb": [
         1.0,
@@ -100,7 +148,7 @@
       "radius": 3.0
     },
     {
-      "path": "../models/cube_01_hue_1.fbx",
+      "path": "../models/environment/cube_01_hue_1.fbx",
       "model_id": 106,
       "color_rgb": [
         1.0,
@@ -111,7 +159,7 @@
       "radius": 3.0
     },
     {
-      "path": "../models/skull_stone_01_hue_1.fbx",
+      "path": "../models/environment/skull_stone_01_hue_1.fbx",
       "model_id": 107,
       "color_rgb": [
         1.0,
@@ -122,7 +170,7 @@
       "radius": 3.0
     },
     {
-      "path": "../models/cube_05_hue_1.fbx",
+      "path": "../models/environment/cube_05_hue_1.fbx",
       "model_id": 108,
       "color_rgb": [
         1.0,
@@ -133,7 +181,7 @@
       "radius": 3.0
     },
     {
-      "path": "../models/gate.fbx",
+      "path": "../models/environment/gate.fbx",
       "model_id": 109,
       "color_rgb": [
         1.0,
@@ -144,7 +192,7 @@
       "radius": 3.0
     },
     {
-      "path": "../models/fence_pillar_1.fbx",
+      "path": "../models/environment/fence_pillar_1.fbx",
       "model_id": 110,
       "color_rgb": [
         1.0,
@@ -155,7 +203,7 @@
       "radius": 1.0
     },
     {
-      "path": "../models/tomb.fbx",
+      "path": "../models/environment/tomb.fbx",
       "model_id": 111,
       "color_rgb": [
         1.0,
