@@ -294,6 +294,9 @@ void ClientGame::run() {
 */
 int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
 	auto log = logger();
+	int iResult = 0;				// return value
+	int selected = 0;				// loop condition
+
 	std::string username;			// user selected username
 	ArcheType selected_type;		// user selected character
 
@@ -301,67 +304,54 @@ int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
 	//		 --> Make sure to tell clients decision is final!
 	//		 --> Need a 'submit' button (no timer)
 
-	/*
-
-		1. Once 'submit' is pressed send() character selection request to server
-		2. Block on recv() until..
-			a. Server says you got the character; end loop
-			b. Need to reselect character
-				--> Update the UI greying out any characters that have been selected already
-				--> Loop again waiting for 'submit' to be pressed
-
-	*/
+	// input character & username selection; send request to server; repeat if unavailable
 	do
 	{
+		// NOTE: Assuming this runs immedietly after 'submit' pressed
+		// UI goes in this loop?!?!?!!?
+		// (can test w/ hard-coded randomized values with a randomized sleep timer)
+		// ...	
+		// ...
+		// ...
+
+		// TODO: REMOVE ME!!! This will be from client input
+		username = "Snake";
+		selected_type = HUMAN;
+
+		log->info("Sending character selection to server: Username {}, ArcheType {}", username, selected_type);
+
+		// create character selection packet & send to server
+		ClientSelectionPacket selection_packet = createCharacterSelectedPacket(username, selected_type);
+		int iResult = network->sendToServer(selection_packet);	// send
+
+		// error?
+		if (iResult != sizeof(ClientSelectionPacket))
+		{
+			log->error("Failure sending packet, only sent {} of {} bytes", iResult, sizeof(ClientSelectionPacket));
+			return 0;
+		}
+		if (iResult == SOCKET_ERROR)
+		{
+			log->error("Send failed with error: {}", WSAGetLastError());
+			WSACleanup();
+			return 0;
+		}
+
+		// block on recv() until server tells us if we got desired character
+		ServerInputPacket* char_select_packet = network->receivePacket();
+
+		/* TODO: Need to extract data from packet 
+			--> If accepted selection then end the loop
+			* selected = 1
+			* initialize_skillzzzz
+			* anything else to do?
+
+			--> else: Update UI greying out characters we cant choose & loop again asking for input
+		*/
+
+	} while (!selected);	// until successfully select character
 
 
-
-	} while (1);	// until successfully select character
-
-
-	/*
-
-	// countdown until character selection phase is over
-	auto Start = std::chrono::high_resolution_clock::now();
-	while (1)
-	{
-		// time up? 
-		auto End = std::chrono::high_resolution_clock::now();
-		std::chrono::duration<double, std::milli> Elapsed = End - Start;
-		if (Elapsed.count() >= char_select_time)
-			break;
-
-		// TODO: Display UI (enter username, pick character) --> update values
-		username = "Snake";		// TODO: REMOVE ME
-		selected_type = HUMAN;	// TODO: REMOVE ME
-
-	}
-
-	log->info("Time up, sending selection data to server, waiting for game to start.");
-
-
-	// create character selection packet & send to server
-	ClientSelectionPacket selection_packet = createCharacterSelectedPacket(username, selected_type);
-	int iResult = network->sendToServer(selection_packet);	// send
-
-	// error?
-	if (iResult != sizeof(ClientSelectionPacket))
-	{
-		log->error("Failure sending packet, only sent {} of {} bytes", iResult, sizeof(ClientSelectionPacket));
-		return 0;
-	}
-	if (iResult == SOCKET_ERROR)
-	{
-		log->error("Send failed with error: {}", WSAGetLastError());
-		WSACleanup();
-		return 0;
-	}
-
-	log->debug("Sent character data, waiting for game to start message from server!");
-
-	*/
-
-	// NOTE: This must occur after client successfully selects player 
 	/* initialize skills*/
 	Window_static::initialize_skills(selected_type);
 

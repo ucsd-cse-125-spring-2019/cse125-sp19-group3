@@ -97,6 +97,7 @@ void client_session(void *arg)
 		// unavailable.. tell client what characters have been selected; loop again;
 		if (c_it != client_arg->selected_chars_map_ptr->end())	
 		{
+			logger()->info("Client <{}>: Requested character unavailable");
 
 			client_arg->char_lock->unlock();	// release lock
 
@@ -137,8 +138,8 @@ void client_session(void *arg)
 	} while (!selected);		// until unique character selected
 
 
-	// start game if all characters selected
-	game_start = (client_arg->selected_chars_map_ptr->size() == GAME_SIZE) ? 1 : 0;
+	// end character selection phase if all characters selected
+	if (client_arg->selected_chars_map_ptr->size() == GAME_SIZE) character_select_over = END_CHAR_SELECTION;
 
 	// busy wait if game hasn't started yet...
 	if (!game_start) log->info("CT <{}>: Waiting for game to start", client_arg->id);
