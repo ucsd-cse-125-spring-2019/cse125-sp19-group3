@@ -10,7 +10,7 @@
 #include <process.h>					// threads
 #include <windows.h>					// sleep
 
-#define GAME_SIZE			 1			// total players required to start game
+#define GAME_SIZE			 2			// total players required to start game
 #define LOBBY_START_TIME	 500		// wait this long (ms) after all players connect
 #define START_CHAR_SELECTION 1			// start value of char selection phase
 #define END_CHAR_SELECTION   2			// end value of char selection phase
@@ -190,11 +190,11 @@ void client_session(void *arg)
 
 
 /*
-	Handles the game lobby. Accepts incoming connections from clients until 
-	enough players are found for one full game. Will wait LOBBY_START_TIME (ms)
-	after all players connected to begin match by setting 'game_start' to 1.
+	Accept incoming connections up to GAME_SIZE. Launch a new thread 
+	for each accepted client. Each thread will recv() indefinently add 
+	packets to the main queue.
 */
-void ServerGame::game_match()
+void ServerGame::launch_client_threads()
 {
 	auto log = logger();
 
@@ -254,7 +254,20 @@ void ServerGame::game_match()
 
 	}
 
-	// LOBBY OVER -> CHARACTER SELECTION STARTING ***************************************************
+}
+
+
+/*
+	Handles the game lobby. Accepts incoming connections from clients until 
+	enough players are found for one full game. Will wait LOBBY_START_TIME (ms)
+	after all players connected to begin match by setting 'game_start' to 1.
+*/
+void ServerGame::game_match()
+{
+	auto log = logger();
+
+	// accept incoming connections & launch new thread for each client
+	launch_client_threads();
 
 	// all clients connected, wait LOBBY_START_TIME (ms) before starting character selection
 	log->info("MT: Character selection starting in {} seconds...", LOBBY_START_TIME/1000);
@@ -265,21 +278,17 @@ void ServerGame::game_match()
 	ServerInputPacket char_select_packet = createCharSelectPacket();
 	network->broadcastSend(char_select_packet);
 
-	// start character selection & wait for to complete (handled by client threads)
+	// start character selection & wait for it to complete (handled by client threads)
 	character_select_start = START_CHAR_SELECTION;		
 	logger()->info("MT: Waiting for character selection phase to end");
 	while (character_select_over != END_CHAR_SELECTION);
 
-	log->info("All client character selections received, initializing game...");
-
 	// add each player to scene based on character selection
+	log->info("All client character selections received, initializing game...");
 	for (auto client_data : client_data_list) {
 		unsigned int client_id = client_data->id;
-
-		// get type
 		unordered_map<unsigned int, PlayerMetadata>::iterator m_it = playerMetadatas->find(client_id);
 		ArcheType cur_type = m_it->second.type;
-
 		scene->addPlayer(client_id, cur_type);
 	}
 
@@ -292,7 +301,6 @@ void ServerGame::game_match()
 	}
 
 	scene->initEnv();
-
 
 	// schedule end of kill phase
 	ScheduledEvent initKillPhase(END_KILLPHASE, 60); // play with values in config file

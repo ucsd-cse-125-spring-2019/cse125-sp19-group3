@@ -47,11 +47,13 @@ public:
 
 	void launch();
 
+	void game_match();
+
 	void updateKillPhase();
 
 	void updatePreparePhase();
 
-	void game_match();
+	void launch_client_threads();
 
 	const int NUM_THREADS = 8;
 
