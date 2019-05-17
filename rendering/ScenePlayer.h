@@ -8,7 +8,7 @@
 #include "../networking/KillStreak/PlayerData.hpp"
 
 typedef enum {HUMAN_MODEL, MAGE_MODEL, WARRIOR_MODEL, ASSASIN_MODEL} MODEL_TYPE;
-typedef enum {ACTION_MOVEMENT, ACTION_PROJECTILE} ACTION_STATE;		// client moving or in projectile mode? 
+typedef enum {ACTION_MOVEMENT, ACTION_PROJECTILE, ACTION_MAGE_DIRECTIONAL_AOE} ACTION_STATE;		// client moving or in projectile mode? 
 
 class ScenePlayer {
 public:

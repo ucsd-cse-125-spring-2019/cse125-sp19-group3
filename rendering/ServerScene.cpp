@@ -241,7 +241,33 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point initPoint, Poi
 		skills.push_back(projectile);
 		return;
 	}
-}
+	// hardcoded mage omni aoe
+	else if (skill_id == 2) {
+		initPoint = scenePlayers[player_id].currentPos + glm::vec3({ 0.0f, 5.0f, 0.0f });
+		for (int z = -1; z < 2; z++) {
+			for (int x = -1; x < 2; x++) {
+				if (x == 0 && z == 0) {
+					continue;
+				}
+				nodeIdCounter++;
+				finalPoint = initPoint + Point({(float)x, 0.0f, (float)z});
+				SceneProjectile proj = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range);
+				serverSceneGraphMap.insert({ nodeIdCounter, proj.node });
+				skills.push_back(proj);
+			}
+		}
+		return;
+	}
+	else if (skill_id == 3) {
+		nodeIdCounter++;
+		initPoint = scenePlayers[player_id].currentPos + Point({ 0.0f, 5.0f, 0.0f });
+		finalPoint += Point({ 0.0f, 5.0f, 0.0f });
+		SceneProjectile dirAOE = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range);
+		dirAOE.node->scale = glm::scale(glm::mat4(1.0f), Point(0.08f, 0.08f, 0.08f));
+		serverSceneGraphMap.insert({ nodeIdCounter, dirAOE.node });
+		skills.push_back(dirAOE);
+	}
+} 
 
 
 Transform * ServerScene::getRoot() {

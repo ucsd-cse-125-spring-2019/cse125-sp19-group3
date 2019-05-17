@@ -13,27 +13,27 @@
       "skill_id": 1,
       "initial_level": 1,
       "skill_name": "MAGE PROJECTILE",
-      "cooldown": 5.0,
-      "range": 0.0,
-      "speed": 5.0,
+      "cooldown": 10.0,
+      "range": 25.0,
+      "speed": 0.6,
       "duration": 0.0
     },
     {
       "skill_id": 2,
       "initial_level": 1,
       "skill_name": "MAGE OMNIDIRECTIONAL AOE",
-      "cooldown": 5.0,
-      "range": 5.0,
-      "speed": 0.0,
+      "cooldown": 20.0,
+      "range": 30.0,
+      "speed": 0.8,
       "duration": 5.0
     },
     {
       "skill_id": 3,
       "initial_level": 1,
       "skill_name": "MAGE DIRECTIONAL AOE",
-      "cooldown": 5.0,
-      "range": 10.0,
-      "speed": 0.0,
+      "cooldown": 20.0,
+      "range": 30.0,
+      "speed": 0.3,
       "duration": 5.0
     },
     {

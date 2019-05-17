@@ -23,6 +23,8 @@ public:
 		int skill_id);
 	ClientInputPacket createMovementPacket(Point newLocation);
 	ClientInputPacket createProjectilePacket(Point initLocation, Point newLocation);
+	ClientInputPacket createMageOmniAoePacket();
+	ClientInputPacket createMageDirectionalAoePacket(Point initLocation, Point newLocation);
 	ClientInputPacket createInitPacket();
 	ClientSelectionPacket createCharacterSelectedPacket(std::string username, ArcheType type);
 
