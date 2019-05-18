@@ -311,29 +311,20 @@ int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
 	//		next loop
 
 	// input character & username selection; send request to server; repeat if unavailable
+
+
+	// TODO: REMOVE ME*********
+	int cur_index = 0;
+	ArcheType diff_chars[3] = { MAGE, WARRIOR, ASSASSIN };
+	// ************************
+
 	do
 	{
-
-		// TODO: REMOVE ME!!! This will be from client input
-		int num = rand() % 4;
-		if (num == 0) {
-			username = "Snake";
-			selected_type = HUMAN;
-		}
-		else if(num == 1) {
-			username = "Roy";
-			selected_type = ASSASSIN;
-		}
-		else if (num == 2) {
-			username = "Drake";
-			selected_type = MAGE;
-		}
-		else {
-			username = "Kiki";
-			selected_type = WARRIOR;
-		}
-
-		selected_type = WARRIOR;
+		
+		// TODO: REMOVE ME **********************
+		selected_type = diff_chars[cur_index];
+		cur_index++;
+		// **************************************
 
 		log->info("Sending character selection to server: Username {}, ArcheType {}", username, selected_type);
 
