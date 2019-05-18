@@ -323,6 +323,7 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 
 			// create skill packet and send to server
 			ClientInputPacket skillPacket = game->createSkillPacket(new_dest, adjustedSkill.skill_id);
+			logger()->debug("sending server skill packet w id of {}", adjustedSkill.skill_id);
 			network->sendToServer(skillPacket);
 			player.action_state = ACTION_MOVEMENT;
 		}

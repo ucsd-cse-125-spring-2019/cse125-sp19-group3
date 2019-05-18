@@ -14,7 +14,7 @@ using namespace std;
 
 // map string to archtype
 unordered_map<string, ArcheType> archetype_map = {
-	{"MAGE", HUMAN}, // FOR NOW
+	{"MAGE", MAGE}, // FOR NOW
 	{"ASSASSIN", ASSASSIN},
 	{"WARRIOR", WARRIOR},
 	{"KING", KING},

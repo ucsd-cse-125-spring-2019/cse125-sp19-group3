@@ -1,6 +1,7 @@
 #include "ServerScene.h"
 #include "nlohmann\json.hpp"
 #include <fstream>
+#include "../networking/KillStreak/Logger.hpp"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 using json = nlohmann::json;
@@ -239,15 +240,18 @@ void ServerScene::handlePlayerMovement(unsigned int playerId, glm::vec3 destinat
 void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 	unsigned int skill_id, unordered_map<unsigned int, Skill> *skill_map, PlayerMetadata &playerMetadata)
 {
+	logger()->debug("handling skill w id of {}", skill_id);
 	auto level = playerMetadata.skillLevels[skill_id];
 	unordered_map<unsigned int, Skill>::iterator s_it = skill_map->find(skill_id);
 	Skill cur_skill = s_it->second;
 	Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(cur_skill, level);
 
+
 	if (skill_id % 10 == 1) { // hardcoded projectile skill here
 		nodeIdCounter++;
 
-		Point initPoint = scenePlayers[player_id].currentPos + glm::vec3({ 0.0f,5.0f,0.0f });
+		Point initPoint = scenePlayers[player_id].currentPos;
+		logger()->debug("skill has range of {} and speed of {}", adjustedSkill.range, adjustedSkill.speed);
 		// finalPoint += glm::vec3({ 0.0f,5.0f,0.0f });
 		SceneProjectile projectile = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range);
 		serverSceneGraphMap.insert({ nodeIdCounter, projectile.node });

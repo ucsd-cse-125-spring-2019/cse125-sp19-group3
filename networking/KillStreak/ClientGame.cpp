@@ -333,6 +333,8 @@ int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
 			selected_type = WARRIOR;
 		}
 
+		selected_type = WARRIOR;
+
 		log->info("Sending character selection to server: Username {}, ArcheType {}", username, selected_type);
 
 		// create character selection packet & send to server
