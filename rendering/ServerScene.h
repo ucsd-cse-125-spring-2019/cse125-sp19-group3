@@ -36,6 +36,12 @@ public:
 	void update();
 	void handlePlayerMovement(unsigned int player_id, glm::vec3 destination);
 
+	void createSceneProjectile(unsigned int player_id,
+								Point finalPoint,
+								Point initPoint,
+								Skill adjustedSkill,
+								float x, float z);
+
 	void handlePlayerSkill(unsigned int player_id, 
 		                   Point finalPoint, 
 		                   unsigned int skill_id, 

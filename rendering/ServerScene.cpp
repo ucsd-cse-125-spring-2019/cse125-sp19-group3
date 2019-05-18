@@ -6,6 +6,9 @@
 #include <assimp/scene.h>
 using json = nlohmann::json;
 
+#define DEFAULT_X 666
+#define DEFAULT_Z 666
+
 ServerScene::ServerScene()
 {
 	root = new Transform(0, glm::mat4(1.0f));
@@ -237,42 +240,71 @@ void ServerScene::handlePlayerMovement(unsigned int playerId, glm::vec3 destinat
 	}
 }
 
+
+/*
+	Create a projectile and add it to the server scene. 
+	For cases of non-default projectile like Pyroblast you must specify values x,z.
+
+	x & z: Default set to 0, when either is non-zero  'finalPoint' will be updated adding x & y to the co-ordinate
+*/
+void ServerScene::createSceneProjectile(unsigned int player_id, Point finalPoint, Point initPoint, Skill adjustedSkill,
+	float x=DEFAULT_X, float z=DEFAULT_Z)
+{
+	// modify final point for non default projectile (e.g. Pyroblast)
+	if ( x != DEFAULT_X || z != DEFAULT_Z ) finalPoint = initPoint + Point({x, 0.0f, z});
+
+	nodeIdCounter++;
+	SceneProjectile proj = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range);
+	serverSceneGraphMap.insert({ nodeIdCounter, proj.node });
+	skills.push_back(proj);
+}
+
+
+/*
+	Handle incoming player skill received from client's incoming packet. Match skill_id and handle skill accordingly.
+*/
 void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 	unsigned int skill_id, unordered_map<unsigned int, Skill> *skill_map, PlayerMetadata &playerMetadata)
 {
-	logger()->debug("handling skill w id of {}", skill_id);
+
+	// get skill & adjust accordinglyt o level
 	auto level = playerMetadata.skillLevels[skill_id];
 	unordered_map<unsigned int, Skill>::iterator s_it = skill_map->find(skill_id);
 	Skill cur_skill = s_it->second;
 	Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(cur_skill, level);
 
-
-	if (skill_id % 10 == 1) { // hardcoded projectile skill here
-		nodeIdCounter++;
-
+	// default projectile
+	if (skill_id % 10 == 1) { 
 		Point initPoint = scenePlayers[player_id].currentPos;
-		logger()->debug("skill has range of {} and speed of {}", adjustedSkill.range, adjustedSkill.speed);
-		// finalPoint += glm::vec3({ 0.0f,5.0f,0.0f });
-		SceneProjectile projectile = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range);
-		serverSceneGraphMap.insert({ nodeIdCounter, projectile.node });
-		skills.push_back(projectile);
+		createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill);
 		return;
 	}
+
 	// mage omni AOE (Pyroblast)
 	else if (skill_id == 2) {
 
 		Point initPoint = scenePlayers[player_id].currentPos;
-		for (int z = -1; z < 2; z++) {
-			for (int x = -1; x < 2; x++) {
-				if (x == 0 && z == 0) {
+		for (float z = -1; z < 2; z++) {
+			for (float x = -1; x < 2; x++) {
+				if ( x == 0 && z == 0) {	// only shoot left and right from center
 					continue;
 				}
-				nodeIdCounter++;
-				finalPoint = initPoint + Point({(float)x, 0.0f, (float)z});
-				SceneProjectile proj = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range);
-				serverSceneGraphMap.insert({ nodeIdCounter, proj.node });
-				skills.push_back(proj);
+
+				createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x, z);
+
+				if ( (x == 0) && ( abs(z) == 1) ) // +/- 0.5 to x-axis
+				{
+					createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x - 0.5, z);
+					createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x + 0.5, z);
+				}
+
+				else if (z == 0 && (abs(x) == 1 )) // +/- 0.5 to z-axis
+				{
+					createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x, z - 0.5);
+					createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x, z + 0.5);
+				}
 			}
+
 		}
 		return;
 	}
