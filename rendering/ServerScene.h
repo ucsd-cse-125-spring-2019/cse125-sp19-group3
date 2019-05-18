@@ -44,6 +44,8 @@ public:
 
 	void handlePyroBlast(unsigned int player_id, Point finalPoint, Point initPoint, Skill adjustedSkill);
 
+	void handleRoyalCross(unsigned int player_id, Point finalPoint, Point initPoint, Skill adjustedSkill);
+
 	void handlePlayerSkill(unsigned int player_id, 
 		                   Point finalPoint, 
 		                   unsigned int skill_id, 

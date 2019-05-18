@@ -74,7 +74,7 @@ void character_selection_phase(client_data* client_arg)
 		ClientSelectionPacket* selection_packet = network->receiveSelectionPacket(client_id);
 		ArcheType character_type = selection_packet->type;
 
-		// grap character select lock & check if character available
+		// grab character select lock & check if character available
 		client_arg->char_lock->lock();
 		unordered_map<ArcheType, int>::iterator c_it = client_arg->selected_chars_map_ptr->find(character_type);
 
@@ -116,7 +116,6 @@ void character_selection_phase(client_data* client_arg)
 			std::string username = selection_packet->username;
 			PlayerMetadata player = PlayerMetadata(client_id, username, character_type, 
 				client_arg->skill_map_ptr, client_arg->archetype_skillset_ptr);
-
 
 			// add to map & release lock
 			client_arg->playerMetadatas_ptr->insert({ client_id, player });
