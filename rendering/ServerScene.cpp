@@ -9,6 +9,20 @@ using json = nlohmann::json;
 #define DEFAULT_X 666
 #define DEFAULT_Z 666
 
+// skill_id's
+#define EVADE				0
+#define PROJECTILE			1
+#define PYROBLAST			2
+#define DRAGONS_BREATH		3
+#define ASSASSIN_PROJECTILE	11
+#define INVISIBILITY		12
+#define SIXTH_SENSE			13
+#define WHIRLWIND			22
+#define CHARGE				23
+#define ROYAL_CROSS			32
+#define SUBJUGATION			33
+
+
 ServerScene::ServerScene()
 {
 	root = new Transform(0, glm::mat4(1.0f));
@@ -261,6 +275,36 @@ void ServerScene::createSceneProjectile(unsigned int player_id, Point finalPoint
 
 
 /*
+	Handle Mage's pyroblast by creating projectiles in a circular motion around the player.
+*/
+void ServerScene::handlePyroBlast(unsigned int player_id, Point finalPoint, Point initPoint, Skill adjustedSkill)
+{
+	for (float z = -1; z < 2; z++) {
+		for (float x = -1; x < 2; x++) {
+			if (x == 0 && z == 0) {	// only shoot left and right from center
+				continue;
+			}
+
+			// create projectile; check if want to make more for this coordinate
+			createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x, z);
+			if ((x == 0) && (abs(z) == 1)) // +/- 0.5 to x-axis
+			{
+				createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x - 0.5, z);
+				createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x + 0.5, z);
+			}
+			else if (z == 0 && (abs(x) == 1)) // +/- 0.5 to z-axis
+			{
+				createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x, z - 0.5);
+				createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x, z + 0.5);
+			}
+		}
+
+	}
+
+}
+
+
+/*
 	Handle incoming player skill received from client's incoming packet. Match skill_id and handle skill accordingly.
 */
 void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
@@ -273,50 +317,40 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 	Skill cur_skill = s_it->second;
 	Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(cur_skill, level);
 
-	// default projectile
-	if (skill_id % 10 == 1) { 
-		Point initPoint = scenePlayers[player_id].currentPos;
-		createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill);
-		return;
-	}
-
-	// mage omni AOE (Pyroblast)
-	else if (skill_id == 2) {
-
-		Point initPoint = scenePlayers[player_id].currentPos;
-		for (float z = -1; z < 2; z++) {
-			for (float x = -1; x < 2; x++) {
-				if ( x == 0 && z == 0) {	// only shoot left and right from center
-					continue;
-				}
-
-				createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x, z);
-
-				if ( (x == 0) && ( abs(z) == 1) ) // +/- 0.5 to x-axis
-				{
-					createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x - 0.5, z);
-					createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x + 0.5, z);
-				}
-
-				else if (z == 0 && (abs(x) == 1 )) // +/- 0.5 to z-axis
-				{
-					createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x, z - 0.5);
-					createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x, z + 0.5);
-				}
-			}
-
+	skill_id = (skill_id % 10 == 1) ? 1 : skill_id;		// check if projectile; update skill_id if true
+	switch (skill_id)
+	{
+		case PROJECTILE:
+		{
+			Point initPoint = scenePlayers[player_id].currentPos;
+			createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill);
+			break;
 		}
-		return;
-	}
-	// mage directional (Dragon's breath)
-	else if (skill_id == 3) {
-		nodeIdCounter++;
-		Point initPoint = scenePlayers[player_id].currentPos + Point({ 0.0f, 5.0f, 0.0f });
-		// finalPoint += Point({ 0.0f, 5.0f, 0.0f });
-		SceneProjectile dirAOE = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range);
-		dirAOE.node->scale = glm::scale(glm::mat4(1.0f), Point(0.08f, 0.08f, 0.08f));
-		serverSceneGraphMap.insert({ nodeIdCounter, dirAOE.node });
-		skills.push_back(dirAOE);
+		case PYROBLAST:
+		{
+			Point initPoint = scenePlayers[player_id].currentPos;
+			handlePyroBlast(player_id, finalPoint, initPoint, adjustedSkill);
+			break;
+		}
+		case DRAGONS_BREATH:
+		{
+
+			// TODO: Possibly modfiy 'createSceneProjectile' to handle this specific case, will need to update dirAOE.node-> scale...
+			// can define a default value that will state what to do
+			nodeIdCounter++;
+			Point initPoint = scenePlayers[player_id].currentPos + Point({ 0.0f, 5.0f, 0.0f });
+			SceneProjectile dirAOE = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range);
+			dirAOE.node->scale = glm::scale(glm::mat4(1.0f), Point(0.08f, 0.08f, 0.08f));
+			serverSceneGraphMap.insert({ nodeIdCounter, dirAOE.node });
+			skills.push_back(dirAOE);
+			break;
+		}
+		default:
+		{
+			logger()->error("Skill_id {} not found!", skill_id);
+			break;
+		}
+
 	}
 } 
 
