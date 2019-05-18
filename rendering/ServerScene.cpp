@@ -259,7 +259,9 @@ void ServerScene::handlePlayerMovement(unsigned int playerId, glm::vec3 destinat
 	Create a projectile and add it to the server scene. 
 	For cases of non-default projectile like Pyroblast you must specify values x,z.
 
-	x & z: Default set to 0, when either is non-zero  'finalPoint' will be updated adding x & y to the co-ordinate
+	x & z: Default values set as arguments, when either is non-default 'finalPoint' will be 
+		updated adding x & y to the co-ordinate.
+		--> See handlePyroBlast for non-default example
 */
 void ServerScene::createSceneProjectile(unsigned int player_id, Point finalPoint, Point initPoint, Skill adjustedSkill,
 	float x=DEFAULT_X, float z=DEFAULT_Z)
@@ -281,9 +283,7 @@ void ServerScene::handlePyroBlast(unsigned int player_id, Point finalPoint, Poin
 {
 	for (float z = -1; z < 2; z++) {
 		for (float x = -1; x < 2; x++) {
-			if (x == 0 && z == 0) {	// only shoot left and right from center
-				continue;
-			}
+			if (x == 0 && z == 0) continue;		// only shoot left and right from center
 
 			// create projectile; check if want to make more for this coordinate
 			createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x, z);
@@ -305,6 +305,37 @@ void ServerScene::handlePyroBlast(unsigned int player_id, Point finalPoint, Poin
 
 
 /*
+	Handle Warriors's whirlwind by creating projectiles in a circular motion around the player.
+
+	NOTE: Currently just delegates to handlePyroBlast incase we decide to have different logic. 
+*/
+void ServerScene::handleWhirlWind(unsigned int player_id, Point finalPoint, Point initPoint, Skill adjustedSkill)
+{
+	handlePyroBlast(player_id, finalPoint, initPoint, adjustedSkill);
+}
+
+
+/*
+	Handle King's royal cross by creating projectiles towards the top/bottom & sides of player.
+*/
+void ServerScene::handleRoyalCross(unsigned int player_id, Point finalPoint, Point initPoint, Skill adjustedSkill)
+{
+	for (float z = -1; z < 2; z++) {
+		for (float x = -1; x < 2; x++) {
+
+			if ( abs(z) == 1 && x == 0 )	  // shoot up & down
+				createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x, z);
+
+			else if ( abs(x) == 1 && z == 0 ) // shoot left & right
+				createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x, z);
+
+		}
+	}
+
+}
+
+
+/*
 	Handle incoming player skill received from client's incoming packet. Match skill_id and handle skill accordingly.
 */
 void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
@@ -316,19 +347,18 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 	unordered_map<unsigned int, Skill>::iterator s_it = skill_map->find(skill_id);
 	Skill cur_skill = s_it->second;
 	Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(cur_skill, level);
+	Point initPoint = scenePlayers[player_id].currentPos;
 
 	skill_id = (skill_id % 10 == 1) ? 1 : skill_id;		// check if projectile; update skill_id if true
 	switch (skill_id)
 	{
 		case PROJECTILE:
 		{
-			Point initPoint = scenePlayers[player_id].currentPos;
 			createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill);
 			break;
 		}
 		case PYROBLAST:
 		{
-			Point initPoint = scenePlayers[player_id].currentPos;
 			handlePyroBlast(player_id, finalPoint, initPoint, adjustedSkill);
 			break;
 		}
@@ -338,13 +368,19 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			// TODO: Possibly modfiy 'createSceneProjectile' to handle this specific case, will need to update dirAOE.node-> scale...
 			// can define a default value that will state what to do
 			nodeIdCounter++;
-			Point initPoint = scenePlayers[player_id].currentPos + Point({ 0.0f, 5.0f, 0.0f });
+			initPoint = scenePlayers[player_id].currentPos + Point({ 0.0f, 5.0f, 0.0f });
 			SceneProjectile dirAOE = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range);
 			dirAOE.node->scale = glm::scale(glm::mat4(1.0f), Point(0.08f, 0.08f, 0.08f));
 			serverSceneGraphMap.insert({ nodeIdCounter, dirAOE.node });
 			skills.push_back(dirAOE);
 			break;
 		}
+		case WHIRLWIND:
+			handleWhirlWind(player_id, finalPoint, initPoint, adjustedSkill);
+			break;
+		case ROYAL_CROSS:
+			handleRoyalCross(player_id, finalPoint, initPoint, adjustedSkill);
+			break;
 		default:
 		{
 			logger()->error("Skill_id {} not found!", skill_id);
