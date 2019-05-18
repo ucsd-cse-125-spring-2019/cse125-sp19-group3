@@ -22,7 +22,7 @@
       "skill_id": 2,
       "initial_level": 1,
       "skill_name": "PYROBLAST",
-      "cooldown": 20.0,
+      "cooldown": 7.0,
       "range": 30.0,
       "speed": 0.8,
       "duration": 5.0
@@ -68,8 +68,8 @@
       "initial_level": 1,
       "skill_name": "WHIRLWIND",
       "cooldown": 5.0,
-      "range": 5.0,
-      "speed": 0.0,
+      "range": 3.0,
+      "speed": 0.8,
       "duration": 5.0
     },
     {

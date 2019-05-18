@@ -305,6 +305,17 @@ void ServerScene::handlePyroBlast(unsigned int player_id, Point finalPoint, Poin
 
 
 /*
+	Handle Warriors's whirlwind by creating projectiles in a circular motion around the player.
+
+	NOTE: Currently just delegates to handlePyroBlast incase we decide to have different logic. 
+*/
+void ServerScene::handleWhirlWind(unsigned int player_id, Point finalPoint, Point initPoint, Skill adjustedSkill)
+{
+	handlePyroBlast(player_id, finalPoint, initPoint, adjustedSkill);
+}
+
+
+/*
 	Handle King's royal cross by creating projectiles towards the top/bottom & sides of player.
 */
 void ServerScene::handleRoyalCross(unsigned int player_id, Point finalPoint, Point initPoint, Skill adjustedSkill)
@@ -364,6 +375,9 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			skills.push_back(dirAOE);
 			break;
 		}
+		case WHIRLWIND:
+			handleWhirlWind(player_id, finalPoint, initPoint, adjustedSkill);
+			break;
 		case ROYAL_CROSS:
 			handleRoyalCross(player_id, finalPoint, initPoint, adjustedSkill);
 			break;
