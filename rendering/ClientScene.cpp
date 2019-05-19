@@ -333,6 +333,12 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 			std::chrono::seconds sec((int)adjustedSkill.cooldown);
 			if (player.isPrepProjectile) {
 				skill_timers[PROJ_INDEX] = nanoseconds(sec);
+				// hardcode assassin: on firing projectile, you instantly cancel invisibility if active
+				if (player.modelType == ASSASSIN && skillDurationTimer > nanoseconds::zero()) {
+					ClientInputPacket cancelInvisibilityPacket = game->createSkillPacket(NULL_POINT, personal_skills[OMNI_SKILL_INDEX].skill_id);
+					network->sendToServer(cancelInvisibilityPacket);
+					skillDurationTimer = nanoseconds::zero();
+				}
 			}
 			else {
 				skill_timers[ACTION_DIRECTIONAL_SKILL] = nanoseconds(sec);
