@@ -1,10 +1,15 @@
 #include "ClientScene.h"
 #include "nlohmann\json.hpp"
+#include "../../NuklearInit.h"
 #include <fstream>
+#define MAX_VERTEX_BUFFER 512 * 1024
+#define MAX_ELEMENT_BUFFER 128 * 1024
 
 using json = nlohmann::json;
-
+struct nk_context * ctx;
+struct nk_colorf bg = { 0.1f,0.1f,0.1f,1.0f };
 ClientScene * Window_static::scene = new ClientScene();
+struct media media;
 
 void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network)
 {
@@ -37,9 +42,10 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network)
 		envobj->model_ids.insert((int)obj["model_id"]);
 		env_objs.push_back(envobj);
 	}
-
 	this->game = game;
 	this->network = network;
+
+	
 }
 
 void ClientScene::initialize_skills(ArcheType selected_type) {
@@ -62,6 +68,57 @@ void ClientScene::clean_up()
 	delete(root);
 	delete(staticShader);
 	delete(animationShader);
+}
+
+void ClientScene::initialize_UI(GLFWwindow* window) {
+
+	ctx = nk_glfw3_init(window, NK_GLFW3_DEFAULT);
+	{const void *image; int w, h;
+	struct nk_font_config cfg = nk_font_config(0);
+	cfg.oversample_h = 3; cfg.oversample_v = 2;
+	/* Loading one font with different heights is only required if you want higher
+	 * quality text otherwise you can just set the font height directly
+	 * e.g.: ctx->style.font.height = 20. */
+	struct nk_font_atlas *atlas;
+	nk_glfw3_font_stash_begin(&atlas);
+	media.font_14 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/ProggyClean.ttf", 14.0f, &cfg);
+
+	media.font_18 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/Roboto-Regular.ttf", 18.0f, &cfg);
+
+	media.font_20 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/Roboto-Regular.ttf", 20.0f, &cfg);
+
+	media.font_22 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/Roboto-Regular.ttf", 22.0f, &cfg);
+	media.font_32 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/Roboto-Regular.ttf", 32.0f, &cfg);
+
+	media.font_64 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/Roboto-Regular.ttf", 64.0f, &cfg);
+
+	media.font_128 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/Roboto-Regular.ttf", 128.0f, &cfg);
+	nk_glfw3_font_stash_end();
+	}
+	nk_style_set_font(ctx, &(media.font_22->handle));
+	//create media
+	media.unchecked = icon_load("../icon/unchecked.png");
+	media.checked = icon_load("../icon/checked.png");
+	media.rocket = icon_load("../icon/rocket.png");
+	media.cloud = icon_load("../icon/cloud.png");
+	media.pen = icon_load("../icon/pen.png");
+	media.play = icon_load("../icon/play.png");
+	media.pause = icon_load("../icon/pause.png");
+	media.stop = icon_load("../icon/stop.png");
+	media.next = icon_load("../icon/next.png");
+	media.prev = icon_load("../icon/prev.png");
+	media.tools = icon_load("../icon/tools.png");
+	media.dir = icon_load("../icon/directory.png");
+	media.copy = icon_load("../icon/copy.png");
+	media.convert = icon_load("../icon/export.png");
+	media.del = icon_load("../icon/delete.png");
+	media.edit = icon_load("../icon/edit.png");
+	media.menu[0] = icon_load("../icon/home.png");
+	media.menu[1] = icon_load("../icon/phone.png");
+	media.menu[2] = icon_load("../icon/plane.png");
+	media.menu[3] = icon_load("../icon/wifi.png");
+	media.menu[4] = icon_load("../icon/settings.png");
+	media.menu[5] = icon_load("../icon/volume.png");
 }
 
 GLFWwindow* ClientScene::create_window(int width, int height)
@@ -102,7 +159,6 @@ GLFWwindow* ClientScene::create_window(int width, int height)
 	ClientScene::height = height;
 	// Set the viewport size. This is the only matrix that OpenGL maintains for us in modern OpenGL!
 	glViewport(0, 0, width, height);
-
 	return window;
 }
 
@@ -135,6 +191,17 @@ void ClientScene::resize_callback(GLFWwindow* window, int width, int height)
 	{
 		camera->SetAspect((float)width / (float)height);
 	}
+	if (width < 600) {
+		nk_style_set_font(ctx, &(media.font_14->handle));
+	} else if(width < 900) {
+		nk_style_set_font(ctx, &(media.font_18->handle));
+	}
+	else if (width < 1200) {
+		nk_style_set_font(ctx, &(media.font_22->handle));
+	}
+	else {
+		nk_style_set_font(ctx, &(media.font_32->handle));
+	}
 }
 
 void ClientScene::idle_callback()
@@ -152,14 +219,34 @@ void ClientScene::idle_callback()
 	}
 }
 
-void ClientScene::display_callback(GLFWwindow* window)
-{
-	// Clear the color and depth buffers
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Use the shader of programID
-	//shader->use();
+void ClientScene::renderLobbyPhase(GLFWwindow* window) {
 	
+	//{struct nk_font_atlas *atlas;
+	//nk_glfw3_font_stash_begin(&atlas);
+	//struct nk_font *clean = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/ProggyClean.ttf", 12, 0);
+	//nk_glfw3_font_stash_end();
+	///*nk_style_load_all_cursors(ctx, atlas->cursors);*/
+	//nk_style_set_font(ctx, &clean->handle); }
+	// Clear the color and depth buffers
+	
+	// Gets events, including input such as keyboard and mouse or window resizing
+	 /* Input */
+	glfwPollEvents();
+	nk_glfw3_new_frame();
+	lobby_layout(ctx, &media, ClientScene::width, ClientScene::height);
+	/*basic_demo(ctx, &media);
+	button_demo(ctx, &media);
+	grid_demo(ctx, &media);*/
+
+	nk_glfw3_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+
+	// Swap buffers
+	glfwSwapBuffers(window);
+}
+
+void  ClientScene::renderKillPhase(GLFWwindow* window) {
+	/* Load Fonts: if none of these are loaded a default font will be used  */
+	/* Load Cursor: if you uncomment cursor loading please hide the cursor */
 	auto vpMatrix = camera->GetViewProjectMtx();
 	// Use the shader to draw all player + skill objects
 	root->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
@@ -168,12 +255,46 @@ void ClientScene::display_callback(GLFWwindow* window)
 	for (auto &env_obj : env_objs) {
 		env_obj->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
 	}
-
+	//{struct nk_font_atlas *atlas;
+	//nk_glfw3_font_stash_begin(&atlas);
+	//struct nk_font *clean = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/ProggyClean.ttf", 12, 0);
+	//nk_glfw3_font_stash_end();
+	///*nk_style_load_all_cursors(ctx, atlas->cursors);*/
+	//nk_style_set_font(ctx, &clean->handle); }
+	// Clear the color and depth buffers
 
 	// Gets events, including input such as keyboard and mouse or window resizing
+	 /* Input */
 	glfwPollEvents();
+	nk_glfw3_new_frame();
+
+	/* GUI */
+	kill_layout(ctx, &media);
+
+	/* ----------------------------------------- */
+
+	/* Draw */
+
+	/* IMPORTANT: `nk_glfw_render` modifies some global OpenGL state
+	 * with blending, scissor, face culling, depth test and viewport and
+	 * defaults everything back into a default state.
+	 * Make sure to either a.) save and restore or b.) reset your own state after
+	 * rendering the UI. */
+
+	nk_glfw3_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+
 	// Swap buffers
 	glfwSwapBuffers(window);
+}
+
+void ClientScene::display_callback(GLFWwindow* window)
+{
+	glfwGetWindowSize(window, &width, &height);
+	glViewport(0, 0, width, height);
+	//glClear(GL_COLOR_BUFFER_BIT);
+	glClearColor(bg.r, bg.g, bg.b, bg.a);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	renderLobbyPhase(window);
 }
 
 void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)

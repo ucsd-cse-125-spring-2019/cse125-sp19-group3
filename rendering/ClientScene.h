@@ -4,7 +4,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/gtc/type_ptr.hpp>
-
 #include "Cube.h"
 #include "shader.h"
 #include "Model.h"
@@ -15,7 +14,6 @@
 #include "../networking/KillStreak/ClientNetwork.hpp"
 #include "../networking/KillStreak/CoreTypes.hpp"
 #include "../rendering/Serialization.h"
-
 // On some systems you need to change this to the absolute path
 #define VERTEX_SHADER_PATH "../animatedShader.vert"
 #define FRAGMENT_SHADER_PATH "../animatedShader.frag"
@@ -23,6 +21,8 @@
 #define TOON_VERTEX_SHADER_PATH "../toonshader.vert"
 #define TOON_FRAGMENT_SHADER_PATH "../toonshader.frag"
 
+
+typedef enum { LOBBY, KILL, PREPARE } ClientStatus;
 class ClientScene {
 public:
 	int width;
@@ -37,7 +37,7 @@ public:
 	GLFWwindow * create_window(int width, int height);
 	void resize_callback(GLFWwindow* window, int width, int height);
 	void idle_callback();
-	void display_callback(GLFWwindow*);
+	void display_callback(GLFWwindow* window);
 	void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 	void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 	void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
@@ -46,14 +46,16 @@ public:
 	void handleServerTickPacket(char* data);
 	void setRoot(Transform * newRoot);
 	void updateTimers(nanoseconds timePassed);
-
+	void renderKillPhase(GLFWwindow* window);
+	void renderLobbyPhase(GLFWwindow* window);
+	void initialize_UI(GLFWwindow* window);
 private:
+	ClientStatus status;
 	float min_scroll = 20.0f;
 	float max_scroll = 60.0f;
 	const char* window_title = "CSE 125 Group 3";
 	Shader * animationShader, * staticShader;
 	Camera * camera;
-
 	Cube * cube;
 	ScenePlayer player;
 	Transform * root;
@@ -81,6 +83,7 @@ public:
 	static void initialize_objects(ClientGame * game, ClientNetwork * network) { scene->initialize_objects(game, network); };
 	static void initialize_skills(ArcheType selected_type) { scene->initialize_skills(selected_type); };
 	static void updateTimers(nanoseconds timePassed) { scene->updateTimers(timePassed); };
+	static void initialize_UI(GLFWwindow* window) { scene->initialize_UI(window); };
 	static void clean_up() { scene->clean_up(); };
 	static GLFWwindow * create_window(int width, int height) { return scene->create_window(width, height); };
 	static void resize_callback(GLFWwindow* win, int width, int height) {

@@ -35,11 +35,13 @@
     <ClInclude Include="..\Cube.h" />
     <ClInclude Include="..\Mesh.h" />
     <ClInclude Include="..\Model.h" />
+    <ClInclude Include="..\NuklearInit.h" />
     <ClInclude Include="..\ScenePlayer.h" />
     <ClInclude Include="..\SceneProjectile.h" />
     <ClInclude Include="..\Serialization.h" />
     <ClInclude Include="..\ServerScene.h" />
     <ClInclude Include="..\shader.h" />
+    <ClInclude Include="..\stb_image.h" />
     <ClInclude Include="..\Transform.h" />
   </ItemGroup>
   <ItemGroup>

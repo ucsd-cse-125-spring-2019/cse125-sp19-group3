@@ -1,5 +1,7 @@
 #pragma once
 #include <winsock2.h>
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 #include "ClientNetwork.hpp"
 #include "Logger.hpp"
 #include "CoreTypes.hpp"

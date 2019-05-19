@@ -1,5 +1,4 @@
 #include "Cube.h"
-#include "ClientScene.h"
 
 Cube::Cube()
 {
