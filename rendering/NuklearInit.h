@@ -458,22 +458,32 @@ kill_layout(struct nk_context *ctx, struct media *media) {
 static  void
 lobby_layout(struct nk_context *ctx, struct media *media, int width, int height ) {
 	if (nk_begin(ctx, "Lobby", nk_rect(0, 0, width, height),
-		NK_WINDOW_BORDER //| NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
+		NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR //| NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
 		//NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE
 	))
 	{
 		enum { HUMAN, MAGE, ASSASIN, WARRIOR,KING };
 		static int op = HUMAN;
-		static const float ratio[] = { 0.2f, 0.6f, 0.2f };  /* 0.2 + 0.6 + 0.2 = 1 */
-		nk_layout_row_static(ctx, (1 - 0.15*4)*height / 2, 15, 1);
-		nk_layout_row_dynamic(ctx, height *0.1, 5);
+		static const float ratio[] = { 0.3f, 0.4f, 0.3f };  /* 0.3 + 0.4 + 0.3 = 1 */
+		nk_layout_row_static(ctx, 0.05*height, 15, 1);
+		nk_layout_row_dynamic(ctx, height *0.2, 6);
 		nk_spacing(ctx, 1);
 		if (nk_option_label(ctx, "HUMAN", op == HUMAN)) op = HUMAN;
 		if (nk_option_label(ctx, "MAGE", op == MAGE)) op = MAGE;
 		if (nk_option_label(ctx, "ASSASIN", op == ASSASIN)) op = ASSASIN;
 		if (nk_option_label(ctx, "WARRIOR", op == WARRIOR)) op = WARRIOR;
+		nk_layout_row_static(ctx, 0.1*height, 15, 1);
+		nk_spacing(ctx, 1);
+		nk_layout_row_dynamic(ctx, height *0.1, 6);
+		nk_spacing(ctx, 1);
+		if (nk_option_label(ctx, "HUMAN", op == HUMAN)) op = HUMAN;
+		if (nk_option_label(ctx, "MAGE", op == MAGE)) op = MAGE;
+		if (nk_option_label(ctx, "ASSASIN", op == ASSASIN)) op = ASSASIN;
+		if (nk_option_label(ctx, "WARRIOR", op == WARRIOR)) op = WARRIOR;
+		nk_spacing(ctx, 1);
 
 		//horizontal centered
+		nk_layout_row_static(ctx, 0.1*height, 15, 1);
 		nk_layout_row(ctx, NK_DYNAMIC,height *0.1, 3,ratio);
 		nk_spacing(ctx, 1);
 		if (nk_button_label(ctx, "Confirm"))
