@@ -268,7 +268,7 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 			skill_timers[OMNI_SKILL_INDEX] = nanoseconds(sec);
 
 			// hardcoded case for assassin (and king)
-			if (player.modelType == ASSASSIN) {
+			if (player.modelType == ASSASSIN || player.modelType == KING) {
 				// set duration for invisibility / minimap skill
 				std::chrono::seconds sec((int)adjustedSkill.duration);
 				skillDurationTimer = nanoseconds(sec);

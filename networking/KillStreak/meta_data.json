@@ -94,10 +94,10 @@
       "skill_id": 33,
       "initial_level": 1,
       "skill_name": "SUBJUGATION",
-      "cooldown": 5.0,
-      "range": 5.0,
+      "cooldown": 20.0,
+      "range": 10.0,
       "speed": 5.0,
-      "duration": 0.0
+      "duration": 10.0
     }
   ],
   "ArcheTypes": {
