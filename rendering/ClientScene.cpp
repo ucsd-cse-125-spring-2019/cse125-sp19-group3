@@ -133,9 +133,24 @@ void ClientScene::updateTimers(nanoseconds timePassed) {
 		}
 	}
 	// update global animation timer
-	animation_timer -= timePassed;
-	if (animation_timer < nanoseconds::zero()) {
-		animation_timer = nanoseconds::zero();
+	if (animation_timer > nanoseconds::zero()) {
+		animation_timer -= timePassed;
+		if (animation_timer < nanoseconds::zero()) {
+			animation_timer = nanoseconds::zero();
+		}
+	}
+
+	// update skill duration
+	if (skillDurationTimer > nanoseconds::zero()) {
+		skillDurationTimer -= timePassed;
+		if (skillDurationTimer <= nanoseconds::zero()) {
+			// hardcode for assassin and king (only classes w duration skills)
+			if (player.modelType == ASSASSIN) {
+				ClientInputPacket endSkillPacket = game->createSkillPacket(NULL_POINT, personal_skills[OMNI_SKILL_INDEX].skill_id);
+				network->sendToServer(endSkillPacket);
+			}
+			skillDurationTimer = nanoseconds::zero();
+		}
 	}
 }
 
@@ -251,6 +266,13 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 			// set cooldown
 			std::chrono::seconds sec((int)adjustedSkill.cooldown);
 			skill_timers[OMNI_SKILL_INDEX] = nanoseconds(sec);
+
+			// hardcoded case for assassin (and king)
+			if (player.modelType == ASSASSIN) {
+				// set duration for invisibility / minimap skill
+				std::chrono::seconds sec((int)adjustedSkill.duration);
+				skillDurationTimer = nanoseconds(sec);
+			}
 			
 			// send server skill packet
 			ClientInputPacket omniSkillPacket = game->createSkillPacket(NULL_POINT, adjustedSkill.skill_id);
@@ -378,6 +400,10 @@ void ClientScene::handleInitScenePacket(char * data) {
 */
 void ClientScene::handleServerTickPacket(char * data) {
 	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap);
+	// nullify invisibility state if you're assassin (duh)
+	if (player.modelType == ASSASSIN) {
+		clientSceneGraphMap[player.root_id]->enabled = true;
+	}
 }
 
 void ClientScene::setRoot(Transform * newRoot) {

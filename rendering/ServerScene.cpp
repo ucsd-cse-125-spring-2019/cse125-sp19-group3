@@ -381,6 +381,15 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 		case ROYAL_CROSS:
 			handleRoyalCross(player_id, finalPoint, initPoint, adjustedSkill);
 			break;
+		case INVISIBILITY:
+		{
+			// be a little sneaky: every time i fire this, just flip the invisibility.
+			// client must send another skill packet after duration is over.
+			logger()->debug("server flipping invisibility!");
+			int node_id = scenePlayers[player_id].root_id;
+			serverSceneGraphMap[node_id]->enabled = !(serverSceneGraphMap[node_id]->enabled);
+			break;
+		}
 		default:
 		{
 			logger()->error("Skill_id {} not found!", skill_id);
