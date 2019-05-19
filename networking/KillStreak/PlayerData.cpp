@@ -49,8 +49,8 @@ vector<int>* LeaderBoard::roundSummary() {
 
 
 // Parse all archtypes from config and upload values to skill_map for each corresponding type.
-void Skill::load_archtype_data(unordered_map<unsigned int, Skill> &skill_map,
-	                           unordered_map<ArcheType, vector<unsigned int>> &archetype_skillsets) {
+void Skill::load_archtype_data(unordered_map<unsigned int, Skill> *skill_map,
+	                           unordered_map<ArcheType, vector<unsigned int>> *archetype_skillsets) {
 
 	// open config for reading
 	ifstream json_file(META_CONF);
@@ -68,8 +68,9 @@ void Skill::load_archtype_data(unordered_map<unsigned int, Skill> &skill_map,
 		float duration              = skill["duration"];
 
 		Skill curr_skill = Skill(skill_id, initial_level, skill_name, range, cooldown, duration, speed);
-		skill_map.insert({ skill_id, curr_skill });
+		skill_map->insert({ skill_id, curr_skill });
 	}
+
 
 	for (auto iter = jsonObjs["ArcheTypes"].begin(); iter != jsonObjs["ArcheTypes"].end(); iter++) {
 		auto archetype_str = iter.key();
@@ -78,7 +79,7 @@ void Skill::load_archtype_data(unordered_map<unsigned int, Skill> &skill_map,
 		for (auto skill_id : skill_ids) {
 			available_skills.push_back(skill_id);
 		}
-		archetype_skillsets.insert({ archetype_map[archetype_str], available_skills });
+		archetype_skillsets->insert({ archetype_map[archetype_str], available_skills });
 	}
 }
 

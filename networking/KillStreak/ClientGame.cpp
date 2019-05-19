@@ -133,10 +133,6 @@ void constantListenFromServer(void *arg)
 			break;
 		}
 
-		// TODO: REMOVE ME!!!
-		//log->debug("--> Receiving packet from server size: {}", packet->size);
-		//log->debug("--> Packet Type: {}", packet->packetType);
-
 		// acquire queue lock & push packet 
 		q_lock->lock();
 		q_ptr->push(packet);			
@@ -213,7 +209,7 @@ int ClientGame::join_game()
 	// select username and character & send to server
 	handleServerInputPacket(char_select_packet);
 
-	// block until recv() init scene packet from server marking game start
+	// character selected; block until recv() init scene packet from server marking game start
 	ServerInputPacket * initScenePacket = network->receivePacket();
 	handleServerInputPacket(initScenePacket);
 
@@ -294,56 +290,94 @@ void ClientGame::run() {
 	
 }
 
+
 /*
-	Give client 'x' amount of time to make character and username selection. 
-	Send packet to server once time is up.
+	Client selects ArcheType and username. If character taken will be asked to 
+	choose again. 
 */
 int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
 	auto log = logger();
+	int iResult = 0;				// return value
+	int selected = 0;				// loop condition
+
 	std::string username;			// user selected username
 	ArcheType selected_type;		// user selected character
 
-	// countdown until character selection phase is over
-	auto Start = std::chrono::high_resolution_clock::now();
-	while (1)
+	// TODO (GRAPHICS): Display UI for selecting character and username
+	//		 --> Make sure to tell clients decision is final!
+	//		 --> Need a 'submit' button (no timer)
+
+	// NOTE: Assuming this runs with the GUI, loop runs after 'submit' pressed
+	// (can test w/ hard-coded randomized values with a randomized sleep timer)
+	// BETTER TEST: Have list of characters choose first in list, if taken choose second on
+	//		next loop
+
+	// input character & username selection; send request to server; repeat if unavailable
+	do
 	{
-		// time up? 
-		auto End = std::chrono::high_resolution_clock::now();
-		std::chrono::duration<double, std::milli> Elapsed = End - Start;
-		if (Elapsed.count() >= char_select_time)
-			break;
 
-		// TODO: Display UI (enter username, pick character) --> update values
-		username = "Snake";		// TODO: REMOVE ME
-		selected_type = HUMAN;	// TODO: REMOVE ME
+		// TODO: REMOVE ME!!! This will be from client input
+		username = "Snake";
+		selected_type = HUMAN;
 
-	}
 
-	log->info("Time up, sending selection data to server, waiting for game to start.");
+		log->info("Sending character selection to server: Username {}, ArcheType {}", username, selected_type);
+
+		// create character selection packet & send to server
+		ClientSelectionPacket selection_packet = createCharacterSelectedPacket(username, selected_type);
+		int iResult = network->sendToServer(selection_packet);	// send
+
+		// error?
+		if (iResult != sizeof(ClientSelectionPacket))
+		{
+			log->error("Failure sending packet, only sent {} of {} bytes", iResult, sizeof(ClientSelectionPacket));
+			return 0;
+		}
+		if (iResult == SOCKET_ERROR)
+		{
+			log->error("Send failed with error: {}", WSAGetLastError());
+			WSACleanup();
+			return 0;
+		}
+
+		// block on recv() until server tells us if we got desired character
+		ServerInputPacket* char_select_packet = network->receivePacket();
+		int sz = char_select_packet->size;
+
+		if (sz == 1) selected = 1;  // character accepted; exit loop
+
+		else						// character unavailable; reselect 
+		{
+			for (int i = 1; i < sz; i++ )
+			{
+				//log->debug("---> {}", char_select_packet->data[i]);
+
+				/* 
+				GRAPHICS: Grey out characters here and dont allow user to select them
+				
+				For each i in char_select_packet->data[i] it is an index 
+				into the enum of character types. So 0 is HUMAN, 1 is MAGE, 2 is WARRIOR, etc.. 
+				If this loop produces any numbers that index is not available so we would 
+				grey it out or something.
+
+				--> Example: If this loop produces
+					0 on the first loop
+					2 on the second loop
+					That means that HUMAN and WARRIOR models cannot be selected
+				*/
+			}
+
+		}
+
+	} while (!selected);	// until successfully select character
+
 
 	/* initialize skills*/
 	Window_static::initialize_skills(selected_type);
 
-	// create character selection packet & send to server
-	ClientSelectionPacket selection_packet = createCharacterSelectedPacket(username, selected_type);
-	int iResult = network->sendToServer(selection_packet);	// send
-
-	// error?
-	if (iResult != sizeof(ClientSelectionPacket))
-	{
-		log->error("Failure sending packet, only sent {} of {} bytes", iResult, sizeof(ClientSelectionPacket));
-		return 0;
-	}
-	if (iResult == SOCKET_ERROR)
-	{
-		log->error("Send failed with error: {}", WSAGetLastError());
-		WSACleanup();
-		return 0;
-	}
-
-	log->debug("Sent character data, waiting for game to start message from server!");
 	return iResult;
 }
+
 
 /*
 	Create packet with username and Archtype selection to send to server.

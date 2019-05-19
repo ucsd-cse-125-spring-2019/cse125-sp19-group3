@@ -47,8 +47,8 @@ public:
 	};
 	Skill() : skillName("Default Skill"), range(-1), cooldown(-1), duration(-1), speed(-1) {}
 	~Skill(){}
-	static void load_archtype_data(unordered_map<unsigned int, Skill> &skill_map, 
-		                           unordered_map<ArcheType, vector<unsigned int>> &archetype_skill_set);
+	static void load_archtype_data(unordered_map<unsigned int, Skill> *skill_map, 
+		                           unordered_map<ArcheType, vector<unsigned int>> *archetype_skill_set);
 	static Skill calculateSkillBasedOnLevel(Skill &baseSkill, unsigned int level);
 };
 
@@ -60,12 +60,21 @@ public:
 	PlayerMetadata(unsigned int clientId, 
 		           std::string username, 
 		           ArcheType type, 
-		           unordered_map<unsigned int, Skill> &skill_map, 
-		           unordered_map<ArcheType, vector<unsigned int>> &archetype_skillsets) : clientId(clientId), username(username), type(type) {
-		for (auto skill_id : archetype_skillsets[type]) {
-			auto level = skill_map[skill_id].level;
+		           unordered_map<unsigned int, Skill> *skill_map, 
+		           unordered_map<ArcheType, vector<unsigned int>> *archetype_skillsets) : clientId(clientId), username(username), type(type) {
+
+
+		// get vector of skillsets from archetype map
+		unordered_map<ArcheType, vector<unsigned int>>::iterator a_it = archetype_skillsets->find(type);
+		vector<unsigned int> vec = a_it->second;		
+
+		for (auto skill_id : vec) {
+			//Skill_Map::iterator s_it = skill_map->find(x); // Question: Why doesnt this typedef work?!
+			unordered_map<unsigned int, Skill>::iterator s_it = skill_map->find(skill_id);
+			auto level = s_it->second.level;
 			skillLevels.insert({ skill_id, level });
 		}
+
 		alive = true;
 		gold = 0;
 		currKillStreak = 0;
