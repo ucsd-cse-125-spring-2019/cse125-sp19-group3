@@ -24,6 +24,11 @@ unsigned int Transform::serialize(char * data) {
 	currLoc += sizeof(unsigned int);
 	size += sizeof(unsigned int);
 
+	// copy over enabled
+	memcpy(currLoc, &enabled, sizeof(bool));
+	currLoc += sizeof(bool);
+	size += sizeof(bool);
+
 	//copying over the Transfromation Matrix
 	memcpy(currLoc, &(M[0][0]), sizeof(glm::mat4));
 	currLoc += sizeof(glm::mat4);
@@ -64,10 +69,15 @@ unsigned int Transform::deserializeAndUpdate(char * data) {
 	children_ids.clear();
 
 
-	//memCopy of node id + transform mat
+	//memCopy of node id + enabled + transform mat
 	memcpy(&node_id, currLoc, sizeof(unsigned int));
 	size += sizeof(unsigned int);
 	currLoc += sizeof(unsigned int);
+
+	memcpy(&enabled, currLoc, sizeof(bool));
+	size += sizeof(bool);
+	currLoc += sizeof(bool);
+
 	memcpy(&(M[0][0]), currLoc, sizeof(glm::mat4));
 	size += sizeof(glm::mat4);
 	currLoc += sizeof(glm::mat4);

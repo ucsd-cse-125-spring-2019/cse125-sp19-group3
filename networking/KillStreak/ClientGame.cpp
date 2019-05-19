@@ -316,9 +316,9 @@ int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
 	// TODO: REMOVE ME*********
 	int cur_index = 0;
 	// NOTE: Change these values to select order clients choose characters
-	ArcheType player_1 = WARRIOR;
+	ArcheType player_1 = ASSASSIN;
 	ArcheType player_2 = MAGE;
-	ArcheType player_3 = ASSASSIN;
+	ArcheType player_3 = WARRIOR;
 	ArcheType diff_chars[3] = { player_1, player_2, player_3 };
 	// ************************
 

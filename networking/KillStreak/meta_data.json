@@ -49,10 +49,10 @@
       "skill_id": 12,
       "initial_level": 1,
       "skill_name": "INVISIBILITY",
-      "cooldown": 5.0,
+      "cooldown": 20.0,
       "range": 5.0,
       "speed": 0.0,
-      "duration": 5.0
+      "duration": 10.0
     },
     {
       "skill_id": 13,
