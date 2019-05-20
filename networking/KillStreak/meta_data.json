@@ -86,18 +86,18 @@
       "initial_level": 1,
       "skill_name": "ROYAL CROSS",
       "cooldown": 5.0,
-      "range": 5.0,
-      "speed": 0.0,
+      "range": 25.0,
+      "speed": 0.8,
       "duration": 5.0
     },
     {
       "skill_id": 33,
       "initial_level": 1,
       "skill_name": "SUBJUGATION",
-      "cooldown": 5.0,
-      "range": 5.0,
+      "cooldown": 20.0,
+      "range": 15.0,
       "speed": 5.0,
-      "duration": 0.0
+      "duration": 10.0
     }
   ],
   "ArcheTypes": {

@@ -45,6 +45,17 @@
       "radius": 1.5
     },
     {
+      "path": "../models/BaseMesh_Anim.fbx",
+      "model_id": 4,
+      "color_rgb": [
+        0.9,
+        0.2,
+        0.2
+      ],
+      "animated": true,
+      "radius": 1.5
+    },
+    {
       "path": "../models/projectiles/kunai.fbx",
       "model_id": 200,
       "color_rgb": [
