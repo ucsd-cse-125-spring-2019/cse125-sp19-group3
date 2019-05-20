@@ -5,6 +5,7 @@
 #define PROJ_INDEX 1
 #define OMNI_SKILL_INDEX 2
 #define DIR_SKILL_INDEX 3
+#define UNSILENCE 34
 
 using json = nlohmann::json;
 
@@ -149,6 +150,11 @@ void ClientScene::updateTimers(nanoseconds timePassed) {
 				ClientInputPacket endSkillPacket = game->createSkillPacket(NULL_POINT, personal_skills[OMNI_SKILL_INDEX].skill_id);
 				network->sendToServer(endSkillPacket);
 			}
+			if (player.modelType == KING) {
+				logger()->debug("sent unsilence packet");
+				ClientInputPacket unsilencePacket = game->createSkillPacket(NULL_POINT, 34);
+				network->sendToServer(unsilencePacket);
+			}
 			skillDurationTimer = nanoseconds::zero();
 		}
 	}
@@ -234,10 +240,32 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 		}
 		else if (key == GLFW_KEY_Q) // DIRECTIONAL SKILL		
 		{
+
 			// check cooldown
 			if (skill_timers[DIR_SKILL_INDEX] > nanoseconds::zero()) {
 				return;
 			}
+
+			// ONLY EXCEPTION: KING
+			if (player.modelType == KING) {
+				Skill subjugation = personal_skills[DIR_SKILL_INDEX];
+				Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(subjugation, subjugation.level);
+
+				// set cooldown
+				std::chrono::seconds sec((int)adjustedSkill.cooldown);
+				skill_timers[DIR_SKILL_INDEX] = nanoseconds(sec);
+
+				// hardcoded case for king (and assassin)
+				if (player.modelType == KING) {
+					// set duration for silence
+					std::chrono::seconds sec((int)adjustedSkill.duration);
+					skillDurationTimer = nanoseconds(sec);
+				}
+				ClientInputPacket subjugationPacket = game->createSkillPacket(NULL_POINT, adjustedSkill.skill_id);
+				network->sendToServer(subjugationPacket);
+				return;
+			}
+
 			// prep for left mouse click
 			player.action_state = ACTION_DIRECTIONAL_SKILL;
 			player.isPrepProjectile = false;
@@ -268,7 +296,7 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 			skill_timers[OMNI_SKILL_INDEX] = nanoseconds(sec);
 
 			// hardcoded case for assassin (and king)
-			if (player.modelType == ASSASSIN || player.modelType == KING) {
+			if (player.modelType == ASSASSIN) {
 				// set duration for invisibility / minimap skill
 				std::chrono::seconds sec((int)adjustedSkill.duration);
 				skillDurationTimer = nanoseconds(sec);

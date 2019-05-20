@@ -15,9 +15,13 @@ public:
 	ScenePlayer() {};
 	ScenePlayer(unsigned int playerId, unsigned int playerRootId, ArcheType modelType, Transform * playerRoot) 
 	{
-		this->player_id = playerId; this->root_id = playerRootId; this->modelType = modelType; this->playerRoot = playerRoot; 
+		this->player_id = playerId; 
+		this->root_id = playerRootId; 
+		this->modelType = modelType; 
+		this->playerRoot = playerRoot; 
 		this->destination = this->currentPos = { playerRoot->translation[3][0], playerRoot->translation[3][1], playerRoot->translation[3][2] };
 		this->action_state = ACTION_MOVEMENT;
+		this->isSilenced = false;
 	};
 	~ScenePlayer() {};
 
@@ -38,6 +42,7 @@ public:
 	float speed = 0.3f;
 	ACTION_STATE action_state;
 	bool isPrepProjectile;
+	bool isSilenced;
 	vector<Skill> availableSkills;
 };
 

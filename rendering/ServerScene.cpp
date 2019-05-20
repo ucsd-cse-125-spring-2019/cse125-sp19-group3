@@ -21,6 +21,7 @@ using json = nlohmann::json;
 #define CHARGE				23
 #define ROYAL_CROSS			32
 #define SUBJUGATION			33
+#define UNSILENCE           34
 
 
 ServerScene::ServerScene()
@@ -323,11 +324,13 @@ void ServerScene::handleRoyalCross(unsigned int player_id, Point finalPoint, Poi
 	for (float z = -1; z < 2; z++) {
 		for (float x = -1; x < 2; x++) {
 
-			if ( abs(z) == 1 && x == 0 )	  // shoot up & down
+			if (abs(z) == 1 && x == 0) {	  // shoot up & down
 				createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x, z);
+			}
 
-			else if ( abs(x) == 1 && z == 0 ) // shoot left & right
+			else if (abs(x) == 1 && z == 0) { // shoot left & right
 				createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x, z);
+			}
 
 		}
 	}
@@ -341,7 +344,21 @@ void ServerScene::handleRoyalCross(unsigned int player_id, Point finalPoint, Poi
 void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 	unsigned int skill_id, unordered_map<unsigned int, Skill> *skill_map, PlayerMetadata &playerMetadata)
 {
+	// special case of unsilence
+	if (skill_id == UNSILENCE) {
+		logger()->debug("everyone is unsilenced");
+		for (auto& player : scenePlayers) {
+			player.second.isSilenced = false;
+		}
+		return;
+	}
 
+	// don't handle class skills if the player is silenced
+	if (scenePlayers[player_id].isSilenced) {
+		if (skill_id != PROJECTILE && skill_id != EVADE) {
+			return;
+		}
+	}
 	// get skill & adjust accordinglyt o level
 	auto level = playerMetadata.skillLevels[skill_id];
 	unordered_map<unsigned int, Skill>::iterator s_it = skill_map->find(skill_id);
@@ -385,9 +402,27 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 		{
 			// be a little sneaky: every time i fire this, just flip the invisibility.
 			// client must send another skill packet after duration is over.
-			logger()->debug("server flipping invisibility!");
 			int node_id = scenePlayers[player_id].root_id;
 			serverSceneGraphMap[node_id]->enabled = !(serverSceneGraphMap[node_id]->enabled);
+			break;
+		}
+		case SUBJUGATION:
+		{
+			// TODO: delay this skill by a bit to let animations/particle fx to play
+			// and then do hitbox calculations
+
+			auto& king = scenePlayers[player_id];
+
+			// grab all players who are in the range of the skill. @roy not sure if this is the right way to handle hit detection??
+			for (auto& player : scenePlayers) {
+				if (player_id == player.first) {
+					continue;
+				}
+				if (glm::length(king.currentPos - player.second.currentPos) <= adjustedSkill.range) {
+					player.second.isSilenced = true;
+					logger()->debug("Player {} (model: {}) was silenced", player.first, player.second.modelType);
+				}
+			}
 			break;
 		}
 		default:
