@@ -7,14 +7,11 @@ const char * intToCharArray(int i) {
 	return s.c_str();
 }
 
-static void
-kill_layout(struct nk_context *ctx, struct media *media, int width, int height, struct nk_color background_color,int game_size) {
-	//ctx->style.window.fixed_background = nk_style_item_color({);
+static void ui_leaderboard(struct nk_context *ctx, struct media *media) {
 	static const char *items[] = { "Player 0","Player 1","Player 2","Player 3" };
 	static const int points[] = { 15,40,30,10 };
-	ctx->style.window.fixed_background = nk_style_item_color(background_color);
 
-	if (nk_begin(ctx, "scoreboard", nk_rect(10, 10, 300, 300),
+	if (nk_begin(ctx, "Leaderboard", nk_rect(10, 10, 300, 300),
 		NK_WINDOW_BORDER | NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
 	{
 		enum { EASY, HARD };
@@ -23,7 +20,7 @@ kill_layout(struct nk_context *ctx, struct media *media, int width, int height, 
 		for (int i = 0; i < 4; i++) {
 			const char * player_id;
 			string s = std::to_string(i);
-			player_id =  s.c_str();
+			player_id = s.c_str();
 			const char * player_point;
 			string point_s = std::to_string(points[i]);
 			player_point = point_s.c_str();
@@ -36,6 +33,13 @@ kill_layout(struct nk_context *ctx, struct media *media, int width, int height, 
 
 	}
 	nk_end(ctx);
+}
+
+static void
+kill_layout(struct nk_context *ctx, struct media *media, int width, int height, struct nk_color background_color,int game_size) {
+	ctx->style.window.fixed_background = nk_style_item_color(background_color);
+
+	ui_leaderboard(ctx, media);
 
 }
 
