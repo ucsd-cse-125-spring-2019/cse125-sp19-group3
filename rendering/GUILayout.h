@@ -1,22 +1,38 @@
 #pragma once
 #include "../../NuklearInit.h"
-static  void
-kill_layout(struct nk_context *ctx, struct media *media, int width, int height, struct nk_color background_color) {
+
+const char * intToCharArray(int i) {
+	string s = std::to_string(i);
+	const int n = s.length();
+	return s.c_str();
+}
+
+static void
+kill_layout(struct nk_context *ctx, struct media *media, int width, int height, struct nk_color background_color,int game_size) {
 	//ctx->style.window.fixed_background = nk_style_item_color({);
+	static const char *items[] = { "Player 0","Player 1","Player 2","Player 3" };
+	static const int points[] = { 15,40,30,10 };
 	ctx->style.window.fixed_background = nk_style_item_color(background_color);
 
-	if (nk_begin(ctx, "scoreboard", nk_rect(10, 10, width*0.2, height*0.4),
+	if (nk_begin(ctx, "scoreboard", nk_rect(10, 10, 300, 300),
 		NK_WINDOW_BORDER | NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
 	{
 		enum { EASY, HARD };
 		static int op = EASY;
-		nk_layout_row_static(ctx, height*0.1, width*0.1, 1);
-		if (nk_button_label(ctx, "button"))
-			fprintf(stdout, "button pressed\n");
-
-		nk_layout_row_dynamic(ctx, height*0.2, 2);
-		if (nk_option_label(ctx, "easy", op == EASY)) op = EASY;
-		if (nk_option_label(ctx, "hard", op == HARD)) op = HARD;
+		static const float ratio[] = { 0.2f, 0.10f, 0.45f,0.25f };  /* 0.3 + 0.4 + 0.3 = 1 */
+		for (int i = 0; i < 4; i++) {
+			const char * player_id;
+			string s = std::to_string(i);
+			player_id =  s.c_str();
+			const char * player_point;
+			string point_s = std::to_string(points[i]);
+			player_point = point_s.c_str();
+			nk_layout_row(ctx, NK_DYNAMIC, 50, 4, ratio);
+			nk_text(ctx, player_id, strlen(player_id), NK_TEXT_LEFT);
+			nk_image(ctx, media->king);
+			nk_text(ctx, items[i], strlen(items[i]), NK_TEXT_LEFT);
+			nk_text(ctx, player_point, strlen(player_point), NK_TEXT_LEFT);
+		}
 
 	}
 	nk_end(ctx);
@@ -24,8 +40,8 @@ kill_layout(struct nk_context *ctx, struct media *media, int width, int height, 
 }
 
 static  void
-lobby_layout(struct nk_context *ctx, struct media *media, int width, int height, struct nk_color background_color) {
-	static bool available = false;
+lobby_layout(struct nk_context *ctx, struct media *media, int width, int height, struct nk_color background_color, bool availablity) {
+	static bool available = availablity;
 
 	ctx->style.window.fixed_background = nk_style_item_color(background_color);
 	ctx->style.button.normal = nk_style_item_color(nk_rgb(200, 140, 200));
@@ -43,31 +59,22 @@ lobby_layout(struct nk_context *ctx, struct media *media, int width, int height,
 	ctx->style.option.text_hover = nk_rgb(140, 80, 140);
 	ctx->style.option.text_active = nk_rgb(160, 120, 160);
 	if (nk_begin(ctx, "Lobby", nk_rect(0, 0, width, height),
-		NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR //| NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE |
-		//NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE
+		NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR
 	))
 	{
 		enum { HUMAN, MAGE, ASSASIN, WARRIOR, KING };
 		static int op = HUMAN;
 		static const float ratio[] = { 0.3f, 0.4f, 0.3f };  /* 0.3 + 0.4 + 0.3 = 1 */
 		nk_layout_row_static(ctx, 0.1*height, 15, 1);
-		if (!available) {
-			nk_layout_row_static(ctx, 0.05*height, 15, 1);
-			ui_widget_centered(ctx, media, 0.1*height);
-			nk_text(ctx, "This Skeleton is no longer available", 36, NK_TEXT_ALIGN_CENTERED);
-			nk_spacing(ctx, 1);
-		}
-		else {
-			nk_layout_row_static(ctx, 0.15*height, 15, 1);
-		}
 
-		static const float choice_ratio[] = { 0.15f, 0.20f, 0.20f, 0.20f, 0.25f };
-		nk_layout_row(ctx , NK_DYNAMIC, height *0.2, 5, choice_ratio);
+		static const float choice_ratio[] = { 0.1f, 0.20f, 0.20f, 0.20f, 0.20f,0.10f };
+		nk_layout_row(ctx , NK_DYNAMIC, height *0.2, 6, choice_ratio);
 		nk_spacing(ctx, 1);
 		nk_image(ctx, media->king);
 		nk_image(ctx, media->mage);
 		nk_image(ctx, media->assasin);
 		nk_image(ctx, media->warrior);
+		nk_spacing(ctx, 1);
 		nk_layout_row(ctx, NK_DYNAMIC, height *0.2, 5, choice_ratio);
 		nk_spacing(ctx, 1);
 		if (nk_option_label(ctx, "HUMAN", op == HUMAN)) op = HUMAN;
@@ -85,6 +92,20 @@ lobby_layout(struct nk_context *ctx, struct media *media, int width, int height,
 
 	}
 	nk_end(ctx);
+
+
+	ctx->style.window.fixed_background = nk_style_item_color(nk_white);
+	if (!available) {
+		if (nk_begin(ctx, "Alert", nk_rect(width*0.3, height*0.3, width*0.4, 200),
+			NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_CLOSABLE
+		)) {
+			//nk_layout_row_static(ctx, 0.05*height, 15, 1);
+			ui_widget_centered(ctx, media, 150);
+			nk_text(ctx, "This Skeleton is no longer available!", 37, NK_TEXT_ALIGN_CENTERED);
+			nk_spacing(ctx, 1);
+		}
+		nk_end(ctx);
+	}
 }
 
 //static void
