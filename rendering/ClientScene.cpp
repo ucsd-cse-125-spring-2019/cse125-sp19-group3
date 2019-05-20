@@ -104,6 +104,7 @@ void ClientScene::initialize_UI(GLFWwindow* window) {
 	}
 	nk_style_set_font(ctx, &(media.font_22->handle));
 	//create media
+	media.checked = icon_load("../icon/checked.png");
 	media.mage = icon_load("../icon/mage_icon.png");
 	media.assasin = icon_load("../icon/assasin_icon.png");
 	media.king = icon_load("../icon/king_icon.png");
@@ -210,22 +211,11 @@ void ClientScene::idle_callback()
 
 void ClientScene::renderLobbyPhase(GLFWwindow* window) {
 	
-	//{struct nk_font_atlas *atlas;
-	//nk_glfw3_font_stash_begin(&atlas);
-	//struct nk_font *clean = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/ProggyClean.ttf", 12, 0);
-	//nk_glfw3_font_stash_end();
-	///*nk_style_load_all_cursors(ctx, atlas->cursors);*/
-	//nk_style_set_font(ctx, &clean->handle); }
-	// Clear the color and depth buffers
 	
-	// Gets events, including input such as keyboard and mouse or window resizing
 	 /* Input */
 	glfwPollEvents();
 	nk_glfw3_new_frame();
 	lobby_layout(ctx, &media, ClientScene::width, ClientScene::height, nk_rgb(60, 60, 80));
-	/*basic_demo(ctx, &media);
-	button_demo(ctx, &media);
-	grid_demo(ctx, &media);*/
 
 	nk_glfw3_render(NK_ANTI_ALIASING_OFF, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
 
@@ -234,28 +224,6 @@ void ClientScene::renderLobbyPhase(GLFWwindow* window) {
 }
 
 void  ClientScene::renderKillPhase(GLFWwindow* window) {
-	/* Load Fonts: if none of these are loaded a default font will be used  */
-	/* Load Cursor: if you uncomment cursor loading please hide the cursor */
-
-	// Gets events, including input such as keyboard and mouse or window resizing
-	 /* Input */
-	glfwPollEvents();
-	nk_glfw3_new_frame();
-
-	/* GUI */
-	kill_layout(ctx, &media, width, height, nk_rgb(250, 250, 250));
-	/* ----------------------------------------- */
-
-	/* Draw */
-
-	/* IMPORTANT: `nk_glfw_render` modifies some global OpenGL state
-	 * with blending, scissor, face culling, depth test and viewport and
-	 * defaults everything back into a default state.
-	 * Make sure to either a.) save and restore or b.) reset your own state after
-	 * rendering the UI. */
-
-	nk_glfw3_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
-
 
 	auto vpMatrix = camera->GetViewProjectMtx();
 	// Use the shader to draw all player + skill objects
@@ -265,6 +233,18 @@ void  ClientScene::renderKillPhase(GLFWwindow* window) {
 	for (auto &env_obj : env_objs) {
 		env_obj->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
 	}
+	 /* Input */
+	glfwPollEvents();
+	nk_glfw3_new_frame();
+
+	/* GUI */
+
+	kill_layout(ctx, &media, width, height, nk_rgb(250, 250, 250));
+	/* ----------------------------------------- */
+
+
+	nk_glfw3_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+
 
 	// Swap buffers
 	glfwSwapBuffers(window);
@@ -277,7 +257,7 @@ void ClientScene::display_callback(GLFWwindow* window)
 	//glClear(GL_COLOR_BUFFER_BIT);
 	//glClearColor(bg.r, bg.g, bg.b, bg.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	renderKillPhase(window);
+	renderLobbyPhase(window);
 }
 
 void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)

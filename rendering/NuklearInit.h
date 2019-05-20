@@ -44,6 +44,7 @@ struct media {
 	struct nk_image warrior;
 	struct nk_image assasin;
 	struct nk_image king;
+	struct nk_image checked;
 
 };
 
@@ -85,7 +86,7 @@ icon_load(const char *filename)
 {
 	int x, y, n;
 	GLuint tex;
-	unsigned char *data = stbi_load(filename, &x, &y, &n, 0);
+	unsigned char *data = stbi_load(filename, &x, &y, &n, STBI_rgb_alpha);
 	if (!data) die("[SDL]: failed to load image: %s", filename);
 
 	glGenTextures(1, &tex);

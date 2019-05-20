@@ -261,7 +261,6 @@ void ClientGame::run() {
 
 	// Initialize objects/pointers for rendering
 	Window_static::initialize_objects(this, network);
-
 	Window_static::initialize_UI(window);
 	// Loop while GLFW window should stay open
 	while (!glfwWindowShouldClose(window))
