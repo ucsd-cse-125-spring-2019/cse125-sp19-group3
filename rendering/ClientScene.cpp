@@ -6,6 +6,7 @@
 #define OMNI_SKILL_INDEX 2
 #define DIR_SKILL_INDEX 3
 #define UNSILENCE 34
+#define VISIBILITY 14
 
 using json = nlohmann::json;
 
@@ -147,7 +148,7 @@ void ClientScene::updateTimers(nanoseconds timePassed) {
 		if (skillDurationTimer <= nanoseconds::zero()) {
 			// hardcode for assassin and king (only classes w duration skills)
 			if (player.modelType == ASSASSIN) {
-				ClientInputPacket endSkillPacket = game->createSkillPacket(NULL_POINT, personal_skills[OMNI_SKILL_INDEX].skill_id);
+				ClientInputPacket endSkillPacket = game->createSkillPacket(NULL_POINT, 14);
 				network->sendToServer(endSkillPacket);
 			}
 			if (player.modelType == KING) {

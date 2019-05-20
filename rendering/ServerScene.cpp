@@ -17,6 +17,7 @@ using json = nlohmann::json;
 #define ASSASSIN_PROJECTILE	11
 #define INVISIBILITY		12
 #define SIXTH_SENSE			13
+#define VISIBILITY           14
 #define WHIRLWIND			22
 #define CHARGE				23
 #define ROYAL_CROSS			32
@@ -353,6 +354,14 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 		return;
 	}
 
+	// special case of undoing invisibility
+	if (skill_id == VISIBILITY) {
+		logger()->debug("undo invisibility");
+		int node_id = scenePlayers[player_id].root_id;
+		serverSceneGraphMap[node_id]->enabled = true;
+		return;
+	}
+
 	// don't handle class skills if the player is silenced
 	if (scenePlayers[player_id].isSilenced) {
 		if (skill_id != PROJECTILE && skill_id != EVADE) {
@@ -403,7 +412,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			// be a little sneaky: every time i fire this, just flip the invisibility.
 			// client must send another skill packet after duration is over.
 			int node_id = scenePlayers[player_id].root_id;
-			serverSceneGraphMap[node_id]->enabled = !(serverSceneGraphMap[node_id]->enabled);
+			serverSceneGraphMap[node_id]->enabled = false;
 			break;
 		}
 		case SUBJUGATION:
