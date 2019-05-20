@@ -319,7 +319,8 @@ int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
 	ArcheType player_1 = KING;
 	ArcheType player_2 = MAGE;
 	ArcheType player_3 = WARRIOR;
-	ArcheType diff_chars[3] = { player_1, player_2, player_3 };
+	ArcheType player_4 = ASSASSIN;
+	ArcheType diff_chars[4] = { player_1, player_2, player_3, player_4 };
 	// ************************
 
 	do
