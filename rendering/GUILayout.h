@@ -14,8 +14,6 @@ static void ui_leaderboard(struct nk_context *ctx, struct media *media) {
 	if (nk_begin(ctx, "Leaderboard", nk_rect(10, 10, 300, 300),
 		NK_WINDOW_BORDER | NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
 	{
-		enum { EASY, HARD };
-		static int op = EASY;
 		static const float ratio[] = { 0.2f, 0.10f, 0.45f,0.25f };  /* 0.3 + 0.4 + 0.3 = 1 */
 		for (int i = 0; i < 4; i++) {
 			const char * player_id;
@@ -34,13 +32,38 @@ static void ui_leaderboard(struct nk_context *ctx, struct media *media) {
 	}
 	nk_end(ctx);
 }
+static void ui_skills(struct nk_context *ctx, struct media *media, int width, int height) {
+	static const char *key_bindings[] = { "Q","W","E","R" };
+	static const float points[] = { 15,40,30,10 };
 
+
+	if (nk_begin(ctx, "Leaderboard", nk_rect(10,  height*0.9, 400, height*0.099),
+		NK_WINDOW_BORDER | NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
+	{
+		static const float ratio[] = { 0.2f, 0.10f, 0.45f,0.25f };  /* 0.3 + 0.4 + 0.3 = 1 */
+		for (int i = 0; i < 4; i++) {
+			const char * player_id;
+			string s = std::to_string(i);
+			player_id = s.c_str();
+			const char * player_point;
+			string point_s = std::to_string(points[i]);
+			player_point = point_s.c_str();
+			nk_layout_row(ctx, NK_DYNAMIC, 50, 4, ratio);
+			nk_text(ctx, player_id, strlen(player_id), NK_TEXT_LEFT);
+			nk_image(ctx, media->king);
+			nk_text(ctx, player_point, strlen(player_point), NK_TEXT_LEFT);
+		}
+
+	}
+	nk_end(ctx);
+}
 static void
 kill_layout(struct nk_context *ctx, struct media *media, int width, int height, struct nk_color background_color,int game_size) {
 	ctx->style.window.fixed_background = nk_style_item_color(background_color);
 
 	ui_leaderboard(ctx, media);
 
+	ui_skills(ctx, media,  width,  height);
 }
 
 static  void
@@ -66,29 +89,39 @@ lobby_layout(struct nk_context *ctx, struct media *media, int width, int height,
 		NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR
 	))
 	{
-		enum { HUMAN, MAGE, ASSASIN, WARRIOR, KING };
+		typedef enum { KING, MAGE, ASSASIN, WARRIOR } characterType;
+		static const char * characterTypeStrings[] = { "KING", "MAGE", "ASSASIN", "WARRIOR" };
 		static int op = HUMAN;
-		static const float ratio[] = { 0.3f, 0.4f, 0.3f };  /* 0.3 + 0.4 + 0.3 = 1 */
-		nk_layout_row_static(ctx, 0.1*height, 15, 1);
+		static const float ratio[] = { 0.35f, 0.3f, 0.35f };  /* 0.3 + 0.4 + 0.3 = 1 */
+		nk_layout_row_static(ctx, 0.15*height, 15, 1);
 
-		static const float choice_ratio[] = { 0.1f, 0.20f, 0.20f, 0.20f, 0.20f,0.10f };
-		nk_layout_row(ctx , NK_DYNAMIC, height *0.2, 6, choice_ratio);
+		static const float choice_ratio[] = { 0.12f, 0.19f, 0.19f, 0.19f, 0.19f,0.12f };
+
+		nk_layout_row(ctx , NK_DYNAMIC, height *0.35, 6, choice_ratio);
 		nk_spacing(ctx, 1);
-		nk_image(ctx, media->king);
-		nk_image(ctx, media->mage);
-		nk_image(ctx, media->assasin);
-		nk_image(ctx, media->warrior);
+		for (int i = 0; i < 4; i++) {
+			if (nk_group_begin(ctx, characterTypeStrings[i], NK_WINDOW_NO_SCROLLBAR)) { // column 1
+				nk_layout_row_dynamic(ctx, width *0.18, 1); // nested row
+
+				if(i==KING)
+					nk_image(ctx, media->king);
+				else if (i == MAGE)
+					nk_image(ctx, media->mage);
+				else if (i == ASSASIN)
+					nk_image(ctx, media->assasin);
+				else
+					nk_image(ctx, media->warrior);
+				//nk_layout_row_static(ctx, 0.1*height, 15, 1);
+				nk_layout_row_dynamic(ctx, 30, 1);
+				if (nk_option_label(ctx, characterTypeStrings[i], op == i)) op = i;
+
+				nk_group_end(ctx);
+			}
+		}
 		nk_spacing(ctx, 1);
-		nk_layout_row(ctx, NK_DYNAMIC, height *0.2, 5, choice_ratio);
-		nk_spacing(ctx, 1);
-		if (nk_option_label(ctx, "HUMAN", op == HUMAN)) op = HUMAN;
-		if (nk_option_label(ctx, "MAGE", op == MAGE)) op = MAGE;
-		if (nk_option_label(ctx, "ASSASIN", op == ASSASIN)) op = ASSASIN;
-		if (nk_option_label(ctx, "WARRIOR", op == WARRIOR)) op = WARRIOR;
-		
+
 		//horizontal centered
-		nk_layout_row_static(ctx, 0.05*height, 15, 1);
-		nk_layout_row(ctx, NK_DYNAMIC, height *0.1, 3, ratio);
+		nk_layout_row(ctx, NK_DYNAMIC, 50, 3, ratio);
 		nk_spacing(ctx, 1);
 		if (nk_button_label(ctx, "Confirm"))
 			fprintf(stdout, "button pressed\n");

@@ -44,7 +44,6 @@ struct media {
 	struct nk_image warrior;
 	struct nk_image assasin;
 	struct nk_image king;
-	struct nk_image checked;
 
 };
 

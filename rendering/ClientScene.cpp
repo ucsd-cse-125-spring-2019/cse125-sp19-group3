@@ -104,7 +104,6 @@ void ClientScene::initialize_UI(GLFWwindow* window) {
 	}
 	nk_style_set_font(ctx, &(media.font_22->handle));
 	//create media
-	media.checked = icon_load("../icon/checked.png");
 	media.mage = icon_load("../icon/mage_icon.png");
 	media.assasin = icon_load("../icon/assasin_icon.png");
 	media.king = icon_load("../icon/king_icon.png");
@@ -257,7 +256,7 @@ void ClientScene::display_callback(GLFWwindow* window)
 	//glClear(GL_COLOR_BUFFER_BIT);
 	//glClearColor(bg.r, bg.g, bg.b, bg.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	renderKillPhase(window);
+	renderLobbyPhase(window);
 }
 
 void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
