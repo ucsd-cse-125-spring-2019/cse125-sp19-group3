@@ -14,7 +14,7 @@
 #include "Mesh.h"
 #include "shader.h"
 //#include "Sphere.h"
-//#include "stb_image.h"
+
 
 #include <string>
 #include <fstream>
@@ -49,7 +49,7 @@ public:
 	//Sphere * bounding_sphere;
 	/*  Functions   */
 	// constructor, expects a filepath to a 3D model.
-	Model(string const &path, bool animated=false, bool gamma = false);
+	Model(string const &path, string const &texPath, bool animated=false, bool gamma = false);
 
 	// draws the model, and thus all its meshes
 	void draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx);
@@ -60,6 +60,7 @@ public:
 	//bool isCollided(glm::vec3 myPos, Model * other, glm::vec3 otherPos);
 
 private:
+	unsigned int textureId;
 
 	glm::mat4 localMtx = glm::mat4(1.0f);
 	glm::mat4 globalInverseTransform;

@@ -1,18 +1,24 @@
 #include "Model.h"
 #include "../networking/KillStreak/Logger.hpp"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 glm::mat4 aiM4x4toGlmMat4(aiMatrix4x4 m);
 glm::mat4 aiM3x3toGlmMat4(aiMatrix3x3 m);
 
+unsigned int TextureFromFile(const string& path);
 //static inline glm::mat4 mat4_cast(const aiMatrix4x4& m) { return glm::transpose(glm::make_mat4(&m.a1)); }
 
-Model::Model(string const &path, bool animated, bool gamma)
+Model::Model(string const &path, string const &texPath, bool animated, bool gamma)
 {
 	isAnimated = animated;
 	gammaCorrection = gamma;
 	loadModel(path);
-
-	if(m_NumBones)
+	if (isAnimated) {
+		textureId = TextureFromFile(texPath);
+	}
+	if (m_NumBones) {
 		BoneTransform(0.0f);
+	}
 
 }
 
@@ -28,13 +34,16 @@ void Model::draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &v
 	shader->use();
 	shader->setMat4("ModelMtx", modelMtx);
 	shader->setMat4("ModelViewProjMtx", viewProjMtx * modelMtx);
+	if (isAnimated) {
+		shader->setInt("UseTex", 1);
+	}
 
 	for (unsigned int i = 0; i < boneTransforms.size(); i++) {
 		shader->setMat4(m_BoneInfo[i].BoneLocation, boneTransforms[i]);
 	}
 
 	for (unsigned int i = 0; i < meshes.size(); i++)
-		meshes[i].draw(shader, viewProjMtx);
+		meshes[i].draw(shader, viewProjMtx, textureId);
 }
 
 void Model::BoneTransform(float TimeInSeconds)
@@ -234,6 +243,8 @@ void Model::processMesh(vector<Vertex>& vertices, vector<unsigned int>& indices,
 		for (unsigned int j = 0; j < face.mNumIndices; j++)
 			indices.push_back(face.mIndices[j]);
 	}
+
+	/*
 	// process materials
 	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 	// we assume a convention for sampler names in the shaders. Each diffuse texture should be named
@@ -255,6 +266,7 @@ void Model::processMesh(vector<Vertex>& vertices, vector<unsigned int>& indices,
 	// 4. height maps
 	std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
 	textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+	*/
 
 	// process bones
 	LoadBones(meshIndex, mesh, vertices);
@@ -502,42 +514,41 @@ unsigned int Model::FindPosition(float AnimationTime, const aiNodeAnim* pNodeAni
 	assert(0);
 }
 
-//unsigned int TextureFromFile(const char *path, const string &directory, bool gamma)
-//{
-//	string filename = string(path);
-//	filename = directory + '/' + filename;
-//
-//	unsigned int textureID;
-//	glGenTextures(1, &textureID);
-//
-//	int width, height, nrComponents;
-//	unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
-//	if (data)
-//	{
-//		GLenum format;
-//		if (nrComponents == 1)
-//			format = GL_RED;
-//		else if (nrComponents == 3)
-//			format = GL_RGB;
-//		else if (nrComponents == 4)
-//			format = GL_RGBA;
-//
-//		glBindTexture(GL_TEXTURE_2D, textureID);
-//		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-//		glGenerateMipmap(GL_TEXTURE_2D);
-//
-//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//
-//		stbi_image_free(data);
-//	}
-//	else
-//	{
-//		std::cout << "Texture failed to load at path: " << path << std::endl;
-//		stbi_image_free(data);
-//	}
-//
-//	return textureID;
-//}
+unsigned int TextureFromFile(const string& path)
+{
+	unsigned int textureID;
+	glGenTextures(1, &textureID);
+
+	int width, height, nrComponents;
+	unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrComponents, STBI_rgb);
+	if (data)
+	{
+		GLenum format;
+		if (nrComponents == 1)
+			format = GL_RED;
+		else if (nrComponents == 3)
+			format = GL_RGB;
+		else if (nrComponents == 4)
+			format = GL_RGBA;
+
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+		stbi_image_free(data);
+	}
+	else
+	{
+		printf("Texture failed to load at path: %s\n", path);
+		stbi_image_free(data);
+	}
+
+	printf("texture Id is: %d\n", textureID);
+
+	return textureID;
+}

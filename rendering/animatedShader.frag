@@ -39,5 +39,6 @@ void main() {
 	}
 	else {
 		finalColor = texture(Texture, TexCoord);
+		finalColor = vec4(10* TexCoord[0], 10* TexCoord[1], 0, 1);
 	}
 }

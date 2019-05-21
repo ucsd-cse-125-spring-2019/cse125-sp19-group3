@@ -19,10 +19,10 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network)
 	json pathObjs = json::parse(json_model_paths);
 	for (auto & obj : pathObjs["data"]) {
 		if (obj["animated"]) {
-			models[(unsigned int)obj["model_id"]] = ModelData{ new Model(obj["path"],true), glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), animationShader, COLOR, 0 };
+			models[(unsigned int)obj["model_id"]] = ModelData{ new Model(obj["path"], obj["texture_path"], true), glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), animationShader, COLOR, 0 };
 		}
 		else {
-			models[(unsigned int)obj["model_id"]] = ModelData{ new Model(obj["path"],false), glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), staticShader, COLOR, 0 };
+			models[(unsigned int)obj["model_id"]] = ModelData{ new Model(obj["path"], "", false), glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), staticShader, COLOR, 0 };
 		}
 	}
 
@@ -119,7 +119,7 @@ void ClientScene::idle_callback()
 	camera->Update();
 	for (auto &model : models) {
 		if(model.second.model->isAnimated)
-			model.second.model->BoneTransform(model.second.model->animationMode, time);
+			model.second.model->BoneTransform(time);
 	}
 }
 
