@@ -45,8 +45,11 @@ struct media {
 	struct nk_image assasin;
 	struct nk_image king;
 
+	struct nk_image mage_skills[4];
+	struct nk_image warrior_skills[4];
+	struct nk_image assassin_skills[4];
+	struct nk_image king_skills[4];
 };
-
 
 enum nk_glfw_init_state{
     NK_GLFW3_DEFAULT=0,

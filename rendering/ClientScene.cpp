@@ -108,6 +108,24 @@ void ClientScene::initialize_UI(GLFWwindow* window) {
 	media.assasin = icon_load("../icon/assasin_icon.png");
 	media.king = icon_load("../icon/king_icon.png");
 	media.warrior = icon_load("../icon/warrior_icon.png");
+
+	media.mage_skills[0] = icon_load("../icon/skills/evade.png");
+	media.mage_skills[1] = icon_load("../icon/skills/projectile.png");
+	media.mage_skills[2] = icon_load("../icon/skills/mage-aoe.png");
+	media.mage_skills[3] = icon_load("../icon/skills/mage-cone_aoe.png");
+	media.warrior_skills[0] = icon_load("../icon/skills/evade.png");
+	media.warrior_skills[1] = icon_load("../icon/skills/projectile.png");
+	media.warrior_skills[2] = icon_load("../icon/skills/warrior-charge.png");
+	media.warrior_skills[3] = icon_load("../icon/skills/warrior-aoe.png");
+	media.assassin_skills[0] = icon_load("../icon/skills/evade.png");
+	media.assassin_skills[1] = icon_load("../icon/skills/projectile.png");
+	media.assassin_skills[2] = icon_load("../icon/skills/assassin-invisiblity.png");
+	media.assassin_skills[3] = icon_load("../icon/skills/assassin-teleport.png");
+	media.king_skills[0] = icon_load("../icon/skills/evade.png");
+	media.king_skills[1] = icon_load("../icon/skills/projectile.png");
+	media.king_skills[2] = icon_load("../icon/skills/mage-aoe.png");
+	media.king_skills[3] = icon_load("../icon/skills/mage-cone_aoe.png");
+
 }
 
 GLFWwindow* ClientScene::create_window(int width, int height)
@@ -208,6 +226,20 @@ void ClientScene::idle_callback()
 	}
 }
 
+void ClientScene::renderPreparePhase(GLFWwindow* window) {
+
+
+	/* Input */
+	glfwPollEvents();
+	nk_glfw3_new_frame();
+	prepare_layout(ctx, &media, ClientScene::width, ClientScene::height, nk_rgb(60, 60, 80), false);
+
+	nk_glfw3_render(NK_ANTI_ALIASING_OFF, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+
+	// Swap buffers
+	glfwSwapBuffers(window);
+}
+
 void ClientScene::renderLobbyPhase(GLFWwindow* window) {
 	
 	
@@ -256,7 +288,7 @@ void ClientScene::display_callback(GLFWwindow* window)
 	//glClear(GL_COLOR_BUFFER_BIT);
 	//glClearColor(bg.r, bg.g, bg.b, bg.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	renderLobbyPhase(window);
+	renderPreparePhase(window);
 }
 
 void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
