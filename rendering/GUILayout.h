@@ -14,7 +14,7 @@ static void ui_leaderboard(struct nk_context *ctx, struct media *media) {
 	if (nk_begin(ctx, "Leaderboard", nk_rect(10, 10, 300, 300),
 		NK_WINDOW_BORDER | NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
 	{
-		static const float ratio[] = { 0.2f, 0.10f, 0.45f,0.25f };  /* 0.3 + 0.4 + 0.3 = 1 */
+		static const float ratio[] = { 0.2f, 0.15f, 0.40f,0.25f };  /* 0.3 + 0.4 + 0.3 = 1 */
 		for (int i = 0; i < 4; i++) {
 			const char * player_id;
 			string s = std::to_string(i);
@@ -22,7 +22,7 @@ static void ui_leaderboard(struct nk_context *ctx, struct media *media) {
 			const char * player_point;
 			string point_s = std::to_string(points[i]);
 			player_point = point_s.c_str();
-			nk_layout_row(ctx, NK_DYNAMIC, 50, 4, ratio);
+			nk_layout_row(ctx, NK_DYNAMIC, 45, 4, ratio);
 			nk_text(ctx, player_id, strlen(player_id), NK_TEXT_LEFT);
 			nk_image(ctx, media->king);
 			nk_text(ctx, items[i], strlen(items[i]), NK_TEXT_LEFT);
@@ -35,23 +35,30 @@ static void ui_leaderboard(struct nk_context *ctx, struct media *media) {
 static void ui_skills(struct nk_context *ctx, struct media *media, int width, int height) {
 	static const char *key_bindings[] = { "Q","W","E","R" };
 	static const float points[] = { 15,40,30,10 };
-
-
-	if (nk_begin(ctx, "Leaderboard", nk_rect(10,  height*0.9, 400, height*0.099),
-		NK_WINDOW_BORDER | NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
+	static int op = HUMAN;
+	if (nk_begin(ctx, "skills", nk_rect(width*0.3,  height*0.85, width*0.4, height*0.15),
+		NK_WINDOW_BORDER ))
 	{
-		static const float ratio[] = { 0.2f, 0.10f, 0.45f,0.25f };  /* 0.3 + 0.4 + 0.3 = 1 */
+		static const float ratio[] = { 0.25f,0.25f, 0.25f,0.25f };  /* 0.3 + 0.4 + 0.3 = 1 */
+		nk_layout_row(ctx, NK_DYNAMIC, height *0.35, 6, ratio);
 		for (int i = 0; i < 4; i++) {
-			const char * player_id;
-			string s = std::to_string(i);
-			player_id = s.c_str();
-			const char * player_point;
-			string point_s = std::to_string(points[i]);
-			player_point = point_s.c_str();
-			nk_layout_row(ctx, NK_DYNAMIC, 50, 4, ratio);
-			nk_text(ctx, player_id, strlen(player_id), NK_TEXT_LEFT);
-			nk_image(ctx, media->king);
-			nk_text(ctx, player_point, strlen(player_point), NK_TEXT_LEFT);
+			if (nk_group_begin(ctx, key_bindings[i], NK_WINDOW_NO_SCROLLBAR)) { // column 1
+				nk_layout_row_dynamic(ctx, width *0.18, 1); // nested row
+
+				if (i == KING)
+					nk_image(ctx, media->king);
+				else if (i == MAGE)
+					nk_image(ctx, media->mage);
+				else if (i == ASSASSIN)
+					nk_image(ctx, media->assasin);
+				else
+					nk_image(ctx, media->warrior);
+				//nk_layout_row_static(ctx, 0.1*height, 15, 1);
+				nk_layout_row_dynamic(ctx, 30, 1);
+				if (nk_option_label(ctx, key_bindings[i], op == i)) op = i;
+
+				nk_group_end(ctx);
+			}
 		}
 
 	}
@@ -89,7 +96,6 @@ lobby_layout(struct nk_context *ctx, struct media *media, int width, int height,
 		NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR
 	))
 	{
-		typedef enum { KING, MAGE, ASSASIN, WARRIOR } characterType;
 		static const char * characterTypeStrings[] = { "KING", "MAGE", "ASSASIN", "WARRIOR" };
 		static int op = HUMAN;
 		static const float ratio[] = { 0.35f, 0.3f, 0.35f };  /* 0.3 + 0.4 + 0.3 = 1 */
@@ -107,7 +113,7 @@ lobby_layout(struct nk_context *ctx, struct media *media, int width, int height,
 					nk_image(ctx, media->king);
 				else if (i == MAGE)
 					nk_image(ctx, media->mage);
-				else if (i == ASSASIN)
+				else if (i == ASSASSIN)
 					nk_image(ctx, media->assasin);
 				else
 					nk_image(ctx, media->warrior);

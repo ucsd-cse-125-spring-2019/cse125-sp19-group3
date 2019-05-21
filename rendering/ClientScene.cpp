@@ -256,7 +256,7 @@ void ClientScene::display_callback(GLFWwindow* window)
 	//glClear(GL_COLOR_BUFFER_BIT);
 	//glClearColor(bg.r, bg.g, bg.b, bg.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	renderLobbyPhase(window);
+	renderKillPhase(window);
 }
 
 void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
