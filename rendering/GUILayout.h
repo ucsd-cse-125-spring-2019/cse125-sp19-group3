@@ -34,16 +34,16 @@ static void ui_leaderboard(struct nk_context *ctx, struct media *media) {
 }
 static void ui_skills(struct nk_context *ctx, struct media *media, int width, int height) {
 	static const char *key_bindings[] = { "Q","W","E","R" };
-	static const float points[] = { 15,40,30,10 };
+	static const float cds[] = { 15,40,30,10 };
 	static int op = HUMAN;
-	if (nk_begin(ctx, "skills", nk_rect(width*0.3,  height*0.85, width*0.4, height*0.15),
-		NK_WINDOW_BORDER ))
+	if (nk_begin(ctx, "skills", nk_rect(width*0.3,  height*0.85, width*0.4, height*0.18),
+		NK_WINDOW_BORDER| NK_WINDOW_NO_SCROLLBAR))
 	{
-		static const float ratio[] = { 0.25f,0.25f, 0.25f,0.25f };  /* 0.3 + 0.4 + 0.3 = 1 */
-		nk_layout_row(ctx, NK_DYNAMIC, height *0.35, 6, ratio);
+		static const float ratio[] = { 0.125f,0.125f, 0.125f,0.125f, 0.125f,0.125f, 0.125f,0.125f };  /* 0.3 + 0.4 + 0.3 = 1 */
+		nk_layout_row(ctx, NK_DYNAMIC, height *0.18, 8, ratio);
 		for (int i = 0; i < 4; i++) {
 			if (nk_group_begin(ctx, key_bindings[i], NK_WINDOW_NO_SCROLLBAR)) { // column 1
-				nk_layout_row_dynamic(ctx, width *0.18, 1); // nested row
+				nk_layout_row_dynamic(ctx, width *0.05, 1); // nested row
 
 				if (i == KING)
 					nk_image(ctx, media->king);
@@ -53,12 +53,16 @@ static void ui_skills(struct nk_context *ctx, struct media *media, int width, in
 					nk_image(ctx, media->assasin);
 				else
 					nk_image(ctx, media->warrior);
-				//nk_layout_row_static(ctx, 0.1*height, 15, 1);
-				nk_layout_row_dynamic(ctx, 30, 1);
-				if (nk_option_label(ctx, key_bindings[i], op == i)) op = i;
-
+				nk_layout_row_dynamic(ctx, 24, 1);
+				nk_text(ctx, key_bindings[i], strlen(key_bindings[i]), NK_TEXT_ALIGN_CENTERED);
+				/*const char * skill_cd;
+				string s = std::to_string((int)cds[i]);
+				skill_cd = s.c_str();
+				nk_layout_row_dynamic(ctx, 24, 1);
+				nk_text(ctx, skill_cd, strlen(skill_cd), NK_TEXT_ALIGN_CENTERED);*/
 				nk_group_end(ctx);
 			}
+			nk_spacing(ctx, 1);
 		}
 
 	}

@@ -238,7 +238,7 @@ void  ClientScene::renderKillPhase(GLFWwindow* window) {
 
 	/* GUI */
 
-	kill_layout(ctx, &media, width, height, nk_rgb(250, 250, 250),4);
+	kill_layout(ctx, &media, width, height, nk_rgb(60, 60, 80),4);
 	/* ----------------------------------------- */
 
 
