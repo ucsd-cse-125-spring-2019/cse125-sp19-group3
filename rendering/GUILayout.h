@@ -80,22 +80,8 @@ kill_layout(struct nk_context *ctx, struct media *media, int width, int height, 
 static  void
 lobby_layout(struct nk_context *ctx, struct media *media, int width, int height, struct nk_color background_color, ClientScene * scene) {
 	static bool available = false;
-
-	ctx->style.window.fixed_background = nk_style_item_color(background_color);
-	ctx->style.button.normal = nk_style_item_color(nk_rgb(200, 140, 200));
-	ctx->style.button.hover = nk_style_item_color(nk_rgb(140, 80, 140));
-	ctx->style.button.active = nk_style_item_color(nk_rgb(120, 40, 120));
-	ctx->style.button.text_background = nk_rgb(140, 80, 140);
-	ctx->style.button.text_normal = nk_rgb(140, 80, 140);
-	ctx->style.button.text_hover = nk_rgb(240, 180, 240);
-	ctx->style.button.text_active = nk_rgb(240, 180, 240);
-
-	ctx->style.option.normal = nk_style_item_color(nk_rgb(200, 140, 200));
-	ctx->style.option.hover = nk_style_item_color(nk_rgb(140, 80, 140));
-	ctx->style.option.active = nk_style_item_color(nk_rgb(160, 120, 160));
-	ctx->style.option.text_normal = nk_rgb(200, 140, 200);
-	ctx->style.option.text_hover = nk_rgb(140, 80, 140);
-	ctx->style.option.text_active = nk_rgb(160, 120, 160);
+	static char buf[256] = { 0 };
+	set_style(ctx, THEME_BLACK);
 	if (nk_begin(ctx, "Lobby", nk_rect(0, 0, width, height),
 		NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR
 	))
@@ -103,45 +89,50 @@ lobby_layout(struct nk_context *ctx, struct media *media, int width, int height,
 		static const char * characterTypeStrings[] = { "KING", "MAGE", "ASSASIN", "WARRIOR" };
 		static int op = HUMAN;
 		static const float ratio[] = { 0.35f, 0.3f, 0.35f };  /* 0.3 + 0.4 + 0.3 = 1 */
-		nk_layout_row_static(ctx, 0.15*height, 15, 1);
+		nk_layout_row_static(ctx, 0.05*height, 15, 1);
+		static const float text_input_ratio[] = { 0.15f, 0.85f };
+		nk_layout_row(ctx, NK_DYNAMIC, 40, 2, ratio);
+		nk_text(ctx, "Username: ", 10, NK_TEXT_ALIGN_RIGHT);
+		// in window
+		nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, buf, sizeof(buf) - 1, nk_filter_default);
 
+		nk_layout_row_static(ctx, 0.05*height, 15, 1);
 		static const float choice_ratio[] = { 0.12f, 0.19f, 0.19f, 0.19f, 0.19f,0.12f };
-
+		nk_layout_row_static(ctx, 0.05*height, 15, 1);
 		nk_layout_row(ctx , NK_DYNAMIC, height *0.35, 6, choice_ratio);
+		// somewhere out of cycle
 		nk_spacing(ctx, 1);
 		for (int i = 0; i < 4; i++) {
 			if (nk_group_begin(ctx, characterTypeStrings[i], NK_WINDOW_NO_SCROLLBAR)) { // column 1
 				nk_layout_row_dynamic(ctx, width *0.18, 1); // nested row
 
-				if(i==KING)
-					nk_image(ctx, media->king);
+				if(i==WARRIOR)
+					nk_image(ctx, media->warrior);
 				else if (i == MAGE)
 					nk_image(ctx, media->mage);
 				else if (i == ASSASSIN)
 					nk_image(ctx, media->assasin);
 				else
-					nk_image(ctx, media->warrior);
+					nk_image(ctx, media->king);
 				//nk_layout_row_static(ctx, 0.1*height, 15, 1);
 				nk_layout_row_dynamic(ctx, 30, 1);
 				if (nk_option_label(ctx, characterTypeStrings[i], op == i)) op = i;
 
-				nk_group_end(ctx);
 			}
+			nk_group_end(ctx);
 		}
 		nk_spacing(ctx, 1);
 
 		//horizontal centered
-		nk_layout_row(ctx, NK_DYNAMIC, 50, 3, ratio);
+		nk_layout_row(ctx, NK_DYNAMIC, 60, 3, ratio);
 		nk_spacing(ctx, 1);
 		if (nk_button_label(ctx, "Confirm"))
-			fprintf(stdout, "button pressed\n");
+			fprintf(stdout, "button pressed, curr selection: %s, curr buf: %s\n", characterTypeStrings[op], buf);
 		nk_spacing(ctx, 1);
 
 	}
 	nk_end(ctx);
-
-
-	ctx->style.window.fixed_background = nk_style_item_color(nk_white);
+	
 	if (!available) {
 		if (nk_begin(ctx, "Alert", nk_rect(width*0.3, height*0.3, width*0.4, 200),
 			NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_CLOSABLE
@@ -158,28 +149,11 @@ lobby_layout(struct nk_context *ctx, struct media *media, int width, int height,
 static  void
 prepare_layout(struct nk_context *ctx, struct media *media, int width, int height, struct nk_color background_color, ClientScene * scene) {
 	
-	ctx->style.window.fixed_background = nk_style_item_color(background_color);
-	ctx->style.button.normal = nk_style_item_color(nk_rgb(200, 140, 200));
-	ctx->style.button.hover = nk_style_item_color(nk_rgb(140, 80, 140));
-	ctx->style.button.active = nk_style_item_color(nk_rgb(120, 40, 120));
-	ctx->style.button.text_background = nk_rgb(140, 80, 140);
-	ctx->style.button.text_normal = nk_rgb(140, 80, 140);
-	ctx->style.button.text_hover = nk_rgb(240, 180, 240);
-	ctx->style.button.text_active = nk_rgb(240, 180, 240);
-
-	ctx->style.option.normal = nk_style_item_color(nk_rgb(200, 140, 200));
-	ctx->style.option.hover = nk_style_item_color(nk_rgb(140, 80, 140));
-	ctx->style.option.active = nk_style_item_color(nk_rgb(160, 120, 160));
-	ctx->style.option.text_normal = nk_rgb(200, 140, 200);
-	ctx->style.option.text_hover = nk_rgb(140, 80, 140);
-	ctx->style.option.text_active = nk_rgb(160, 120, 160);
+	set_style(ctx, THEME_BLACK);
 	if (nk_begin(ctx, "Prepare", nk_rect(0, 0, width, height),
 		NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR
 	))
 	{
-		//typedef enum { KING, MAGE, ASSASIN, WARRIOR } characterType;
-		//static const char * characterTypeStrings[] = { "KING", "MAGE", "ASSASIN", "WARRIOR" };
-		// TODO: define skill string
 		char* skill_string [4] = { "Evade", "Projectile", "AOE", "Cone AOE" };
 		char* prices[4] = { "5", "10", "15", "20" };
 
@@ -210,7 +184,7 @@ prepare_layout(struct nk_context *ctx, struct media *media, int width, int heigh
 		nk_layout_row(ctx, NK_DYNAMIC, 50, 3, ratio);
 		nk_spacing(ctx, 1);
 		if (nk_button_label(ctx, "Confirm"))
-			fprintf(stdout, "button pressed\n");
+			fprintf(stdout, "button pressed\n" );
 		nk_spacing(ctx, 1);
 
 	}

@@ -35,6 +35,7 @@ public:
 	GLFWwindow * create_window(int width, int height);
 	void resize_callback(GLFWwindow* window, int width, int height);
 	void idle_callback();
+	void text_input(GLFWwindow *win, unsigned int codepoint);
 	void display_callback(GLFWwindow* window);
 	void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 	void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -89,6 +90,7 @@ public:
 	static void resize_callback(GLFWwindow* win, int width, int height) {
 		scene->resize_callback(win, width, height);
 	};
+	static void text_callback(GLFWwindow *win, unsigned int codepoint) { scene->text_input(win, codepoint); };
 	static void idle_callback() { scene->idle_callback(); };
 	static void display_callback(GLFWwindow* win) { scene->display_callback(win); };
 	static void key_callback(GLFWwindow* win, int key, int scancode, int action, int mods) { scene->key_callback(win, key, scancode, action, mods); };

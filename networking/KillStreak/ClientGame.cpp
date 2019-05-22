@@ -53,6 +53,7 @@ void setup_callbacks()
 	glfwSetErrorCallback(error_callback);
 	// Set the key callback
 	glfwSetKeyCallback(window, Window_static::key_callback);
+	glfwSetCharCallback(window, Window_static::text_callback);
 	// Set the mouse callback
 	glfwSetMouseButtonCallback(window, Window_static::mouse_button_callback);
 	// Set the scroll callback

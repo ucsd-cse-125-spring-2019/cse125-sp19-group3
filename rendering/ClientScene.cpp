@@ -81,9 +81,6 @@ void ClientScene::initialize_skills(ArcheType selected_type) {
 void ClientScene::clean_up()
 {
 	delete(camera);
-	//delete(cube);
-	//delete(player_m);
-	//delete(player_t);
 	delete(root);
 	delete(staticShader);
 	delete(animationShader);
@@ -94,9 +91,6 @@ void ClientScene::initialize_UI(GLFWwindow* window) {
 	ctx = nk_glfw3_init(window, NK_GLFW3_DEFAULT);
 	{const void *image; int w, h;
 	struct nk_font_config cfg = nk_font_config(0);
-	/* Loading one font with different heights is only required if you want higher
-	 * quality text otherwise you can just set the font height directly
-	 * e.g.: ctx->style.font.height = 20. */
 	struct nk_font_atlas *atlas;
 	nk_glfw3_font_stash_begin(&atlas);
 	media.font_14 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/ProggyClean.ttf", 14.0f, &cfg);
@@ -136,6 +130,14 @@ void ClientScene::initialize_UI(GLFWwindow* window) {
 	media.king_skills[3] = icon_load("../icon/skills/mage-cone_aoe.png");
 
 }
+
+void  ClientScene::text_input(GLFWwindow *win, unsigned int codepoint)
+{
+	(void)win;
+	if (glfw.text_len < NK_GLFW_TEXT_MAX)
+		glfw.text[glfw.text_len++] = codepoint;
+}
+
 
 GLFWwindow* ClientScene::create_window(int width, int height)
 {
@@ -317,7 +319,7 @@ void ClientScene::display_callback(GLFWwindow* window)
 	//glClear(GL_COLOR_BUFFER_BIT);
 	//glClearColor(bg.r, bg.g, bg.b, bg.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	renderKillPhase(window);
+	renderLobbyPhase(window);
 }
 
 void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
