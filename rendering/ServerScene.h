@@ -36,8 +36,19 @@ public:
 	void update();
 	void handlePlayerMovement(unsigned int player_id, glm::vec3 destination);
 
+	void createSceneProjectile(unsigned int player_id,
+								Point finalPoint,
+								Point initPoint,
+								Skill adjustedSkill,
+								float x, float z);
+
+	void handlePyroBlast(unsigned int player_id, Point finalPoint, Point initPoint, Skill adjustedSkill);
+
+	void handleWhirlWind(unsigned int player_id, Point finalPoint, Point initPoint, Skill adjustedSkill);
+
+	void handleRoyalCross(unsigned int player_id, Point finalPoint, Point initPoint, Skill adjustedSkill);
+
 	void handlePlayerSkill(unsigned int player_id, 
-		                   Point initPoint, 
 		                   Point finalPoint, 
 		                   unsigned int skill_id, 
 		                   unordered_map<unsigned int, Skill> *skill_map,

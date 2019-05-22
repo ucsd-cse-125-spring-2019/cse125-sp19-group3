@@ -7,17 +7,21 @@
 #include "../networking/KillStreak/CoreTypes.hpp"
 #include "../networking/KillStreak/PlayerData.hpp"
 
-typedef enum {HUMAN_MODEL, MAGE_MODEL, WARRIOR_MODEL, ASSASIN_MODEL} MODEL_TYPE;
-typedef enum {ACTION_MOVEMENT, ACTION_PROJECTILE, ACTION_MAGE_DIRECTIONAL_AOE} ACTION_STATE;		// client moving or in projectile mode? 
+// typedef enum {HUMAN_MODEL, MAGE_MODEL, WARRIOR_MODEL, ASSASIN_MODEL} MODEL_TYPE;
+typedef enum {ACTION_MOVEMENT, ACTION_DIRECTIONAL_SKILL} ACTION_STATE;		// client moving or in projectile mode? 
 
 class ScenePlayer {
 public:
 	ScenePlayer() {};
 	ScenePlayer(unsigned int playerId, unsigned int playerRootId, ArcheType modelType, Transform * playerRoot) 
 	{
-		this->player_id = playerId; this->root_id = playerRootId; this->modelType = modelType; this->playerRoot = playerRoot; 
+		this->player_id = playerId; 
+		this->root_id = playerRootId; 
+		this->modelType = modelType; 
+		this->playerRoot = playerRoot; 
 		this->destination = this->currentPos = { playerRoot->translation[3][0], playerRoot->translation[3][1], playerRoot->translation[3][2] };
 		this->action_state = ACTION_MOVEMENT;
+		this->isSilenced = false;
 	};
 	~ScenePlayer() {};
 
@@ -37,6 +41,8 @@ public:
 	glm::vec3 currentOri = glm::vec3(0.0f, 0.0f, 1.0f);
 	float speed = 0.3f;
 	ACTION_STATE action_state;
+	bool isPrepProjectile;
+	bool isSilenced;
 	vector<Skill> availableSkills;
 };
 

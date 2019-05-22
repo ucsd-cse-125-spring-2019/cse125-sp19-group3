@@ -22,12 +22,9 @@ public:
 	int handleCharacterSelectionPacket(ServerInputPacket* packet);
 
 	// initialize packet 
-	ClientInputPacket createClientInputPacket(InputType type, Point initLocation, Point finalLocation,
-		int skill_id);
+	ClientInputPacket createClientInputPacket(InputType type, Point finalLocation, int skill_id);
 	ClientInputPacket createMovementPacket(Point newLocation);
-	ClientInputPacket createProjectilePacket(Point initLocation, Point newLocation);
-	ClientInputPacket createMageOmniAoePacket();
-	ClientInputPacket createMageDirectionalAoePacket(Point initLocation, Point newLocation);
+	ClientInputPacket createSkillPacket(Point destLocation, int skill_id);
 	ClientInputPacket createInitPacket();
 	ClientSelectionPacket createCharacterSelectedPacket(std::string username, ArcheType type);
 

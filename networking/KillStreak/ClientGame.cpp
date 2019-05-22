@@ -312,13 +312,25 @@ int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
 	//		next loop
 
 	// input character & username selection; send request to server; repeat if unavailable
+
+
+	// TODO: REMOVE ME*********
+	int cur_index = 0;
+	// NOTE: Change these values to select order clients choose characters
+	ArcheType player_1 = KING;
+	ArcheType player_2 = MAGE;
+	ArcheType player_3 = WARRIOR;
+	ArcheType player_4 = ASSASSIN;
+	ArcheType diff_chars[4] = { player_1, player_2, player_3, player_4 };
+	// ************************
+
 	do
 	{
-
-		// TODO: REMOVE ME!!! This will be from client input
-		username = "Snake";
-		selected_type = HUMAN;
-
+		
+		// TODO: REMOVE ME **********************
+		selected_type = diff_chars[cur_index];
+		cur_index++;
+		// **************************************
 
 		log->info("Sending character selection to server: Username {}, ArcheType {}", username, selected_type);
 
@@ -388,12 +400,10 @@ ClientSelectionPacket ClientGame::createCharacterSelectedPacket(std::string user
 	return packet;
 }
 
-ClientInputPacket ClientGame::createClientInputPacket(InputType type, Point initLocation, Point finalLocation,
-	int skill_id)
+ClientInputPacket ClientGame::createClientInputPacket(InputType type, Point finalLocation, int skill_id)
 {
 	ClientInputPacket packet;
 	packet.inputType = type;
-	packet.initialLocation = initLocation;
 	packet.finalLocation = finalLocation;
 	packet.skill_id = skill_id;
 
@@ -401,26 +411,15 @@ ClientInputPacket ClientGame::createClientInputPacket(InputType type, Point init
 }
 
 ClientInputPacket ClientGame::createMovementPacket(Point newLocation) {
-	return createClientInputPacket(MOVEMENT, NULL_POINT, newLocation, -1);
+	return createClientInputPacket(MOVEMENT, newLocation, -1);
 }
 
-ClientInputPacket ClientGame::createProjectilePacket(Point initLocation, Point newLocation) {
-	// TODO: Do we want to name this type SKILL_PROJECTILE? 
-	// TODO: ClientInputPacket 'skillType' is just an integer??? How are we handling that?
-	// TODO: Do we still want attack-type? Attack-type = 1 --> projectile
-	return createClientInputPacket(SKILL_PROJECTILE, initLocation, newLocation, 11); // 11 MEANS PROJECTILE HARDCODED FOR NOW
-}
-
-ClientInputPacket ClientGame::createMageOmniAoePacket() {
-	return createClientInputPacket(SKILL_PROJECTILE, NULL_POINT, NULL_POINT, 2); // 2 IS MAGE OMNI AOE HARDCODED FOR NOW
-}
-
-ClientInputPacket ClientGame::createMageDirectionalAoePacket(Point initLocation, Point newLocation) {
-	return createClientInputPacket(SKILL_PROJECTILE, initLocation, newLocation, 3); // 3 IS MAGE DIR AOE HARDCODED FOR NOW
+ClientInputPacket ClientGame::createSkillPacket(Point destLocation, int skill_id) {
+	return createClientInputPacket(SKILL, destLocation, skill_id);
 }
 
 ClientInputPacket ClientGame::createInitPacket() {
-	return createClientInputPacket(INIT_CONN, NULL_POINT, NULL_POINT, -1);
+	return createClientInputPacket(INIT_CONN, NULL_POINT, -1);
 }
 
 /*

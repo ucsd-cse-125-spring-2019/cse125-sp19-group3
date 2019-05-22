@@ -9,7 +9,7 @@
 
 typedef glm::vec3 Point;
 
-typedef enum {INIT_CONN, CHAR_SELECT, MOVEMENT, SKILL_PROJECTILE, ATTACK} InputType;
+typedef enum {INIT_CONN, CHAR_SELECT, MOVEMENT, SKILL } InputType;
 
 typedef enum { WELCOME, INIT_SCENE, UPDATE_SCENE_GRAPH, CHAR_SELECT_PHASE } ServerPacketType;
 
@@ -32,11 +32,7 @@ typedef struct {
 */
 typedef struct {
 	InputType inputType;
-	Point initialLocation;
-	// Movement Data
 	Point finalLocation;
-
-	// Skill Data
 	int skill_id; // indexes to which skill to access
 } ClientInputPacket;
 
