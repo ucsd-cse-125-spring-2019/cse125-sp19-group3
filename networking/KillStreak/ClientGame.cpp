@@ -47,13 +47,23 @@ void error_callback(int error, const char* description)
 }
 
 
-void setup_callbacks()
+void setup_callbacks(ClientStatus status)
 {
 	// Set the error callback
 	glfwSetErrorCallback(error_callback);
 	// Set the key callback
-	glfwSetKeyCallback(window, Window_static::key_callback);
-	glfwSetCharCallback(window, Window_static::text_callback);
+	if (status == KILL) {
+		glfwSetCharCallback(window, NULL);
+		glfwSetKeyCallback(window, Window_static::key_callback);
+	}
+	else if (status == LOBBY){
+		glfwSetCharCallback(window, Window_static::text_callback);
+		glfwSetKeyCallback(window, NULL);
+	}
+	else {
+		glfwSetCharCallback(window, NULL);
+		glfwSetKeyCallback(window, Window_static::key_callback);
+	}
 	// Set the mouse callback
 	glfwSetMouseButtonCallback(window, Window_static::mouse_button_callback);
 	// Set the scroll callback
@@ -238,6 +248,31 @@ int ClientGame::join_game()
 	//return 1;
 }
 
+int ClientGame::waitingInitScene() {
+	auto log = logger();
+
+	ServerInputPacket * initScenePacket = network->receivePacket();
+	handleServerInputPacket(initScenePacket);
+
+	// allocate new data for server thread & launch (will recv() indefinitely)
+	server_data* server_arg = (server_data *)malloc(sizeof(server_data));
+	if (server_arg)
+	{
+		server_arg->q_lock = q_lock;				// ptr to queue lock
+		server_arg->queuePtr = serverPackets;		// ptr to server input queue
+		server_arg->network = network;				// ptr to network
+		_beginthread(constantListenFromServer, 0, (void*)server_arg);	
+	}
+	else	// error allocating server data; 
+	{
+		log->error("Error allocating server metadata");
+		closesocket(network->ConnectSocket);
+		return 0;
+	}
+	currPhase = KILL;
+	setup_callbacks(currPhase);
+	return 1;
+}
 
 void ClientGame::run() {
 	auto log = logger();
@@ -262,7 +297,7 @@ void ClientGame::run() {
 	// Print OpenGL and GLSL versions
 	print_versions();
 	// Setup callbacks
-	setup_callbacks();
+	setup_callbacks(currPhase);
 
 	// Initialize objects/pointers for rendering
 	Window_static::initialize_objects(this, network);
@@ -337,7 +372,10 @@ int ClientGame::sendCharacterSelection(string username, ArcheType character) {
 	ServerInputPacket* char_select_packet = network->receivePacket();
 	int sz = char_select_packet->size;
 
-	if (sz == 1) return 1;
+	if (sz == 1) {
+		Window_static::initialize_skills(character);
+		return 1; 
+	}
 
 	return 0;
 }
@@ -483,7 +521,7 @@ void ClientGame::handleServerInputPacket(ServerInputPacket * packet) {
 	case WELCOME:
 		break;
 	case CHAR_SELECT_PHASE:
-		handleCharacterSelectionPacket(packet);
+		//handleCharacterSelectionPacket(packet);
 		break;
 	case INIT_SCENE:
 		Window_static::scene->handleInitScenePacket(packet->data);

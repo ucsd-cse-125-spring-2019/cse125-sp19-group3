@@ -21,7 +21,7 @@ public:
 	void handleServerInputPacket(ServerInputPacket* packet);
 	int handleCharacterSelectionPacket(ServerInputPacket* packet);
 	int sendCharacterSelection(string username, ArcheType character);
-
+	int waitingInitScene();
 	// initialize packet 
 	ClientInputPacket createClientInputPacket(InputType type, Point finalLocation, int skill_id);
 	ClientInputPacket createMovementPacket(Point newLocation);
