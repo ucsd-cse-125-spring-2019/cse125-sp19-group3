@@ -36,15 +36,15 @@ static void ui_skills(struct nk_context *ctx, struct media *media, int width, in
 	static const char *key_bindings[] = { "Q","W","E","R" };
 	static const float cds[] = { 15,40,30,10 };
 	static int op = HUMAN;
-	if (nk_begin(ctx, "skills", nk_rect(width*0.3,  height*0.85, width*0.4, height*0.18),
+	if (nk_begin(ctx, "skills", nk_rect(width*0.3,  height*0.83, width*0.4, height*0.17),
 		NK_WINDOW_BORDER| NK_WINDOW_NO_SCROLLBAR))
 	{
-		static const float ratio[] = { 0.125f,0.125f, 0.125f,0.125f, 0.125f,0.125f, 0.125f,0.125f };  /* 0.3 + 0.4 + 0.3 = 1 */
-		nk_layout_row(ctx, NK_DYNAMIC, height *0.18, 8, ratio);
+		static const float ratio[] = { 0.143f,0.143f, 0.143f,0.143f, 0.143f,0.143f, 0.142f };  /* 0.3 + 0.4 + 0.3 = 1 */
+		nk_layout_row(ctx, NK_DYNAMIC, height *0.16, 7, ratio);
 		ArcheType type = player->modelType; 
 		for (int i = 0; i < 4; i++) {
 			if (nk_group_begin(ctx, key_bindings[i], NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR)) { // column 1
-				nk_layout_row_dynamic(ctx, width *0.04, 1); // nested row
+				nk_layout_row_dynamic(ctx, width *0.05, 1); // nested row
 				if (type == WARRIOR)
 					nk_image(ctx, media->warrior_skills[i]);
 				else if (type == MAGE)
