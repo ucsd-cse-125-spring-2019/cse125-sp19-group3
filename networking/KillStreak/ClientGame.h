@@ -20,6 +20,7 @@ public:
 	int join_game();
 	void handleServerInputPacket(ServerInputPacket* packet);
 	int handleCharacterSelectionPacket(ServerInputPacket* packet);
+	int sendCharacterSelection(string username, ArcheType character);
 
 	// initialize packet 
 	ClientInputPacket createClientInputPacket(InputType type, Point finalLocation, int skill_id);
@@ -36,5 +37,7 @@ protected:
 	ServerInputQueue* serverPackets;	// queue of packets from server
 	mutex* q_lock;						        // lock for queue
 	vector<int> cooldown_times;
+
+	friend class ClientScene;
 
 };

@@ -277,7 +277,7 @@ void ClientScene::renderLobbyPhase(GLFWwindow* window) {
 	 /* Input */
 	glfwPollEvents();
 	nk_glfw3_new_frame();
-	lobby_layout(ctx, &media, ClientScene::width, ClientScene::height, nk_rgb(60, 60, 80), this);
+	lobby_layout(ctx, &media, ClientScene::width, ClientScene::height, nk_rgb(60, 60, 80), game);
 
 	nk_glfw3_render(NK_ANTI_ALIASING_OFF, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
 
@@ -319,7 +319,10 @@ void ClientScene::display_callback(GLFWwindow* window)
 	//glClear(GL_COLOR_BUFFER_BIT);
 	//glClearColor(bg.r, bg.g, bg.b, bg.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	renderKillPhase(window);
+
+	if (game->currPhase == ClientStatus::LOBBY) renderLobbyPhase(window);
+	else if (game->currPhase == ClientStatus::KILL) renderKillPhase(window);
+	else renderPreparePhase(window);
 }
 
 void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
