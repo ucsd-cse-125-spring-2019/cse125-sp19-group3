@@ -69,7 +69,7 @@ static void ui_skills(struct nk_context *ctx, struct media *media, int width, in
 	nk_end(ctx);
 }
 static void
-kill_layout(struct nk_context *ctx, struct media *media, int width, int height, struct nk_color background_color,int game_size) {
+kill_layout(struct nk_context *ctx, struct media *media, int width, int height, struct nk_color background_color,ClientScene * scene) {
 	ctx->style.window.fixed_background = nk_style_item_color(background_color);
 
 	ui_leaderboard(ctx, media);
@@ -78,8 +78,8 @@ kill_layout(struct nk_context *ctx, struct media *media, int width, int height, 
 }
 
 static  void
-lobby_layout(struct nk_context *ctx, struct media *media, int width, int height, struct nk_color background_color, bool availablity) {
-	static bool available = availablity;
+lobby_layout(struct nk_context *ctx, struct media *media, int width, int height, struct nk_color background_color, ClientScene * scene) {
+	static bool available = false;
 
 	ctx->style.window.fixed_background = nk_style_item_color(background_color);
 	ctx->style.button.normal = nk_style_item_color(nk_rgb(200, 140, 200));
@@ -156,9 +156,8 @@ lobby_layout(struct nk_context *ctx, struct media *media, int width, int height,
 }
 
 static  void
-prepare_layout(struct nk_context *ctx, struct media *media, int width, int height, struct nk_color background_color, bool availablity) {
-	static bool available = availablity;
-
+prepare_layout(struct nk_context *ctx, struct media *media, int width, int height, struct nk_color background_color, ClientScene * scene) {
+	
 	ctx->style.window.fixed_background = nk_style_item_color(background_color);
 	ctx->style.button.normal = nk_style_item_color(nk_rgb(200, 140, 200));
 	ctx->style.button.hover = nk_style_item_color(nk_rgb(140, 80, 140));
