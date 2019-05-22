@@ -32,7 +32,7 @@ static void ui_leaderboard(struct nk_context *ctx, struct media *media) {
 	}
 	nk_end(ctx);
 }
-static void ui_skills(struct nk_context *ctx, struct media *media, int width, int height) {
+static void ui_skills(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player) {
 	static const char *key_bindings[] = { "Q","W","E","R" };
 	static const float cds[] = { 15,40,30,10 };
 	static int op = HUMAN;
@@ -41,25 +41,20 @@ static void ui_skills(struct nk_context *ctx, struct media *media, int width, in
 	{
 		static const float ratio[] = { 0.125f,0.125f, 0.125f,0.125f, 0.125f,0.125f, 0.125f,0.125f };  /* 0.3 + 0.4 + 0.3 = 1 */
 		nk_layout_row(ctx, NK_DYNAMIC, height *0.18, 8, ratio);
+		ArcheType type = player->modelType; 
 		for (int i = 0; i < 4; i++) {
-			if (nk_group_begin(ctx, key_bindings[i], NK_WINDOW_NO_SCROLLBAR)) { // column 1
-				nk_layout_row_dynamic(ctx, width *0.05, 1); // nested row
-
-				if (i == KING)
-					nk_image(ctx, media->king);
-				else if (i == MAGE)
-					nk_image(ctx, media->mage);
-				else if (i == ASSASSIN)
-					nk_image(ctx, media->assasin);
+			if (nk_group_begin(ctx, key_bindings[i], NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR)) { // column 1
+				nk_layout_row_dynamic(ctx, width *0.04, 1); // nested row
+				if (type == WARRIOR)
+					nk_image(ctx, media->warrior_skills[i]);
+				else if (type == MAGE)
+					nk_image(ctx, media->mage_skills[i]);
+				else if (type == ASSASSIN)
+					nk_image(ctx, media->assassin_skills[i]);
 				else
-					nk_image(ctx, media->warrior);
+					nk_image(ctx, media->king_skills[i]);
 				nk_layout_row_dynamic(ctx, 24, 1);
 				nk_text(ctx, key_bindings[i], strlen(key_bindings[i]), NK_TEXT_ALIGN_CENTERED);
-				/*const char * skill_cd;
-				string s = std::to_string((int)cds[i]);
-				skill_cd = s.c_str();
-				nk_layout_row_dynamic(ctx, 24, 1);
-				nk_text(ctx, skill_cd, strlen(skill_cd), NK_TEXT_ALIGN_CENTERED);*/
 				nk_group_end(ctx);
 			}
 			nk_spacing(ctx, 1);
@@ -69,12 +64,12 @@ static void ui_skills(struct nk_context *ctx, struct media *media, int width, in
 	nk_end(ctx);
 }
 static void
-kill_layout(struct nk_context *ctx, struct media *media, int width, int height, struct nk_color background_color,ClientScene * scene) {
-	ctx->style.window.fixed_background = nk_style_item_color(background_color);
-
+kill_layout(struct nk_context *ctx, struct media *media, int width, int height, struct nk_color background_color, ScenePlayer * player) {
+	
+	set_style(ctx, THEME_BLACK);
 	ui_leaderboard(ctx, media);
 
-	ui_skills(ctx, media,  width,  height);
+	ui_skills(ctx, media,  width,  height, player);
 }
 
 static  void

@@ -112,22 +112,22 @@ void ClientScene::initialize_UI(GLFWwindow* window) {
 	media.king = icon_load("../icon/king_icon.png");
 	media.warrior = icon_load("../icon/warrior_icon.png");
 
-	media.mage_skills[0] = icon_load("../icon/skills/evade.png");
-	media.mage_skills[1] = icon_load("../icon/skills/projectile.png");
-	media.mage_skills[2] = icon_load("../icon/skills/mage-aoe.png");
-	media.mage_skills[3] = icon_load("../icon/skills/mage-cone_aoe.png");
-	media.warrior_skills[0] = icon_load("../icon/skills/evade.png");
-	media.warrior_skills[1] = icon_load("../icon/skills/projectile.png");
-	media.warrior_skills[2] = icon_load("../icon/skills/warrior-charge.png");
-	media.warrior_skills[3] = icon_load("../icon/skills/warrior-aoe.png");
-	media.assassin_skills[0] = icon_load("../icon/skills/evade.png");
-	media.assassin_skills[1] = icon_load("../icon/skills/projectile.png");
-	media.assassin_skills[2] = icon_load("../icon/skills/assassin-invisiblity.png");
-	media.assassin_skills[3] = icon_load("../icon/skills/assassin-teleport.png");
-	media.king_skills[0] = icon_load("../icon/skills/evade.png");
-	media.king_skills[1] = icon_load("../icon/skills/projectile.png");
-	media.king_skills[2] = icon_load("../icon/skills/mage-aoe.png");
-	media.king_skills[3] = icon_load("../icon/skills/mage-cone_aoe.png");
+	media.mage_skills[2] = icon_load("../icon/skills/evade.png");
+	media.mage_skills[3] = icon_load("../icon/skills/projectile.png");
+	media.mage_skills[1] = icon_load("../icon/skills/mage-aoe.png");
+	media.mage_skills[0] = icon_load("../icon/skills/mage-cone_aoe.png");
+	media.warrior_skills[2] = icon_load("../icon/skills/evade.png");
+	media.warrior_skills[3] = icon_load("../icon/skills/projectile.png");
+	media.warrior_skills[1] = icon_load("../icon/skills/warrior-charge.png");
+	media.warrior_skills[0] = icon_load("../icon/skills/warrior-aoe.png");
+	media.assassin_skills[2] = icon_load("../icon/skills/evade.png");
+	media.assassin_skills[3] = icon_load("../icon/skills/projectile.png");
+	media.assassin_skills[1] = icon_load("../icon/skills/assassin-invisiblity.png");
+	media.assassin_skills[0] = icon_load("../icon/skills/assassin-teleport.png");
+	media.king_skills[2] = icon_load("../icon/skills/evade.png");
+	media.king_skills[3] = icon_load("../icon/skills/projectile.png");
+	media.king_skills[1] = icon_load("../icon/skills/king-aoe.png");
+	media.king_skills[0] = icon_load("../icon/skills/king-silence.png");
 
 }
 
@@ -301,7 +301,7 @@ void  ClientScene::renderKillPhase(GLFWwindow* window) {
 
 	/* GUI */
 
-	kill_layout(ctx, &media, width, height, nk_rgb(60, 60, 80), this);
+	kill_layout(ctx, &media, width, height, nk_rgb(60, 60, 80), & this->player);
 	/* ----------------------------------------- */
 
 
@@ -319,7 +319,7 @@ void ClientScene::display_callback(GLFWwindow* window)
 	//glClear(GL_COLOR_BUFFER_BIT);
 	//glClearColor(bg.r, bg.g, bg.b, bg.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	renderLobbyPhase(window);
+	renderKillPhase(window);
 }
 
 void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
