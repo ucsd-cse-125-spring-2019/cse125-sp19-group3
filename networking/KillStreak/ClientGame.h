@@ -8,6 +8,7 @@
 #include "PlayerData.hpp"
 #include <queue>
 
+typedef enum { LOBBY, KILL, PREPARE } ClientStatus;
 class ClientGame {
 public:
 	ClientGame(string host, string port, int char_select_time);
@@ -33,7 +34,7 @@ public:
 protected:
 	PCSTR host;
 	PCSTR serverPort;
-
+	ClientStatus currPhase = LOBBY;
 	int char_select_time;				      // time allotted to make character selection
 	ServerInputQueue* serverPackets;	// queue of packets from server
 	mutex* q_lock;						        // lock for queue

@@ -21,8 +21,6 @@
 #define TOON_VERTEX_SHADER_PATH "../toonshader.vert"
 #define TOON_FRAGMENT_SHADER_PATH "../toonshader.frag"
 
-
-typedef enum { LOBBY, KILL, PREPARE } ClientStatus;
 class ClientScene {
 public:
 	int width;
@@ -51,7 +49,7 @@ public:
 	void renderLobbyPhase(GLFWwindow* window);
 	void initialize_UI(GLFWwindow* window);
 private:
-	ClientStatus status;
+	
 	float min_scroll = 20.0f;
 	float max_scroll = 60.0f;
 	const char* window_title = "CSE 125 Group 3";
