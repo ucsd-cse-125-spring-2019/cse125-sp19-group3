@@ -203,35 +203,39 @@ int ClientGame::join_game()
 	*/
 	log->info("Received servers welcome packet, waiting in lobby for all players to join...");
 	
+	//TODO: Clean up this packet
+
 	// block until server sends Character selection packet
 	ServerInputPacket* char_select_packet = network->receivePacket();
 	log->info("received character selection packet from server");
 
-	// select username and character & send to server
-	handleServerInputPacket(char_select_packet);
-
-	// character selected; block until recv() init scene packet from server marking game start
-	ServerInputPacket * initScenePacket = network->receivePacket();
-	handleServerInputPacket(initScenePacket);
-
-	// allocate new data for server thread & launch (will recv() indefinitely)
-	server_data* server_arg = (server_data *)malloc(sizeof(server_data));
-	if (server_arg)
-	{
-		server_arg->q_lock = q_lock;				// ptr to queue lock
-		server_arg->queuePtr = serverPackets;		// ptr to server input queue
-		server_arg->network = network;				// ptr to network
-		_beginthread(constantListenFromServer, 0, (void*)server_arg);	
-	}
-	else	// error allocating server data; 
-	{
-		log->error("Error allocating server metadata");
-		closesocket(network->ConnectSocket);
-		return 0;
-	}
-
-
 	return 1;
+
+	//// select username and character & send to server
+	//handleServerInputPacket(char_select_packet);
+
+	//// character selected; block until recv() init scene packet from server marking game start
+	//ServerInputPacket * initScenePacket = network->receivePacket();
+	//handleServerInputPacket(initScenePacket);
+
+	//// allocate new data for server thread & launch (will recv() indefinitely)
+	//server_data* server_arg = (server_data *)malloc(sizeof(server_data));
+	//if (server_arg)
+	//{
+	//	server_arg->q_lock = q_lock;				// ptr to queue lock
+	//	server_arg->queuePtr = serverPackets;		// ptr to server input queue
+	//	server_arg->network = network;				// ptr to network
+	//	_beginthread(constantListenFromServer, 0, (void*)server_arg);	
+	//}
+	//else	// error allocating server data; 
+	//{
+	//	log->error("Error allocating server metadata");
+	//	closesocket(network->ConnectSocket);
+	//	return 0;
+	//}
+
+
+	//return 1;
 }
 
 
@@ -266,18 +270,31 @@ void ClientGame::run() {
 	// Loop while GLFW window should stay open
 	while (!glfwWindowShouldClose(window))
 	{
-		auto start = Clock::now();
-		// TODO: REMOVE ME!!! (new thread should handle incoming packets
-		ServerInputPacket* packet = network->receivePacket();
-		handleServerInputPacket(packet);
+		// Lobby Phase
+		if (currPhase == ClientStatus::LOBBY) {
+			Window_static::display_callback(window);
+		}
+		else if (currPhase == ClientStatus::KILL) {
+			// Kill Phase
+			auto start = Clock::now();
+			// TODO: REMOVE ME!!! (new thread should handle incoming packets
+			ServerInputPacket* packet = network->receivePacket();
+			handleServerInputPacket(packet);
 
-		// Main render display callback. Rendering of objects is done here.
-		Window_static::display_callback(window);
-		// Idle callback. Updating objects, etc. can be done here.
-		Window_static::idle_callback();
-		auto end = Clock::now();
-		nanoseconds elapsed = chrono::duration_cast<nanoseconds>(end - start);
-		Window_static::updateTimers(elapsed);
+			// Main render display callback. Rendering of objects is done here.
+			Window_static::display_callback(window);
+			// Idle callback. Updating objects, etc. can be done here.
+			Window_static::idle_callback();
+			auto end = Clock::now();
+			nanoseconds elapsed = chrono::duration_cast<nanoseconds>(end - start);
+			Window_static::updateTimers(elapsed);
+		}
+		else {
+			// Prepare Phase
+
+		}
+
+		
 	}
 
 	Window_static::clean_up();
@@ -290,6 +307,40 @@ void ClientGame::run() {
 	
 }
 
+int ClientGame::sendCharacterSelection(string username, ArcheType character) {
+	auto log = logger();
+	int iResult = 0;				// return value
+
+	log->info("Sending character selection to server: Username {}, ArcheType {}", username, character);
+
+	// create character selection packet & send to server
+	ClientSelectionPacket selection_packet = createCharacterSelectedPacket(username, character);
+	iResult = network->sendToServer(selection_packet);	// send
+
+																// error?
+	if (iResult != sizeof(ClientSelectionPacket))
+	{
+		log->error("Failure sending packet, only sent {} of {} bytes", iResult, sizeof(ClientSelectionPacket));
+		network->closeSocket();
+		free(&selection_packet);
+		return 0;
+	}
+	if (iResult == SOCKET_ERROR)
+	{
+		log->error("Send failed with error: {}", WSAGetLastError());
+		WSACleanup();
+		network->closeSocket();
+		free(&selection_packet);
+		return 0;
+	}
+
+	ServerInputPacket* char_select_packet = network->receivePacket();
+	int sz = char_select_packet->size;
+
+	if (sz == 1) return 1;
+
+	return 0;
+}
 
 /*
 	Client selects ArcheType and username. If character taken will be asked to 
