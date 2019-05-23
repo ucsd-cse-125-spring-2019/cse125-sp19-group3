@@ -15,6 +15,7 @@ typedef enum { WELCOME, INIT_SCENE, UPDATE_SCENE_GRAPH, CHAR_SELECT_PHASE } Serv
 
 typedef enum { HUMAN, MAGE, ASSASSIN, WARRIOR, KING } ArcheType;
 
+enum AnimationType { idle, run, evade, projectile, skill_1, skill_2, die, spawn };
 
 /*
 	Packet sent from the client to the server when client 

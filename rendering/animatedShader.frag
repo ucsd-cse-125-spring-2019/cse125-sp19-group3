@@ -2,7 +2,7 @@
 
 in vec3 fragPosition;
 in vec3 fragNormal;
-in vec2 TexCoord;
+in vec2 texCoord;
 
 uniform int UseTex = 0;
 uniform sampler2D Texture;
@@ -38,7 +38,7 @@ void main() {
 		//finalColor = vec4(normalize(fragNormal), 1);
 	}
 	else {
-		finalColor = texture(Texture, TexCoord);
-		finalColor = vec4(10* TexCoord[0], 10* TexCoord[1], 0, 1);
+		finalColor = texture(Texture, texCoord);
+		//finalColor = vec4(1000* texCoord[0], 1000* texCoord[1], 0, 1);
 	}
 }

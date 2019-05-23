@@ -8,18 +8,16 @@ glm::mat4 aiM3x3toGlmMat4(aiMatrix3x3 m);
 unsigned int TextureFromFile(const string& path);
 //static inline glm::mat4 mat4_cast(const aiMatrix4x4& m) { return glm::transpose(glm::make_mat4(&m.a1)); }
 
-Model::Model(string const &path, string const &texPath, bool animated, bool gamma)
+Model::Model(string const &path, string const &texPath, bool animated)
 {
 	isAnimated = animated;
-	gammaCorrection = gamma;
 	loadModel(path);
 	if (isAnimated) {
 		textureId = TextureFromFile(texPath);
 	}
 	if (m_NumBones) {
-		BoneTransform(0.0f);
+		//BoneTransform(2.0f);
 	}
-
 }
 
 //TODO
@@ -46,23 +44,45 @@ void Model::draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &v
 		meshes[i].draw(shader, viewProjMtx, textureId);
 }
 
-void Model::BoneTransform(float TimeInSeconds)
+void Model::BoneTransform(float timeToIncrement)
 {
+	if (animationMode != prev_animationMode) {
+		animationTime = animation_frames[animationMode][0];
+		prev_animationMode = animationMode;
+	}
+	else {
+		switch (animationMode) {
+		case idle:
+		case run:
+			animationTime += timeToIncrement;
+			break;
+		case evade:
+		case projectile:
+		case skill_1:
+		case skill_2:
+		case die:
+		case spawn:
+			if (animationTime + timeToIncrement > animation_frames[animationMode][1]) {
+				animationMode = idle;
+				prev_animationMode = idle;
+				animationTime = animation_frames[idle][0];
+			}
+			else {
+				animationTime += timeToIncrement;
+			}
+			break;
+		}
+	}
+	float animationDuration = animation_frames[animationMode][1] - animation_frames[animationMode][0];
+	animationTime = animation_frames[animationMode][0] + fmod(animationTime - animation_frames[animationMode][0], animationDuration);
+
+	//float TicksPerSecond = scene->mAnimations[0]->mTicksPerSecond != 0 ?
+	//	scene->mAnimations[0]->mTicksPerSecond : 25.0f;
+	//float TimeInTicks = fmod(animationTime * TicksPerSecond, animationDuration);
+	//float AnimationTime = fmod(TimeInTicks, animationDuration);
+
 	glm::mat4 Identity = glm::mat4(1.0f);
-
-	//unsigned int animationClipIndex = AnimationMode;
-	//for (unsigned int i = 0; i < scene->mNumAnimations; i++) {
-	//	if (scene->mAnimations[i]->mName.data == AnimationName) {
-	//		animationClipIndex = i;
-	//		break;
-	//	}
-	//}
-	float TicksPerSecond = scene->mAnimations[animationMode]->mTicksPerSecond != 0 ?
-		scene->mAnimations[animationMode]->mTicksPerSecond : 25.0f;
-	float TimeInTicks = TimeInSeconds * TicksPerSecond;
-	float AnimationTime = fmod(TimeInTicks, scene->mAnimations[animationMode]->mDuration);
-
-	ReadNodeHeirarchy(AnimationTime, scene->mRootNode, Identity);
+	ReadNodeHeirarchy(animationTime, scene->mRootNode, Identity);
 
 	boneTransforms.resize(m_NumBones);
 
@@ -363,11 +383,11 @@ void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const gl
 {
 	string NodeName(pNode->mName.data);
 
-	const aiAnimation* pAnimation = scene->mAnimations[animationMode];
+	const aiAnimation* pAnimation = scene->mAnimations[0];
 
 	glm::mat4 NodeTransformation = aiM4x4toGlmMat4(pNode->mTransformation);
 
-	const aiNodeAnim* pNodeAnim = pAnimation->mChannels[m_ChannelMapping[animationMode][NodeName]];
+	const aiNodeAnim* pNodeAnim = pAnimation->mChannels[m_ChannelMapping[0][NodeName]];
 
 	if (pNodeAnim) {
 		// Interpolate scaling and generate scaling transformation matrix

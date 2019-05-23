@@ -1,23 +1,18 @@
 {
   "data": [
     {
-      "path": "../models/BaseMesh_Anim.fbx",
-      "texture_path": "../textures/skeleton_mage_white.tga",
-      "model_id": 1,
-      "color_rgb": [
-        0.5,
-        0.5,
-        0.5
-      ],
-      "rotate_angle": -90.0,
-      "rotate_axis": [ 1.0, 0.0, 0.0 ],
-      "scale": 0.05,
-      "animated": true,
-      "radius": 1.5
-    },
-    {
       "path": "../models/mage/mage.dae",
-      "texture_path": "../textures/skeleton_mage_white.tga",
+      "texture_path": "../textures/skeleton_mage_yellow.tga",
+      "animations": [
+        [ 390, 470 ],
+        [ 853, 876 ],
+        [ 555, 615 ],
+        [ 80, 130 ],
+        [ 620, 675 ],
+        [ 1345, 1415 ],
+        [ 135, 165 ],
+        [ 1085, 1160 ]
+      ],
       "model_id": 0,
       "color_rgb": [
         0.5,
@@ -32,8 +27,18 @@
     },
     {
       "path": "../models/crossbowman/crossbowman.dae",
-      "texture_path": "../textures/skeleton_mage_white.tga",
-      "model_id": 2,
+      "texture_path": "../textures/skeleton_crossbowman_yellow.tga",
+      "animations": [
+        [ 444, 473 ],
+        [ 738, 761 ],
+        [ 505, 549 ],
+        [ 90, 179 ],
+        [ 250, 294 ],
+        [ 250, 294 ],
+        [ 220, 249 ],
+        [ 905, 994 ]
+      ],
+      "model_id": 1,
       "color_rgb": [
         0.5,
         0.5,
@@ -47,14 +52,24 @@
     },
     {
       "path": "../models/swordman/swordman.dae",
-      "texture_path": "../textures/skeleton_mage_white.tga",
-      "model_id": 3,
+      "texture_path": "../textures/skeleton_swordsman_yellow.tga",
+      "animations": [
+        [ 574, 633 ],
+        [ 1339, 1368 ],
+        [ 695, 736 ],
+        [ 205, 245 ],
+        [ 865, 915 ],
+        [ 90, 203 ],
+        [ 250, 285 ],
+        [ 1075, 1125 ]
+      ],
+      "model_id": 2,
       "color_rgb": [
         0.5,
         0.5,
         0.5
       ],
-      "rotate_angle": 0.0,
+      "rotate_angle": 45.0,
       "rotate_axis": [ 0.0, 1.0, 0.0 ],
       "scale": 0.00025,
       "animated": true,
@@ -62,8 +77,18 @@
     },
     {
       "path": "../models/king/allinone.fbx",
-      "texture_path": "../textures/skeleton_mage_white.tga",
-      "model_id": 4,
+      "texture_path": "../textures/skeleton_king_yellow.tga",
+      "animations": [
+        [ 60, 119 ],
+        [ 1110, 1139 ],
+        [ 613, 647 ],
+        [ 699, 752 ],
+        [ 752, 934 ],
+        [ 647, 699 ],
+        [ 1303, 1377 ],
+        [ 1254, 1303 ]
+      ],
+      "model_id": 3,
       "color_rgb": [
         0.5,
         0.5,

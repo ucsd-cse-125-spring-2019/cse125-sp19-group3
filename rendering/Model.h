@@ -13,6 +13,7 @@
 
 #include "Mesh.h"
 #include "shader.h"
+#include "../networking/KillStreak/CoreTypes.hpp"
 //#include "Sphere.h"
 
 
@@ -32,6 +33,8 @@ typedef struct{
 	unsigned int baseIndex;
 } MeshData;
 
+
+
 //unsigned int TextureFromFile(const char *path, const string &directory, bool gamma = false);
 
 class Model
@@ -42,14 +45,17 @@ public:
 	vector<MeshData> meshesData;
 	vector<Mesh> meshes;
 	string directory;
-	bool gammaCorrection, isAnimated;
+	bool isAnimated;
 	vector<string> m_Animations;
-	unsigned int animationMode = 0;
+	unsigned int prev_animationMode = -1;
+	unsigned int animationMode = spawn;
+	float animationTime;
+	vector<vector<float>> animation_frames;
 
 	//Sphere * bounding_sphere;
 	/*  Functions   */
 	// constructor, expects a filepath to a 3D model.
-	Model(string const &path, string const &texPath, bool animated=false, bool gamma = false);
+	Model(string const &path, string const &texPath, bool animated=false);
 
 	// draws the model, and thus all its meshes
 	void draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx);
