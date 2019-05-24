@@ -482,6 +482,7 @@ ServerInputPacket ServerGame::createServerTickPacket() {
 	unsigned int sgSize;
 	char buf[SERVER_TICK_PACKET_SIZE] = { 0 };
 	char * bufPtr = buf;
+
 	sgSize = Serialization::serializeSceneGraph(scene->getRoot(), bufPtr, scene->serverSceneGraphMap);
 	return createServerPacket(UPDATE_SCENE_GRAPH, SERVER_TICK_PACKET_SIZE, buf);
 }

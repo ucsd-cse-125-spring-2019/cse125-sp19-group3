@@ -48,7 +48,7 @@ public:
 	bool isAnimated;
 	vector<string> m_Animations;
 	unsigned int prev_animationMode = -1;
-	unsigned int animationMode = spawn;
+	unsigned int animationMode = run;
 	float animationTime;
 	vector<vector<float>> animation_frames;
 

@@ -26,7 +26,6 @@
 #define NK_GLFW_GL3_IMPLEMENTATION
 #define NK_KEYSTATE_BASED_INPUT
 #include "nuklear-master/nuklear.h"
-#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #define UNUSED(a) (void)a
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
@@ -73,7 +72,7 @@ NK_API void                 nk_glfw3_mouse_button_callback(GLFWwindow *win, int 
 #endif
 
 static void
-die(const char *fmt, ...)
+dieWindow(const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
@@ -89,7 +88,7 @@ icon_load(const char *filename)
 	int x, y, n;
 	GLuint tex;
 	unsigned char *data = stbi_load(filename, &x, &y, &n, STBI_rgb_alpha);
-	if (!data) die("[SDL]: failed to load image: %s", filename);
+	if (!data) dieWindow("[SDL]: failed to load image: %s", filename);
 
 	glGenTextures(1, &tex);
 	glBindTexture(GL_TEXTURE_2D, tex);

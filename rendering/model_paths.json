@@ -13,7 +13,7 @@
         [ 135, 165 ],
         [ 1085, 1160 ]
       ],
-      "model_id": 0,
+      "model_id": 1,
       "color_rgb": [
         0.5,
         0.5,
@@ -23,7 +23,7 @@
       "rotate_axis": [ 0.0, 1.0, 0.0 ],
       "scale": 0.0003,
       "animated": true,
-      "radius": 1.0
+      "radius": 1.5
     },
     {
       "path": "../models/crossbowman/crossbowman.dae",
@@ -38,7 +38,7 @@
         [ 220, 249 ],
         [ 905, 994 ]
       ],
-      "model_id": 1,
+      "model_id": 2,
       "color_rgb": [
         0.5,
         0.5,
@@ -46,7 +46,7 @@
       ],
       "rotate_angle": 0.0,
       "rotate_axis": [ 0.0, 1.0, 0.0 ],
-      "scale": 0.0005,
+      "scale": 0.0004,
       "animated": true,
       "radius": 1.5
     },
@@ -63,13 +63,13 @@
         [ 250, 285 ],
         [ 1075, 1125 ]
       ],
-      "model_id": 2,
+      "model_id": 3,
       "color_rgb": [
         0.5,
         0.5,
         0.5
       ],
-      "rotate_angle": 45.0,
+      "rotate_angle": 0.0,
       "rotate_axis": [ 0.0, 1.0, 0.0 ],
       "scale": 0.00025,
       "animated": true,
@@ -88,7 +88,7 @@
         [ 1303, 1377 ],
         [ 1254, 1303 ]
       ],
-      "model_id": 3,
+      "model_id": 4,
       "color_rgb": [
         0.5,
         0.5,
@@ -96,7 +96,7 @@
       ],
       "rotate_angle": 0.0,
       "rotate_axis": [ 0.0, 1.0, 0.0 ],
-      "scale": 0.025,
+      "scale": 0.020,
       "animated": true,
       "radius": 1.5
     },
