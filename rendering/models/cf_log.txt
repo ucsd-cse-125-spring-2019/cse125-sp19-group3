@@ -1,1 +1,0 @@
-Warning: None triangle mesh: candle_arrangement_2 (file: 'C:\Users\jhchao\Desktop\CSE125\cse125-sp19-group3\rendering\models\candle_arrangement_2.fbx') []

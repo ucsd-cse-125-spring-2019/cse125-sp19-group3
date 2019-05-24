@@ -1,19 +1,23 @@
 #include "Model.h"
 #include "../networking/KillStreak/Logger.hpp"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 glm::mat4 aiM4x4toGlmMat4(aiMatrix4x4 m);
 glm::mat4 aiM3x3toGlmMat4(aiMatrix3x3 m);
 
+unsigned int TextureFromFile(const string& path);
 //static inline glm::mat4 mat4_cast(const aiMatrix4x4& m) { return glm::transpose(glm::make_mat4(&m.a1)); }
 
-Model::Model(string const &path, bool animated, bool gamma)
+Model::Model(string const &path, string const &texPath, bool animated)
 {
 	isAnimated = animated;
-	gammaCorrection = gamma;
 	loadModel(path);
-
-	if(m_NumBones)
-		BoneTransform(animationMode, 0.0f);
-
+	//if (isAnimated) {
+		textureId = TextureFromFile(texPath);
+	//}
+	if (m_NumBones) {
+		//BoneTransform(2.0f);
+	}
 }
 
 //TODO
@@ -28,32 +32,57 @@ void Model::draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &v
 	shader->use();
 	shader->setMat4("ModelMtx", modelMtx);
 	shader->setMat4("ModelViewProjMtx", viewProjMtx * modelMtx);
+	//if (isAnimated) {
+		shader->setInt("UseTex", 1);
+	//}
 
 	for (unsigned int i = 0; i < boneTransforms.size(); i++) {
 		shader->setMat4(m_BoneInfo[i].BoneLocation, boneTransforms[i]);
 	}
 
 	for (unsigned int i = 0; i < meshes.size(); i++)
-		meshes[i].draw(shader, viewProjMtx);
+		meshes[i].draw(shader, viewProjMtx, textureId);
 }
 
-void Model::BoneTransform(unsigned int AnimationMode, float TimeInSeconds)
+void Model::BoneTransform(float timeToIncrement)
 {
+	if (animationMode != prev_animationMode) {
+		animationTime = animation_frames[animationMode][0];
+		prev_animationMode = animationMode;
+	}
+	else {
+		switch (animationMode) {
+		case idle:
+		case run:
+			animationTime += timeToIncrement;
+			break;
+		case evade:
+		case projectile:
+		case skill_1:
+		case skill_2:
+		case die:
+		case spawn:
+			if (animationTime + timeToIncrement > animation_frames[animationMode][1]) {
+				animationMode = idle;
+				prev_animationMode = idle;
+				animationTime = animation_frames[idle][0];
+			}
+			else {
+				animationTime += timeToIncrement;
+			}
+			break;
+		}
+	}
+	float animationDuration = animation_frames[animationMode][1] - animation_frames[animationMode][0];
+	animationTime = animation_frames[animationMode][0] + fmod(animationTime - animation_frames[animationMode][0], animationDuration);
+
+	//float TicksPerSecond = scene->mAnimations[0]->mTicksPerSecond != 0 ?
+	//	scene->mAnimations[0]->mTicksPerSecond : 25.0f;
+	//float TimeInTicks = fmod(animationTime * TicksPerSecond, animationDuration);
+	//float AnimationTime = fmod(TimeInTicks, animationDuration);
+
 	glm::mat4 Identity = glm::mat4(1.0f);
-
-	//unsigned int animationClipIndex = AnimationMode;
-	//for (unsigned int i = 0; i < scene->mNumAnimations; i++) {
-	//	if (scene->mAnimations[i]->mName.data == AnimationName) {
-	//		animationClipIndex = i;
-	//		break;
-	//	}
-	//}
-	float TicksPerSecond = scene->mAnimations[AnimationMode]->mTicksPerSecond != 0 ?
-		scene->mAnimations[AnimationMode]->mTicksPerSecond : 25.0f;
-	float TimeInTicks = TimeInSeconds * TicksPerSecond;
-	float AnimationTime = fmod(TimeInTicks, scene->mAnimations[AnimationMode]->mDuration);
-
-	ReadNodeHeirarchy(AnimationMode, AnimationTime, scene->mRootNode, Identity);
+	ReadNodeHeirarchy(animationTime, scene->mRootNode, Identity);
 
 	boneTransforms.resize(m_NumBones);
 
@@ -234,6 +263,8 @@ void Model::processMesh(vector<Vertex>& vertices, vector<unsigned int>& indices,
 		for (unsigned int j = 0; j < face.mNumIndices; j++)
 			indices.push_back(face.mIndices[j]);
 	}
+
+	/*
 	// process materials
 	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 	// we assume a convention for sampler names in the shaders. Each diffuse texture should be named
@@ -255,6 +286,7 @@ void Model::processMesh(vector<Vertex>& vertices, vector<unsigned int>& indices,
 	// 4. height maps
 	std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
 	textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+	*/
 
 	// process bones
 	LoadBones(meshIndex, mesh, vertices);
@@ -347,15 +379,15 @@ glm::mat4 aiM3x3toGlmMat4(aiMatrix3x3 m) {
 		0, 0, 0, 1);
 }
 
-void Model::ReadNodeHeirarchy(unsigned int AnimationMode, float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform)
+void Model::ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform)
 {
 	string NodeName(pNode->mName.data);
 
-	const aiAnimation* pAnimation = scene->mAnimations[AnimationMode];
+	const aiAnimation* pAnimation = scene->mAnimations[0];
 
 	glm::mat4 NodeTransformation = aiM4x4toGlmMat4(pNode->mTransformation);
 
-	const aiNodeAnim* pNodeAnim = pAnimation->mChannels[m_ChannelMapping[AnimationMode][NodeName]];
+	const aiNodeAnim* pNodeAnim = pAnimation->mChannels[m_ChannelMapping[0][NodeName]];
 
 	if (pNodeAnim) {
 		// Interpolate scaling and generate scaling transformation matrix
@@ -366,7 +398,8 @@ void Model::ReadNodeHeirarchy(unsigned int AnimationMode, float AnimationTime, c
 		// Interpolate rotation and generate rotation transformation matrix
 		aiQuaternion RotationQ;
 		CalcInterpolatedRotation(RotationQ, AnimationTime, pNodeAnim);
-		glm::mat4 RotationM = aiM4x4toGlmMat4(aiMatrix4x4(RotationQ.GetMatrix()));
+		glm::mat4 RotationM = glm::mat4_cast(glm::quat(RotationQ.w, RotationQ.x, RotationQ.y, RotationQ.z));
+		//glm::mat4 RotationM = aiM4x4toGlmMat4(aiMatrix4x4(RotationQ.GetMatrix()));
 
 		// Interpolate translation and generate translation transformation matrix
 		aiVector3D Translation;
@@ -389,7 +422,7 @@ void Model::ReadNodeHeirarchy(unsigned int AnimationMode, float AnimationTime, c
 	}
 
 	for (unsigned int i = 0; i < pNode->mNumChildren; i++) {
-		ReadNodeHeirarchy(AnimationMode, AnimationTime, pNode->mChildren[i], WorldTransformation);
+		ReadNodeHeirarchy(AnimationTime, pNode->mChildren[i], WorldTransformation);
 	}
 }
 
@@ -400,6 +433,9 @@ void Model::CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const 
 		Out = pNodeAnim->mScalingKeys[0].mValue;
 		return;
 	}
+
+	AnimationTime = fmod(AnimationTime, ((float)pNodeAnim->mScalingKeys[pNodeAnim->mNumScalingKeys - 1].mTime - (float)pNodeAnim->mScalingKeys[0].mTime))
+		+ (float)pNodeAnim->mScalingKeys[0].mTime;
 
 	unsigned int ScalingIndex = FindScaling(AnimationTime, pNodeAnim);
 	unsigned int NextScalingIndex = (ScalingIndex + 1);
@@ -434,6 +470,9 @@ void Model::CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, con
 		return;
 	}
 
+	AnimationTime = fmod(AnimationTime, ((float)pNodeAnim->mRotationKeys[pNodeAnim->mNumRotationKeys - 1].mTime - (float)pNodeAnim->mRotationKeys[0].mTime))
+		+ (float)pNodeAnim->mRotationKeys[0].mTime;
+
 	unsigned int RotationIndex = FindRotation(AnimationTime, pNodeAnim);
 	unsigned int NextRotationIndex = (RotationIndex + 1);
 	assert(NextRotationIndex < pNodeAnim->mNumRotationKeys);
@@ -467,10 +506,8 @@ void Model::CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const
 		return;
 	}
 
-	/*if (AnimationTime == 0) {
-		Out = pNodeAnim->mPositionKeys[0].mValue;
-		return;
-	}*/
+	AnimationTime = fmod(AnimationTime, ((float)pNodeAnim->mPositionKeys[pNodeAnim->mNumPositionKeys - 1].mTime - (float)pNodeAnim->mPositionKeys[0].mTime))
+		+ (float)pNodeAnim->mPositionKeys[0].mTime;
 
 	unsigned int PositionIndex = FindPosition(AnimationTime, pNodeAnim);
 	unsigned int NextPositionIndex = (PositionIndex + 1);
@@ -497,42 +534,41 @@ unsigned int Model::FindPosition(float AnimationTime, const aiNodeAnim* pNodeAni
 	assert(0);
 }
 
-//unsigned int TextureFromFile(const char *path, const string &directory, bool gamma)
-//{
-//	string filename = string(path);
-//	filename = directory + '/' + filename;
-//
-//	unsigned int textureID;
-//	glGenTextures(1, &textureID);
-//
-//	int width, height, nrComponents;
-//	unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
-//	if (data)
-//	{
-//		GLenum format;
-//		if (nrComponents == 1)
-//			format = GL_RED;
-//		else if (nrComponents == 3)
-//			format = GL_RGB;
-//		else if (nrComponents == 4)
-//			format = GL_RGBA;
-//
-//		glBindTexture(GL_TEXTURE_2D, textureID);
-//		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-//		glGenerateMipmap(GL_TEXTURE_2D);
-//
-//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//
-//		stbi_image_free(data);
-//	}
-//	else
-//	{
-//		std::cout << "Texture failed to load at path: " << path << std::endl;
-//		stbi_image_free(data);
-//	}
-//
-//	return textureID;
-//}
+unsigned int TextureFromFile(const string& path)
+{
+	unsigned int textureID;
+	glGenTextures(1, &textureID);
+
+	int width, height, nrComponents;
+	unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrComponents, STBI_rgb);
+	if (data)
+	{
+		GLenum format;
+		if (nrComponents == 1)
+			format = GL_RED;
+		else if (nrComponents == 3)
+			format = GL_RGB;
+		else if (nrComponents == 4)
+			format = GL_RGBA;
+
+		glBindTexture(GL_TEXTURE_2D, textureID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+		stbi_image_free(data);
+	}
+	else
+	{
+		printf("Texture failed to load at path: %s\n", path);
+		stbi_image_free(data);
+	}
+
+	printf("texture Id is: %d\n", textureID);
+
+	return textureID;
+}

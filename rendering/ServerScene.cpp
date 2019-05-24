@@ -171,9 +171,21 @@ void ServerScene::initEnv() {
 
 void ServerScene::addPlayer(unsigned int playerId, ArcheType modelType) {
 	nodeIdCounter++;
-	Transform * playerObj = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)),
-		glm::rotate(glm::mat4(1.0f), -90/ 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)),
-		glm::scale(glm::mat4(1.0f), glm::vec3(0.05f, 0.05f, 0.05f)));
+	ifstream json_file("../model_paths.json");
+	json jsonObjs = json::parse(json_file);
+	Transform * playerObj = nullptr;
+	for (auto & obj : jsonObjs["data"]) {
+		if (modelType == (unsigned int)obj["model_id"]) {
+			playerObj = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), glm::vec3(0)),
+				glm::rotate(glm::mat4(1.0f), (float)obj["rotate_angle"] / 180.0f * glm::pi<float>(), glm::vec3((float)(obj["rotate_axis"][0]), (float)(obj["rotate_axis"][1]), (float)(obj["rotate_axis"][2]))),
+				glm::scale(glm::mat4(1.0f), glm::vec3((float)obj["scale"])));
+			break;
+		}
+	}
+	/*Transform * playerObj = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0)),
+		glm::rotate(glm::mat4(1.0f), 0 / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)),
+		glm::scale(glm::mat4(1.0f), glm::vec3(0.0005f)));*/
+	assert(playerObj != nullptr);
 	playerObj->model_ids.insert(modelType);
 	playerRoot->addChild(nodeIdCounter);
 	serverSceneGraphMap.insert({ nodeIdCounter, playerObj });

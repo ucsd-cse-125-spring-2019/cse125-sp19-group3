@@ -1,73 +1,108 @@
 {
   "data": [
     {
-      "path": "../models/BaseMesh_Anim.fbx",
+      "path": "../models/mage/mage.dae",
+      "texture_path": "../textures/skeleton_mage_yellow.tga",
+      "animations": [
+        [ 390, 470 ],
+        [ 853, 876 ],
+        [ 555, 615 ],
+        [ 80, 130 ],
+        [ 620, 675 ],
+        [ 1345, 1415 ],
+        [ 135, 165 ],
+        [ 1085, 1160 ]
+      ],
       "model_id": 0,
       "color_rgb": [
         0.5,
         0.5,
         0.5
       ],
+      "rotate_angle": 0.0,
+      "rotate_axis": [ 0.0, 1.0, 0.0 ],
+      "scale": 0.0003,
       "animated": true,
       "radius": 1.0
     },
     {
-      "path": "../models/BaseMesh_Anim.fbx",
+      "path": "../models/crossbowman/crossbowman.dae",
+      "texture_path": "../textures/skeleton_crossbowman_yellow.tga",
+      "animations": [
+        [ 444, 473 ],
+        [ 738, 761 ],
+        [ 505, 549 ],
+        [ 90, 179 ],
+        [ 250, 294 ],
+        [ 250, 294 ],
+        [ 220, 249 ],
+        [ 905, 994 ]
+      ],
       "model_id": 1,
       "color_rgb": [
         0.5,
         0.5,
         0.5
       ],
+      "rotate_angle": 0.0,
+      "rotate_axis": [ 0.0, 1.0, 0.0 ],
+      "scale": 0.0005,
       "animated": true,
-      "radius": 1.0
+      "radius": 1.5
     },
     {
-      "path": "../models/BaseMesh_Anim.fbx",
+      "path": "../models/swordman/swordman.dae",
+      "texture_path": "../textures/skeleton_swordsman_yellow.tga",
+      "animations": [
+        [ 574, 633 ],
+        [ 1339, 1368 ],
+        [ 695, 736 ],
+        [ 205, 245 ],
+        [ 865, 915 ],
+        [ 90, 203 ],
+        [ 250, 285 ],
+        [ 1075, 1125 ]
+      ],
       "model_id": 2,
       "color_rgb": [
         0.5,
         0.5,
         0.5
       ],
+      "rotate_angle": 45.0,
+      "rotate_axis": [ 0.0, 1.0, 0.0 ],
+      "scale": 0.00025,
       "animated": true,
-      "radius": 1.0
+      "radius": 1.5
     },
     {
-      "path": "../models/BaseMesh_Anim.fbx",
+      "path": "../models/king/allinone.fbx",
+      "texture_path": "../textures/skeleton_king_yellow.tga",
+      "animations": [
+        [ 60, 119 ],
+        [ 1110, 1139 ],
+        [ 613, 647 ],
+        [ 699, 752 ],
+        [ 752, 934 ],
+        [ 647, 699 ],
+        [ 1303, 1377 ],
+        [ 1254, 1303 ]
+      ],
       "model_id": 3,
       "color_rgb": [
         0.5,
         0.5,
         0.5
       ],
+      "rotate_angle": 0.0,
+      "rotate_axis": [ 0.0, 1.0, 0.0 ],
+      "scale": 0.025,
       "animated": true,
-      "radius": 1.0
+      "radius": 1.5
     },
     {
-      "path": "../models/BaseMesh_Anim.fbx",
-      "model_id": 4,
-      "color_rgb": [
-        0.9,
-        0.2,
-        0.2
-      ],
-      "animated": true,
-      "radius": 1.0
-    },
-    {
-      "path": "../models/projectiles/kunai.fbx",
-      "model_id": 200,
-      "color_rgb": [
-        0.5,
-        0.5,
-        0.5
-      ],
-      "animated": false,
-      "radius": 1.0
-    },
-    {
-      "path": "../models/fence_element_1.fbx",
+      "path": "../models/environment/fence_element_3.fbx",
+      "texture_path": "../textures/cemetery.tga",
       "model_id": 100,
       "color_rgb": [
         0.5,
@@ -78,7 +113,8 @@
       "radius": 1.0
     },
     {
-      "path": "../models/fence_element_2.fbx",
+      "path": "../models/environment/fence_element_2.fbx",
+      "texture_path": "../textures/cemetery.tga",
       "model_id": 101,
       "color_rgb": [
         0.5,
@@ -89,7 +125,8 @@
       "radius": 1.0
     },
     {
-      "path": "../models/grave_stone_1.fbx",
+      "path": "../models/environment/grave_stone_1.fbx",
+      "texture_path": "../textures/cemetery.tga",
       "model_id": 102,
       "color_rgb": [
         0.5,
@@ -100,7 +137,8 @@
       "radius": 1.0
     },
     {
-      "path": "../models/grave_stone_3.fbx",
+      "path": "../models/environment/grave_stone_3.fbx",
+      "texture_path": "../textures/cemetery.tga",
       "model_id": 103,
       "color_rgb": [
         0.5,
@@ -111,7 +149,8 @@
       "radius": 1.3
     },
     {
-      "path": "../models/dungeon_entrance.fbx",
+      "path": "../models/environment/dungeon_entrance.fbx",
+      "texture_path": "../textures/cemetery.tga",
       "model_id": 104,
       "color_rgb": [
         1.0,
@@ -122,7 +161,8 @@
       "radius": 10.0
     },
     {
-      "path": "../models/candle_arrangement_3.fbx",
+      "path": "../models/environment/candle_arrangement_3.fbx",
+      "texture_path": "../textures/cemetery.tga",
       "model_id": 105,
       "color_rgb": [
         1.0,
@@ -133,7 +173,8 @@
       "radius": 3.0
     },
     {
-      "path": "../models/cube_01_hue_1.fbx",
+      "path": "../models/environment/cube_01_hue_1.fbx",
+      "texture_path": "../textures/cemetery.tga",
       "model_id": 106,
       "color_rgb": [
         1.0,
@@ -144,7 +185,8 @@
       "radius": 3.0
     },
     {
-      "path": "../models/skull_stone_01_hue_1.fbx",
+      "path": "../models/environment/skull_stone_01_hue_1.fbx",
+      "texture_path": "../textures/cemetery.tga",
       "model_id": 107,
       "color_rgb": [
         1.0,
@@ -155,7 +197,8 @@
       "radius": 3.0
     },
     {
-      "path": "../models/cube_05_hue_1.fbx",
+      "path": "../models/environment/cube_05_hue_1.fbx",
+      "texture_path": "../textures/cemetery.tga",
       "model_id": 108,
       "color_rgb": [
         1.0,
@@ -166,7 +209,8 @@
       "radius": 3.0
     },
     {
-      "path": "../models/gate.fbx",
+      "path": "../models/environment/gate.fbx",
+      "texture_path": "../textures/cemetery.tga",
       "model_id": 109,
       "color_rgb": [
         1.0,
@@ -177,7 +221,8 @@
       "radius": 3.0
     },
     {
-      "path": "../models/fence_pillar_1.fbx",
+      "path": "../models/environment/fence_pillar_1.fbx",
+      "texture_path": "../textures/cemetery.tga",
       "model_id": 110,
       "color_rgb": [
         1.0,
@@ -188,7 +233,8 @@
       "radius": 1.0
     },
     {
-      "path": "../models/tomb.fbx",
+      "path": "../models/environment/tomb.fbx",
+      "texture_path": "../textures/cemetery.tga",
       "model_id": 111,
       "color_rgb": [
         1.0,

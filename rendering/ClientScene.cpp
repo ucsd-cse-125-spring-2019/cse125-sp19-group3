@@ -32,10 +32,19 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network)
 	json pathObjs = json::parse(json_model_paths);
 	for (auto & obj : pathObjs["data"]) {
 		if (obj["animated"]) {
-			models[(unsigned int)obj["model_id"]] = ModelData{ new Model(obj["path"],true), glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), animationShader, COLOR, 0 };
+			models[(unsigned int)obj["model_id"]] = ModelData{ 
+				new Model(obj["path"], obj["texture_path"], true), 
+				glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), 
+				animationShader, 
+				COLOR, 
+				0 
+			};
+			for (unsigned int i = 0; i < 8; i++) {
+				models[(unsigned int)obj["model_id"]].model->animation_frames.push_back(vector<float>{ ((unsigned int)obj["animations"][i][0]) / 30.0f, ((unsigned int)obj["animations"][i][1]) / 30.0f });
+			}
 		}
 		else {
-			models[(unsigned int)obj["model_id"]] = ModelData{ new Model(obj["path"],false), glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), staticShader, COLOR, 0 };
+			models[(unsigned int)obj["model_id"]] = ModelData{ new Model(obj["path"], obj["texture_path"], false), glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), staticShader, COLOR, 0 };
 		}
 	}
 
@@ -246,14 +255,14 @@ void ClientScene::idle_callback()
 {
 	// Call the update function the cube
 	//cube->update();
-	time += 1.0 / 60;
+	time += 2.0 / 60;
 	glm::mat4 playerNode = clientSceneGraphMap[player.root_id]->M;
 	camera->cam_look_at = { playerNode[3][0],playerNode[3][1],playerNode[3][2] };
 	camera->cam_pos = initCamPos + glm::vec3({ playerNode[3][0],playerNode[3][1],playerNode[3][2] });
 	camera->Update();
 	for (auto &model : models) {
 		if(model.second.model->isAnimated)
-			model.second.model->BoneTransform(model.second.model->animationMode, time);
+			model.second.model->BoneTransform(2.0f / 60);
 	}
 }
 
