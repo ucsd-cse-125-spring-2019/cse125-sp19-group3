@@ -63,7 +63,6 @@ static void ui_skills(struct nk_context *ctx, struct media *media, int width, in
 					//to_string
 					string result_string = to_string(timeExpr.count());
 					const char * cooldown_char_array = result_string.c_str();
-					fprintf(stdout,"CD is  %s, length of the string is :%d \n", cooldown_char_array, strlen(cooldown_char_array));
 					nk_text(ctx, cooldown_char_array, strlen(cooldown_char_array), NK_TEXT_ALIGN_CENTERED);
 				}
 				else {
