@@ -29,6 +29,8 @@ public:
 	void animate(double currTime);
 	unsigned int player_id;
 	unsigned int root_id;
+
+	unsigned int animationMode = idle;
 	ArcheType modelType;
 	Transform * playerRoot;
 	//Model * model;

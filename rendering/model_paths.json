@@ -101,18 +101,8 @@
       "radius": 1.5
     },
     {
-      "path": "../models/projectiles/kunai.fbx",
-      "model_id": 200,
-      "color_rgb": [
-        0.5,
-        0.5,
-        0.5
-      ],
-      "animated": false,
-      "radius": 1.0
-    },
-    {
-      "path": "../models/environment/fence_element_1.fbx",
+      "path": "../models/environment/fence_element_3.fbx",
+      "texture_path": "../textures/cemetery.tga",
       "model_id": 100,
       "color_rgb": [
         0.5,
@@ -124,6 +114,7 @@
     },
     {
       "path": "../models/environment/fence_element_2.fbx",
+      "texture_path": "../textures/cemetery.tga",
       "model_id": 101,
       "color_rgb": [
         0.5,
@@ -135,6 +126,7 @@
     },
     {
       "path": "../models/environment/grave_stone_1.fbx",
+      "texture_path": "../textures/cemetery.tga",
       "model_id": 102,
       "color_rgb": [
         0.5,
@@ -146,6 +138,7 @@
     },
     {
       "path": "../models/environment/grave_stone_3.fbx",
+      "texture_path": "../textures/cemetery.tga",
       "model_id": 103,
       "color_rgb": [
         0.5,
@@ -157,6 +150,7 @@
     },
     {
       "path": "../models/environment/dungeon_entrance.fbx",
+      "texture_path": "../textures/cemetery.tga",
       "model_id": 104,
       "color_rgb": [
         1.0,
@@ -168,6 +162,7 @@
     },
     {
       "path": "../models/environment/candle_arrangement_3.fbx",
+      "texture_path": "../textures/cemetery.tga",
       "model_id": 105,
       "color_rgb": [
         1.0,
@@ -179,6 +174,7 @@
     },
     {
       "path": "../models/environment/cube_01_hue_1.fbx",
+      "texture_path": "../textures/cemetery.tga",
       "model_id": 106,
       "color_rgb": [
         1.0,
@@ -190,6 +186,7 @@
     },
     {
       "path": "../models/environment/skull_stone_01_hue_1.fbx",
+      "texture_path": "../textures/cemetery.tga",
       "model_id": 107,
       "color_rgb": [
         1.0,
@@ -201,6 +198,7 @@
     },
     {
       "path": "../models/environment/cube_05_hue_1.fbx",
+      "texture_path": "../textures/cemetery.tga",
       "model_id": 108,
       "color_rgb": [
         1.0,
@@ -212,6 +210,7 @@
     },
     {
       "path": "../models/environment/gate.fbx",
+      "texture_path": "../textures/cemetery.tga",
       "model_id": 109,
       "color_rgb": [
         1.0,
@@ -223,6 +222,7 @@
     },
     {
       "path": "../models/environment/fence_pillar_1.fbx",
+      "texture_path": "../textures/cemetery.tga",
       "model_id": 110,
       "color_rgb": [
         1.0,
@@ -234,6 +234,7 @@
     },
     {
       "path": "../models/environment/tomb.fbx",
+      "texture_path": "../textures/cemetery.tga",
       "model_id": 111,
       "color_rgb": [
         1.0,

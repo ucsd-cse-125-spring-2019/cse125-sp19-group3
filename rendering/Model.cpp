@@ -12,9 +12,9 @@ Model::Model(string const &path, string const &texPath, bool animated)
 {
 	isAnimated = animated;
 	loadModel(path);
-	if (isAnimated) {
+	//if (isAnimated) {
 		textureId = TextureFromFile(texPath);
-	}
+	//}
 	if (m_NumBones) {
 		//BoneTransform(2.0f);
 	}
@@ -32,9 +32,9 @@ void Model::draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &v
 	shader->use();
 	shader->setMat4("ModelMtx", modelMtx);
 	shader->setMat4("ModelViewProjMtx", viewProjMtx * modelMtx);
-	if (isAnimated) {
+	//if (isAnimated) {
 		shader->setInt("UseTex", 1);
-	}
+	//}
 
 	for (unsigned int i = 0; i < boneTransforms.size(); i++) {
 		shader->setMat4(m_BoneInfo[i].BoneLocation, boneTransforms[i]);

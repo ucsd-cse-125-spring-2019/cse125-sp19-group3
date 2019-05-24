@@ -23,22 +23,19 @@ float getLightFactor(float intensity) {
 }
 
 void main() {
+	// Compute irradiance (sum of ambient & direct lighting)
+	float intensity = dot(LightDirection, fragNormal);
+	float lightFactor = getLightFactor(intensity);
+
+	vec3 irradiance = AmbientColor + LightColor * max(0, intensity);
+
+	// Diffuse reflectance
+	vec3 reflectance = irradiance * DiffuseColor;
 	if (UseTex == 0) {
-		// Compute irradiance (sum of ambient & direct lighting)
-		float intensity = dot(LightDirection, fragNormal);
-		float lightFactor = getLightFactor(intensity);
-
-		vec3 irradiance = AmbientColor + LightColor * max(0, intensity);
-
-		// Diffuse reflectance
-		vec3 reflectance = irradiance * DiffuseColor;
-
 		// Gamma correction
 		finalColor = vec4(lightFactor * sqrt(irradiance), 1);
-		//finalColor = vec4(normalize(fragNormal), 1);
 	}
 	else {
-		finalColor = texture(Texture, texCoord);
-		//finalColor = vec4(1000* texCoord[0], 1000* texCoord[1], 0, 1);
+		finalColor = lightFactor * texture(Texture, texCoord);
 	}
 }
