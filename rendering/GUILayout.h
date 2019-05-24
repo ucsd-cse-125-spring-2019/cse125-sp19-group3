@@ -1,6 +1,9 @@
 #pragma once
 #include "../../NuklearInit.h"
-
+#define EVADE_INDEX 0
+#define PROJ_INDEX 1
+#define OMNI_SKILL_INDEX 2
+#define DIR_SKILL_INDEX 3
 const char * intToCharArray(int i) {
 	string s = std::to_string(i);
 	const int n = s.length();
@@ -32,9 +35,18 @@ static void ui_leaderboard(struct nk_context *ctx, struct media *media) {
 	}
 	nk_end(ctx);
 }
-static void ui_skills(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player) {
+static void ui_skills(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, vector<nanoseconds> skill_timers) {
+	/*
+	Q --> Directional Skill (with the exception of King)
+	W --> Omni Directional Skill
+	E --> Evade (omni)
+	R --> Projectile (directional)
+
+	*******    In meta_data.json    ******
+	Skills MUST be in the order of: evade (0), projectile (1), omni (2), directional (3)
+	*/
 	static const char *key_bindings[] = { "Q","W","E","R" };
-	static const float cds[] = { 15,40,30,10 };
+	static const unsigned int sequential_bindings[] = { DIR_SKILL_INDEX , OMNI_SKILL_INDEX , EVADE_INDEX , PROJ_INDEX };
 	static int op = HUMAN;
 	if (nk_begin(ctx, "skills", nk_rect(width*0.3,  height*0.83, width*0.4, height*0.17),
 		NK_WINDOW_BORDER| NK_WINDOW_NO_SCROLLBAR))
@@ -45,16 +57,27 @@ static void ui_skills(struct nk_context *ctx, struct media *media, int width, in
 		for (int i = 0; i < 4; i++) {
 			if (nk_group_begin(ctx, key_bindings[i], NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR)) { // column 1
 				nk_layout_row_dynamic(ctx, width *0.05, 1); // nested row
-				if (type == WARRIOR)
-					nk_image(ctx, media->warrior_skills[i]);
-				else if (type == MAGE)
-					nk_image(ctx, media->mage_skills[i]);
-				else if (type == ASSASSIN)
-					nk_image(ctx, media->assassin_skills[i]);
-				else
-					nk_image(ctx, media->king_skills[i]);
-				nk_layout_row_dynamic(ctx, 24, 1);
-				nk_text(ctx, key_bindings[i], strlen(key_bindings[i]), NK_TEXT_ALIGN_CENTERED);
+				std::chrono::nanoseconds nanoSecs = skill_timers[sequential_bindings[i]];
+				if (nanoSecs > std::chrono::seconds::zero()){
+					auto timeExpr = chrono::duration_cast<chrono::seconds>(nanoSecs);
+					//to_string
+					string result_string = to_string(timeExpr.count());
+					const char * cooldown_char_array = result_string.c_str();
+					fprintf(stdout,"CD is  %s, length of the string is :%d \n", cooldown_char_array, strlen(cooldown_char_array));
+					nk_text(ctx, cooldown_char_array, strlen(cooldown_char_array), NK_TEXT_ALIGN_CENTERED);
+				}
+				else {
+					if (type == WARRIOR)
+						nk_image(ctx, media->warrior_skills[i]);
+					else if (type == MAGE)
+						nk_image(ctx, media->mage_skills[i]);
+					else if (type == ASSASSIN)
+						nk_image(ctx, media->assassin_skills[i]);
+					else
+						nk_image(ctx, media->king_skills[i]);
+				}
+					nk_layout_row_dynamic(ctx, 24, 1);
+					nk_text(ctx, key_bindings[i], strlen(key_bindings[i]), NK_TEXT_ALIGN_CENTERED);
 				nk_group_end(ctx);
 			}
 			nk_spacing(ctx, 1);
@@ -64,16 +87,16 @@ static void ui_skills(struct nk_context *ctx, struct media *media, int width, in
 	nk_end(ctx);
 }
 static void
-kill_layout(struct nk_context *ctx, struct media *media, int width, int height, struct nk_color background_color, ScenePlayer * player) {
+kill_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, vector<nanoseconds> skill_timers) {
 	
 	set_style(ctx, THEME_BLACK);
 	ui_leaderboard(ctx, media);
 
-	ui_skills(ctx, media,  width,  height, player);
+	ui_skills(ctx, media,  width,  height, player, skill_timers);
 }
 
 static  void
-lobby_layout(struct nk_context *ctx, struct media *media, int width, int height, struct nk_color background_color, ClientGame * game) {
+lobby_layout(struct nk_context *ctx, struct media *media, int width, int height,  ClientGame * game) {
 	static bool available = true;
 	static bool selected = false;
 	static char buf[256] = { 0 };
@@ -151,7 +174,7 @@ lobby_layout(struct nk_context *ctx, struct media *media, int width, int height,
 }
 
 static  void
-prepare_layout(struct nk_context *ctx, struct media *media, int width, int height, struct nk_color background_color, ClientScene * scene) {
+prepare_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player) {
 	
 	set_style(ctx, THEME_BLACK);
 	if (nk_begin(ctx, "Prepare", nk_rect(0, 0, width, height),

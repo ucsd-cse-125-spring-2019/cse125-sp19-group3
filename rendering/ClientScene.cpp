@@ -263,7 +263,7 @@ void ClientScene::renderPreparePhase(GLFWwindow* window) {
 	/* Input */
 	glfwPollEvents();
 	nk_glfw3_new_frame();
-	prepare_layout(ctx, &media, ClientScene::width, ClientScene::height, nk_rgb(60, 60, 80), this);
+	prepare_layout(ctx, &media, ClientScene::width, ClientScene::height, &this->player);
 
 	nk_glfw3_render(NK_ANTI_ALIASING_OFF, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
 
@@ -277,7 +277,7 @@ void ClientScene::renderLobbyPhase(GLFWwindow* window) {
 	 /* Input */
 	glfwPollEvents();
 	nk_glfw3_new_frame();
-	lobby_layout(ctx, &media, ClientScene::width, ClientScene::height, nk_rgb(60, 60, 80), game);
+	lobby_layout(ctx, &media, ClientScene::width, ClientScene::height, game);
 
 	nk_glfw3_render(NK_ANTI_ALIASING_OFF, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
 
@@ -301,7 +301,7 @@ void  ClientScene::renderKillPhase(GLFWwindow* window) {
 
 	/* GUI */
 
-	kill_layout(ctx, &media, width, height, nk_rgb(60, 60, 80), & this->player);
+	kill_layout(ctx, &media, width, height, & this->player, skill_timers);
 	/* ----------------------------------------- */
 
 
