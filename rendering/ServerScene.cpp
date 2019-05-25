@@ -25,7 +25,7 @@ using json = nlohmann::json;
 #define UNSILENCE           34
 
 
-ServerScene::ServerScene()
+ServerScene::ServerScene(LeaderBoard* leaderBoard)
 {
 	root = new Transform(0, glm::mat4(1.0f));
 	serverSceneGraphMap.insert({ root->node_id, root });
@@ -37,6 +37,8 @@ ServerScene::ServerScene()
 	skillRoot = new Transform(nodeIdCounter, glm::mat4(1.0f));
 	serverSceneGraphMap.insert({ skillRoot->node_id, skillRoot });
 	root->addChild(nodeIdCounter);
+
+	this->leaderBoard = leaderBoard;	
 
 	initModelPhysics();
 }
@@ -209,28 +211,85 @@ void ServerScene::update()
 			skillIter++;
 		}
 	}
+
+	// check for collisions on all players
 	for (auto& element : scenePlayers) {
 		checkAndHandlePlayerCollision(element.first);
 		element.second.update();
 	}
 }
 
+
+/*
+
+	XXX Need to CREATE a leaderboard first and save it in server object?
+		XXX For the current game, allocate new board and init. all player values
+		XXX Add pointer to leaderboard in ServerScene
+		--> Create function in PlayerData.cpp that updates kill score for index
+		--> Test updating leaderBoard when client hit & see if server processes it correctly
+				I.E. correct client gets correct point, etc..
+
+
+	2. Append leaderboard to EVERY server tick packet, broadcasting to all clients on 
+		every tick.
+		--> When any death occurs this value is updated and automatically sent to all clients 
+			per tick.
+		--> Every packet should show total player kills for each player, all clients 
+			see all this information. (possibly add deaths).
+		--> Do we need need a lock on the leaderboard? Think about it...
+
+	3. Update leader board on the server side when a player gets hit (this function!!!)
+		--> TODO: Add total deaths into leaderboard? 
+		--> The player who killed this player needs to get a point
+		--> Need to update gold accordingly
+
+	4. Server needs to put this player to sleep for 3 seconds or something
+		--> After 3 seconds send packet waking player up with new location that 
+			doesn't hit any other objects. (Check hit detection logic)
+		--> Possibly make new packet type? Respawn packet?
+		--> Code to update location: player.setDestination(player.currentPos);	
+
+*/
+
+/*
+	Player has been hit, handle death...
+	'dead_player' is the player that was just hit (duh!)
+	'killer_id' is the id of the player that made the kill
+*/
+void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int killer_id)
+{
+
+	// update leaderboard to give point to killer
+
+}
+
+
 //TODO: Refactoring, moving collision check to player??? Also find radius for various objs.
+/* 
+	Called for each player on every server tick. 
+	playerId is current player we're checking to see if they collided with anything.
+	On collisions must handle death accordingly.
+*/
 void ServerScene::checkAndHandlePlayerCollision(unsigned int playerId) {
 	ScenePlayer &player = scenePlayers[playerId];
 	glm::vec3 forwardVector = (player.destination - player.currentPos)* player.speed;
+
 	if(glm::length(forwardVector)>1)
 		forwardVector = glm::normalize(player.destination - player.currentPos)* player.speed;
+
+
 	for (auto& skill : skills) {
-		if (skill.ownerId == playerId) {
+		if (skill.ownerId == playerId) {			// skill owner is self; do nothing
 			continue;
 		}
+
+		// collision detected --> handle player death
 		else if (player.playerRoot->isCollided(forwardVector, model_radius, serverSceneGraphMap, skill.node, model_boundingbox, false)) {
-			player.setDestination(player.currentPos);
-			printf("Player %d killed Player %d \n", skill.ownerId, playerId);
+			handlePlayerDeath(player, skill.ownerId);
 			return;
 		}
 	}
+
 	for (auto& envObj : env_objs) {
 		if (player.playerRoot->isCollided(forwardVector, model_radius, serverSceneGraphMap, envObj, model_boundingbox, true)) {
 			player.setDestination(player.currentPos);

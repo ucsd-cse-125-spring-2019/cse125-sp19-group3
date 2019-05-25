@@ -65,6 +65,8 @@ protected:
 
 	vector<client_data*> client_data_list;	// list of pointers to all client data (queue, id, lock, etc.)
 	ScheduledEvent scheduledEvent;
+
+	LeaderBoard* leaderBoard;
   
 	unordered_map<unsigned int, Skill> *skill_map;								// Map ArchType to list of skills
 	unordered_map<unsigned int, PlayerMetadata> *playerMetadatas;				// map client_id to player meta_data
@@ -83,7 +85,6 @@ protected:
 	ServerInputPacket createServerTickPacket();
 	ServerInputPacket createWelcomePacket();
 	ServerInputPacket createCharSelectPacket(char* data, int size);
-
 	
 	void handleClientInputPacket(ClientInputPacket* packet, int client_id);
 };

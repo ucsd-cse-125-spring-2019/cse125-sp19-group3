@@ -11,7 +11,6 @@
 #include <process.h>					// threads
 #include <windows.h>					// sleep
 
-#define GAME_SIZE			 1			// total players required to start game
 #define LOBBY_START_TIME	 500		// wait this long (ms) after all players connect
 #define START_CHAR_SELECTION 1			// start value of char selection phase
 #define END_CHAR_SELECTION   2			// end value of char selection phase
@@ -42,11 +41,12 @@ ServerGame::ServerGame(string host, string port, double tick_rate)
 	playerMetadatas     = new unordered_map<unsigned int, PlayerMetadata>();
 	archetype_skillset  = new unordered_map<ArcheType, vector<unsigned int>>();
 
-	// initialize global skill map
-	readMetaDataForSkills();	// load skills from config into skills maps
+	// initialize global skill map; load skills from config into skills maps
+	readMetaDataForSkills();	
 
-	scene = new ServerScene();
-	network = new ServerNetwork(this->host, this->port);
+	leaderBoard = new LeaderBoard();
+	scene		= new ServerScene(leaderBoard);
+	network		= new ServerNetwork(this->host, this->port);
 	scheduledEvent = ScheduledEvent(END_KILLPHASE, 10000000); // default huge value
 
 	char_select_lock = new mutex();
@@ -419,31 +419,8 @@ void ServerGame::updateKillPhase() {
 	scene->update();	// update scene graph
 
 	// Serialize scene graph and send packet to clients
-	/*char buf[1024] = { 0 };
-	int size = scene->serializeSceneGraph(buf);
-	ServerInputPacket sceneGraphPacket = network->createServerPacket(UPDATE_SCENE_GRAPH, size, buf); */
 	ServerInputPacket serverTickPacket = createServerTickPacket();
 	network->broadcastSend(serverTickPacket);
-
-	/*
-	
-	1) Drain all packets from all client inputs at this point (acquire lock), squash if necessary
-
-	2) Apply input to change game state
-
-	3) Use updated game state (movement, fired skill, etc.) to change server SceneGraph slightly
-
-	4) Hit detection on all objects
-		a) For each player, put in quant tree to see if hit skill / environment
-		b) For each skill, put in quant tree to see if hit environment
-	
-	5) Do any calculations necessary for deaths (update leaderboard, update gold rewarded, update bonuses, etc)
-
-	6) Serialize server SceneGraph, send leaderboard / gold/ time remaining in round / player state to all clients 
-
-	7.) Deallocate packets 
-	*/
-
 
 }
 

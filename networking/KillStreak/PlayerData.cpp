@@ -20,10 +20,20 @@ unordered_map<string, ArcheType> archetype_map = {
 	{"KING", KING},
 };	
 
+
+/*
+	Award point to player by incrementing their score at index 'player_id'
+	in the currpoints vector.
+*/
+void LeaderBoard::awardPoint(unsigned int player_id)
+{
+
+}
+
 vector<int>* LeaderBoard::roundSummary() {
 	// get the ranking result of this round
 	vector<int> temp(currentKills);
-	vector<int>* rankings = new vector<int>(PLAYERNUM);
+	vector<int>* rankings = new vector<int>(GAME_SIZE);
 	sort(temp.begin(), temp.end(), [](const int &i1, const int &i2) {return i1 > i2; });
 
 	int rank = 1;
@@ -32,15 +42,15 @@ vector<int>* LeaderBoard::roundSummary() {
 		if (score < curr) { rank++; curr = score; }
 		else { continue; }
 
-		for (int i = 0; i<PLAYERNUM; i++) {
+		for (int i = 0; i<GAME_SIZE; i++) {
 			if (currentKills[i] == score) { (*rankings)[i] = rank; }
 		}
 	}
 
 	// Update current points based on rankings
-	for (int i = 0; i<PLAYERNUM; i++) currPoints[i] += prizes[(*rankings)[i]];
+	for (int i = 0; i<GAME_SIZE; i++) currPoints[i] += prizes[(*rankings)[i]];
 	// Update prizes
-	for (int i = 0; i<PLAYERNUM; i++) prizes[i] *= prizeChange;
+	for (int i = 0; i<GAME_SIZE; i++) prizes[i] *= prizeChange;
 	// reset current kills
 	currentKills.clear();
 

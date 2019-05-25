@@ -312,7 +312,6 @@ void ClientGame::run() {
 		else if (currPhase == ClientStatus::KILL) {
 			// Kill Phase
 			auto start = Clock::now();
-			// TODO: REMOVE ME!!! (new thread should handle incoming packets
 			ServerInputPacket* packet = network->receivePacket();
 			handleServerInputPacket(packet);
 
