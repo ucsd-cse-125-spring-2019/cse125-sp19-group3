@@ -225,13 +225,19 @@ void ServerScene::update()
 	XXX Need to CREATE a leaderboard first and save it in server object?
 		XXX For the current game, allocate new board and init. all player values
 		XXX Add pointer to leaderboard in ServerScene
-		--> Create function in PlayerData.cpp that updates kill score for index
-		--> Test updating leaderBoard when client hit & see if server processes it correctly
+		XXX Create function in PlayerData.cpp that updates kill score for index
+		XXX Test updating leaderBoard when client hit & see if server processes it correctly
 				I.E. correct client gets correct point, etc..
-
 
 	2. Append leaderboard to EVERY server tick packet, broadcasting to all clients on 
 		every tick.
+
+		*** Currently when a hit occurs it updates the leaderboard way of pointer... 
+			Need to put a LOCK on the leaderboard, hold the lock when updating and hold 
+			the lock when sending to all clients! ***
+		*** In the main server loop just put the leaderboard into a packet and sent 
+			it to all the clients (make sure to use a lock)
+			
 		--> When any death occurs this value is updated and automatically sent to all clients 
 			per tick.
 		--> Every packet should show total player kills for each player, all clients 
@@ -243,7 +249,7 @@ void ServerScene::update()
 		--> The player who killed this player needs to get a point
 		--> Need to update gold accordingly
 
-	4. Server needs to put this player to sleep for 3 seconds or something
+	4. Server needs to put this player to sleep for 3 seconds or something (also this function??)
 		--> After 3 seconds send packet waking player up with new location that 
 			doesn't hit any other objects. (Check hit detection logic)
 		--> Possibly make new packet type? Respawn packet?
@@ -259,7 +265,8 @@ void ServerScene::update()
 void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int killer_id)
 {
 
-	// update leaderboard to give point to killer
+	// award point to killer
+	leaderBoard->awardPoint(killer_id);
 
 }
 

@@ -27,6 +27,8 @@ public:
 	void awardPoint(unsigned int player_id);			// award point to player_id
 	vector<int> getCurrPoints() {return currPoints;}
 
+	void printCurrentKills();
+
 protected:
 	vector<int> currentKills;	// # of kills in each round of each player
 	vector<int> currPoints;		// accumulative points of each player

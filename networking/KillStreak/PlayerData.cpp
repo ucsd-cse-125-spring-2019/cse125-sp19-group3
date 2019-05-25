@@ -27,8 +27,26 @@ unordered_map<string, ArcheType> archetype_map = {
 */
 void LeaderBoard::awardPoint(unsigned int player_id)
 {
-
+	int cur_score = currentKills[player_id];
+	currentKills[player_id] = ++cur_score;
 }
+
+
+/*
+	Mainly for testing purposes, print each value in current kills vector
+	of leaderboard.
+*/
+void LeaderBoard::printCurrentKills()
+{
+	int cur_player = 0;
+	vector<int>::iterator it = currentKills.begin();
+	while (it != currentKills.end())
+	{
+		logger()->debug("Player {}: {} kills", cur_player, *it);
+		it++; cur_player++;
+	}
+}
+
 
 vector<int>* LeaderBoard::roundSummary() {
 	// get the ranking result of this round
