@@ -56,7 +56,7 @@ private:
 	const char* window_title = "CSE 125 Group 3";
 	Shader * animationShader, * staticShader;
 	Camera * camera;
-	Cube * cube;
+	Model * floor;
 	ScenePlayer player;
 	Transform * root;
 

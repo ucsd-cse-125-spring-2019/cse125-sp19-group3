@@ -51,6 +51,7 @@ public:
 	unsigned int animationMode = run;
 	float animationTime;
 	vector<vector<float>> animation_frames;
+	glm::mat4 localMtx = glm::mat4(1.0f);
 
 	//Sphere * bounding_sphere;
 	/*  Functions   */
@@ -68,7 +69,6 @@ public:
 private:
 	unsigned int textureId;
 
-	glm::mat4 localMtx = glm::mat4(1.0f);
 	glm::mat4 globalInverseTransform;
 
 	Assimp::Importer importer;

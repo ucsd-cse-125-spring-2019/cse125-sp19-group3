@@ -62,7 +62,11 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network)
 	this->game = game;
 	this->network = network;
 
-	
+	// Floor
+	floor = new Model("../models/quad.obj", "../textures/floor.png", false);
+	floor->localMtx = glm::translate(glm::mat4(1.0f), glm::vec3(100.0f, 0.0f, 120.0f)) *
+		glm::rotate(glm::mat4(1.0f), -90.0f / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)) *
+		glm::scale(glm::mat4(1.0f), glm::vec3(2));
 }
 
 void ClientScene::initialize_skills(ArcheType selected_type) {
@@ -294,13 +298,15 @@ void ClientScene::renderLobbyPhase(GLFWwindow* window) {
 	glfwSwapBuffers(window);
 }
 
-void  ClientScene::renderKillPhase(GLFWwindow* window) {
+void ClientScene::renderKillPhase(GLFWwindow* window) {
 
 	auto vpMatrix = camera->GetViewProjectMtx();
-	// Use the shader to draw all player + skill objects
-	root->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
 
-	// Use the shader to draw all environment objects
+	// floor
+	floor->draw(staticShader, glm::mat4(1.0f), vpMatrix);
+	// players
+	root->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
+	// environment objects
 	for (auto &env_obj : env_objs) {
 		env_obj->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
 	}
