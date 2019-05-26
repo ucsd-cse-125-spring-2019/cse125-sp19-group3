@@ -25,7 +25,7 @@ using json = nlohmann::json;
 #define UNSILENCE           34
 
 
-ServerScene::ServerScene(LeaderBoard* leaderBoard, unordered_map<unsigned int, PlayerMetadata>* playerMetadatas)
+ServerScene::ServerScene(LeaderBoard* leaderBoard, unordered_map<unsigned int, PlayerMetadata*>* playerMetadatas)
 {
 	root = new Transform(0, glm::mat4(1.0f));
 	serverSceneGraphMap.insert({ root->node_id, root });
@@ -220,10 +220,10 @@ void ServerScene::update()
 		unsigned int player_id = element.first;		
 
 		// get player metadata		
-		unordered_map<unsigned int, PlayerMetadata>::iterator s_it = playerMetadatas->find(player_id);
-		PlayerMetadata player_data = s_it->second;
+		unordered_map<unsigned int, PlayerMetadata*>::iterator s_it = playerMetadatas->find(player_id);
+		PlayerMetadata* player_data = s_it->second;
 
-		if (player_data.alive)	// player alive?
+		if (player_data->alive)	// player alive?
 		{
 			checkAndHandlePlayerCollision(player_id);	
 			element.second.update();
@@ -284,9 +284,9 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 	unsigned int player_id = dead_player.player_id;
 
 	// TODO: Need to convert this map to hold pointers to PlayerMetadata
-	unordered_map<unsigned int, PlayerMetadata>::iterator s_it = playerMetadatas->find(player_id);
-	PlayerMetadata player_data = s_it->second;
-	player_data.alive = false;
+	unordered_map<unsigned int, PlayerMetadata*>::iterator s_it = playerMetadatas->find(player_id);
+	PlayerMetadata* player_data = s_it->second;
+	player_data->alive = false;
 
 
 
@@ -441,7 +441,7 @@ void ServerScene::handleRoyalCross(unsigned int player_id, Point finalPoint, Poi
 	Handle incoming player skill received from client's incoming packet. Match skill_id and handle skill accordingly.
 */
 void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
-	unsigned int skill_id, unordered_map<unsigned int, Skill> *skill_map, PlayerMetadata &playerMetadata)
+	unsigned int skill_id, unordered_map<unsigned int, Skill> *skill_map, PlayerMetadata* playerMetadata)
 {
 	// special case of unsilence
 	if (skill_id == UNSILENCE) {
@@ -467,7 +467,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 		}
 	}
 	// get skill & adjust accordinglyt o level
-	auto level = playerMetadata.skillLevels[skill_id];
+	auto level = playerMetadata->skillLevels[skill_id];
 	unordered_map<unsigned int, Skill>::iterator s_it = skill_map->find(skill_id);
 	Skill cur_skill = s_it->second;
 	Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(cur_skill, level);

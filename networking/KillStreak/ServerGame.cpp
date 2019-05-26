@@ -38,7 +38,7 @@ ServerGame::ServerGame(string host, string port, double tick_rate)
 	// initialize maps
 	skill_map		    = new unordered_map<unsigned int, Skill>();
 	selected_characters = new unordered_map<ArcheType, int>();
-	playerMetadatas     = new unordered_map<unsigned int, PlayerMetadata>();
+	playerMetadatas     = new unordered_map<unsigned int, PlayerMetadata*>();
 	archetype_skillset  = new unordered_map<ArcheType, vector<unsigned int>>();
 
 	// initialize global skill map; load skills from config into skills maps
@@ -114,7 +114,7 @@ void character_selection_phase(client_data* client_arg)
 
 			// allocate meta data 
 			std::string username = selection_packet->username;
-			PlayerMetadata player = PlayerMetadata(client_id, username, character_type, 
+			PlayerMetadata* player = new PlayerMetadata(client_id, username, character_type, 
 				client_arg->skill_map_ptr, client_arg->archetype_skillset_ptr);
 
 			// add to map & release lock
@@ -303,8 +303,8 @@ void ServerGame::game_match()
 	log->info("All client character selections received, initializing game...");
 	for (auto client_data : client_data_list) {
 		unsigned int client_id = client_data->id;
-		unordered_map<unsigned int, PlayerMetadata>::iterator m_it = playerMetadatas->find(client_id);
-		ArcheType cur_type = m_it->second.type;
+		unordered_map<unsigned int, PlayerMetadata*>::iterator m_it = playerMetadatas->find(client_id);
+		ArcheType cur_type = m_it->second->type;
 		scene->addPlayer(client_id, cur_type);
 	}
 
@@ -511,8 +511,8 @@ ServerInputPacket ServerGame::createCharSelectPacket(char* data, int size)
 */
 void ServerGame::handleClientInputPacket(ClientInputPacket* packet, int client_id) {
 
-	unordered_map<unsigned int, PlayerMetadata>::iterator m_it = playerMetadatas->find(client_id);
-	auto playerMetadata = m_it->second;
+	unordered_map<unsigned int, PlayerMetadata*>::iterator m_it = playerMetadatas->find(client_id);
+	PlayerMetadata* player_metadata = m_it->second;
 
 	switch (packet->inputType) {
 	case MOVEMENT:
@@ -523,7 +523,7 @@ void ServerGame::handleClientInputPacket(ClientInputPacket* packet, int client_i
 			                     packet->finalLocation, 
 			                     packet->skill_id,
 			                     skill_map,
-			                     playerMetadata);
+			                     player_metadata);
 		break;
 	default:
 		break;
