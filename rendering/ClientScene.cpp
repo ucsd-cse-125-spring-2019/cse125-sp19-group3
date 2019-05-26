@@ -561,6 +561,12 @@ void ClientScene::handleInitScenePacket(char * data) {
 	Deserialize updated scene graph from server.
 */
 void ClientScene::handleServerTickPacket(char * data) {
+	vector<pair<unsigned int, vector<int>>> animationModes;
+	data = Serialization::deserializeAnimationMode(data, animationModes);
+	for (auto p : animationModes) {
+		models[p.first].model->movementMode = p.second[0];
+		models[p.first].model->animationMode = p.second[1];
+	}
 	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap);
 	// nullify invisibility state if you're assassin (duh)
 	if (player.modelType == ASSASSIN) {

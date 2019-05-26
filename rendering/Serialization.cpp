@@ -37,6 +37,32 @@ unsigned int Serialization::serializeSceneGraph(Transform * node, char *data, un
 	return size;
 }
 
+// Serialize the players' animation mode
+unsigned int Serialization::serializeAnimationMode(unordered_map<unsigned int, ScenePlayer> &scenePlayers, char *data) {
+	unsigned int numPlayers = scenePlayers.size();
+	unsigned int size = 0;
+	memcpy(data, &numPlayers, sizeof(unsigned int));
+	data += sizeof(unsigned int);
+	size += sizeof(unsigned int);
+	for (auto p : scenePlayers) {
+		unsigned int modelId = p.second.modelType;
+		int movementMode = p.second.movementMode;
+		int animationMode = p.second.animationMode;
+		memcpy(data, &modelId, sizeof(unsigned int));
+		data += sizeof(unsigned int);
+		size += sizeof(unsigned int);
+		memcpy(data, &movementMode, sizeof(int));
+		data += sizeof(int);
+		size += sizeof(int);
+		memcpy(data, &animationMode, sizeof(int));
+		data += sizeof(int);
+		size += sizeof(int);
+		// always set animationMode back to -1
+		p.second.animationMode = -1;
+	}
+	return size;
+}
+
 // must make sure that the first field in a serialized node is the node_id
 unsigned int Serialization::deserializeSingleNodeId(char *data) {
 	unsigned int node_id;
@@ -91,10 +117,25 @@ Transform * Serialization::deserializeSceneGraph(char *data, unordered_map<unsig
 	return root;
 }
 
-
-
-
-
+// Serialize the players' animation mode
+char * Serialization::deserializeAnimationMode(char *data, vector<pair<unsigned int, vector<int>>> &animationModes) {
+	unsigned int numPlayers;
+	memcpy(&numPlayers, data, sizeof(unsigned int));
+	data += sizeof(unsigned int);
+	for (unsigned int i = 0; i < numPlayers; i++) {
+		unsigned int modelId;
+		int movementMode;
+		int animationMode;
+		memcpy(&modelId, data, sizeof(unsigned int));
+		data += sizeof(unsigned int);
+		memcpy(&movementMode, data, sizeof(int));
+		data += sizeof(int);
+		memcpy(&animationMode, data, sizeof(int));
+		data += sizeof(int);
+		animationModes.push_back(pair<unsigned int, vector<int>>(modelId, vector<int>{movementMode, animationMode}));
+	}
+	return data;
+}
 
 
 //std::vector<Transform *> deserializeSceneGraph(char *data) {

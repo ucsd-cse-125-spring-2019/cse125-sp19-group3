@@ -479,11 +479,13 @@ ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsig
 	Create packet with serialized scene graph.
 */
 ServerInputPacket ServerGame::createServerTickPacket() {
-	unsigned int sgSize;
+	unsigned int size;
 	char buf[SERVER_TICK_PACKET_SIZE] = { 0 };
 	char * bufPtr = buf;
 
-	sgSize = Serialization::serializeSceneGraph(scene->getRoot(), bufPtr, scene->serverSceneGraphMap);
+	size = Serialization::serializeAnimationMode(scene->scenePlayers, bufPtr);
+	bufPtr += size;
+	size += Serialization::serializeSceneGraph(scene->getRoot(), bufPtr, scene->serverSceneGraphMap);
 	return createServerPacket(UPDATE_SCENE_GRAPH, SERVER_TICK_PACKET_SIZE, buf);
 }
 
