@@ -25,7 +25,7 @@ using json = nlohmann::json;
 #define UNSILENCE           34
 
 
-ServerScene::ServerScene(LeaderBoard* leaderBoard)
+ServerScene::ServerScene(LeaderBoard* leaderBoard, unordered_map<unsigned int, PlayerMetadata>* playerMetadatas)
 {
 	root = new Transform(0, glm::mat4(1.0f));
 	serverSceneGraphMap.insert({ root->node_id, root });
@@ -39,6 +39,7 @@ ServerScene::ServerScene(LeaderBoard* leaderBoard)
 	root->addChild(nodeIdCounter);
 
 	this->leaderBoard = leaderBoard;	
+	this->playerMetadatas = playerMetadatas;
 
 	initModelPhysics();
 }
@@ -212,10 +213,26 @@ void ServerScene::update()
 		}
 	}
 
-	// check for collisions on all players
+	// check for collisions on all alive players
 	for (auto& element : scenePlayers) {
-		checkAndHandlePlayerCollision(element.first);
-		element.second.update();
+
+		
+		unsigned int player_id = element.first;		
+
+		// get player metadata		
+		unordered_map<unsigned int, PlayerMetadata>::iterator s_it = playerMetadatas->find(player_id);
+		PlayerMetadata player_data = s_it->second;
+
+		if (player_data.alive)	// player alive?
+		{
+			checkAndHandlePlayerCollision(player_id);	
+			element.second.update();
+		}
+
+		// TODO: REMOVE ME *********
+		else logger()->debug("PLAYER DEAD: {}", player_id);
+		// TODO: REMOVE ME *********
+
 	}
 }
 
@@ -229,17 +246,22 @@ void ServerScene::update()
 		XXX Test updating leaderBoard when client hit & see if server processes it correctly
 				I.E. correct client gets correct point, etc..
 
-	2. Append leaderboard to EVERY server tick packet, broadcasting to all clients on 
+	XXX Append leaderboard to EVERY server tick packet, broadcasting to all clients on 
 		every tick.
 
-		*** In the main server loop just put the leaderboard into a packet and send
+		XXX In the main server loop just put the leaderboard into a packet and send
 			it to all the clients 
 			
 		XXX No lock needed, only main server thread updates/sends leaderboard
 
 	3. Update leader board on the server side when a player gets hit (this function!!!)
 		XXX The player who killed this player needs to get a point
+		XXX Access player meta data map & check if player is alive before processing hit detection
+		--> Set player as 'dead' when hit by projectile by access MetaData
 		--> Need to update gold accordingly
+		--> Need to update killers killstreak
+		--> Also want to consider players losestreak?  (do this one later)
+		--> How to handle gold? PlayerMetaData has gold field, how much do we award for kill? 
 
 	4. Server needs to put this player to sleep for 3 seconds or something (also this function??)
 		--> After 3 seconds send packet waking player up with new location that 
@@ -258,11 +280,25 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 {
 	logger()->debug("Player {} killed player {}", dead_player.player_id, killer_id);
 
+	// get dead_players metadata & set status to dead
+	unsigned int player_id = dead_player.player_id;
+
+	// TODO: Need to convert this map to hold pointers to PlayerMetadata
+	unordered_map<unsigned int, PlayerMetadata>::iterator s_it = playerMetadatas->find(player_id);
+	PlayerMetadata player_data = s_it->second;
+	player_data.alive = false;
+
+
+
+
 	// award point to killer
 	leaderBoard->awardPoint(killer_id);
+	
+	// award gold to killer (how much?) 
 
-	leaderBoard->currPoints[killer_id] = 666;
-	leaderBoard->prizes[killer_id] = 1337;
+	// increase dead players loseStreak? 
+
+	// set killers lose streak to 0?
 
 }
 

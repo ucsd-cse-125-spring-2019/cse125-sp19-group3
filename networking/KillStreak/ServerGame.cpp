@@ -45,7 +45,7 @@ ServerGame::ServerGame(string host, string port, double tick_rate)
 	readMetaDataForSkills();	
 
 	leaderBoard = new LeaderBoard();
-	scene		= new ServerScene(leaderBoard);
+	scene		= new ServerScene(leaderBoard, playerMetadatas);
 	network		= new ServerNetwork(this->host, this->port);
 	scheduledEvent = ScheduledEvent(END_KILLPHASE, 10000000); // default huge value
 

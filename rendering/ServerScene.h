@@ -23,7 +23,9 @@ public:
 	int width;
 	int height;
 
-	LeaderBoard* leaderBoard;		// pointer to servers leaderBoard
+	// pointers to servers leaderBoard & player metadata map
+	LeaderBoard* leaderBoard;		
+	unordered_map<unsigned int, PlayerMetadata>* playerMetadatas;	
 
 	unordered_map<unsigned int, ScenePlayer> scenePlayers;
 
@@ -36,7 +38,7 @@ public:
 	std::vector<SceneProjectile> skills;
 
 	// constructor
-	ServerScene(LeaderBoard* leaderBoard);
+	ServerScene(LeaderBoard* leaderBoard, unordered_map<unsigned int, PlayerMetadata>* playerMetadatas);
 	~ServerScene();
 
 	void addPlayer(unsigned int playerId, ArcheType modelType);
