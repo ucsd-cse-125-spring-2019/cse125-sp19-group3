@@ -223,15 +223,12 @@ void ServerScene::update()
 		unordered_map<unsigned int, PlayerMetadata*>::iterator s_it = playerMetadatas->find(player_id);
 		PlayerMetadata* player_data = s_it->second;
 
-		if (player_data->alive)	// player alive?
+		// check collision for alive players
+		if (player_data->alive)	
 		{
 			checkAndHandlePlayerCollision(player_id);	
-			element.second.update();
+			element.second.update();		// NOTE: Keeping this here will NOT allow dead player to move once hit
 		}
-
-		// TODO: REMOVE ME *********
-		else logger()->debug("PLAYER DEAD: {}", player_id);
-		// TODO: REMOVE ME *********
 
 	}
 }
@@ -251,21 +248,21 @@ void ServerScene::update()
 
 		XXX In the main server loop just put the leaderboard into a packet and send
 			it to all the clients 
-			
-		XXX No lock needed, only main server thread updates/sends leaderboard
 
 	3. Update leader board on the server side when a player gets hit (this function!!!)
 		XXX The player who killed this player needs to get a point
 		XXX Access player meta data map & check if player is alive before processing hit detection
-		--> Set player as 'dead' when hit by projectile by access MetaData
-		--> Need to update gold accordingly
-		--> Need to update killers killstreak
-		--> Also want to consider players losestreak?  (do this one later)
-		--> How to handle gold? PlayerMetaData has gold field, how much do we award for kill? 
+		XXX Set player as 'dead' when hit by projectile by access MetaData
+		XXX update killstreak/losestreak of both players
+		XXX update gold accordingly
+			*** How much do we award for gold? How does gold logic work? 
 
 	4. Server needs to put this player to sleep for 3 seconds or something (also this function??)
+		--> Tell client their dead! How can this be done? Does the scene graph contain this information?
+				*** QUESTION: How does client know of its own state? Should we serialzie and send it's own 
+						MetaData from the server to the client? 
 		--> After 3 seconds send packet waking player up with new location that 
-			doesn't hit any other objects. (Check hit detection logic)
+				doesn't hit any other objects. (Check hit detection logic)
 		--> Possibly make new packet type? Respawn packet?
 		--> Code to update location: player.setDestination(player.currentPos);	
 
@@ -275,30 +272,38 @@ void ServerScene::update()
 	Player has been hit, handle death...
 	'dead_player' is the player that was just hit (duh!)
 	'killer_id' is the id of the player that made the kill
+
+	Update each players killstreak/losestreak, assign gold, update leaderboard.
 */
 void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int killer_id)
 {
-	logger()->debug("Player {} killed player {}", dead_player.player_id, killer_id);
+	logger()->debug("Player {} killed player {}", killer_id, dead_player.player_id);
 
-	// get dead_players metadata & set status to dead
+	// get dead_players metadata 
 	unsigned int player_id = dead_player.player_id;
-
-	// TODO: Need to convert this map to hold pointers to PlayerMetadata
 	unordered_map<unsigned int, PlayerMetadata*>::iterator s_it = playerMetadatas->find(player_id);
 	PlayerMetadata* player_data = s_it->second;
+
+	// set dead_players status to dead, reset killstreak & increment losestreak
 	player_data->alive = false;
+	player_data->currKillStreak  = 0;
+	player_data->currLoseStreak += 1;
 
+	// get killers metadata  
+	s_it = playerMetadatas->find(killer_id);
+	PlayerMetadata* killer_data = s_it->second;
 
-
+	// award killer gold, increment killstreak & reset losestreak 
+	killer_data->gold			+= 1;
+	killer_data->currKillStreak += 1;
+	killer_data->currLoseStreak  = 0;
 
 	// award point to killer
 	leaderBoard->awardPoint(killer_id);
-	
-	// award gold to killer (how much?) 
 
-	// increase dead players loseStreak? 
+	// TODO: Test gold and streaks on server side
 
-	// set killers lose streak to 0?
+	// TODO: Tell client their dead, disallow any action for 3 seconds, find new spawn location for client
 
 }
 
