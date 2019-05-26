@@ -32,22 +32,6 @@ void LeaderBoard::awardPoint(unsigned int player_id)
 }
 
 
-/*
-	Mainly for testing purposes, print each value in current kills vector
-	of leaderboard.
-*/
-void LeaderBoard::printCurrentKills()
-{
-	int cur_player = 0;
-	vector<int>::iterator it = currentKills.begin();
-	while (it != currentKills.end())
-	{
-		logger()->debug("Player {}: {} kills", cur_player, *it);
-		it++; cur_player++;
-	}
-}
-
-
 vector<int>* LeaderBoard::roundSummary() {
 	// get the ranking result of this round
 	vector<int> temp(currentKills);
@@ -124,3 +108,57 @@ Skill Skill::calculateSkillBasedOnLevel(Skill &baseSkill, unsigned int level) {
 		duration, // worry about this for animation vs invisibility + evade
 		speed);
 }
+
+
+
+
+
+
+/*
+	Mainly for testing purposes, print each value in current kills vector
+	of leaderboard.
+*/
+void LeaderBoard::printCurrentKills()
+{
+	int cur_player = 0;
+	vector<int>::iterator it = currentKills.begin();
+	while (it != currentKills.end())
+	{
+		logger()->debug("Player {}: {} kills", cur_player, *it);
+		it++; cur_player++;
+	}
+}
+
+/*
+	Mainly for testing purposes, print each value in current kills vector
+	of leaderboard.
+*/
+void LeaderBoard::printCurrPoints()
+{
+	int cur_player = 0;
+	vector<int>::iterator it = currPoints.begin();
+	while (it != currPoints.end())
+	{
+		logger()->debug("Player {}: {} points", cur_player, *it);
+		it++; cur_player++;
+	}
+}
+
+/*
+	Mainly for testing purposes, print each value in current kills vector
+	of leaderboard.
+*/
+void LeaderBoard::printPrizes()
+{
+	int cur_player = 0;
+	vector<int>::iterator it = prizes.begin();
+	while (it != prizes.end())
+	{
+		logger()->debug("Player {}: {} prizes", cur_player, *it);
+		it++; cur_player++;
+	}
+}
+
+
+
+

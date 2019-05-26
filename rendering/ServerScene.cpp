@@ -261,6 +261,9 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 	// award point to killer
 	leaderBoard->awardPoint(killer_id);
 
+	leaderBoard->currPoints[killer_id] = 666;
+	leaderBoard->prizes[killer_id] = 1337;
+
 }
 
 

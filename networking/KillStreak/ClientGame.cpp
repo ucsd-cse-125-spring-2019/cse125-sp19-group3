@@ -323,7 +323,11 @@ void ClientGame::run() {
 
 			// TODO: REMOVE ME *********************
 			counter++;
-			if (counter % 10 == 0) leaderBoard->printCurrentKills();
+			if (counter % 100 == 0) {
+				leaderBoard->printCurrentKills();
+				leaderBoard->printCurrPoints();
+				leaderBoard->printPrizes();
+			}
 			// TODO: REMOVE ME *********************
 
 			// Main render display callback. Rendering of objects is done here.

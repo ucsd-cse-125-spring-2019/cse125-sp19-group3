@@ -28,7 +28,10 @@ public:
 
 	float getPrizeChanges()		{return prizeChange;}
 
-	void printCurrentKills();
+	// for testing
+	void printCurrentKills();	
+	void printCurrPoints();	
+	void printPrizes();	
 
 	vector<int> currentKills;	// # of kills in each round of each player
 	vector<int> currPoints;		// accumulative points of each player

@@ -460,7 +460,7 @@ ServerInputPacket ServerGame::createServerTickPacket() {
 
 	ServerInputPacket packet;		
 
-	// serialize scene graph & crate packet
+	// serialize scene graph & create packet
 	unsigned int sgSize;
 	char buf[SERVER_TICK_PACKET_SIZE] = { 0 };
 	char * bufPtr = buf;

@@ -37,18 +37,56 @@ unsigned int Serialization::serializeSceneGraph(Transform * node, char *data, un
 	return size;
 }
 
-
-unsigned int Serialization::serializeLeaderBoard(char* leaderBuffptr, LeaderBoard* leaderBoard)
+// deserialize one of the leaderbo// serialize leaderboard
+unsigned int Serialization::serializeLeaderBoard(char* lb_data, LeaderBoard* leaderBoard)
 {
 	unsigned int size = 0;
-	for (int i = 0; i < GAME_SIZE; i++)
+	for (int i = 0; i < GAME_SIZE; i++)			// kills
 	{
-		memcpy(leaderBuffptr, &leaderBoard->currentKills[i], sizeof(int));
+		memcpy(lb_data, &leaderBoard->currentKills[i], sizeof(int));
 		size += sizeof(int);
-		leaderBuffptr += sizeof(int);
+		lb_data += sizeof(int);
 	}
-	
+	for (int i = 0; i < GAME_SIZE; i++)			// points
+	{
+		memcpy(lb_data, &leaderBoard->currPoints[i], sizeof(int));
+		size += sizeof(int);
+		lb_data += sizeof(int);
+	}
+	for (int i = 0; i < GAME_SIZE; i++)			// prizes
+	{
+		memcpy(lb_data, &leaderBoard->prizes[i], sizeof(int));
+		size += sizeof(int);
+		lb_data += sizeof(int);
+	}
+
+	memcpy(lb_data, &leaderBoard->prizeChange, sizeof(float));
+	size += sizeof(float);
+
 	return size;
+}
+
+// deserialize leaderboard
+void Serialization::deserializeLeaderBoard(char* lb_data, LeaderBoard* leaderBoard)
+{
+
+	for (int i = 0; i < GAME_SIZE; i++)		// kills
+	{
+		memcpy(&leaderBoard->currentKills[i], lb_data, sizeof(int));
+		lb_data += sizeof(int);
+	}
+	for (int i = 0; i < GAME_SIZE; i++)		// points
+	{
+		memcpy(&leaderBoard->currPoints[i], lb_data, sizeof(int));
+		lb_data += sizeof(int);
+	}
+	for (int i = 0; i < GAME_SIZE; i++)		// prizes
+	{
+		memcpy(&leaderBoard->prizes[i], lb_data, sizeof(int));
+		lb_data += sizeof(int);
+	}
+
+	memcpy(&leaderBoard->prizeChange, lb_data, sizeof(float));
 }
 
 

@@ -543,17 +543,11 @@ void ClientScene::handleInitScenePacket(char * data) {
 }
 
 /*
-	Deserialize updated scene graph from server.
+	Deserialize updated scene graph & leaderboard from server.
 */
 void ClientScene::handleServerTickPacket(char * data, char* lb_data) {
 	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap);
-
-	// TODO: Serialization::deserializeLeaderBoard
-	for (int i = 0; i < GAME_SIZE; i++)
-	{
-		memcpy(&leaderBoard->currentKills[i], lb_data, sizeof(int));
-		lb_data += sizeof(int);
-	}
+	Serialization::deserializeLeaderBoard(lb_data, leaderBoard);
 
 	// nullify invisibility state if you're assassin (duh)
 	if (player.modelType == ASSASSIN) {
