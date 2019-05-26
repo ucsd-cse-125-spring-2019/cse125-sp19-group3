@@ -6,6 +6,7 @@
 #define MAX_VERTEX_BUFFER 512 * 1024
 #define MAX_ELEMENT_BUFFER 128 * 1024
 
+#define UNEVADE -1
 #define EVADE_INDEX 0
 #define PROJ_INDEX 1
 #define OMNI_SKILL_INDEX 2
@@ -88,6 +89,8 @@ void ClientScene::initialize_skills(ArcheType selected_type) {
 
 	skill_timers = vector<nanoseconds>(personal_skills.size(), nanoseconds::zero());
 	animation_timer = nanoseconds::zero();
+	skillDurationTimer = nanoseconds::zero();
+	evadeDurationTimer = nanoseconds::zero();
 	player.modelType = selected_type;
 }
 
@@ -227,6 +230,16 @@ void ClientScene::updateTimers(nanoseconds timePassed) {
 				network->sendToServer(unsilencePacket);
 			}
 			skillDurationTimer = nanoseconds::zero();
+		}
+	}
+
+	// update evade duration
+	if (evadeDurationTimer > nanoseconds::zero()) {
+		evadeDurationTimer -= timePassed;
+		if (evadeDurationTimer <= nanoseconds::zero()) {
+			ClientInputPacket unevadePacket = game->createSkillPacket(NULL_POINT, UNEVADE);
+			network->sendToServer(unevadePacket);
+			evadeDurationTimer = nanoseconds::zero();
 		}
 	}
 }
@@ -448,6 +461,10 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 			// set cooldown
 			std::chrono::seconds sec((int)adjustedSkill.cooldown);
 			skill_timers[EVADE_INDEX] = nanoseconds(sec);
+
+			// set duration timer
+			sec = std::chrono::seconds((int)adjustedSkill.duration);
+			evadeDurationTimer = nanoseconds(sec);
 
 			// send server skill packet
 			ClientInputPacket evadeSkillPacket = game->createSkillPacket(NULL_POINT, adjustedSkill.skill_id);

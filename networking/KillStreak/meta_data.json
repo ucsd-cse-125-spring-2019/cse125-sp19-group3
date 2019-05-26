@@ -4,9 +4,9 @@
       "skill_id": 0,
       "initial_level": 1,
       "skill_name": "EVADE",
-      "cooldown": 10.0,
-      "range": 25.0,
-      "speed": 0.6,
+      "cooldown": 15.0,
+      "range": 0.0,
+      "speed": 0.0,
       "duration": 10.0
     },
     {

@@ -50,7 +50,7 @@ public:
 
 	void handlePlayerSkill(unsigned int player_id, 
 		                   Point finalPoint, 
-		                   unsigned int skill_id, 
+		                   int skill_id, 
 		                   unordered_map<unsigned int, Skill> *skill_map,
 		                   PlayerMetadata &playerMetadata);
 

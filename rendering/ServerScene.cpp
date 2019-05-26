@@ -10,6 +10,7 @@ using json = nlohmann::json;
 #define DEFAULT_Z 666
 
 // skill_id's
+#define UNEVADE            -1
 #define EVADE				0
 #define PROJECTILE			1
 #define PYROBLAST			2
@@ -233,13 +234,16 @@ void ServerScene::checkAndHandlePlayerCollision(unsigned int playerId) {
 	glm::vec3 forwardVector = (player.destination - player.currentPos)* player.speed;
 	if(glm::length(forwardVector)>1)
 		forwardVector = glm::normalize(player.destination - player.currentPos)* player.speed;
+	// player - projectile hit detection
 	for (auto& skill : skills) {
-		if (skill.ownerId == playerId) {
+		// don't do hit detection against your own bullets or if the player is evading
+		if (skill.ownerId == playerId || player.isEvading) {
 			continue;
 		}
 		else if (player.playerRoot->isCollided(forwardVector, model_radius, serverSceneGraphMap, skill.node, model_boundingbox, false)) {
 			player.setDestination(player.currentPos);
 			printf("Player %d killed Player %d \n", skill.ownerId, playerId);
+			//logger()->debug("Player {} killed player {}", )
 			return;
 		}
 	}
@@ -355,7 +359,7 @@ void ServerScene::handleRoyalCross(unsigned int player_id, Point finalPoint, Poi
 	Handle incoming player skill received from client's incoming packet. Match skill_id and handle skill accordingly.
 */
 void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
-	unsigned int skill_id, unordered_map<unsigned int, Skill> *skill_map, PlayerMetadata &playerMetadata)
+	int skill_id, unordered_map<unsigned int, Skill> *skill_map, PlayerMetadata &playerMetadata)
 {
 	// special case of unsilence
 	if (skill_id == UNSILENCE) {
@@ -368,9 +372,17 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 
 	// special case of undoing invisibility
 	if (skill_id == VISIBILITY) {
+
 		logger()->debug("undo invisibility");
 		int node_id = scenePlayers[player_id].root_id;
 		serverSceneGraphMap[node_id]->enabled = true;
+		return;
+	}
+
+	// special case of unevade
+	if (skill_id == UNEVADE) {
+		logger()->debug("{} player stopped evading!", playerMetadata.username);
+		scenePlayers[player_id].isEvading = false; 
 		return;
 	}
 
@@ -390,6 +402,12 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 	skill_id = (skill_id % 10 == 1) ? 1 : skill_id;		// check if projectile; update skill_id if true
 	switch (skill_id)
 	{
+		case EVADE: 
+		{
+			logger()->debug("{} player is evading!", playerMetadata.username);
+			scenePlayers[player_id].isEvading = true;
+			break;
+		}
 		case PROJECTILE:
 		{
 			createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill);
@@ -421,7 +439,6 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			break;
 		case INVISIBILITY:
 		{
-			// be a little sneaky: every time i fire this, just flip the invisibility.
 			// client must send another skill packet after duration is over.
 			int node_id = scenePlayers[player_id].root_id;
 			serverSceneGraphMap[node_id]->enabled = false;
@@ -434,9 +451,10 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 
 			auto& king = scenePlayers[player_id];
 
-			// grab all players who are in the range of the skill. @roy not sure if this is the right way to handle hit detection??
+			// grab all players who are in the range of the skill.
 			for (auto& player : scenePlayers) {
-				if (player_id == player.first) {
+				// you can't silence yourself && players that are evading
+				if (player_id == player.first || player.second.isEvading) {
 					continue;
 				}
 				if (glm::length(king.currentPos - player.second.currentPos) <= adjustedSkill.range) {

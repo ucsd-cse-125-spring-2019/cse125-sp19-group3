@@ -22,6 +22,7 @@ public:
 		this->destination = this->currentPos = { playerRoot->translation[3][0], playerRoot->translation[3][1], playerRoot->translation[3][2] };
 		this->action_state = ACTION_MOVEMENT;
 		this->isSilenced = false;
+		this->isEvading = false;
 	};
 	~ScenePlayer() {};
 
@@ -45,6 +46,7 @@ public:
 	ACTION_STATE action_state;
 	bool isPrepProjectile;
 	bool isSilenced;
+	bool isEvading;
 	vector<Skill> availableSkills;
 };
 

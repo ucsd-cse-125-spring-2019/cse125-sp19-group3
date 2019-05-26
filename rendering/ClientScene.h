@@ -71,7 +71,8 @@ private:
 	vector<Skill> personal_skills;
 	vector<nanoseconds> skill_timers;
 	nanoseconds animation_timer;
-	nanoseconds skillDurationTimer; // used for invisibility, silence, minimap(??), 
+	nanoseconds skillDurationTimer; // used for invisibility, silence
+	nanoseconds evadeDurationTimer; // used for evade
 
 	// void removeTransform(Transform * parent, const unsigned int node_id);
 	
