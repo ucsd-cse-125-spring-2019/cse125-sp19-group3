@@ -258,7 +258,7 @@ void ServerScene::update()
 			*** How much do we award for gold? How does gold logic work? 
 
 	4. Server needs to put this player to sleep for 3 seconds or something (also this function??)
-		--> Tell client their dead! How can this be done? Does the scene graph contain this information?
+		--> Tell client they're dead! How can this be done? Does the scene graph contain this information?
 				*** QUESTION: How does client know of its own state? Should we serialzie and send it's own 
 						MetaData from the server to the client? 
 		--> After 3 seconds send packet waking player up with new location that 
@@ -301,9 +301,7 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 	// award point to killer
 	leaderBoard->awardPoint(killer_id);
 
-	// TODO: Test gold and streaks on server side
-
-	// TODO: Tell client their dead, disallow any action for 3 seconds, find new spawn location for client
+	// TODO: Tell client they're dead, disallow any action for 3 seconds, find new spawn location for client
 
 }
 

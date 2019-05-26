@@ -300,11 +300,6 @@ void ClientGame::run() {
 	// Setup callbacks
 	setup_callbacks(currPhase);
 
-	// TODO: REMOVE ME *********************
-	// TESTING LEADERBOARD ON CLIENT
-	int counter = 0;
-	// TODO: REMOVE ME *********************
-
 	// Initialize objects/pointers for rendering
 	Window_static::initialize_objects(this, network, leaderBoard);
 	Window_static::initialize_UI(window);
@@ -320,17 +315,6 @@ void ClientGame::run() {
 			auto start = Clock::now();
 			ServerInputPacket* packet = network->receivePacket();
 			handleServerInputPacket(packet);
-
-
-			// TODO: REMOVE ME *********************
-			// TESTING LEADERBOARD ON CLIENT
-			counter++;
-			if (counter % 1000 == 0) {
-				leaderBoard->printCurrentKills();
-				log->debug("");
-			}
-			// TODO: REMOVE ME *********************
-
 
 			// Main render display callback. Rendering of objects is done here.
 			Window_static::display_callback(window);
