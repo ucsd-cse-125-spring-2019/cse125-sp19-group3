@@ -28,7 +28,7 @@ public:
 	glm::vec3 initCamPos;
 	std::unordered_map<unsigned int, Transform *> clientSceneGraphMap;
 
-	void initialize_objects(ClientGame * game, ClientNetwork* network);
+	void initialize_objects(ClientGame * game, ClientNetwork* network, LeaderBoard* leaderBoard);
 	void initialize_skills(ArcheType selected_type);
 	//void playerInit(const ScenePlayer &player);
 	void clean_up();
@@ -42,7 +42,7 @@ public:
 	void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 	glm::vec3 viewToWorldCoordTransform(int mouse_x, int mouse_y);
 	void handleInitScenePacket(char * data);
-	void handleServerTickPacket(char* data);
+	void handleServerTickPacket(char* data, char* leaderBoard_data);
 	void setRoot(Transform * newRoot);
 	void updateTimers(nanoseconds timePassed);
 	void renderPreparePhase(GLFWwindow* window);
@@ -59,6 +59,7 @@ private:
 	Cube * cube;
 	ScenePlayer player;
 	Transform * root;
+	LeaderBoard* leaderBoard;
 
 	std::unordered_map<unsigned int, ModelData> models;
 	std::unordered_set<unsigned int> updated_ids;
@@ -81,7 +82,7 @@ class Window_static
 {
 public:
 	static ClientScene * scene;
-	static void initialize_objects(ClientGame * game, ClientNetwork * network) { scene->initialize_objects(game, network); };
+	static void initialize_objects(ClientGame * game, ClientNetwork * network, LeaderBoard* leaderBoard) { scene->initialize_objects(game, network, leaderBoard); };
 	static void initialize_skills(ArcheType selected_type) { scene->initialize_skills(selected_type); };
 	static void updateTimers(nanoseconds timePassed) { scene->updateTimers(timePassed); };
 	static void initialize_UI(GLFWwindow* window) { scene->initialize_UI(window); };
@@ -97,7 +98,7 @@ public:
 	static void scroll_callback(GLFWwindow* win, double xoffset, double yoffset) { scene->scroll_callback(win, xoffset, yoffset); };
 	static void mouse_button_callback(GLFWwindow* win, int button, int action, int mods) { scene->mouse_button_callback(win, button, action, mods); };
 	static void handleInitScenePacket(char * data) { scene->handleInitScenePacket(data); };
-	static void handleServerTickPacket(char* data) { scene->handleServerTickPacket(data); };
+	static void handleServerTickPacket(char* data, char* leaderBoard_data) { scene->handleServerTickPacket(data, leaderBoard_data); };
 };
 
 

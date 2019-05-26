@@ -34,9 +34,10 @@ ClientGame::ClientGame(string host, string port, int char_select_time)
 	this->serverPort = port.c_str();
 	this->char_select_time = char_select_time;
 
-	q_lock = new mutex();
+	q_lock		  = new mutex();
+	leaderBoard   = new LeaderBoard();
 	serverPackets = new ServerInputQueue();
-	network = new ClientNetwork(this->host, this->serverPort);
+	network		  = new ClientNetwork(this->host, this->serverPort);
 }
 
 
@@ -299,8 +300,13 @@ void ClientGame::run() {
 	// Setup callbacks
 	setup_callbacks(currPhase);
 
+
+	// TODO: REMOVE ME **********************
+	int counter = 0;
+	// TODO: REMOVE ME **********************
+
 	// Initialize objects/pointers for rendering
-	Window_static::initialize_objects(this, network);
+	Window_static::initialize_objects(this, network, leaderBoard);
 	Window_static::initialize_UI(window);
 	// Loop while GLFW window should stay open
 	while (!glfwWindowShouldClose(window))
@@ -314,6 +320,11 @@ void ClientGame::run() {
 			auto start = Clock::now();
 			ServerInputPacket* packet = network->receivePacket();
 			handleServerInputPacket(packet);
+
+			// TODO: REMOVE ME *********************
+			counter++;
+			if (counter % 10 == 0) leaderBoard->printCurrentKills();
+			// TODO: REMOVE ME *********************
 
 			// Main render display callback. Rendering of objects is done here.
 			Window_static::display_callback(window);
@@ -526,7 +537,7 @@ void ClientGame::handleServerInputPacket(ServerInputPacket * packet) {
 		Window_static::scene->handleInitScenePacket(packet->data);
 		break;
 	case UPDATE_SCENE_GRAPH:
-		Window_static::scene->handleServerTickPacket(packet->data);
+		Window_static::scene->handleServerTickPacket(packet->data, packet->leaderBoard_data);
 		break;
 	default:
 		break;

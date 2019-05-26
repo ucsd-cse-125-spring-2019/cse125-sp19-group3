@@ -336,6 +336,7 @@ void ServerGame::game_match()
 */
 void ServerGame::launch() {
 	auto log = logger();
+	log->debug("SIZE OF LEADERBOARD {}", sizeof(LeaderBoard));
 
 	// launch lobby; accept players until game full
 	log->info("MT: Game server live - Launching lobby!");
@@ -453,16 +454,28 @@ ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsig
 
 
 /*
-	Create packet with serialized scene graph.
+	Create packet with serialized scene graph and leaderboard.
 */
 ServerInputPacket ServerGame::createServerTickPacket() {
+
+	ServerInputPacket packet;		
+
+	// serialize scene graph & crate packet
 	unsigned int sgSize;
 	char buf[SERVER_TICK_PACKET_SIZE] = { 0 };
 	char * bufPtr = buf;
 	sgSize = Serialization::serializeSceneGraph(scene->getRoot(), bufPtr, scene->serverSceneGraphMap);
-	return createServerPacket(UPDATE_SCENE_GRAPH, SERVER_TICK_PACKET_SIZE, buf);
-}
+	packet = createServerPacket(UPDATE_SCENE_GRAPH, SERVER_TICK_PACKET_SIZE, buf);
 
+	// serialize leaderboard & add to packet
+	unsigned int lbSize;
+	char leaderBuff[LEADERBOARD_PACKET_SIZE] = { 0 };
+	char* leaderBuffPtr = leaderBuff;
+	lbSize = Serialization::serializeLeaderBoard(leaderBuffPtr, leaderBoard);
+	memcpy(packet.leaderBoard_data, leaderBuffPtr, lbSize);
+
+	return packet;
+}
 
 ServerInputPacket ServerGame::createServerPacket(ServerPacketType type, int size, char* data)
 {

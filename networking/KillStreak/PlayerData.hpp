@@ -25,11 +25,11 @@ public:
 
 	vector<int>* roundSummary ();						// Update vectors for the round and return the ranking of each player
 	void awardPoint(unsigned int player_id);			// award point to player_id
-	vector<int> getCurrPoints() {return currPoints;}
+
+	float getPrizeChanges()		{return prizeChange;}
 
 	void printCurrentKills();
 
-protected:
 	vector<int> currentKills;	// # of kills in each round of each player
 	vector<int> currPoints;		// accumulative points of each player
 	vector<int> prizes;			// points added to player each round based on ranking

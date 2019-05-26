@@ -7,6 +7,7 @@
 #define GAME_SIZE			 2			// total players required to start game
 #define NULL_POINT Point(0.0,0.0,0.0)
 #define SERVER_TICK_PACKET_SIZE 10000
+#define LEADERBOARD_PACKET_SIZE 256
 
 typedef glm::vec3 Point;
 
@@ -45,6 +46,7 @@ typedef struct {
 	ServerPacketType packetType;
 	int size;
 	char data[SERVER_TICK_PACKET_SIZE];
+	char leaderBoard_data[LEADERBOARD_PACKET_SIZE];
 } ServerInputPacket;
 
 

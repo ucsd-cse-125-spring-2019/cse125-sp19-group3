@@ -37,6 +37,21 @@ unsigned int Serialization::serializeSceneGraph(Transform * node, char *data, un
 	return size;
 }
 
+
+unsigned int Serialization::serializeLeaderBoard(char* leaderBuffptr, LeaderBoard* leaderBoard)
+{
+	unsigned int size = 0;
+	for (int i = 0; i < GAME_SIZE; i++)
+	{
+		memcpy(leaderBuffptr, &leaderBoard->currentKills[i], sizeof(int));
+		size += sizeof(int);
+		leaderBuffptr += sizeof(int);
+	}
+	
+	return size;
+}
+
+
 // must make sure that the first field in a serialized node is the node_id
 unsigned int Serialization::deserializeSingleNodeId(char *data) {
 	unsigned int node_id;

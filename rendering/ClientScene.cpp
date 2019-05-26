@@ -19,7 +19,7 @@ struct nk_colorf bg = { 0.1f,0.1f,0.1f,1.0f };
 ClientScene * Window_static::scene = new ClientScene();
 struct media media;
 
-void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network)
+void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network, LeaderBoard* leaderBoard)
 {
 	camera = new Camera();
 	initCamPos = camera->cam_pos;
@@ -52,7 +52,7 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network)
 	}
 	this->game = game;
 	this->network = network;
-
+	this->leaderBoard = leaderBoard;
 	
 }
 
@@ -545,8 +545,16 @@ void ClientScene::handleInitScenePacket(char * data) {
 /*
 	Deserialize updated scene graph from server.
 */
-void ClientScene::handleServerTickPacket(char * data) {
+void ClientScene::handleServerTickPacket(char * data, char* lb_data) {
 	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap);
+
+	// TODO: Serialization::deserializeLeaderBoard
+	for (int i = 0; i < GAME_SIZE; i++)
+	{
+		memcpy(&leaderBoard->currentKills[i], lb_data, sizeof(int));
+		lb_data += sizeof(int);
+	}
+
 	// nullify invisibility state if you're assassin (duh)
 	if (player.modelType == ASSASSIN) {
 		clientSceneGraphMap[player.root_id]->enabled = true;

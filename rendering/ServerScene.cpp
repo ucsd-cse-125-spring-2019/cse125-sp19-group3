@@ -232,21 +232,13 @@ void ServerScene::update()
 	2. Append leaderboard to EVERY server tick packet, broadcasting to all clients on 
 		every tick.
 
-		*** Currently when a hit occurs it updates the leaderboard way of pointer... 
-			Need to put a LOCK on the leaderboard, hold the lock when updating and hold 
-			the lock when sending to all clients! ***
-		*** In the main server loop just put the leaderboard into a packet and sent 
-			it to all the clients (make sure to use a lock)
+		*** In the main server loop just put the leaderboard into a packet and send
+			it to all the clients 
 			
-		--> When any death occurs this value is updated and automatically sent to all clients 
-			per tick.
-		--> Every packet should show total player kills for each player, all clients 
-			see all this information. (possibly add deaths).
-		--> Do we need need a lock on the leaderboard? Think about it...
+		XXX No lock needed, only main server thread updates/sends leaderboard
 
 	3. Update leader board on the server side when a player gets hit (this function!!!)
-		--> TODO: Add total deaths into leaderboard? 
-		--> The player who killed this player needs to get a point
+		XXX The player who killed this player needs to get a point
 		--> Need to update gold accordingly
 
 	4. Server needs to put this player to sleep for 3 seconds or something (also this function??)
@@ -264,6 +256,7 @@ void ServerScene::update()
 */
 void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int killer_id)
 {
+	logger()->debug("Player {} killed player {}", dead_player.player_id, killer_id);
 
 	// award point to killer
 	leaderBoard->awardPoint(killer_id);

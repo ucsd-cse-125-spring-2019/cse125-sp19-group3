@@ -38,6 +38,8 @@ protected:
 	mutex* q_lock;						        // lock for queue
 	vector<int> cooldown_times;
 
+	LeaderBoard* leaderBoard;
+
 	friend class ClientScene;
 
 };
