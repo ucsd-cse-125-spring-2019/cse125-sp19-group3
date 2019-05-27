@@ -90,6 +90,9 @@
     <ClInclude Include="..\GUILayout.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Particle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\shader.cpp">
@@ -146,6 +149,9 @@
     <ClCompile Include="..\SceneProjectile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Particle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\networking\KillStreak\client_config.ini">
@@ -180,6 +186,12 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="..\..\networking\KillStreak\server_config.json">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\..\Downloads\ToroArena-master\Particle.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\..\Downloads\ToroArena-master\Particle.vert">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

@@ -7,7 +7,7 @@
 #include "../networking/KillStreak/CoreTypes.hpp"
 
 class SceneProjectile {
-	const static unsigned int KUNAI_ID = 101;
+	const static unsigned int KUNAI_ID = 200;
 public:
 		SceneProjectile(unsigned int nodeIdCounter, unsigned int ownerId, Point initPoint, Point finalPoint, Transform * skillRoot, float speed, float range) {
 			this->ownerId = ownerId;
@@ -18,8 +18,8 @@ public:
 			this->speed = speed;
 			this->range = range;
 			node = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), currentPos),
-				glm::rotate(glm::mat4(1.0f), -90 / 180.f * glm::pi<float>(), glm::vec3(1, 0, 0)),
-				glm::scale(glm::mat4(1.0f), Point(0.01f, 0.01f, 0.01f))
+				glm::rotate(glm::mat4(1.0f), 0 / 180.f * glm::pi<float>(), glm::vec3(1, 0, 0)),
+				glm::scale(glm::mat4(1.0f), Point(0.02f, 0.02f, 0.02f))
 			);
 			node->model_ids.insert(KUNAI_ID);
 			skillRoot->addChild(nodeIdCounter);

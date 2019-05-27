@@ -9,7 +9,9 @@
 #include <unordered_map>
 #include "Model.h"
 #include "Shader.h"
-
+#include "Particle.h"
+#define PARTICLE_VERTEX_SHADER_PATH "../particleShader.vert"
+#define PARTICLE_FRAGMENT_SHADER_PATH "../particleShader.frag"
 enum RenderMode {
 	COLOR,
 	TEXTURE
@@ -44,7 +46,7 @@ public:
 	std::unordered_set<unsigned int> children_ids;
 	std::unordered_set<unsigned int> model_ids;
 
-	
+	Particles * particle_effect;
 	Transform();
 	Transform(char * data);
 	Transform(unsigned int nodeId, glm::mat4 M);

@@ -10,6 +10,7 @@
 #include "Camera.h"
 #include "Transform.h"
 #include "ScenePlayer.h"
+#include "Particle.h"
 #include "../networking/KillStreak/ClientGame.h"
 #include "../networking/KillStreak/ClientNetwork.hpp"
 #include "../networking/KillStreak/CoreTypes.hpp"
@@ -20,9 +21,9 @@
 
 #define TOON_VERTEX_SHADER_PATH "../toonshader.vert"
 #define TOON_FRAGMENT_SHADER_PATH "../toonshader.frag"
-
 class ClientScene {
 public:
+	Camera * camera;
 	int width;
 	int height;
 	glm::vec3 initCamPos;
@@ -54,8 +55,7 @@ private:
 	float min_scroll = 20.0f;
 	float max_scroll = 60.0f;
 	const char* window_title = "CSE 125 Group 3";
-	Shader * animationShader, * staticShader;
-	Camera * camera;
+	Shader * animationShader, * staticShader, * particleShader;
 	Model * floor;
 	ScenePlayer player;
 	Transform * root;

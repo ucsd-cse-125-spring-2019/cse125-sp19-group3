@@ -15,7 +15,7 @@
       "skill_name": "PROJECTILE",
       "cooldown": 10.0,
       "range": 25.0,
-      "speed": 0.6,
+      "speed": 0.2,
       "duration": 0.0
     },
     {

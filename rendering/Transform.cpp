@@ -107,6 +107,8 @@ unsigned int Transform::deserializeAndUpdate(char * data) {
 		size += sizeof(unsigned int);
 		children_ids.insert(childId);
 	}
+	if (particle_effect)
+		particle_effect->update({ M[3][0], M[3][1], M[3][2] });
 	return size;
 }
 
@@ -141,6 +143,12 @@ void Transform::draw( std::unordered_map<unsigned int, ModelData> &models, const
 			glBindTexture(GL_TEXTURE_2D, models[model_id].texID);
 			models[model_id].model->draw(models[model_id].shader, childMtx, viewProjMtx);
 			glBindTexture(GL_TEXTURE_2D, 0);
+		}
+		//TODO: CHANGE THIS LATER
+		if (model_id == 200) {
+			if (!particle_effect)
+				particle_effect = new Particles(new Shader(PARTICLE_VERTEX_SHADER_PATH, PARTICLE_FRAGMENT_SHADER_PATH),"../textures/particle.bmp", { M[3][0], M[3][1], M[3][2] });
+			particle_effect->draw();
 		}
 	}
 }

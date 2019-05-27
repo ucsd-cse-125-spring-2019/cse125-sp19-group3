@@ -243,6 +243,18 @@
       ],
       "animated": false,
       "radius": 1.0
+    },
+    {
+      "path": "../models/projectiles/PokemonBall.obj",
+      "texture_path": "../textures/cemetery.tga",
+      "model_id": 200,
+      "color_rgb": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "animated": false,
+      "radius": 1.0
     }
   ]
 }

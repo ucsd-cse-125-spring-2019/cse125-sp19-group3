@@ -314,15 +314,15 @@ void ClientScene::renderLobbyPhase(GLFWwindow* window) {
 void ClientScene::renderKillPhase(GLFWwindow* window) {
 
 	auto vpMatrix = camera->GetViewProjectMtx();
-
-	// floor
-	floor->draw(staticShader, glm::mat4(1.0f), vpMatrix);
 	// players
 	root->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
 	// environment objects
 	for (auto &env_obj : env_objs) {
 		env_obj->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
 	}
+
+	// floor
+	floor->draw(staticShader, glm::mat4(1.0f), vpMatrix);
 	 /* Input */
 	glfwPollEvents();
 	nk_glfw3_new_frame();

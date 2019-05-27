@@ -37,6 +37,7 @@
     <ClInclude Include="..\Mesh.h" />
     <ClInclude Include="..\Model.h" />
     <ClInclude Include="..\NuklearInit.h" />
+    <ClInclude Include="..\Particle.h" />
     <ClInclude Include="..\ScenePlayer.h" />
     <ClInclude Include="..\SceneProjectile.h" />
     <ClInclude Include="..\Serialization.h" />
@@ -58,6 +59,7 @@
     <ClCompile Include="..\ClientScene.cpp" />
     <ClCompile Include="..\Cube.cpp" />
     <ClCompile Include="..\Model.cpp" />
+    <ClCompile Include="..\Particle.cpp" />
     <ClCompile Include="..\ScenePlayer.cpp" />
     <ClCompile Include="..\SceneProjectile.cpp" />
     <ClCompile Include="..\Serialization.cpp" />
@@ -66,6 +68,8 @@
     <ClCompile Include="..\Transform.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\..\..\Downloads\ToroArena-master\Particle.frag" />
+    <None Include="..\..\..\..\Downloads\ToroArena-master\Particle.vert" />
     <None Include="..\..\networking\KillStreak\client_config.ini" />
     <None Include="..\..\networking\KillStreak\client_config.json" />
     <None Include="..\..\networking\KillStreak\config.ini" />
