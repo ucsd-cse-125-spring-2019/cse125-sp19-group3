@@ -246,7 +246,7 @@
     },
     {
       "path": "../models/projectiles/PokemonBall.obj",
-      "texture_path": "../textures/cemetery.tga",
+      "texture_path": "../textures/asfalt-light.png",
       "model_id": 200,
       "color_rgb": [
         1.0,

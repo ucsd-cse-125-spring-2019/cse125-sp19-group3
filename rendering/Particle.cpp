@@ -199,8 +199,6 @@ void Particles::draw() {
 
 	// fragment shader
 	GLuint TextureID = glGetUniformLocation(programID, "myTextureSampler");
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	float delta = 0.016f;
 
 	int newparticles = (int)(delta*5000.0);
