@@ -545,13 +545,20 @@ void ClientScene::handleInitScenePacket(char * data) {
 /*
 	Deserialize updated scene graph & leaderboard from server.
 */
-void ClientScene::handleServerTickPacket(char * data, char* lb_data) {
+void ClientScene::handleServerTickPacket(char * data, char* lb_data, bool died_this_tick) {
 	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap);
 	Serialization::deserializeLeaderBoard(lb_data, leaderBoard);
 
 	// nullify invisibility state if you're assassin (duh)
 	if (player.modelType == ASSASSIN) {
 		clientSceneGraphMap[player.root_id]->enabled = true;
+	}
+
+	// player died?
+	if ( died_this_tick )		
+	{
+		logger()->debug("DIED ON THIS TICK!!!");
+		player.isAlive = false;
 	}
 }
 

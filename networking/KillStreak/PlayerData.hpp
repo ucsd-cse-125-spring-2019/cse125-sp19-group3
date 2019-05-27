@@ -88,6 +88,7 @@ public:
 		}
 
 		alive = true;
+		died_this_tick = false;		
 		gold = 0;
 		currKillStreak = 0;
 		currLoseStreak = 0;
@@ -102,6 +103,7 @@ public:
 	unordered_map<unsigned int, unsigned int> skillLevels;
 
 	bool alive;
+	bool died_this_tick;
 	Point currLocation;
 	// Omitting Point desiredFinalLocation
 

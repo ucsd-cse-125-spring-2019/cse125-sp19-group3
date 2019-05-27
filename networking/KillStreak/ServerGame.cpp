@@ -420,7 +420,21 @@ void ServerGame::updateKillPhase() {
 
 	// Serialize scene graph and send packet to clients
 	ServerInputPacket serverTickPacket = createServerTickPacket();
-	network->broadcastSend(serverTickPacket);
+
+	// send packet to each client; update packet if they died this tick
+	unordered_map<unsigned int, PlayerMetadata*>::iterator p_it = playerMetadatas->begin();
+	while (p_it != playerMetadatas->end())
+	{
+		unsigned int client_id = p_it->first;
+		PlayerMetadata* player_meta = p_it->second;
+		
+		ServerInputPacket next_packet = serverTickPacket;				// make copy of packet
+		next_packet.died_this_tick = player_meta->died_this_tick;		// true only if died on this tick
+		p_it->second->died_this_tick = false;							// reset that client died on this tick
+
+		network->sendToClient(client_id, next_packet);
+		p_it++;
+	}
 
 }
 

@@ -286,6 +286,7 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 
 	// set dead_players status to dead, reset killstreak & increment losestreak
 	player_data->alive = false;
+	player_data->died_this_tick = true;
 	player_data->currKillStreak  = 0;
 	player_data->currLoseStreak += 1;
 

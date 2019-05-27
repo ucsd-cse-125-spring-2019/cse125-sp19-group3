@@ -47,6 +47,7 @@ typedef struct {
 	int size;
 	char data[SERVER_TICK_PACKET_SIZE];
 	char leaderBoard_data[LEADERBOARD_PACKET_SIZE];
+	bool died_this_tick;	// true only on server tick client died
 } ServerInputPacket;
 
 
