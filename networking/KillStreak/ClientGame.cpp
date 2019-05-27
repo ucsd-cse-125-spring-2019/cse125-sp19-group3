@@ -320,6 +320,8 @@ void ClientGame::run() {
 			Window_static::display_callback(window);
 			// Idle callback. Updating objects, etc. can be done here.
 			Window_static::idle_callback();
+
+			// update all timers based on time elapsed
 			auto end = Clock::now();
 			nanoseconds elapsed = chrono::duration_cast<nanoseconds>(end - start);
 			Window_static::updateTimers(elapsed);

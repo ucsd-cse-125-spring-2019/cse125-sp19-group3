@@ -227,8 +227,12 @@ void ServerScene::update()
 		if (player_data->alive)	
 		{
 			checkAndHandlePlayerCollision(player_id);	
-			element.second.update();		// NOTE: Keeping this here will NOT allow dead player to move once hit
 		}
+
+		/* NOTE: Moving this inside above condition will NOT allow dead player to move once hit
+				But they can still attack.
+		*/
+		element.second.update();		
 
 	}
 }
@@ -258,9 +262,7 @@ void ServerScene::update()
 			*** How much do we award for gold? How does gold logic work? 
 
 	4. Server needs to put this player to sleep for 3 seconds or something (also this function??)
-		--> Tell client they're dead! How can this be done? Does the scene graph contain this information?
-				*** QUESTION: How does client know of its own state? Should we serialzie and send it's own 
-						MetaData from the server to the client? 
+		XXX Tell client they're dead! 
 		--> After 3 seconds send packet waking player up with new location that 
 				doesn't hit any other objects. (Check hit detection logic)
 		--> Possibly make new packet type? Respawn packet?
@@ -301,8 +303,6 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 
 	// award point to killer
 	leaderBoard->awardPoint(killer_id);
-
-	// TODO: Tell client they're dead, disallow any action for 3 seconds, find new spawn location for client
 
 }
 

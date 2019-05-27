@@ -12,6 +12,7 @@
 #define DIR_SKILL_INDEX 3
 #define UNSILENCE 34
 #define VISIBILITY 14
+#define RESPAWN_TIME 3
 
 using json = nlohmann::json;
 struct nk_context * ctx;
@@ -75,6 +76,7 @@ void ClientScene::initialize_skills(ArcheType selected_type) {
 
 	skill_timers = vector<nanoseconds>(personal_skills.size(), nanoseconds::zero());
 	animation_timer = nanoseconds::zero();
+	respawn_timer = nanoseconds::zero();
 	player.modelType = selected_type;
 }
 
@@ -199,6 +201,15 @@ void ClientScene::updateTimers(nanoseconds timePassed) {
 		}
 	}
 
+	// update respawn timer
+	if (respawn_timer > nanoseconds::zero())
+	{
+		respawn_timer -= timePassed;
+		if (respawn_timer < nanoseconds::zero()) {
+			respawn_timer = nanoseconds::zero();
+		}
+	}
+
 	// update skill duration
 	if (skillDurationTimer > nanoseconds::zero()) {
 		skillDurationTimer -= timePassed;
@@ -295,6 +306,7 @@ void  ClientScene::renderKillPhase(GLFWwindow* window) {
 	for (auto &env_obj : env_objs) {
 		env_obj->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
 	}
+
 	 /* Input */
 	glfwPollEvents();
 	nk_glfw3_new_frame();
@@ -329,10 +341,9 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 {
 	auto log = logger();
 	// are we even allowed to process input?
-	if (animation_timer > nanoseconds::zero()) {
+	if (animation_timer > nanoseconds::zero() || respawn_timer > nanoseconds::zero()) {
 		return;
 	}
-
 
 	// Check for a key press
 	if (action == GLFW_PRESS)
@@ -449,6 +460,8 @@ void ClientScene::scroll_callback(GLFWwindow* window, double xoffset, double yof
 
 void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
+	if (respawn_timer > nanoseconds::zero()) return;		// player dead disable input
+
 	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
 	{
 
@@ -554,11 +567,12 @@ void ClientScene::handleServerTickPacket(char * data, char* lb_data, bool died_t
 		clientSceneGraphMap[player.root_id]->enabled = true;
 	}
 
-	// player died?
+	// player died? --> set respawn time
 	if ( died_this_tick )		
 	{
-		logger()->debug("DIED ON THIS TICK!!!");
 		player.isAlive = false;
+		std::chrono::seconds sec((int)RESPAWN_TIME);
+		respawn_timer = sec;
 	}
 }
 
