@@ -510,6 +510,11 @@ ClientInputPacket ClientGame::createSkillPacket(Point destLocation, int skill_id
 	return createClientInputPacket(SKILL, destLocation, skill_id);
 }
 
+ClientInputPacket ClientGame::createRespawnPacket()
+{
+	return createClientInputPacket(RESPAWN, NULL_POINT, -1);
+}
+
 ClientInputPacket ClientGame::createInitPacket() {
 	return createClientInputPacket(INIT_CONN, NULL_POINT, -1);
 }

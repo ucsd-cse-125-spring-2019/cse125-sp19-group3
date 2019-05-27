@@ -538,6 +538,9 @@ void ServerGame::handleClientInputPacket(ClientInputPacket* packet, int client_i
 			                     skill_map,
 			                     player_metadata);
 		break;
+	case RESPAWN:
+		scene->handlePlayerRespawn(client_id);
+		break;
 	default:
 		break;
 	}

@@ -64,6 +64,7 @@ public:
 		                   PlayerMetadata* playerMetadata);
 
 	void handlePlayerDeath(ScenePlayer &player, unsigned int killer_id);
+	void handlePlayerRespawn(unsigned int client_id);
 
 	void checkAndHandlePlayerCollision(unsigned int playerId);
 	/*unsigned int serializeInitScene(char* data, unsigned int playerId, unsigned int playerRootId);

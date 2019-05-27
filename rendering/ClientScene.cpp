@@ -205,7 +205,10 @@ void ClientScene::updateTimers(nanoseconds timePassed) {
 	if (respawn_timer > nanoseconds::zero())
 	{
 		respawn_timer -= timePassed;
-		if (respawn_timer < nanoseconds::zero()) {
+		if (respawn_timer <= nanoseconds::zero()) {		
+			// send respawn packet to server
+			ClientInputPacket respawnPacket = game->createRespawnPacket();
+			network->sendToServer(respawnPacket);
 			respawn_timer = nanoseconds::zero();
 		}
 	}

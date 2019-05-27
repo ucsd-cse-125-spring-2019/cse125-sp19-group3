@@ -546,6 +546,21 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 } 
 
 
+/*
+	Client respawned; set status to alive and find new random location to spawn.
+*/
+void ServerScene::handlePlayerRespawn(unsigned int client_id)
+{
+
+	unordered_map<unsigned int, PlayerMetadata*>::iterator s_it = playerMetadatas->find(client_id);
+	PlayerMetadata* player_data = s_it->second;
+
+	player_data->alive = true;
+	ScenePlayer &player = scenePlayers[client_id];
+	player.setDestination(NULL_POINT);		// TODO: FIX ME TO VALID RANDOM LOCATION
+}
+
+
 Transform * ServerScene::getRoot() {
 	return root;
 }
