@@ -185,33 +185,62 @@ prepare_layout(struct nk_context *ctx, struct media *media, int width, int heigh
 
 		static int op = 0;
 		static const float ratio[] = { 0.35f, 0.3f, 0.35f };  /* 0.3 + 0.4 + 0.3 = 1 */
-		nk_layout_row_static(ctx, 0.15*height, 15, 1);
+		nk_layout_row_static(ctx, 0.1*height, 15, 1);
 
-		static const float choice_ratio[] = { 0.12f, 0.19f, 0.19f, 0.19f, 0.19f,0.12f };
+		static const float choice_ratio[] = { 0.2f, 0.2f, 0.2f, 0.2f, 0.2f };
+		/*for (int j = 0; j < 2; j++) {
+			if (nk_group_begin(ctx, "", NK_WINDOW_NO_SCROLLBAR)) {*/
+				nk_layout_row(ctx, NK_DYNAMIC, height *0.4, 5, choice_ratio);
+				nk_spacing(ctx, 1);
+				for (int j = 0; j < 3; j++) {
+					int i = j / 2;
+					if (j % 2 == 0) {
+						if (nk_group_begin(ctx, skill_string[i], NK_WINDOW_NO_SCROLLBAR)) { // column 1
+							nk_layout_row_dynamic(ctx, width *0.15, 1); // nested row
 
-		nk_layout_row(ctx, NK_DYNAMIC, height *0.35, 6, choice_ratio);
-		nk_spacing(ctx, 1);
-		for (int i = 0; i < 4; i++) {
-			if (nk_group_begin(ctx, skill_string[i], NK_WINDOW_NO_SCROLLBAR)) { // column 1
-				nk_layout_row_dynamic(ctx, width *0.18, 1); // nested row
+							nk_image(ctx, media->mage_skills[i]);
+							nk_layout_row_dynamic(ctx, 20, 1);
+							nk_text(ctx, skill_string[i], strlen(skill_string[i]), NK_TEXT_LEFT);
+							nk_text(ctx, prices[i], strlen(prices[i]), NK_TEXT_LEFT);
+							nk_layout_row_dynamic(ctx, 20, 1);
+							if (nk_button_label(ctx, "LEVEL UP")) {
+								//TODO: level up
+							}
 
-				nk_image(ctx, media->mage_skills[i]);
-				//nk_layout_row_static(ctx, 0.1*height, 15, 1);
-				nk_layout_row_dynamic(ctx, 20, 1);
-				if (nk_option_label(ctx, skill_string[i], op == i)) op = i;
-				nk_text(ctx, prices[i], strlen(prices[i]), NK_TEXT_RIGHT);
+							nk_group_end(ctx);
+						}
+					}
+					else {
+						nk_spacing(ctx, 1);
+					}
+				}
 
-				nk_group_end(ctx);
-			}
-		}
-		nk_spacing(ctx, 1);
+				nk_spacing(ctx, 0.3);
 
-		//horizontal centered
-		nk_layout_row(ctx, NK_DYNAMIC, 50, 3, ratio);
-		nk_spacing(ctx, 1);
-		if (nk_button_label(ctx, "Confirm"))
-			fprintf(stdout, "button pressed\n" );
-		nk_spacing(ctx, 1);
+				nk_layout_row(ctx, NK_DYNAMIC, height *0.4, 5, choice_ratio);
+				nk_spacing(ctx, 1);
+				for (int j = 2; j < 5; j++) {
+					int i = j / 2 + 1;
+					if (j % 2 == 0) {
+						if (nk_group_begin(ctx, skill_string[i], NK_WINDOW_NO_SCROLLBAR)) { // column 1
+							nk_layout_row_dynamic(ctx, width *0.15, 1); // nested row
+
+							nk_image(ctx, media->mage_skills[i]);
+							nk_layout_row_dynamic(ctx, 20, 1);
+							nk_text(ctx, skill_string[i], strlen(skill_string[i]), NK_TEXT_LEFT);
+							nk_text(ctx, prices[i], strlen(prices[i]), NK_TEXT_LEFT);
+							nk_layout_row_dynamic(ctx, 20, 1);
+							if (nk_button_label(ctx, "LEVEL UP")) {
+								//TODO: level up
+							}
+
+							nk_group_end(ctx);
+						}
+					}
+					else {
+						nk_spacing(ctx, 1);
+					}
+				}
 
 	}
 	nk_end(ctx);

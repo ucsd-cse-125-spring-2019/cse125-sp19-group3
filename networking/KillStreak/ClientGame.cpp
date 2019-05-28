@@ -300,7 +300,7 @@ void ClientGame::run() {
 		}
 		else {
 			// Prepare Phase
-
+			Window_static::display_callback(window);
 		}
 
 		
