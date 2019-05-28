@@ -418,23 +418,30 @@ void ServerGame::updateKillPhase() {
 	}
 	scene->update();	// update scene graph
 
-	// Serialize scene graph and send packet to clients
+	// Serialize scene graph & leaderboard -> send packet to clients
 	ServerInputPacket serverTickPacket = createServerTickPacket();
+	network->broadcastSend(serverTickPacket);
 
 	// send packet to each client; update packet if they died this tick
+	/*
 	unordered_map<unsigned int, PlayerMetadata*>::iterator p_it = playerMetadatas->begin();
 	while (p_it != playerMetadatas->end())
 	{
 		unsigned int client_id = p_it->first;
 		PlayerMetadata* player_meta = p_it->second;
 		
-		ServerInputPacket next_packet = serverTickPacket;				// make copy of packet
-		next_packet.died_this_tick = player_meta->died_this_tick;		// true only if died on this tick
+		// make copy of server tick packet
+		ServerInputPacket next_packet; 
+		memcpy(&next_packet, &serverTickPacket, sizeof(serverTickPacket));
+
+		// set first byte of data to died_this_tick
+		memcpy(next_packet.data, &p_it->second->died_this_tick, sizeof(bool));
 		p_it->second->died_this_tick = false;							// reset that client died on this tick
 
 		network->sendToClient(client_id, next_packet);
 		p_it++;
 	}
+	*/
 
 }
 
@@ -473,6 +480,25 @@ ServerInputPacket ServerGame::createServerTickPacket() {
 
 	ServerInputPacket packet;		
 
+	unsigned int sgSize = 0;
+	char buf[SERVER_TICK_PACKET_SIZE] = { 0 };
+	char* headPtr = buf;					// point to first element
+	//char* bufPtr = buf + sizeof(bool);		// point after first element
+	char* bufPtr = buf;
+
+	// serealize leaderboard
+	sgSize += Serialization::serializeLeaderBoard(bufPtr, leaderBoard);
+	bufPtr += sgSize;
+
+	sgSize += Serialization::serializeSceneGraph(scene->getRoot(), bufPtr, scene->serverSceneGraphMap);
+
+	// copy all serialized data into packet.data 1 byte offset for boolean (died_this_tick)
+	packet.packetType = UPDATE_SCENE_GRAPH;
+	packet.size = sgSize;
+	memcpy(packet.data, headPtr, sgSize); 
+
+
+	/*
 	// serialize scene graph & create packet
 	unsigned int sgSize;
 	char buf[SERVER_TICK_PACKET_SIZE] = { 0 };
@@ -486,6 +512,7 @@ ServerInputPacket ServerGame::createServerTickPacket() {
 	char* leaderBuffPtr = leaderBuff;
 	lbSize = Serialization::serializeLeaderBoard(leaderBuffPtr, leaderBoard);
 	memcpy(packet.leaderBoard_data, leaderBuffPtr, lbSize);
+	*/
 
 	return packet;
 }

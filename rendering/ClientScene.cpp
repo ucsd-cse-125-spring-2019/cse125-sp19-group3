@@ -561,14 +561,12 @@ void ClientScene::handleInitScenePacket(char * data) {
 /*
 	Deserialize updated scene graph & leaderboard from server.
 */
-void ClientScene::handleServerTickPacket(char * data, char* lb_data, bool died_this_tick) {
-	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap);
-	Serialization::deserializeLeaderBoard(lb_data, leaderBoard);
+void ClientScene::handleServerTickPacket(char * data) {
 
-	// nullify invisibility state if you're assassin (duh)
-	if (player.modelType == ASSASSIN) {
-		clientSceneGraphMap[player.root_id]->enabled = true;
-	}
+	/*
+	bool died_this_tick;
+	memcpy(&died_this_tick, data, sizeof(bool));
+	data += sizeof(bool);
 
 	// player died? --> set respawn time
 	if ( died_this_tick )		
@@ -577,6 +575,20 @@ void ClientScene::handleServerTickPacket(char * data, char* lb_data, bool died_t
 		std::chrono::seconds sec((int)RESPAWN_TIME);
 		respawn_timer = sec;
 	}
+	*/
+
+	unsigned int sz = 0;
+	sz = Serialization::deserializeLeaderBoard(data, leaderBoard);
+	data += sz;
+
+	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap);
+
+
+	// nullify invisibility state if you're assassin (duh)
+	if (player.modelType == ASSASSIN) {
+		clientSceneGraphMap[player.root_id]->enabled = true;
+	}
+
 }
 
 void ClientScene::setRoot(Transform * newRoot) {

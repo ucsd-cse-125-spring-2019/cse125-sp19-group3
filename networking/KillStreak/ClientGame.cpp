@@ -534,7 +534,7 @@ void ClientGame::handleServerInputPacket(ServerInputPacket * packet) {
 		Window_static::scene->handleInitScenePacket(packet->data);
 		break;
 	case UPDATE_SCENE_GRAPH:
-		Window_static::scene->handleServerTickPacket(packet->data, packet->leaderBoard_data, packet->died_this_tick);
+		Window_static::scene->handleServerTickPacket(packet->data);
 		break;
 	default:
 		break;

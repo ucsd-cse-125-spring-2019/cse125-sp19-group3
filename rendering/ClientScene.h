@@ -42,7 +42,7 @@ public:
 	void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 	glm::vec3 viewToWorldCoordTransform(int mouse_x, int mouse_y);
 	void handleInitScenePacket(char * data);
-	void handleServerTickPacket(char* data, char* leaderBoard_data, bool died_this_tick);
+	void handleServerTickPacket(char* data);
 	void setRoot(Transform * newRoot);
 	void updateTimers(nanoseconds timePassed);
 	void renderPreparePhase(GLFWwindow* window);
@@ -99,7 +99,7 @@ public:
 	static void scroll_callback(GLFWwindow* win, double xoffset, double yoffset) { scene->scroll_callback(win, xoffset, yoffset); };
 	static void mouse_button_callback(GLFWwindow* win, int button, int action, int mods) { scene->mouse_button_callback(win, button, action, mods); };
 	static void handleInitScenePacket(char * data) { scene->handleInitScenePacket(data); };
-	static void handleServerTickPacket(char* data, char* leaderBoard_data, bool died_this_tick) { scene->handleServerTickPacket(data, leaderBoard_data, died_this_tick); };
+	static void handleServerTickPacket(char* data) { scene->handleServerTickPacket(data); };
 };
 
 
