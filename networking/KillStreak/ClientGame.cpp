@@ -220,32 +220,6 @@ int ClientGame::join_game()
 	log->info("received character selection packet from server");
 
 	return 1;
-
-	//// select username and character & send to server
-	//handleServerInputPacket(char_select_packet);
-
-	//// character selected; block until recv() init scene packet from server marking game start
-	//ServerInputPacket * initScenePacket = network->receivePacket();
-	//handleServerInputPacket(initScenePacket);
-
-	//// allocate new data for server thread & launch (will recv() indefinitely)
-	//server_data* server_arg = (server_data *)malloc(sizeof(server_data));
-	//if (server_arg)
-	//{
-	//	server_arg->q_lock = q_lock;				// ptr to queue lock
-	//	server_arg->queuePtr = serverPackets;		// ptr to server input queue
-	//	server_arg->network = network;				// ptr to network
-	//	_beginthread(constantListenFromServer, 0, (void*)server_arg);	
-	//}
-	//else	// error allocating server data; 
-	//{
-	//	log->error("Error allocating server metadata");
-	//	closesocket(network->ConnectSocket);
-	//	return 0;
-	//}
-
-
-	//return 1;
 }
 
 int ClientGame::waitingInitScene() {

@@ -188,10 +188,10 @@
     <None Include="..\..\networking\KillStreak\server_config.json">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\..\..\..\Downloads\ToroArena-master\Particle.frag">
+    <None Include="..\particleShader.frag">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\..\..\..\Downloads\ToroArena-master\Particle.vert">
+    <None Include="..\particleShader.vert">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

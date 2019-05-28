@@ -147,8 +147,9 @@ void Transform::draw( std::unordered_map<unsigned int, ModelData> &models, const
 		//TODO: CHANGE THIS LATER
 		if (model_id == 200) {
 			if (!particle_effect)
-				particle_effect = new Particles(new Shader(PARTICLE_VERTEX_SHADER_PATH, PARTICLE_FRAGMENT_SHADER_PATH),"../textures/particle.bmp", { M[3][0], M[3][1], M[3][2] });
-			particle_effect->draw();
+				particle_effect = new Particles(new Shader(PARTICLE_VERTEX_SHADER_PATH, PARTICLE_FRAGMENT_SHADER_PATH),"../textures/flame.png", { M[3][0], M[3][1], M[3][2] });
+			else
+				particle_effect->draw();
 		}
 	}
 }

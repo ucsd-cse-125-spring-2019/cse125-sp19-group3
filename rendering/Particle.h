@@ -24,7 +24,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "stb_image.h"
 
+struct Particle {
+	glm::vec3 pos, speed;
+	unsigned char r, g, b, a; // Color
+	float size;
+	float life; // Remaining life of the particle. if < 0 : dead and unused.
+	float cameradistance;
+
+	bool operator<(Particle& that) {
+		// Sort in reverse order : far particles drawn first.
+		return this->cameradistance > that.cameradistance;
+	}
+};
 
 class Particles {
 
@@ -36,6 +49,7 @@ public:
 	void update(glm::vec3 move);
 	/// better be called before swapping buffer
 	void draw();
+	void reinitParticle(Particle&);
 	GLuint VertexArrayID, Texture;
 	GLuint billboard_vertex_buffer;
 	GLuint particles_position_buffer;

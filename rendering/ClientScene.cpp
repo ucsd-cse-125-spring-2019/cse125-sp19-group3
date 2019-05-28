@@ -514,7 +514,7 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 				}
 			}
 			else {
-				skill_timers[ACTION_DIRECTIONAL_SKILL] = nanoseconds(sec);
+				skill_timers[DIR_SKILL_INDEX] = nanoseconds(sec);
 			}
 
 			// get cursor position and translate it to world point
