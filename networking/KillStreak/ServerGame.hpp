@@ -86,6 +86,8 @@ protected:
 
 	
 	void handleClientInputPacket(ClientInputPacket* packet, int client_id);
+
+	friend class ScenePlayer;
 };
 
 #endif // SURFSTORESERVER_HPP

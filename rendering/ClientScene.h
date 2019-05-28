@@ -73,6 +73,7 @@ private:
 	nanoseconds animation_timer;
 	nanoseconds skillDurationTimer; // used for invisibility, silence
 	nanoseconds evadeDurationTimer; // used for evade
+	bool isCharging = false;
 
 	// void removeTransform(Transform * parent, const unsigned int node_id);
 	

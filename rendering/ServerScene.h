@@ -11,12 +11,14 @@
 #include "Model.h"
 #include "Camera.h"
 #include "Transform.h"
-#include "ScenePlayer.h"
+#include "../rendering/ScenePlayer.h"
 #include "SceneProjectile.h"
 
 // On some systems you need to change this to the absolute path
 #define VERTEX_SHADER_PATH "../shader.vert"
 #define FRAGMENT_SHADER_PATH "../shader.frag"
+
+class ScenePlayer;
 
 class ServerScene {
 public:
@@ -30,7 +32,8 @@ public:
 	std::unordered_map<unsigned int, Point> model_boundingbox;
 	std::vector<Transform *> env_objs;
 	std::vector<SceneProjectile> skills;
-	ServerScene();
+	bool warriorIsDoneCharging = false;
+	ServerScene(unordered_map<unsigned int, Skill>* skill_map, unordered_map<ArcheType, vector<unsigned int>> *archetype_skillset);
 	~ServerScene();
 	void addPlayer(unsigned int playerId, ArcheType modelType);
 	void update();
@@ -60,8 +63,10 @@ public:
 	std::pair<char *, unsigned int> serializeSceneGraph(Transform* t, char* data);*/
 	Transform * getRoot();
 	unordered_map<unsigned int, Transform *> serverSceneGraphMap;
+	unordered_map<ArcheType, vector<unsigned int>> *archetype_skillset;
 	void initEnv();
 	void initModelPhysics();
+	unordered_map<unsigned int, Skill>* skill_map;
 
 private:
 	Transform * root;

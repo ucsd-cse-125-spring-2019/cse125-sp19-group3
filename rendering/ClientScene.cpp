@@ -361,6 +361,7 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 		return;
 	}
 
+	if (isCharging && player.modelType == WARRIOR) return;
 
 	// Check for a key press
 	if (action == GLFW_PRESS)
@@ -522,6 +523,7 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 			glfwGetCursorPos(window, &xpos, &ypos);
 			glm::vec3 new_dest = viewToWorldCoordTransform(xpos, ypos);
 
+			if (player.modelType == WARRIOR) isCharging = true;
 			// create skill packet and send to server
 			ClientInputPacket skillPacket = game->createSkillPacket(new_dest, adjustedSkill.skill_id);
 			logger()->debug("sending server skill packet w id of {}", adjustedSkill.skill_id);
@@ -578,6 +580,8 @@ void ClientScene::handleInitScenePacket(char * data) {
 	Deserialize updated scene graph from server.
 */
 void ClientScene::handleServerTickPacket(char * data) {
+	memcpy(&isCharging, data, sizeof(bool));
+	data += sizeof(bool);
 	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap);
 	// nullify invisibility state if you're assassin (duh)
 	if (player.modelType == ASSASSIN) {

@@ -45,7 +45,7 @@ ServerGame::ServerGame(string host, string port, double tick_rate)
 	// initialize global skill map
 	readMetaDataForSkills();	// load skills from config into skills maps
 
-	scene = new ServerScene();
+	scene = new ServerScene(skill_map, archetype_skillset);
 	network = new ServerNetwork(this->host, this->port);
 	scheduledEvent = ScheduledEvent(END_KILLPHASE, 10000000); // default huge value
 
@@ -482,7 +482,10 @@ ServerInputPacket ServerGame::createServerTickPacket() {
 	unsigned int sgSize;
 	char buf[SERVER_TICK_PACKET_SIZE] = { 0 };
 	char * bufPtr = buf;
-
+	// if you're warrior, whether or not you're done with charge
+	memcpy(bufPtr, &(scene->warriorIsDoneCharging), sizeof(bool));
+	bufPtr += sizeof(bool);
+	scene->warriorIsDoneCharging = false;
 	sgSize = Serialization::serializeSceneGraph(scene->getRoot(), bufPtr, scene->serverSceneGraphMap);
 	return createServerPacket(UPDATE_SCENE_GRAPH, SERVER_TICK_PACKET_SIZE, buf);
 }

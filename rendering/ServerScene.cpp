@@ -26,7 +26,7 @@ using json = nlohmann::json;
 #define UNSILENCE           34
 
 
-ServerScene::ServerScene()
+ServerScene::ServerScene(unordered_map<unsigned int, Skill>* skill_map, unordered_map<ArcheType, vector<unsigned int>> *archetype_skillset)
 {
 	root = new Transform(0, glm::mat4(1.0f));
 	serverSceneGraphMap.insert({ root->node_id, root });
@@ -38,7 +38,8 @@ ServerScene::ServerScene()
 	skillRoot = new Transform(nodeIdCounter, glm::mat4(1.0f));
 	serverSceneGraphMap.insert({ skillRoot->node_id, skillRoot });
 	root->addChild(nodeIdCounter);
-
+	this->skill_map = skill_map;
+	this->archetype_skillset = archetype_skillset;
 	initModelPhysics();
 }
 
@@ -193,7 +194,7 @@ void ServerScene::addPlayer(unsigned int playerId, ArcheType modelType) {
 
 	// TODO: need to set model type based on player selection in lobby
 
-	ScenePlayer player = ScenePlayer(playerId, nodeIdCounter, modelType, playerObj);
+	ScenePlayer player = ScenePlayer(playerId, nodeIdCounter, modelType, playerObj, this);
 	//playerMap.insert(std::pair<unsigned int, Player *>(playerId, player));
 	scenePlayers.insert({ playerId, player });
 }
@@ -250,6 +251,11 @@ void ServerScene::checkAndHandlePlayerCollision(unsigned int playerId) {
 	for (auto& envObj : env_objs) {
 		if (player.playerRoot->isCollided(forwardVector, model_radius, serverSceneGraphMap, envObj, model_boundingbox, true)) {
 			player.setDestination(player.currentPos);
+			if (player.modelType == WARRIOR && player.warriorIsChargingServer) {
+				warriorIsDoneCharging = true;
+				player.warriorIsChargingServer = false;
+				player.speed = 0.3f; // hardcoding bs
+			}
 			break;
 		}
 	}
@@ -463,6 +469,17 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 				}
 			}
 			break;
+		}
+		case CHARGE:
+		{
+			auto& warrior = scenePlayers[player_id];
+			warrior.warriorIsChargingServer = true;
+			warrior.speed = 1.0f;	//TODO: change to from json
+			auto direction = glm::normalize(finalPoint - initPoint);
+			auto& defaultSkill = warrior.availableSkills[3]; // hardcode bs??>?
+			auto adjustedSkill = Skill::calculateSkillBasedOnLevel(defaultSkill, defaultSkill.level);
+			auto finalLocation = initPoint + (adjustedSkill.range * direction);
+			warrior.setDestination(finalLocation);
 		}
 		default:
 		{
