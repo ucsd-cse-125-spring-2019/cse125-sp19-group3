@@ -44,7 +44,7 @@ class Particles {
 public:
 	Shader * shader;
 	glm::vec3 translation;
-	Particles(Shader *,const char *, glm::vec3);
+	Particles(GLuint, Shader *, glm::vec3);
 	~Particles();
 	void update(glm::vec3 move);
 	/// better be called before swapping buffer

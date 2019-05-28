@@ -20,6 +20,53 @@ struct nk_colorf bg = { 0.1f,0.1f,0.1f,1.0f };
 ClientScene * Window_static::scene = new ClientScene();
 struct media media;
 
+GLuint loadTexture(const char * imagepath) {
+	int width, height, n;
+	// Actual RGB data
+	unsigned char * data;
+
+	data = stbi_load(imagepath, &width, &height, &n, STBI_rgb_alpha);
+	if (!data) {
+		if (!data) printf("[Particle]: failed to load image: %s", imagepath);
+	}
+
+	GLuint textureID;
+	glActiveTexture(GL_TEXTURE0);
+	glGenTextures(1, &textureID);
+
+	// "Bind" the newly created texture : all future texture functions will modify this texture
+	glBindTexture(GL_TEXTURE_2D, textureID);
+
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	stbi_image_free(data);
+	// Give the image to OpenGL
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+	//// OpenGL has now copied the data. Free our own version
+	//delete[] data;
+
+	//// Poor filtering, or ...
+	////glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	////glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); 
+
+	//// ... nice trilinear filtering ...
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	//// ... which requires mipmaps. Generate them automatically.
+	//glGenerateMipmap(GL_TEXTURE_2D);
+
+	// Return the ID of the texture we just created
+	return textureID;
+}
+
+
 void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network)
 {
 	camera = new Camera();
@@ -29,6 +76,8 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network)
 
 	animationShader = new Shader(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
 	staticShader = new Shader(TOON_VERTEX_SHADER_PATH, TOON_FRAGMENT_SHADER_PATH);
+	particleShader = new Shader(PARTICLE_VERTEX_SHADER_PATH, PARTICLE_FRAGMENT_SHADER_PATH);
+	particleTexture = loadTexture("../textures/flame.png");
 	ifstream json_model_paths("../model_paths.json");
 	json pathObjs = json::parse(json_model_paths);
 	for (auto & obj : pathObjs["data"]) {
@@ -390,7 +439,8 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 			// ONLY EXCEPTION: KING
 			if (player.modelType == KING) {
 				Skill subjugation = personal_skills[DIR_SKILL_INDEX];
-				Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(subjugation, subjugation.level);
+				Skill adjustedSkill = Skill::
+					calculateSkillBasedOnLevel(subjugation, subjugation.level);
 
 				// set cooldown
 				std::chrono::seconds sec((int)adjustedSkill.cooldown);
@@ -571,14 +621,14 @@ void ClientScene::handleInitScenePacket(char * data) {
 	data += sizeof(unsigned int);
 	memcpy(&player.root_id, data, sizeof(unsigned int));
 	data += sizeof(unsigned int);
-	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap);
+	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap, particleTexture, particleShader);
 }
 
 /*
 	Deserialize updated scene graph from server.
 */
 void ClientScene::handleServerTickPacket(char * data) {
-	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap);
+	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap, particleTexture, particleShader);
 	// nullify invisibility state if you're assassin (duh)
 	if (player.modelType == ASSASSIN) {
 		clientSceneGraphMap[player.root_id]->enabled = true;

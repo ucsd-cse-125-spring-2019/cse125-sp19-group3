@@ -1,8 +1,5 @@
 #include "Transform.h"
 
-Transform::Transform(char * data) {
-	deserializeAndUpdate(data);
-}
 
 Transform::Transform() : Transform(0, glm::mat4(1)) {}
 
@@ -60,7 +57,7 @@ unsigned int Transform::serialize(char * data) {
 	return size;
 }
 
-unsigned int Transform::deserializeAndUpdate(char * data) {
+unsigned int Transform::deserializeAndUpdate(char * data, Shader* particleShader, GLuint particleTexture) {
 	unsigned int numModels, numChilds;
 	unsigned int size = 0;
 	char * currLoc = data;
@@ -107,7 +104,11 @@ unsigned int Transform::deserializeAndUpdate(char * data) {
 		size += sizeof(unsigned int);
 		children_ids.insert(childId);
 	}
-	if (particle_effect)
+
+
+	if (!particle_effect)
+		particle_effect = new Particles( particleTexture, particleShader, { M[3][0], M[3][1], M[3][2] });
+	else
 		particle_effect->update({ M[3][0], M[3][1], M[3][2] });
 	return size;
 }
@@ -146,9 +147,6 @@ void Transform::draw( std::unordered_map<unsigned int, ModelData> &models, const
 		}
 		//TODO: CHANGE THIS LATER
 		if (model_id == 200) {
-			if (!particle_effect)
-				particle_effect = new Particles(new Shader(PARTICLE_VERTEX_SHADER_PATH, PARTICLE_FRAGMENT_SHADER_PATH),"../textures/flame.png", { M[3][0], M[3][1], M[3][2] });
-			else
 				particle_effect->draw();
 		}
 	}

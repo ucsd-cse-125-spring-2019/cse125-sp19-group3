@@ -21,6 +21,10 @@
 
 #define TOON_VERTEX_SHADER_PATH "../toonshader.vert"
 #define TOON_FRAGMENT_SHADER_PATH "../toonshader.frag"
+
+#define PARTICLE_VERTEX_SHADER_PATH "../particleShader.vert"
+#define PARTICLE_FRAGMENT_SHADER_PATH "../particleShader.frag"
+
 class ClientScene {
 public:
 	Camera * camera;
@@ -28,7 +32,7 @@ public:
 	int height;
 	glm::vec3 initCamPos;
 	std::unordered_map<unsigned int, Transform *> clientSceneGraphMap;
-
+	GLuint particleTexture;
 	void initialize_objects(ClientGame * game, ClientNetwork* network);
 	void initialize_skills(ArcheType selected_type);
 	//void playerInit(const ScenePlayer &player);
