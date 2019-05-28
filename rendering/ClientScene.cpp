@@ -578,11 +578,18 @@ void ClientScene::handleServerTickPacket(char * data) {
 	*/
 
 	unsigned int sz = 0;
-	sz = Serialization::deserializeLeaderBoard(data, leaderBoard);
-	data += sz;
+
+	bool died_this_tick = false;
+	memcpy(&died_this_tick, data, sizeof(died_this_tick));
+	sz += sizeof(died_this_tick);
+	data += sizeof(died_this_tick);
+
+
+	unsigned int leaderBoard_size = 0;
+	leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
+	data += leaderBoard_size;
 
 	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap);
-
 
 	// nullify invisibility state if you're assassin (duh)
 	if (player.modelType == ASSASSIN) {
