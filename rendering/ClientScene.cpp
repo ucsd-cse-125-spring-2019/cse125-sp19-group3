@@ -563,26 +563,26 @@ void ClientScene::handleInitScenePacket(char * data) {
 */
 void ClientScene::handleServerTickPacket(char * data) {
 
-	/*
-	bool died_this_tick;
-	memcpy(&died_this_tick, data, sizeof(bool));
-	data += sizeof(bool);
+	unsigned int sz = 0;
 
-	// player died? --> set respawn time
-	if ( died_this_tick )		
+	bool server_alive = false;
+	memcpy(&server_alive, data, sizeof(server_alive));
+	sz += sizeof(server_alive);
+	data += sizeof(server_alive);
+
+	// Server tells client they died --> set respawn time
+	if ( !server_alive && player.isAlive )		
 	{
+		logger()->debug("DIED THIS TICK!!!!");
 		player.isAlive = false;
 		std::chrono::seconds sec((int)RESPAWN_TIME);
 		respawn_timer = sec;
 	}
-	*/
-
-	unsigned int sz = 0;
-
-	bool died_this_tick = false;
-	memcpy(&died_this_tick, data, sizeof(died_this_tick));
-	sz += sizeof(died_this_tick);
-	data += sizeof(died_this_tick);
+	// server respawning player (they're alive); client still thinks they're dead
+	else if ( server_alive && !player.isAlive) {
+		logger()->debug("RESPAWNING!");
+		player.isAlive = true;
+	}
 
 
 	unsigned int leaderBoard_size = 0;

@@ -420,10 +420,8 @@ void ServerGame::updateKillPhase() {
 
 	// Serialize scene graph & leaderboard -> send packet to clients
 	ServerInputPacket serverTickPacket = createServerTickPacket();
-	network->broadcastSend(serverTickPacket);
 
 	// send packet to each client; update packet if they died this tick
-	/*
 	unordered_map<unsigned int, PlayerMetadata*>::iterator p_it = playerMetadatas->begin();
 	while (p_it != playerMetadatas->end())
 	{
@@ -434,14 +432,13 @@ void ServerGame::updateKillPhase() {
 		ServerInputPacket next_packet; 
 		memcpy(&next_packet, &serverTickPacket, sizeof(serverTickPacket));
 
-		// set first byte of data to died_this_tick
-		memcpy(next_packet.data, &p_it->second->died_this_tick, sizeof(bool));
-		p_it->second->died_this_tick = false;							// reset that client died on this tick
+		// set first byte of data to players dead/alive state
+		memcpy(next_packet.data, &p_it->second->alive, sizeof(bool));
+		//p_it->second->died_this_tick = false;							// reset that client died on this tick
 
 		network->sendToClient(client_id, next_packet);
 		p_it++;
 	}
-	*/
 
 }
 
