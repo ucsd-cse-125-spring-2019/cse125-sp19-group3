@@ -6,14 +6,16 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
 #include "Mesh.h"
 #include "shader.h"
+#include "../networking/KillStreak/CoreTypes.hpp"
 //#include "Sphere.h"
-//#include "stb_image.h"
+
 
 #include <string>
 #include <fstream>
@@ -21,6 +23,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <cmath>
 using namespace std;
 
 typedef struct{
@@ -29,6 +32,8 @@ typedef struct{
 	unsigned int baseVertex;
 	unsigned int baseIndex;
 } MeshData;
+
+
 
 //unsigned int TextureFromFile(const char *path, const string &directory, bool gamma = false);
 
@@ -40,26 +45,30 @@ public:
 	vector<MeshData> meshesData;
 	vector<Mesh> meshes;
 	string directory;
-	bool gammaCorrection, isAnimated;
+	bool isAnimated;
 	vector<string> m_Animations;
-	unsigned int animationMode = 0;
+	unsigned int prev_animationMode = -1;
+	unsigned int animationMode = run;
+	float animationTime;
+	vector<vector<float>> animation_frames;
+	glm::mat4 localMtx = glm::mat4(1.0f);
 
 	//Sphere * bounding_sphere;
 	/*  Functions   */
 	// constructor, expects a filepath to a 3D model.
-	Model(string const &path, bool animated=false, bool gamma = false);
+	Model(string const &path, string const &texPath, bool animated=false);
 
 	// draws the model, and thus all its meshes
 	void draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx);
 
-	void BoneTransform(unsigned int AnimationMode, float TimeInSeconds);
+	void BoneTransform(float TimeInSeconds);
 
 	//TODO: collision detection. when doing collision detection, pass in location data(could get from translate matrix)
 	//bool isCollided(glm::vec3 myPos, Model * other, glm::vec3 otherPos);
 
 private:
+	unsigned int textureId;
 
-	glm::mat4 localMtx = glm::mat4(1.0f);
 	glm::mat4 globalInverseTransform;
 
 	Assimp::Importer importer;
@@ -89,7 +98,7 @@ private:
 	
 	void LoadBones(unsigned int meshIndex, const aiMesh* mesh, vector<Vertex> &vertices);
 
-	void ReadNodeHeirarchy(unsigned int AnimationMode, float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform);
+	void ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform);
 
 	void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
 

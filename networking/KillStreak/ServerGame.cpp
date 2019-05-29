@@ -478,7 +478,6 @@ ServerInputPacket ServerGame::createServerTickPacket() {
 
 	unsigned int sgSize = 0;
 	char buf[SERVER_TICK_PACKET_SIZE] = { 0 };
-
 	char* headPtr = buf; // point to start of buffer
 	char* bufPtr = buf;	
 

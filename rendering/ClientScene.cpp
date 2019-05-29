@@ -6,6 +6,7 @@
 #define MAX_VERTEX_BUFFER 512 * 1024
 #define MAX_ELEMENT_BUFFER 128 * 1024
 
+#define UNEVADE -1
 #define EVADE_INDEX 0
 #define PROJ_INDEX 1
 #define OMNI_SKILL_INDEX 2
@@ -20,6 +21,53 @@ struct nk_colorf bg = { 0.1f,0.1f,0.1f,1.0f };
 ClientScene * Window_static::scene = new ClientScene();
 struct media media;
 
+GLuint loadTexture(const char * imagepath) {
+	int width, height, n;
+	// Actual RGB data
+	unsigned char * data;
+
+	data = stbi_load(imagepath, &width, &height, &n, STBI_rgb_alpha);
+	if (!data) {
+		if (!data) printf("[Particle]: failed to load image: %s", imagepath);
+	}
+
+	GLuint textureID;
+	glActiveTexture(GL_TEXTURE0);
+	glGenTextures(1, &textureID);
+
+	// "Bind" the newly created texture : all future texture functions will modify this texture
+	glBindTexture(GL_TEXTURE_2D, textureID);
+
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	stbi_image_free(data);
+	// Give the image to OpenGL
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+	//// OpenGL has now copied the data. Free our own version
+	//delete[] data;
+
+	//// Poor filtering, or ...
+	////glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	////glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); 
+
+	//// ... nice trilinear filtering ...
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	//// ... which requires mipmaps. Generate them automatically.
+	//glGenerateMipmap(GL_TEXTURE_2D);
+
+	// Return the ID of the texture we just created
+	return textureID;
+}
+
+
 void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network, LeaderBoard* leaderBoard)
 {
 	camera = new Camera();
@@ -29,14 +77,25 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network,
 
 	animationShader = new Shader(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
 	staticShader = new Shader(TOON_VERTEX_SHADER_PATH, TOON_FRAGMENT_SHADER_PATH);
+	particleShader = new Shader(PARTICLE_VERTEX_SHADER_PATH, PARTICLE_FRAGMENT_SHADER_PATH);
+	particleTexture = loadTexture("../textures/flame.png");
 	ifstream json_model_paths("../model_paths.json");
 	json pathObjs = json::parse(json_model_paths);
 	for (auto & obj : pathObjs["data"]) {
 		if (obj["animated"]) {
-			models[(unsigned int)obj["model_id"]] = ModelData{ new Model(obj["path"],true), glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), animationShader, COLOR, 0 };
+			models[(unsigned int)obj["model_id"]] = ModelData{ 
+				new Model(obj["path"], obj["texture_path"], true), 
+				glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), 
+				animationShader, 
+				COLOR, 
+				0 
+			};
+			for (unsigned int i = 0; i < 8; i++) {
+				models[(unsigned int)obj["model_id"]].model->animation_frames.push_back(vector<float>{ ((unsigned int)obj["animations"][i][0]) / 30.0f, ((unsigned int)obj["animations"][i][1]) / 30.0f });
+			}
 		}
 		else {
-			models[(unsigned int)obj["model_id"]] = ModelData{ new Model(obj["path"],false), glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), staticShader, COLOR, 0 };
+			models[(unsigned int)obj["model_id"]] = ModelData{ new Model(obj["path"], obj["texture_path"], false), glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), staticShader, COLOR, 0 };
 		}
 	}
 
@@ -54,7 +113,13 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network,
 	this->game = game;
 	this->network = network;
 	this->leaderBoard = leaderBoard;
-	
+
+	// Floor
+	floor = new Model("../models/quad.obj", "../textures/floor.png", false);
+	floor->localMtx = glm::translate(glm::mat4(1.0f), glm::vec3(100.0f, 0.0f, 120.0f)) *
+		glm::rotate(glm::mat4(1.0f), -90.0f / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)) *
+		glm::scale(glm::mat4(1.0f), glm::vec3(2));
+
 }
 
 void ClientScene::initialize_skills(ArcheType selected_type) {
@@ -77,6 +142,8 @@ void ClientScene::initialize_skills(ArcheType selected_type) {
 	skill_timers = vector<nanoseconds>(personal_skills.size(), nanoseconds::zero());
 	animation_timer = nanoseconds::zero();
 	respawn_timer = nanoseconds::zero();
+	skillDurationTimer = nanoseconds::zero();
+	evadeDurationTimer = nanoseconds::zero();
 	player.modelType = selected_type;
 }
 
@@ -230,6 +297,16 @@ void ClientScene::updateTimers(nanoseconds timePassed) {
 			skillDurationTimer = nanoseconds::zero();
 		}
 	}
+
+	// update evade duration
+	if (evadeDurationTimer > nanoseconds::zero()) {
+		evadeDurationTimer -= timePassed;
+		if (evadeDurationTimer <= nanoseconds::zero()) {
+			ClientInputPacket unevadePacket = game->createSkillPacket(NULL_POINT, UNEVADE);
+			network->sendToServer(unevadePacket);
+			evadeDurationTimer = nanoseconds::zero();
+		}
+	}
 }
 
 void ClientScene::resize_callback(GLFWwindow* window, int width, int height)
@@ -260,14 +337,14 @@ void ClientScene::idle_callback()
 {
 	// Call the update function the cube
 	//cube->update();
-	time += 1.0 / 60;
+	time += 2.0 / 60;
 	glm::mat4 playerNode = clientSceneGraphMap[player.root_id]->M;
 	camera->cam_look_at = { playerNode[3][0],playerNode[3][1],playerNode[3][2] };
 	camera->cam_pos = initCamPos + glm::vec3({ playerNode[3][0],playerNode[3][1],playerNode[3][2] });
 	camera->Update();
 	for (auto &model : models) {
 		if(model.second.model->isAnimated)
-			model.second.model->BoneTransform(model.second.model->animationMode, time);
+			model.second.model->BoneTransform(2.0f / 60);
 	}
 }
 
@@ -299,16 +376,18 @@ void ClientScene::renderLobbyPhase(GLFWwindow* window) {
 	glfwSwapBuffers(window);
 }
 
-void  ClientScene::renderKillPhase(GLFWwindow* window) {
+void ClientScene::renderKillPhase(GLFWwindow* window) {
 
 	auto vpMatrix = camera->GetViewProjectMtx();
-	// Use the shader to draw all player + skill objects
+	// players
 	root->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
-
-	// Use the shader to draw all environment objects
+	// environment objects
 	for (auto &env_obj : env_objs) {
 		env_obj->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
 	}
+
+	// floor
+	floor->draw(staticShader, glm::mat4(1.0f), vpMatrix);
 
 	 /* Input */
 	glfwPollEvents();
@@ -376,7 +455,8 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 			// ONLY EXCEPTION: KING
 			if (player.modelType == KING) {
 				Skill subjugation = personal_skills[DIR_SKILL_INDEX];
-				Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(subjugation, subjugation.level);
+				Skill adjustedSkill = Skill::
+					calculateSkillBasedOnLevel(subjugation, subjugation.level);
 
 				// set cooldown
 				std::chrono::seconds sec((int)adjustedSkill.cooldown);
@@ -448,6 +528,10 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 			std::chrono::seconds sec((int)adjustedSkill.cooldown);
 			skill_timers[EVADE_INDEX] = nanoseconds(sec);
 
+			// set duration timer
+			sec = std::chrono::seconds((int)adjustedSkill.duration);
+			evadeDurationTimer = nanoseconds(sec);
+
 			// send server skill packet
 			ClientInputPacket evadeSkillPacket = game->createSkillPacket(NULL_POINT, adjustedSkill.skill_id);
 			network->sendToServer(evadeSkillPacket);
@@ -498,7 +582,7 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 				}
 			}
 			else {
-				skill_timers[ACTION_DIRECTIONAL_SKILL] = nanoseconds(sec);
+				skill_timers[DIR_SKILL_INDEX] = nanoseconds(sec);
 			}
 
 			// get cursor position and translate it to world point
@@ -555,7 +639,7 @@ void ClientScene::handleInitScenePacket(char * data) {
 	data += sizeof(unsigned int);
 	memcpy(&player.root_id, data, sizeof(unsigned int));
 	data += sizeof(unsigned int);
-	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap);
+	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap, particleTexture, particleShader);
 }
 
 /*
@@ -588,8 +672,7 @@ void ClientScene::handleServerTickPacket(char * data) {
 	leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
 	data += leaderBoard_size;
 
-	// deserialize scene graph
-	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap);
+	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap, particleTexture, particleShader);
 
 	// nullify invisibility state if you're assassin (duh)
 	if (player.modelType == ASSASSIN) {

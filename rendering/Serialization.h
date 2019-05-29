@@ -21,6 +21,6 @@ public:
 	static unsigned int serializeLeaderBoard(char* leaderBuffPtr, LeaderBoard* leaderBoard);
 	static unsigned int deserializeLeaderBoard(char* lb_data, LeaderBoard* leaderBoard);
 	static unsigned int deserializeSingleNodeId(char *data);
-	static Transform * deserializeSceneGraph(char *data, unordered_map<unsigned int, Transform *> &clientSceneGraphMap);
+	static Transform * deserializeSceneGraph(char *data, unordered_map<unsigned int, Transform *> &clientSceneGraphMap, GLuint particleTexture, Shader * particleShader);
 };
 

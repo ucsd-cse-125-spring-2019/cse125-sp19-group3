@@ -37,6 +37,7 @@
     <ClInclude Include="..\Mesh.h" />
     <ClInclude Include="..\Model.h" />
     <ClInclude Include="..\NuklearInit.h" />
+    <ClInclude Include="..\Particle.h" />
     <ClInclude Include="..\ScenePlayer.h" />
     <ClInclude Include="..\SceneProjectile.h" />
     <ClInclude Include="..\Serialization.h" />
@@ -58,6 +59,7 @@
     <ClCompile Include="..\ClientScene.cpp" />
     <ClCompile Include="..\Cube.cpp" />
     <ClCompile Include="..\Model.cpp" />
+    <ClCompile Include="..\Particle.cpp" />
     <ClCompile Include="..\ScenePlayer.cpp" />
     <ClCompile Include="..\SceneProjectile.cpp" />
     <ClCompile Include="..\Serialization.cpp" />
@@ -75,6 +77,8 @@
     <None Include="..\model_paths.json" />
     <None Include="..\animatedShader.frag" />
     <None Include="..\animatedShader.vert" />
+    <None Include="..\particleShader.frag" />
+    <None Include="..\particleShader.vert" />
     <None Include="..\toonshader.frag" />
     <None Include="..\toonshader.vert" />
     <None Include="packages.config" />
@@ -157,6 +161,12 @@
       <AdditionalDependencies>assimp-vc140-mt.lib;glu32.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)/Assimp/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <PreBuildEvent>
+      <Command>copy "$(SolutionDir)/Assimp/lib/</Command>
+    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>copy "$(SolutionDir)/Assimp/lib/assimp-vc140-mt.dll" "$(TargetDir/Debug/)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
