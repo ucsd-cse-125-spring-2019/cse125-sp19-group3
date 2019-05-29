@@ -46,6 +46,7 @@ public:
 	ACTION_STATE action_state;
 	bool isPrepProjectile;
 	bool isSilenced;
+	bool isAlive = true;
 	bool isEvading;
 	vector<Skill> availableSkills;
 };

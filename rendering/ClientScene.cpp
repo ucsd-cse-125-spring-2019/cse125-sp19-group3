@@ -13,6 +13,7 @@
 #define DIR_SKILL_INDEX 3
 #define UNSILENCE 34
 #define VISIBILITY 14
+#define RESPAWN_TIME 3
 
 using json = nlohmann::json;
 struct nk_context * ctx;
@@ -67,7 +68,7 @@ GLuint loadTexture(const char * imagepath) {
 }
 
 
-void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network)
+void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network, LeaderBoard* leaderBoard)
 {
 	camera = new Camera();
 	initCamPos = camera->cam_pos;
@@ -111,12 +112,14 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network)
 	}
 	this->game = game;
 	this->network = network;
+	this->leaderBoard = leaderBoard;
 
 	// Floor
 	floor = new Model("../models/quad.obj", "../textures/floor.png", false);
 	floor->localMtx = glm::translate(glm::mat4(1.0f), glm::vec3(100.0f, 0.0f, 120.0f)) *
 		glm::rotate(glm::mat4(1.0f), -90.0f / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)) *
 		glm::scale(glm::mat4(1.0f), glm::vec3(2));
+
 }
 
 void ClientScene::initialize_skills(ArcheType selected_type) {
@@ -138,6 +141,7 @@ void ClientScene::initialize_skills(ArcheType selected_type) {
 
 	skill_timers = vector<nanoseconds>(personal_skills.size(), nanoseconds::zero());
 	animation_timer = nanoseconds::zero();
+	respawn_timer = nanoseconds::zero();
 	skillDurationTimer = nanoseconds::zero();
 	evadeDurationTimer = nanoseconds::zero();
 	player.modelType = selected_type;
@@ -264,6 +268,18 @@ void ClientScene::updateTimers(nanoseconds timePassed) {
 		}
 	}
 
+	// update respawn timer
+	if (respawn_timer > nanoseconds::zero())
+	{
+		respawn_timer -= timePassed;
+		if (respawn_timer <= nanoseconds::zero()) {		
+			// send respawn packet to server
+			ClientInputPacket respawnPacket = game->createRespawnPacket();
+			network->sendToServer(respawnPacket);
+			respawn_timer = nanoseconds::zero();
+		}
+	}
+
 	// update skill duration
 	if (skillDurationTimer > nanoseconds::zero()) {
 		skillDurationTimer -= timePassed;
@@ -372,6 +388,7 @@ void ClientScene::renderKillPhase(GLFWwindow* window) {
 
 	// floor
 	floor->draw(staticShader, glm::mat4(1.0f), vpMatrix);
+
 	 /* Input */
 	glfwPollEvents();
 	nk_glfw3_new_frame();
@@ -406,10 +423,9 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 {
 	auto log = logger();
 	// are we even allowed to process input?
-	if (animation_timer > nanoseconds::zero()) {
+	if (animation_timer > nanoseconds::zero() || respawn_timer > nanoseconds::zero()) {
 		return;
 	}
-
 
 	// Check for a key press
 	if (action == GLFW_PRESS)
@@ -531,6 +547,8 @@ void ClientScene::scroll_callback(GLFWwindow* window, double xoffset, double yof
 
 void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
+	if (respawn_timer > nanoseconds::zero()) return;		// player dead disable input
+
 	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
 	{
 
@@ -625,14 +643,42 @@ void ClientScene::handleInitScenePacket(char * data) {
 }
 
 /*
-	Deserialize updated scene graph from server.
+	Deserialize updated scene graph & leaderboard from server.
 */
 void ClientScene::handleServerTickPacket(char * data) {
+
+	unsigned int sz = 0;
+
+	// deserialize if they client is alive/dead
+	bool server_alive = false;
+	memcpy(&server_alive, data, sizeof(server_alive));
+	sz += sizeof(server_alive);
+	data += sizeof(server_alive);
+
+	// Server tells client they died --> set respawn time
+	if ( !server_alive && player.isAlive )		
+	{
+		player.isAlive = false;
+		std::chrono::seconds sec((int)RESPAWN_TIME);
+		respawn_timer = sec;
+	}
+	// server respawning player (they're alive); client still thinks they're dead
+	else if ( server_alive && !player.isAlive) {
+		player.isAlive = true;
+	}
+
+	// deserialize leaderboard
+	unsigned int leaderBoard_size = 0;
+	leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
+	data += leaderBoard_size;
+
 	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap, particleTexture, particleShader);
+
 	// nullify invisibility state if you're assassin (duh)
 	if (player.modelType == ASSASSIN) {
 		clientSceneGraphMap[player.root_id]->enabled = true;
 	}
+
 }
 
 void ClientScene::setRoot(Transform * newRoot) {

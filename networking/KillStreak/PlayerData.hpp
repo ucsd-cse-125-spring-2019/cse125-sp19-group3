@@ -9,22 +9,35 @@
 
 using namespace std;
 
-static int PLAYERNUM = 4;
-
 class LeaderBoard {
 public:
-	LeaderBoard(vector<int> initial_prize, int change) : prizeChange(change) { prizes = initial_prize;}
-	LeaderBoard() : currentKills(vector<int>(PLAYERNUM, 0)), currPoints(vector<int>(PLAYERNUM, 0)) {}
+
+	LeaderBoard(vector<int> initial_prize, int change) : prizeChange(change) 
+	{ 
+		prizes = initial_prize;
+	}
+
+	// default constructor
+	LeaderBoard() : currentKills(vector<int>(GAME_SIZE, 0)), currPoints(vector<int>(GAME_SIZE, 0)),
+					prizes(vector<int>(GAME_SIZE, 0)), prizeChange(0) {}
+
 	~LeaderBoard() {}
 
-	vector<int>* roundSummary (); // Update vectors for the round and return the ranking of each player
-	vector<int> getCurrPoints() {return currPoints;}
+	vector<int>* roundSummary ();						// Update vectors for the round and return the ranking of each player
+	void awardKill(unsigned int player_id);				// award point to player_id
+	void awardPoint(unsigned int player_id);				// award point to player_id
 
-protected:
+	float getPrizeChanges()		{return prizeChange;}
+
+	// for testing
+	void printCurrentKills();	
+	void printCurrPoints();	
+	void printPrizes();	
+
 	vector<int> currentKills;	// # of kills in each round of each player
 	vector<int> currPoints;		// accumulative points of each player
-	vector<int> prizes;							// points added to player each round based on ranking
-	float prizeChange;							// prizes increases per round (1.2)
+	vector<int> prizes;			// points added to player each round based on ranking
+	float prizeChange;			// prizes increases per round (1.2)
 };
 
 class Skill {
@@ -61,8 +74,8 @@ public:
 		           std::string username, 
 		           ArcheType type, 
 		           unordered_map<unsigned int, Skill> *skill_map, 
-		           unordered_map<ArcheType, vector<unsigned int>> *archetype_skillsets) : clientId(clientId), username(username), type(type) {
-
+		           unordered_map<ArcheType, vector<unsigned int>> *archetype_skillsets) : clientId(clientId), username(username), type(type) 
+{
 
 		// get vector of skillsets from archetype map
 		unordered_map<ArcheType, vector<unsigned int>>::iterator a_it = archetype_skillsets->find(type);
@@ -76,6 +89,7 @@ public:
 		}
 
 		alive = true;
+//		died_this_tick = false;		
 		gold = 0;
 		currKillStreak = 0;
 		currLoseStreak = 0;
@@ -90,6 +104,7 @@ public:
 	unordered_map<unsigned int, unsigned int> skillLevels;
 
 	bool alive;
+	//bool died_this_tick;
 	Point currLocation;
 	// Omitting Point desiredFinalLocation
 
