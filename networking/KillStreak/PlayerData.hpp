@@ -24,7 +24,8 @@ public:
 	~LeaderBoard() {}
 
 	vector<int>* roundSummary ();						// Update vectors for the round and return the ranking of each player
-	void awardPoint(unsigned int player_id);			// award point to player_id
+	void awardKill(unsigned int player_id);				// award point to player_id
+	void awardPoint(unsigned int player_id);				// award point to player_id
 
 	float getPrizeChanges()		{return prizeChange;}
 

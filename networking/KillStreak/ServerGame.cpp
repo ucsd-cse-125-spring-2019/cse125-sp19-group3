@@ -350,6 +350,12 @@ void ServerGame::launch() {
 	
 	bool isKillPhase = true;
 
+	// TODO: REMOVE ME *******************
+	// TESTING KILLSTREAK/LOSESTREAK/GOLD SERVER
+	int counter = 0;
+	// TODO: REMOVE ME *******************
+
+
 	log->info("Server is about to enter game loop!");
 	// GAME LOOP
 	while (running) {
@@ -364,6 +370,26 @@ void ServerGame::launch() {
 			delta--;
 
 			scheduledEvent.ticksLeft--;
+
+			// TODO: REMOVE ME ******************************************
+			// TESTING KILLSTREAK/LOSESTREAK/GOLD SERVER
+			counter++;
+			if (counter % 100 == 0)
+			{
+				unordered_map<unsigned int, PlayerMetadata*>::iterator p_it = playerMetadatas->begin();
+				while (p_it != playerMetadatas->end())
+				{
+					PlayerMetadata* player = p_it->second;
+					log->debug("Player {}: gold {}, KillStreak {}, LoseStreak {}", player->clientId, player->gold,
+						player->currKillStreak, player->currLoseStreak);
+					log->debug("");
+					p_it++;
+				}
+
+			}
+			// TODO: REMOVE ME ******************************************
+
+
 
 			if (scheduledEvent.ticksLeft <= 0) {
 				// initNewPhase(isKillPhase);
@@ -434,7 +460,6 @@ void ServerGame::updateKillPhase() {
 
 		// set first byte of data to players dead/alive state
 		memcpy(next_packet.data, &p_it->second->alive, sizeof(bool));
-		//p_it->second->died_this_tick = false;							// reset that client died on this tick
 
 		network->sendToClient(client_id, next_packet);
 		p_it++;

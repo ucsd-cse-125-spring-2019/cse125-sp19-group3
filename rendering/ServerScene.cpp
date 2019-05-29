@@ -301,7 +301,8 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 	killer_data->currKillStreak += 1;
 	killer_data->currLoseStreak  = 0;
 
-	// award point to killer
+	// award kill & points to killer
+	leaderBoard->awardKill(killer_id);
 	leaderBoard->awardPoint(killer_id);
 
 }

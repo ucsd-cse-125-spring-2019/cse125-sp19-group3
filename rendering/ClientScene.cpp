@@ -565,6 +565,7 @@ void ClientScene::handleServerTickPacket(char * data) {
 
 	unsigned int sz = 0;
 
+	// deserialize if they client is alive/dead
 	bool server_alive = false;
 	memcpy(&server_alive, data, sizeof(server_alive));
 	sz += sizeof(server_alive);
@@ -573,22 +574,21 @@ void ClientScene::handleServerTickPacket(char * data) {
 	// Server tells client they died --> set respawn time
 	if ( !server_alive && player.isAlive )		
 	{
-		logger()->debug("DIED THIS TICK!!!!");
 		player.isAlive = false;
 		std::chrono::seconds sec((int)RESPAWN_TIME);
 		respawn_timer = sec;
 	}
 	// server respawning player (they're alive); client still thinks they're dead
 	else if ( server_alive && !player.isAlive) {
-		logger()->debug("RESPAWNING!");
 		player.isAlive = true;
 	}
 
-
+	// deserialize leaderboard
 	unsigned int leaderBoard_size = 0;
 	leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
 	data += leaderBoard_size;
 
+	// deserialize scene graph
 	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap);
 
 	// nullify invisibility state if you're assassin (duh)

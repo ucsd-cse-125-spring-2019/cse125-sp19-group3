@@ -8,6 +8,7 @@
 #include <cmath>
 
 #define META_CONF "../../networking/KillStreak/meta_data.json"
+#define KILL_POINTS 3		// points awarded per kill
 
 using json = nlohmann::json;
 using namespace std;
@@ -22,13 +23,24 @@ unordered_map<string, ArcheType> archetype_map = {
 
 
 /*
-	Award point to player by incrementing their score at index 'player_id'
-	in the currpoints vector.
+	Award kill to player by incrementing their kill score at index 'player_id'
+	in the currentKills vector.
+*/
+void LeaderBoard::awardKill(unsigned int player_id)
+{
+	int kills = currentKills[player_id];
+	currentKills[player_id] = ++kills;
+}
+
+/*
+
+	Award point to player by incrementing their point score at index 'player_id'
+	in the currentPoints vector.
 */
 void LeaderBoard::awardPoint(unsigned int player_id)
 {
-	int cur_score = currentKills[player_id];
-	currentKills[player_id] = ++cur_score;
+	int cur_score = currPoints[player_id];
+	currPoints[player_id] = cur_score + KILL_POINTS;
 }
 
 
