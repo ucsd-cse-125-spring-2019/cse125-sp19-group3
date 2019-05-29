@@ -11,7 +11,6 @@
 #include <process.h>					// threads
 #include <windows.h>					// sleep
 
-#define GAME_SIZE			 1			// total players required to start game
 #define LOBBY_START_TIME	 500		// wait this long (ms) after all players connect
 #define START_CHAR_SELECTION 1			// start value of char selection phase
 #define END_CHAR_SELECTION   2			// end value of char selection phase
@@ -39,14 +38,15 @@ ServerGame::ServerGame(string host, string port, double tick_rate)
 	// initialize maps
 	skill_map		    = new unordered_map<unsigned int, Skill>();
 	selected_characters = new unordered_map<ArcheType, int>();
-	playerMetadatas     = new unordered_map<unsigned int, PlayerMetadata>();
+	playerMetadatas     = new unordered_map<unsigned int, PlayerMetadata*>();
 	archetype_skillset  = new unordered_map<ArcheType, vector<unsigned int>>();
 
-	// initialize global skill map
-	readMetaDataForSkills();	// load skills from config into skills maps
+	// initialize global skill map; load skills from config into skills maps
+	readMetaDataForSkills();	
 
-	scene = new ServerScene(skill_map, archetype_skillset);
-	network = new ServerNetwork(this->host, this->port);
+	leaderBoard = new LeaderBoard();
+	scene		= new ServerScene(leaderBoard, playerMetadatas, skill_map, archetype_skillset);
+	network		= new ServerNetwork(this->host, this->port);
 	scheduledEvent = ScheduledEvent(END_KILLPHASE, 10000000); // default huge value
 
 	char_select_lock = new mutex();
@@ -114,7 +114,7 @@ void character_selection_phase(client_data* client_arg)
 
 			// allocate meta data 
 			std::string username = selection_packet->username;
-			PlayerMetadata player = PlayerMetadata(client_id, username, character_type, 
+			PlayerMetadata* player = new PlayerMetadata(client_id, username, character_type, 
 				client_arg->skill_map_ptr, client_arg->archetype_skillset_ptr);
 
 			// add to map & release lock
@@ -303,8 +303,8 @@ void ServerGame::game_match()
 	log->info("All client character selections received, initializing game...");
 	for (auto client_data : client_data_list) {
 		unsigned int client_id = client_data->id;
-		unordered_map<unsigned int, PlayerMetadata>::iterator m_it = playerMetadatas->find(client_id);
-		ArcheType cur_type = m_it->second.type;
+		unordered_map<unsigned int, PlayerMetadata*>::iterator m_it = playerMetadatas->find(client_id);
+		ArcheType cur_type = m_it->second->type;
 		scene->addPlayer(client_id, cur_type);
 	}
 
@@ -418,32 +418,26 @@ void ServerGame::updateKillPhase() {
 	}
 	scene->update();	// update scene graph
 
-	// Serialize scene graph and send packet to clients
-	/*char buf[1024] = { 0 };
-	int size = scene->serializeSceneGraph(buf);
-	ServerInputPacket sceneGraphPacket = network->createServerPacket(UPDATE_SCENE_GRAPH, size, buf); */
+	// Serialize scene graph & leaderboard -> send packet to clients
 	ServerInputPacket serverTickPacket = createServerTickPacket();
-	network->broadcastSend(serverTickPacket);
 
-	/*
-	
-	1) Drain all packets from all client inputs at this point (acquire lock), squash if necessary
+	// send packet to each client; update packet if they died this tick
+	unordered_map<unsigned int, PlayerMetadata*>::iterator p_it = playerMetadatas->begin();
+	while (p_it != playerMetadatas->end())
+	{
+		unsigned int client_id = p_it->first;
+		PlayerMetadata* player_meta = p_it->second;
+		
+		// make copy of server tick packet
+		ServerInputPacket next_packet; 
+		memcpy(&next_packet, &serverTickPacket, sizeof(serverTickPacket));
 
-	2) Apply input to change game state
+		// set first byte of data to players dead/alive state
+		memcpy(next_packet.data, &p_it->second->alive, sizeof(bool));
 
-	3) Use updated game state (movement, fired skill, etc.) to change server SceneGraph slightly
-
-	4) Hit detection on all objects
-		a) For each player, put in quant tree to see if hit skill / environment
-		b) For each skill, put in quant tree to see if hit environment
-	
-	5) Do any calculations necessary for deaths (update leaderboard, update gold rewarded, update bonuses, etc)
-
-	6) Serialize server SceneGraph, send leaderboard / gold/ time remaining in round / player state to all clients 
-
-	7.) Deallocate packets 
-	*/
-
+		network->sendToClient(client_id, next_packet);
+		p_it++;
+	}
 
 }
 
@@ -476,20 +470,48 @@ ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsig
 
 
 /*
-	Create packet with serialized scene graph.
+	Create packet with serialized scene graph and leaderboard.
 */
 ServerInputPacket ServerGame::createServerTickPacket() {
-	unsigned int sgSize;
+
+	ServerInputPacket packet;		
+
+	unsigned int sgSize = 0;
 	char buf[SERVER_TICK_PACKET_SIZE] = { 0 };
-	char * bufPtr = buf;
-	// if you're warrior, whether or not you're done with charge
+
+	char* headPtr = buf; // point to start of buffer
+	char* bufPtr = buf;	
+
+	// serialize if user died; default init the first byte (died_this_tick)
+	bool died_this_tick = false;
+	memcpy(bufPtr, &died_this_tick, sizeof(died_this_tick));
+	sgSize += sizeof(died_this_tick);
+	bufPtr += sizeof(died_this_tick);
+
+	// serialize charge; if you're warrior, whether or not you're done with charge; second byte
 	memcpy(bufPtr, &(scene->warriorIsDoneCharging), sizeof(bool));
 	bufPtr += sizeof(bool);
+	sgSize += sizeof(bool);
 	scene->warriorIsDoneCharging = false;
-	sgSize = Serialization::serializeSceneGraph(scene->getRoot(), bufPtr, scene->serverSceneGraphMap);
-	return createServerPacket(UPDATE_SCENE_GRAPH, SERVER_TICK_PACKET_SIZE, buf);
-}
 
+	// serealize leaderboard
+	unsigned int leaderBoard_size = 0;
+	leaderBoard_size = Serialization::serializeLeaderBoard(bufPtr, leaderBoard);
+	bufPtr += leaderBoard_size;
+	sgSize += leaderBoard_size;
+
+	unsigned int sceneGraph_size = 0;
+	sceneGraph_size += Serialization::serializeSceneGraph(scene->getRoot(), bufPtr, scene->serverSceneGraphMap);
+	sgSize += sceneGraph_size;
+
+	// copy all serialized data into packet.data 1 byte offset for boolean (died_this_tick)
+	packet.packetType = UPDATE_SCENE_GRAPH;
+	packet.size = sgSize;
+	memcpy(packet.data, headPtr, sgSize); 
+
+	return packet;
+
+}
 
 ServerInputPacket ServerGame::createServerPacket(ServerPacketType type, int size, char* data)
 {
@@ -525,8 +547,8 @@ ServerInputPacket ServerGame::createCharSelectPacket(char* data, int size)
 */
 void ServerGame::handleClientInputPacket(ClientInputPacket* packet, int client_id) {
 
-	unordered_map<unsigned int, PlayerMetadata>::iterator m_it = playerMetadatas->find(client_id);
-	auto playerMetadata = m_it->second;
+	unordered_map<unsigned int, PlayerMetadata*>::iterator m_it = playerMetadatas->find(client_id);
+	PlayerMetadata* player_metadata = m_it->second;
 
 	switch (packet->inputType) {
 	case MOVEMENT:
@@ -537,7 +559,10 @@ void ServerGame::handleClientInputPacket(ClientInputPacket* packet, int client_i
 			                     packet->finalLocation, 
 			                     packet->skill_id,
 			                     skill_map,
-			                     playerMetadata);
+			                     player_metadata);
+		break;
+	case RESPAWN:
+		scene->handlePlayerRespawn(client_id);
 		break;
 	default:
 		break;

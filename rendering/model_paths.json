@@ -245,8 +245,8 @@
       "radius": 1.0
     },
     {
-      "path": "../models/projectiles/PokemonBall.obj",
-      "texture_path": "../textures/asfalt-light.png",
+      "path": "../models/projectiles/candle_small_1.fbx",
+      "texture_path": "../textures/cemetery.tga",
       "model_id": 200,
       "color_rgb": [
         1.0,

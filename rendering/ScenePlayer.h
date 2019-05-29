@@ -40,6 +40,7 @@ public:
 	ACTION_STATE action_state;
 	bool isPrepProjectile;
 	bool isSilenced;
+	bool isAlive = true;
 	bool isEvading;
 	bool warriorIsChargingServer = false;
 	vector<Skill> availableSkills;

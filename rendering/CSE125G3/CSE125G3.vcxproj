@@ -68,8 +68,6 @@
     <ClCompile Include="..\Transform.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\..\Downloads\ToroArena-master\Particle.frag" />
-    <None Include="..\..\..\..\Downloads\ToroArena-master\Particle.vert" />
     <None Include="..\..\networking\KillStreak\client_config.ini" />
     <None Include="..\..\networking\KillStreak\client_config.json" />
     <None Include="..\..\networking\KillStreak\config.ini" />
@@ -79,6 +77,8 @@
     <None Include="..\model_paths.json" />
     <None Include="..\animatedShader.frag" />
     <None Include="..\animatedShader.vert" />
+    <None Include="..\particleShader.frag" />
+    <None Include="..\particleShader.vert" />
     <None Include="..\toonshader.frag" />
     <None Include="..\toonshader.vert" />
     <None Include="packages.config" />

@@ -1,21 +1,8 @@
 #pragma warning(disable : 4996)
 #include "Particle.h"
 #include "ClientScene.h"
-#define MaxParticles 8000
+#define MaxParticles 200
 
-
-struct Particle {
-	glm::vec3 pos, speed;
-	unsigned char r, g, b, a; // Color
-	float size;
-	float life; // Remaining life of the particle. if < 0 : dead and unused.
-	float cameradistance;
-
-	bool operator<(Particle& that) {
-		// Sort in reverse order : far particles drawn first.
-		return this->cameradistance > that.cameradistance;
-	}
-};
 static GLfloat g_vertex_buffer_data[] = {
 	-0.5f, -0.5f, 0.0f,
 	0.5f, -0.5f, 0.0f,
@@ -30,7 +17,7 @@ Particle ParticlesContainer[MaxParticles];
 void SortParticles() {
 	std::sort(&ParticlesContainer[0], &ParticlesContainer[MaxParticles]);
 }
-int newparticles = 1000;
+int newparticles = 40;
 // Finds a Particle in ParticlesContainer which isn't used yet.
 // (i.e. life < 0);
 int FindUnusedParticle() {
@@ -51,7 +38,6 @@ int FindUnusedParticle() {
 
 	return 0; // All particles are taken, override the first one
 }
-
 
 GLuint loadBMP_custom(const char * imagepath) {
 
@@ -139,8 +125,8 @@ GLuint loadBMP_custom(const char * imagepath) {
 	return textureID;
 }
 
-Particles::Particles(Shader * shader, const char * filepath, glm::vec3 pos) {
-	this->shader = shader;
+Particles::Particles(GLuint particleTexture, Shader * particleShader, glm::vec3 pos) {
+	this->shader = particleShader;
 	translation = pos;
 	// Create and compile our GLSL program from the shaders
 	auto programID = shader->ID;
@@ -162,8 +148,9 @@ Particles::Particles(Shader * shader, const char * filepath, glm::vec3 pos) {
 	}
 
 
-
-	 Texture = loadBMP_custom(filepath);
+	SortParticles();
+	Texture = particleTexture;// loadTexture("../textures/flame.png");
+	//Texture = loadBMP_custom(filepath);
 
 	// The VBO containing the 4 vertices of the particles.
 	// Thanks to instancing, they will be shared by all particles.
@@ -189,6 +176,35 @@ Particles::~Particles() {}
 
 void Particles::update(glm::vec3 move) {
 	translation = move;
+
+	for (int i = 0; i<newparticles; i++) {
+		int particleIndex = FindUnusedParticle();
+		reinitParticle(ParticlesContainer[particleIndex]);
+	}
+}
+
+void Particles::reinitParticle(Particle& p) {
+	p.life = 0.07f + (rand() % 2000) / 10000.0f;
+	p.pos = translation + glm::vec3(0.0f, 1.5f, 1.0f);
+
+	float spread = 5.0f;
+	glm::vec3 maindir = glm::vec3(0.0f, 1.0f, -5.0f);
+	glm::vec3 randomdir = glm::vec3(
+		(rand() % 2000 - 1000.0f) / 1000.0f,
+		(rand() % 2000 - 1000.0f) / 1000.0f,
+		(rand() % 2000 - 1000.0f) / 1000.0f
+	);
+
+	p.speed = maindir + randomdir * spread;
+
+
+	// Very bad way to generate a random color
+	p.r = 225;
+	p.g = 190;
+	p.b = 163;
+	p.a = (rand() % 256) / 2 + 100;
+
+	p.size = (rand() % 1000) / 4000.0f + 0.05f;
 }
 
 void Particles::draw() {
@@ -200,36 +216,6 @@ void Particles::draw() {
 	// fragment shader
 	GLuint TextureID = glGetUniformLocation(programID, "myTextureSampler");
 	float delta = 0.016f;
-
-	int newparticles = (int)(delta*5000.0);
-	if (newparticles > (int)(delta*5000.0))
-		newparticles = (int)(delta*5000.0);
-
-	for (int i = 0; i<newparticles; i++) {
-		int particleIndex = FindUnusedParticle();
-		ParticlesContainer[particleIndex].life = 0.12f; 
-		ParticlesContainer[particleIndex].pos = translation+glm::vec3(0, 1.1f, 0.0f);
-
-		float spread = 1.5f;
-		glm::vec3 maindir = glm::vec3(0.0f, 2.0f, -3.0f);
-		glm::vec3 randomdir = glm::vec3(
-			(rand() % 2000 - 1000.0f) / 1000.0f,
-			(rand() % 2000 - 1000.0f) / 1000.0f,
-			(rand() % 2000 - 1000.0f) / 1000.0f
-		);
-
-		ParticlesContainer[particleIndex].speed = maindir + randomdir * spread;
-
-
-		// Very bad way to generate a random color
-		ParticlesContainer[particleIndex].r = 225;
-		ParticlesContainer[particleIndex].g = 190;
-		ParticlesContainer[particleIndex].b = 163;
-		ParticlesContainer[particleIndex].a = (rand() % 256)/2 + 100;
-
-		ParticlesContainer[particleIndex].size = (rand() % 1000) / 4000.0f + 0.05f;
-
-	}
 
 
 
@@ -246,9 +232,9 @@ void Particles::draw() {
 			if (p.life > 0.0f) {
 
 				// Simulate simple physics : gravity only, no collisions
-				p.speed += glm::vec3(0.0f, -4.81f, 0.0f) * (float)delta * 0.5f;
-				p.pos += p.speed * (float)delta;
-				p.cameradistance = glm::length2(p.pos - glm::vec3(0.0f, 10.0f, 0.0f));
+				//p.speed += glm::vec3(0.0f, -1.0f, 0.0f);
+				p.pos += (p.speed*delta);
+				p.cameradistance = glm::length2(p.pos - glm::vec3(0.0f, 50.0f, 0.0f));
 				//ParticlesContainer[i].pos += glm::vec3(0.0f,10.0f, 0.0f) * (float)delta;
 
 				// Fill the GPU buffer
@@ -267,10 +253,14 @@ void Particles::draw() {
 			else {
 				// Particles that just died will be put at the end of the buffer in SortParticles();
 				p.cameradistance = -1.0f;
+				reinitParticle(p);
 			}
 
 			ParticlesCount++;
 
+		}
+		else {
+			reinitParticle(p);
 		}
 	}
 
@@ -278,7 +268,6 @@ void Particles::draw() {
 
 
 	//printf("%d ",ParticlesCount);
-
 
 	// Update the buffers that OpenGL uses for rendering.
 	// There are much more sophisticated means to stream data from the CPU to the GPU, 
@@ -293,8 +282,6 @@ void Particles::draw() {
 	glBindBuffer(GL_ARRAY_BUFFER, particles_color_buffer);
 	glBufferData(GL_ARRAY_BUFFER, MaxParticles * 4 * sizeof(GLubyte), NULL, GL_STREAM_DRAW); // Buffer orphaning, a common way to improve streaming perf. See above link for details.
 	glBufferSubData(GL_ARRAY_BUFFER, 0, ParticlesCount * sizeof(GLubyte) * 4, g_particule_color_data);
-
-
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -369,5 +356,4 @@ void Particles::draw() {
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);
 	glDisable(GL_BLEND);
-
 }

@@ -13,6 +13,7 @@
 #define DIR_SKILL_INDEX 3
 #define UNSILENCE 34
 #define VISIBILITY 14
+#define RESPAWN_TIME 3
 
 using json = nlohmann::json;
 struct nk_context * ctx;
@@ -20,7 +21,54 @@ struct nk_colorf bg = { 0.1f,0.1f,0.1f,1.0f };
 ClientScene * Window_static::scene = new ClientScene();
 struct media media;
 
-void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network)
+GLuint loadTexture(const char * imagepath) {
+	int width, height, n;
+	// Actual RGB data
+	unsigned char * data;
+
+	data = stbi_load(imagepath, &width, &height, &n, STBI_rgb_alpha);
+	if (!data) {
+		if (!data) printf("[Particle]: failed to load image: %s", imagepath);
+	}
+
+	GLuint textureID;
+	glActiveTexture(GL_TEXTURE0);
+	glGenTextures(1, &textureID);
+
+	// "Bind" the newly created texture : all future texture functions will modify this texture
+	glBindTexture(GL_TEXTURE_2D, textureID);
+
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	stbi_image_free(data);
+	// Give the image to OpenGL
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+	//// OpenGL has now copied the data. Free our own version
+	//delete[] data;
+
+	//// Poor filtering, or ...
+	////glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	////glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); 
+
+	//// ... nice trilinear filtering ...
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	//// ... which requires mipmaps. Generate them automatically.
+	//glGenerateMipmap(GL_TEXTURE_2D);
+
+	// Return the ID of the texture we just created
+	return textureID;
+}
+
+
+void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network, LeaderBoard* leaderBoard)
 {
 	camera = new Camera();
 	initCamPos = camera->cam_pos;
@@ -29,6 +77,8 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network)
 
 	animationShader = new Shader(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
 	staticShader = new Shader(TOON_VERTEX_SHADER_PATH, TOON_FRAGMENT_SHADER_PATH);
+	particleShader = new Shader(PARTICLE_VERTEX_SHADER_PATH, PARTICLE_FRAGMENT_SHADER_PATH);
+	particleTexture = loadTexture("../textures/flame.png");
 	ifstream json_model_paths("../model_paths.json");
 	json pathObjs = json::parse(json_model_paths);
 	for (auto & obj : pathObjs["data"]) {
@@ -62,12 +112,14 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network)
 	}
 	this->game = game;
 	this->network = network;
+	this->leaderBoard = leaderBoard;
 
 	// Floor
 	floor = new Model("../models/quad.obj", "../textures/floor.png", false);
 	floor->localMtx = glm::translate(glm::mat4(1.0f), glm::vec3(100.0f, 0.0f, 120.0f)) *
 		glm::rotate(glm::mat4(1.0f), -90.0f / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)) *
 		glm::scale(glm::mat4(1.0f), glm::vec3(2));
+
 }
 
 void ClientScene::initialize_skills(ArcheType selected_type) {
@@ -89,6 +141,7 @@ void ClientScene::initialize_skills(ArcheType selected_type) {
 
 	skill_timers = vector<nanoseconds>(personal_skills.size(), nanoseconds::zero());
 	animation_timer = nanoseconds::zero();
+	respawn_timer = nanoseconds::zero();
 	skillDurationTimer = nanoseconds::zero();
 	evadeDurationTimer = nanoseconds::zero();
 	player.modelType = selected_type;
@@ -215,6 +268,18 @@ void ClientScene::updateTimers(nanoseconds timePassed) {
 		}
 	}
 
+	// update respawn timer
+	if (respawn_timer > nanoseconds::zero())
+	{
+		respawn_timer -= timePassed;
+		if (respawn_timer <= nanoseconds::zero()) {		
+			// send respawn packet to server
+			ClientInputPacket respawnPacket = game->createRespawnPacket();
+			network->sendToServer(respawnPacket);
+			respawn_timer = nanoseconds::zero();
+		}
+	}
+
 	// update skill duration
 	if (skillDurationTimer > nanoseconds::zero()) {
 		skillDurationTimer -= timePassed;
@@ -323,6 +388,7 @@ void ClientScene::renderKillPhase(GLFWwindow* window) {
 
 	// floor
 	floor->draw(staticShader, glm::mat4(1.0f), vpMatrix);
+
 	 /* Input */
 	glfwPollEvents();
 	nk_glfw3_new_frame();
@@ -357,7 +423,7 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 {
 	auto log = logger();
 	// are we even allowed to process input?
-	if (animation_timer > nanoseconds::zero()) {
+	if (animation_timer > nanoseconds::zero() || respawn_timer > nanoseconds::zero()) {
 		return;
 	}
 
@@ -391,7 +457,8 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 			// ONLY EXCEPTION: KING
 			if (player.modelType == KING) {
 				Skill subjugation = personal_skills[DIR_SKILL_INDEX];
-				Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(subjugation, subjugation.level);
+				Skill adjustedSkill = Skill::
+					calculateSkillBasedOnLevel(subjugation, subjugation.level);
 
 				// set cooldown
 				std::chrono::seconds sec((int)adjustedSkill.cooldown);
@@ -482,6 +549,8 @@ void ClientScene::scroll_callback(GLFWwindow* window, double xoffset, double yof
 
 void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
+	if (respawn_timer > nanoseconds::zero()) return;		// player dead disable input
+
 	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
 	{
 
@@ -515,7 +584,7 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 				}
 			}
 			else {
-				skill_timers[ACTION_DIRECTIONAL_SKILL] = nanoseconds(sec);
+				skill_timers[DIR_SKILL_INDEX] = nanoseconds(sec);
 			}
 
 			// get cursor position and translate it to world point
@@ -573,20 +642,51 @@ void ClientScene::handleInitScenePacket(char * data) {
 	data += sizeof(unsigned int);
 	memcpy(&player.root_id, data, sizeof(unsigned int));
 	data += sizeof(unsigned int);
-	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap);
+	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap, particleTexture, particleShader);
 }
 
 /*
-	Deserialize updated scene graph from server.
+	Deserialize updated scene graph & leaderboard from server.
 */
 void ClientScene::handleServerTickPacket(char * data) {
+
+	unsigned int sz = 0;
+
+	// deserialize if they client is alive/dead
+	bool server_alive = false;
+	memcpy(&server_alive, data, sizeof(server_alive));
+	sz += sizeof(server_alive);
+	data += sizeof(server_alive);
+
+	// deserialize charge
 	memcpy(&isCharging, data, sizeof(bool));
+	sz += sizeof(bool);
 	data += sizeof(bool);
-	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap);
+
+	// Server tells client they died --> set respawn time
+	if ( !server_alive && player.isAlive )		
+	{
+		player.isAlive = false;
+		std::chrono::seconds sec((int)RESPAWN_TIME);
+		respawn_timer = sec;
+	}
+	// server respawning player (they're alive); client still thinks they're dead
+	else if ( server_alive && !player.isAlive) {
+		player.isAlive = true;
+	}
+
+	// deserialize leaderboard
+	unsigned int leaderBoard_size = 0;
+	leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
+	data += leaderBoard_size;
+
+	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap, particleTexture, particleShader);
+
 	// nullify invisibility state if you're assassin (duh)
 	if (player.modelType == ASSASSIN) {
 		clientSceneGraphMap[player.root_id]->enabled = true;
 	}
+
 }
 
 void ClientScene::setRoot(Transform * newRoot) {

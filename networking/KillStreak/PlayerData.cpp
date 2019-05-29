@@ -8,6 +8,7 @@
 #include <cmath>
 
 #define META_CONF "../../networking/KillStreak/meta_data.json"
+#define KILL_POINTS 3		// points awarded per kill
 
 using json = nlohmann::json;
 using namespace std;
@@ -20,10 +21,33 @@ unordered_map<string, ArcheType> archetype_map = {
 	{"KING", KING},
 };	
 
+
+/*
+	Award kill to player by incrementing their kill score at index 'player_id'
+	in the currentKills vector.
+*/
+void LeaderBoard::awardKill(unsigned int player_id)
+{
+	int kills = currentKills[player_id];
+	currentKills[player_id] = ++kills;
+}
+
+/*
+
+	Award point to player by incrementing their point score at index 'player_id'
+	in the currentPoints vector.
+*/
+void LeaderBoard::awardPoint(unsigned int player_id)
+{
+	int cur_score = currPoints[player_id];
+	currPoints[player_id] = cur_score + KILL_POINTS;
+}
+
+
 vector<int>* LeaderBoard::roundSummary() {
 	// get the ranking result of this round
 	vector<int> temp(currentKills);
-	vector<int>* rankings = new vector<int>(PLAYERNUM);
+	vector<int>* rankings = new vector<int>(GAME_SIZE);
 	sort(temp.begin(), temp.end(), [](const int &i1, const int &i2) {return i1 > i2; });
 
 	int rank = 1;
@@ -32,15 +56,15 @@ vector<int>* LeaderBoard::roundSummary() {
 		if (score < curr) { rank++; curr = score; }
 		else { continue; }
 
-		for (int i = 0; i<PLAYERNUM; i++) {
+		for (int i = 0; i<GAME_SIZE; i++) {
 			if (currentKills[i] == score) { (*rankings)[i] = rank; }
 		}
 	}
 
 	// Update current points based on rankings
-	for (int i = 0; i<PLAYERNUM; i++) currPoints[i] += prizes[(*rankings)[i]];
+	for (int i = 0; i<GAME_SIZE; i++) currPoints[i] += prizes[(*rankings)[i]];
 	// Update prizes
-	for (int i = 0; i<PLAYERNUM; i++) prizes[i] *= prizeChange;
+	for (int i = 0; i<GAME_SIZE; i++) prizes[i] *= prizeChange;
 	// reset current kills
 	currentKills.clear();
 
@@ -96,3 +120,57 @@ Skill Skill::calculateSkillBasedOnLevel(Skill &baseSkill, unsigned int level) {
 		duration, // worry about this for animation vs invisibility + evade
 		speed);
 }
+
+
+
+
+
+
+/*
+	Mainly for testing purposes, print each value in current kills vector
+	of leaderboard.
+*/
+void LeaderBoard::printCurrentKills()
+{
+	int cur_player = 0;
+	vector<int>::iterator it = currentKills.begin();
+	while (it != currentKills.end())
+	{
+		logger()->debug("Player {}: {} kills", cur_player, *it);
+		it++; cur_player++;
+	}
+}
+
+/*
+	Mainly for testing purposes, print each value in current kills vector
+	of leaderboard.
+*/
+void LeaderBoard::printCurrPoints()
+{
+	int cur_player = 0;
+	vector<int>::iterator it = currPoints.begin();
+	while (it != currPoints.end())
+	{
+		logger()->debug("Player {}: {} points", cur_player, *it);
+		it++; cur_player++;
+	}
+}
+
+/*
+	Mainly for testing purposes, print each value in current kills vector
+	of leaderboard.
+*/
+void LeaderBoard::printPrizes()
+{
+	int cur_player = 0;
+	vector<int>::iterator it = prizes.begin();
+	while (it != prizes.end())
+	{
+		logger()->debug("Player {}: {} prizes", cur_player, *it);
+		it++; cur_player++;
+	}
+}
+
+
+
+
