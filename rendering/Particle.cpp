@@ -1,7 +1,7 @@
 #pragma warning(disable : 4996)
 #include "Particle.h"
 #include "ClientScene.h"
-#define MaxParticles 500
+#define MaxParticles 200
 
 static GLfloat g_vertex_buffer_data[] = {
 	-0.5f, -0.5f, 0.0f,
@@ -17,7 +17,7 @@ Particle ParticlesContainer[MaxParticles];
 void SortParticles() {
 	std::sort(&ParticlesContainer[0], &ParticlesContainer[MaxParticles]);
 }
-int newparticles = 50;
+int newparticles = 40;
 // Finds a Particle in ParticlesContainer which isn't used yet.
 // (i.e. life < 0);
 int FindUnusedParticle() {
@@ -37,52 +37,6 @@ int FindUnusedParticle() {
 	}
 
 	return 0; // All particles are taken, override the first one
-}
-
-GLuint loadTexture(const char * imagepath) {
-	 int width, height, n;
-	// Actual RGB data
-	unsigned char * data;
-
-	data = stbi_load(imagepath, &width, &height, &n, STBI_rgb_alpha);
-	if (!data) {
-		if (!data) printf("[Particle]: failed to load image: %s", imagepath);
-	}
-
-	GLuint textureID;
-	glActiveTexture(GL_TEXTURE0);
-	glGenTextures(1, &textureID);
-
-	// "Bind" the newly created texture : all future texture functions will modify this texture
-	glBindTexture(GL_TEXTURE_2D, textureID);
-
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	stbi_image_free(data);
-	// Give the image to OpenGL
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-
-	//// OpenGL has now copied the data. Free our own version
-	//delete[] data;
-
-	//// Poor filtering, or ...
-	////glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	////glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); 
-
-	//// ... nice trilinear filtering ...
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	//// ... which requires mipmaps. Generate them automatically.
-	//glGenerateMipmap(GL_TEXTURE_2D);
-
-	// Return the ID of the texture we just created
-	return textureID;
 }
 
 GLuint loadBMP_custom(const char * imagepath) {
@@ -171,8 +125,8 @@ GLuint loadBMP_custom(const char * imagepath) {
 	return textureID;
 }
 
-Particles::Particles(Shader * shader, const char * filepath, glm::vec3 pos) {
-	this->shader = shader;
+Particles::Particles(GLuint particleTexture, Shader * particleShader, glm::vec3 pos) {
+	this->shader = particleShader;
 	translation = pos;
 	// Create and compile our GLSL program from the shaders
 	auto programID = shader->ID;
@@ -195,7 +149,7 @@ Particles::Particles(Shader * shader, const char * filepath, glm::vec3 pos) {
 
 
 	SortParticles();
-	Texture = loadTexture(filepath);
+	Texture = particleTexture;// loadTexture("../textures/flame.png");
 	//Texture = loadBMP_custom(filepath);
 
 	// The VBO containing the 4 vertices of the particles.

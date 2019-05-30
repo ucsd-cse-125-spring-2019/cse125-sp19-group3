@@ -21,6 +21,10 @@
 
 #define TOON_VERTEX_SHADER_PATH "../toonshader.vert"
 #define TOON_FRAGMENT_SHADER_PATH "../toonshader.frag"
+
+#define PARTICLE_VERTEX_SHADER_PATH "../particleShader.vert"
+#define PARTICLE_FRAGMENT_SHADER_PATH "../particleShader.frag"
+
 class ClientScene {
 public:
 	Camera * camera;
@@ -28,8 +32,8 @@ public:
 	int height;
 	glm::vec3 initCamPos;
 	std::unordered_map<unsigned int, Transform *> clientSceneGraphMap;
-
-	void initialize_objects(ClientGame * game, ClientNetwork* network);
+	GLuint particleTexture;
+	void initialize_objects(ClientGame * game, ClientNetwork* network, LeaderBoard* leaderBoard);
 	void initialize_skills(ArcheType selected_type);
 	//void playerInit(const ScenePlayer &player);
 	void clean_up();
@@ -59,6 +63,7 @@ private:
 	Model * floor;
 	ScenePlayer player;
 	Transform * root;
+	LeaderBoard* leaderBoard;
 
 	std::unordered_map<unsigned int, ModelData> models;
 	std::unordered_set<unsigned int> updated_ids;
@@ -70,6 +75,7 @@ private:
 	vector<Transform *> env_objs;
 	vector<Skill> personal_skills;
 	vector<nanoseconds> skill_timers;
+	nanoseconds respawn_timer;		// when should client respawn from death
 	nanoseconds animation_timer;
 	nanoseconds skillDurationTimer; // used for invisibility, silence
 	nanoseconds evadeDurationTimer; // used for evade
@@ -82,7 +88,7 @@ class Window_static
 {
 public:
 	static ClientScene * scene;
-	static void initialize_objects(ClientGame * game, ClientNetwork * network) { scene->initialize_objects(game, network); };
+	static void initialize_objects(ClientGame * game, ClientNetwork * network, LeaderBoard* leaderBoard) { scene->initialize_objects(game, network, leaderBoard); };
 	static void initialize_skills(ArcheType selected_type) { scene->initialize_skills(selected_type); };
 	static void updateTimers(nanoseconds timePassed) { scene->updateTimers(timePassed); };
 	static void initialize_UI(GLFWwindow* window) { scene->initialize_UI(window); };

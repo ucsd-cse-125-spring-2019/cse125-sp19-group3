@@ -34,9 +34,10 @@ ClientGame::ClientGame(string host, string port, int char_select_time)
 	this->serverPort = port.c_str();
 	this->char_select_time = char_select_time;
 
-	q_lock = new mutex();
+	q_lock		  = new mutex();
+	leaderBoard   = new LeaderBoard();
 	serverPackets = new ServerInputQueue();
-	network = new ClientNetwork(this->host, this->serverPort);
+	network		  = new ClientNetwork(this->host, this->serverPort);
 }
 
 
@@ -274,7 +275,7 @@ void ClientGame::run() {
 	setup_callbacks(currPhase);
 
 	// Initialize objects/pointers for rendering
-	Window_static::initialize_objects(this, network);
+	Window_static::initialize_objects(this, network, leaderBoard);
 	Window_static::initialize_UI(window);
 	// Loop while GLFW window should stay open
 	while (!glfwWindowShouldClose(window))
@@ -286,7 +287,6 @@ void ClientGame::run() {
 		else if (currPhase == ClientStatus::KILL) {
 			// Kill Phase
 			auto start = Clock::now();
-			// TODO: REMOVE ME!!! (new thread should handle incoming packets
 			ServerInputPacket* packet = network->receivePacket();
 			handleServerInputPacket(packet);
 
@@ -294,6 +294,8 @@ void ClientGame::run() {
 			Window_static::display_callback(window);
 			// Idle callback. Updating objects, etc. can be done here.
 			Window_static::idle_callback();
+
+			// update all timers based on time elapsed
 			auto end = Clock::now();
 			nanoseconds elapsed = chrono::duration_cast<nanoseconds>(end - start);
 			Window_static::updateTimers(elapsed);
@@ -480,6 +482,11 @@ ClientInputPacket ClientGame::createMovementPacket(Point newLocation) {
 
 ClientInputPacket ClientGame::createSkillPacket(Point destLocation, int skill_id) {
 	return createClientInputPacket(SKILL, destLocation, skill_id);
+}
+
+ClientInputPacket ClientGame::createRespawnPacket()
+{
+	return createClientInputPacket(RESPAWN, NULL_POINT, -1);
 }
 
 ClientInputPacket ClientGame::createInitPacket() {
