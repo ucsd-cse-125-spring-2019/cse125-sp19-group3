@@ -586,7 +586,23 @@ void ServerScene::handlePlayerRespawn(unsigned int client_id)
 
 	player_data->alive = true;
 	ScenePlayer &player = scenePlayers[client_id];
-	player.setDestination(NULL_POINT);		// TODO: FIX ME TO VALID RANDOM LOCATION
+  // rand () % range - negative portion
+  // e.g rand() % 20 - 10 -> -10 to 10
+  // TODO: fill in actual range
+  float x = rand() % 200 - 100
+  float z = rand() % 200 - 100
+	glm::vec3 loc = glm::vec3(x, 0.0f, z);
+  glm::vec3 target;
+  float length = std::numeric_limits<float>::infinity();
+  //spawn_loc is defined in ServerScene
+  for(glm::vec3 temp_loc : spawn_loc){
+    float temp_len = glm::length(loc - temp_loc);
+    if (temp_len < length){
+      length = temp_len;
+      target = temp_loc;
+    }
+  }
+	player.setDestination(target);
 }
 
 
