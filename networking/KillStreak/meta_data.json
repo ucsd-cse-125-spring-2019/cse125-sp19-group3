@@ -57,11 +57,11 @@
     {
       "skill_id": 13,
       "initial_level": 1,
-      "skill_name": "SIXTH SENSE",
-      "cooldown": 5.0,
+      "skill_name": "SPRINT",
+      "cooldown": 15.0,
       "range": 0.0,
-      "speed": 5.0,
-      "duration": 5.0
+      "speed": 0.0,
+      "duration": 10.0
     },
     {
       "skill_id": 22,

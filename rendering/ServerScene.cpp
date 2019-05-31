@@ -17,8 +17,9 @@ using json = nlohmann::json;
 #define DRAGONS_BREATH		3
 #define ASSASSIN_PROJECTILE	11
 #define INVISIBILITY		12
-#define SIXTH_SENSE			13
-#define VISIBILITY           14
+#define SPRINT			    13
+#define VISIBILITY          14
+#define UNSPRINT            15
 #define WHIRLWIND			22
 #define CHARGE				23
 #define ROYAL_CROSS			32
@@ -480,6 +481,13 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 		return;
 	}
 
+	// special case of undoing sprint
+	if (skill_id == UNSPRINT) {
+		auto &assassin = scenePlayers[player_id];
+		assassin.speed /= 2; // tweak values later
+		return;
+	}
+
 	// special case of unevade
 	if (skill_id == UNEVADE) {
 		logger()->debug("{} player stopped evading!", playerMetadata->username);
@@ -525,6 +533,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			// TODO: Possibly modfiy 'createSceneProjectile' to handle this specific case, will need to update dirAOE.node-> scale...
 			// can define a default value that will state what to do
 			nodeIdCounter++;
+			initPoint = initPoint + glm::vec3({ 0.0f, 30.0f, 0.0f });
 			SceneProjectile dirAOE = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range);
 			dirAOE.node->scale = glm::scale(glm::mat4(1.0f), Point(0.08f, 0.08f, 0.08f));
 			serverSceneGraphMap.insert({ nodeIdCounter, dirAOE.node });
@@ -542,6 +551,12 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			// client must send another skill packet after duration is over.
 			int node_id = scenePlayers[player_id].root_id;
 			serverSceneGraphMap[node_id]->enabled = false;
+			break;
+		}
+		case SPRINT: 
+		{
+			auto &assassin = scenePlayers[player_id];
+			assassin.speed *= 2; // twice as fast, tweak values later
 			break;
 		}
 		case SUBJUGATION:
