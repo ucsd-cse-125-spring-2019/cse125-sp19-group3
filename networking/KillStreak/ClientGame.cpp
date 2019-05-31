@@ -254,7 +254,6 @@ int ClientGame::waitingPrepareScene() {
 	currPhase = PREPARE;
 	std::chrono::seconds sec(10);
 	prepareTimer = nanoseconds(sec);
-	currentTime = Clock::now();
 	setup_callbacks(currPhase);
 	return 1;
 }

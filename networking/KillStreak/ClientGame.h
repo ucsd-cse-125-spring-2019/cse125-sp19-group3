@@ -16,6 +16,7 @@ public:
 
 	ClientNetwork * network;
 	nanoseconds prepareTimer = nanoseconds(std::chrono::seconds(10));
+	LeaderBoard* leaderBoard;
 
 	void run();
 	int join_game();
@@ -40,8 +41,6 @@ protected:
 	ServerInputQueue* serverPackets;	// queue of packets from server
 	mutex* q_lock;						        // lock for queue
 	vector<int> cooldown_times;
-
-	LeaderBoard* leaderBoard;
 
 	friend class ClientScene;
 

@@ -10,7 +10,8 @@ const char * intToCharArray(int i) {
 	return s.c_str();
 }
 
-static void ui_leaderboard(struct nk_context *ctx, struct media *media) {
+static void ui_leaderboard(struct nk_context *ctx, struct media *media, LeaderBoard * leaderboard) {
+	vector<int> * ranking = leaderboard->roundSummary();
 	static const char *items[] = { "Player 0","Player 1","Player 2","Player 3" };
 	static const int points[] = { 15,40,30,10 };
 
@@ -86,10 +87,10 @@ static void ui_skills(struct nk_context *ctx, struct media *media, int width, in
 	nk_end(ctx);
 }
 static void
-kill_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, vector<nanoseconds> skill_timers) {
+kill_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, vector<nanoseconds> skill_timers, ClientGame * game) {
 	
 	set_style(ctx, THEME_BLACK);
-	ui_leaderboard(ctx, media);
+	ui_leaderboard(ctx, media, game->leaderBoard);
 
 	ui_skills(ctx, media,  width,  height, player, skill_timers);
 }
