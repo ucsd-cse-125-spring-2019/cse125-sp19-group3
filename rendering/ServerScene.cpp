@@ -603,6 +603,7 @@ void ServerScene::handlePlayerRespawn(unsigned int client_id)
     }
   }
   player.playerRoot->translation = glm::translate(glm::mat4(1.0f), target);
+  player.currentPos = target;
   player.setDestination(target);
 }
 
