@@ -30,7 +30,6 @@ GLuint loadTexture(const char * imagepath) {
 	if (!data) {
 		if (!data) printf("[Particle]: failed to load image: %s", imagepath);
 	}
-
 	GLuint textureID;
 	glActiveTexture(GL_TEXTURE0);
 	glGenTextures(1, &textureID);
@@ -45,25 +44,6 @@ GLuint loadTexture(const char * imagepath) {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(data);
-	// Give the image to OpenGL
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-
-	//// OpenGL has now copied the data. Free our own version
-	//delete[] data;
-
-	//// Poor filtering, or ...
-	////glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	////glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); 
-
-	//// ... nice trilinear filtering ...
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	//// ... which requires mipmaps. Generate them automatically.
-	//glGenerateMipmap(GL_TEXTURE_2D);
-
-	// Return the ID of the texture we just created
 	return textureID;
 }
 
@@ -153,6 +133,7 @@ void ClientScene::clean_up()
 	delete(root);
 	delete(staticShader);
 	delete(animationShader);
+	delete(particleShader);
 }
 
 void ClientScene::initialize_UI(GLFWwindow* window) {
@@ -379,8 +360,7 @@ void ClientScene::renderLobbyPhase(GLFWwindow* window) {
 void ClientScene::renderKillPhase(GLFWwindow* window) {
 
 	auto vpMatrix = camera->GetViewProjectMtx();
-	// players
-	root->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
+
 	// environment objects
 	for (auto &env_obj : env_objs) {
 		env_obj->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
@@ -389,6 +369,8 @@ void ClientScene::renderKillPhase(GLFWwindow* window) {
 	// floor
 	floor->draw(staticShader, glm::mat4(1.0f), vpMatrix);
 
+	// players
+	root->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
 	 /* Input */
 	glfwPollEvents();
 	nk_glfw3_new_frame();

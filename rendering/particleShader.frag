@@ -2,15 +2,14 @@
 
 // Interpolated values from the vertex shaders
 in vec2 UV;
-in vec4 particlecolor;
 
 // Ouput data
-out vec4 color;
+out vec4 FragColor;
 
 uniform sampler2D myTextureSampler;
 
 void main(){
 	// Output color = color of the texture at the specified UV
-	color = texture( myTextureSampler, UV );
-
+	vec4 texColor  = texture( myTextureSampler, UV );
+	FragColor = texColor;
 }
