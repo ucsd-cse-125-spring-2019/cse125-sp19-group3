@@ -75,50 +75,50 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network,
 	camera->SetAspect(width / height);
 	camera->Reset();
 
-	animationShader = new Shader(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
-	staticShader = new Shader(TOON_VERTEX_SHADER_PATH, TOON_FRAGMENT_SHADER_PATH);
-	particleShader = new Shader(PARTICLE_VERTEX_SHADER_PATH, PARTICLE_FRAGMENT_SHADER_PATH);
-	particleTexture = loadTexture("../textures/flame.png");
-	ifstream json_model_paths("../model_paths.json");
-	json pathObjs = json::parse(json_model_paths);
-	for (auto & obj : pathObjs["data"]) {
-		if (obj["animated"]) {
-			models[(unsigned int)obj["model_id"]] = ModelData{ 
-				new Model(obj["path"], obj["texture_path"], true), 
-				glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), 
-				animationShader, 
-				COLOR, 
-				0 
-			};
-			for (unsigned int i = 0; i < 8; i++) {
-				models[(unsigned int)obj["model_id"]].model->animation_frames.push_back(vector<float>{ ((unsigned int)obj["animations"][i][0]) / 30.0f, ((unsigned int)obj["animations"][i][1]) / 30.0f });
-			}
-		}
-		else {
-			models[(unsigned int)obj["model_id"]] = ModelData{ new Model(obj["path"], obj["texture_path"], false), glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), staticShader, COLOR, 0 };
-		}
-	}
+	//animationShader = new Shader(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
+	//staticShader = new Shader(TOON_VERTEX_SHADER_PATH, TOON_FRAGMENT_SHADER_PATH);
+	//particleShader = new Shader(PARTICLE_VERTEX_SHADER_PATH, PARTICLE_FRAGMENT_SHADER_PATH);
+	//particleTexture = loadTexture("../textures/flame.png");
+	//ifstream json_model_paths("../model_paths.json");
+	//json pathObjs = json::parse(json_model_paths);
+	//for (auto & obj : pathObjs["data"]) {
+	//	if (obj["animated"]) {
+	//		models[(unsigned int)obj["model_id"]] = ModelData{ 
+	//			new Model(obj["path"], obj["texture_path"], true), 
+	//			glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), 
+	//			animationShader, 
+	//			COLOR, 
+	//			0 
+	//		};
+	//		for (unsigned int i = 0; i < 8; i++) {
+	//			models[(unsigned int)obj["model_id"]].model->animation_frames.push_back(vector<float>{ ((unsigned int)obj["animations"][i][0]) / 30.0f, ((unsigned int)obj["animations"][i][1]) / 30.0f });
+	//		}
+	//	}
+	//	else {
+	//		models[(unsigned int)obj["model_id"]] = ModelData{ new Model(obj["path"], obj["texture_path"], false), glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), staticShader, COLOR, 0 };
+	//	}
+	//}
 
-	ifstream json_model_locations("../env_model_locations.json");
-	unsigned int envCounter = 4000000000;
-	json jsonObjs = json::parse(json_model_locations);
-	for (auto & obj : jsonObjs["data"]) {
-		Transform * envobj = new Transform(envCounter++, glm::translate(glm::mat4(1.0f), glm::vec3((float)(obj["translate"][0]), (float)(obj["translate"][1]), (float)(obj["translate"][2]))),
-			glm::rotate(glm::mat4(1.0f), (float)obj["rotate"] / 180.0f * glm::pi<float>(), glm::vec3(0, 1, 0)),
-			glm::scale(glm::mat4(1.0f), glm::vec3((float)obj["scale"], (float)obj["scale"], (float)obj["scale"])));
+	//ifstream json_model_locations("../env_model_locations.json");
+	//unsigned int envCounter = 4000000000;
+	//json jsonObjs = json::parse(json_model_locations);
+	//for (auto & obj : jsonObjs["data"]) {
+	//	Transform * envobj = new Transform(envCounter++, glm::translate(glm::mat4(1.0f), glm::vec3((float)(obj["translate"][0]), (float)(obj["translate"][1]), (float)(obj["translate"][2]))),
+	//		glm::rotate(glm::mat4(1.0f), (float)obj["rotate"] / 180.0f * glm::pi<float>(), glm::vec3(0, 1, 0)),
+	//		glm::scale(glm::mat4(1.0f), glm::vec3((float)obj["scale"], (float)obj["scale"], (float)obj["scale"])));
 
-		envobj->model_ids.insert((int)obj["model_id"]);
-		env_objs.push_back(envobj);
-	}
+	//	envobj->model_ids.insert((int)obj["model_id"]);
+	//	env_objs.push_back(envobj);
+	//}
 	this->game = game;
 	this->network = network;
 	this->leaderBoard = leaderBoard;
 
-	// Floor
-	floor = new Model("../models/quad.obj", "../textures/floor.png", false);
-	floor->localMtx = glm::translate(glm::mat4(1.0f), glm::vec3(100.0f, 0.0f, 120.0f)) *
-		glm::rotate(glm::mat4(1.0f), -90.0f / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)) *
-		glm::scale(glm::mat4(1.0f), glm::vec3(2));
+	//// Floor
+	//floor = new Model("../models/quad.obj", "../textures/floor.png", false);
+	//floor->localMtx = glm::translate(glm::mat4(1.0f), glm::vec3(100.0f, 0.0f, 120.0f)) *
+	//	glm::rotate(glm::mat4(1.0f), -90.0f / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)) *
+	//	glm::scale(glm::mat4(1.0f), glm::vec3(2));
 
 }
 
@@ -170,7 +170,7 @@ void ClientScene::initialize_UI(GLFWwindow* window) {
 
 	media.font_22 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/Roboto-Regular.ttf", 22.0f, &cfg);
 	media.font_32 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/Roboto-Regular.ttf", 32.0f, &cfg);
-
+	media.font_48 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/Roboto-Regular.ttf", 48.0f, &cfg);
 	media.font_64 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/Roboto-Regular.ttf", 64.0f, &cfg);
 	nk_glfw3_font_stash_end();
 	}
