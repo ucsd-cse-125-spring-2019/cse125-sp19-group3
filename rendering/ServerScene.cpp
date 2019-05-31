@@ -602,7 +602,8 @@ void ServerScene::handlePlayerRespawn(unsigned int client_id)
       target = temp_loc;
     }
   }
-	player.setDestination(target);
+  player.playerRoot->translation = glm::translate(glm::mat4(1.0f), target);
+  player.setDestination(target);
 }
 
 
