@@ -36,6 +36,17 @@ public:
 	std::unordered_map<unsigned int, Point> model_boundingbox;
 	std::vector<Transform *> env_objs;
 	std::vector<SceneProjectile> skills;
+  //TODO: fill in the four corner
+	std::vector<glm::vec3> spawn_loc{
+								  //top left
+                                  glm::vec3(-0.169116f, 0.0f, -19.966980f),
+								  //bottom left
+                                  glm::vec3(-0.271529f, 0.0f, 75.787369f),
+								  //bottom right
+                                  glm::vec3(154.582565f, 0.0f, 75.737686f),
+								  //top right
+                                  glm::vec3(154.779358f, 0.0f, -18.759279f)
+                                  };
 
 	// constructor
 	ServerScene(LeaderBoard* leaderBoard, unordered_map<unsigned int, PlayerMetadata*>* playerMetadatas);
