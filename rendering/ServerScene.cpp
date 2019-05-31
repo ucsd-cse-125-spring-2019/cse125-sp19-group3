@@ -587,9 +587,10 @@ void ServerScene::handlePlayerRespawn(unsigned int client_id)
 	ScenePlayer &player = scenePlayers[client_id];
   // rand () % range - negative portion
   // e.g rand() % 20 - 10 -> -10 to 10
-  // TODO: fill in actual range
-  float x = rand() % 200 - 100
-  float z = rand() % 200 - 100
+  // x: -9 to 164
+  // z: -28 to 83
+	float x = rand() % 173 - 9;
+	float z = rand() % 111 - 28;
 	glm::vec3 loc = glm::vec3(x, 0.0f, z);
   glm::vec3 target;
   float length = std::numeric_limits<float>::infinity();

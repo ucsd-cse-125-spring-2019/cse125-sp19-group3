@@ -38,10 +38,13 @@ public:
 	std::vector<SceneProjectile> skills;
   //TODO: fill in the four corner
 	std::vector<glm::vec3> spawn_loc{
-                                  glm::vec3(0.0f, 0.0f, 1.0f),
-                                  glm::vec3(0.0f, 0.0f, 1.0f),
-                                  glm::vec3(0.0f, 0.0f, 1.0f),
-                                  glm::vec3(0.0f, 0.0f, 1.0f)
+								  //top left
+                                  glm::vec3(-0.169116f, 0.0f, -19.966980f),
+								  //bottom left
+                                  glm::vec3(-0.271529f, 0.0f, 75.787369f),
+								  //bottom right
+                                  glm::vec3(154.582565f, 0.0f, 75.737686f),
+                                  glm::vec3(154.779358f, 0.0f, -18.759279f)
                                   };
 
 	// constructor
