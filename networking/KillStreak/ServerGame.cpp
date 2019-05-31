@@ -459,6 +459,29 @@ ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsig
 	char buf[10000] = { 0 };
 	char * bufPtr = buf;
 
+	// serialize all usernames; PlayerMeta.username
+	unordered_map<unsigned int, PlayerMetadata*>::iterator p_it = playerMetadatas->begin();
+	while (p_it != playerMetadatas->end())
+	{
+		unsigned int client_id		= p_it->first;			
+		PlayerMetadata* player_meta = p_it->second;
+
+		// int username_size    = (player_meta->username).length();
+		// const char* username = player_meta->username.c_str();
+		char truncUsername[16] = { 0 };
+		memcpy(truncUsername, (player_meta->username).c_str(), (player_meta->username).length());
+
+		// serialize username 
+		memcpy(bufPtr, truncUsername, 16);
+		bufPtr += 16;
+
+		//// serialize username
+		//memcpy(bufPtr, username, username_size);
+		//bufPtr += username_size;
+
+		p_it++;
+	}
+
 	memcpy(bufPtr, &playerId, sizeof(unsigned int));
 	bufPtr += sizeof(unsigned int);
 	memcpy(bufPtr, &playerRootId, sizeof(unsigned int));

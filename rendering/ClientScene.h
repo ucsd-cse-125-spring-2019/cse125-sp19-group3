@@ -32,6 +32,9 @@ public:
 	int height;
 	glm::vec3 initCamPos;
 	std::unordered_map<unsigned int, Transform *> clientSceneGraphMap;
+
+	vector<string> usernames;		// list of all player usernames ordered by index of client id on server
+
 	GLuint particleTexture;
 	void initialize_objects(ClientGame * game, ClientNetwork* network, LeaderBoard* leaderBoard);
 	void initialize_skills(ArcheType selected_type);

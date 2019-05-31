@@ -10,9 +10,28 @@ const char * intToCharArray(int i) {
 	return s.c_str();
 }
 
-static void ui_leaderboard(struct nk_context *ctx, struct media *media) {
-	static const char *items[] = { "Player 0","Player 1","Player 2","Player 3" };
-	static const int points[] = { 15,40,30,10 };
+
+// order leaderboard by kills, most first
+static void ui_leaderboard(struct nk_context *ctx, struct media *media, LeaderBoard* leaderBoard) {
+
+	/* 
+	* 1.) Need to send all player usernames to clients
+	* --> Can send in init scene packet and store in vector by index of client id
+	*		NOTE: currentKills in leaderboad ordered by client id
+	*			** Can send usernames initscene & put in vector by client id on server
+	*			** Then client can associate index in kills vector to index in usernames
+	* --> OR can serialize in every server tick packet 
+	*
+	* 2.) 
+	*/
+
+	// TODO: Order *items by highest kills first 
+
+	// update this to player usernames
+	static char *items[] = { "Player 0","Player 1","Player 2","Player 3" };
+
+	// update this to player scores
+	static int points[] = { 15,40,30,10 };
 
 	if (nk_begin(ctx, "Leaderboard", nk_rect(10, 10, 300, 300),
 		NK_WINDOW_BORDER | NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
@@ -86,10 +105,11 @@ static void ui_skills(struct nk_context *ctx, struct media *media, int width, in
 	nk_end(ctx);
 }
 static void
-kill_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, vector<nanoseconds> skill_timers) {
+kill_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player,
+	vector<nanoseconds> skill_timers, LeaderBoard* leaderBoard) {
 	
 	set_style(ctx, THEME_BLACK);
-	ui_leaderboard(ctx, media);
+	ui_leaderboard(ctx, media, leaderBoard);
 
 	ui_skills(ctx, media,  width,  height, player, skill_timers);
 }
