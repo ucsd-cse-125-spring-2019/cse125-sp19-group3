@@ -466,18 +466,12 @@ ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsig
 		unsigned int client_id		= p_it->first;			
 		PlayerMetadata* player_meta = p_it->second;
 
-		// int username_size    = (player_meta->username).length();
-		// const char* username = player_meta->username.c_str();
 		char truncUsername[16] = { 0 };
 		memcpy(truncUsername, (player_meta->username).c_str(), (player_meta->username).length());
 
-		// serialize username 
+		// serialize sizusername 
 		memcpy(bufPtr, truncUsername, 16);
 		bufPtr += 16;
-
-		//// serialize username
-		//memcpy(bufPtr, username, username_size);
-		//bufPtr += username_size;
 
 		p_it++;
 	}
