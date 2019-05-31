@@ -312,10 +312,12 @@ void ClientGame::run() {
 		}
 		else {
 			// Prepare Phase
-			auto now = Clock::now();
-			prepareTimer -= chrono::duration_cast<nanoseconds>(now - currentTime);
-			currentTime = now;
+			auto start = Clock::now();
+			
 			Window_static::display_callback(window);
+			auto end = Clock::now();
+			prepareTimer -= chrono::duration_cast<nanoseconds>(end - start);
+			
 		}
 
 		

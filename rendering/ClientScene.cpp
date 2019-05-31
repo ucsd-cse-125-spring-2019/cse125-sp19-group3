@@ -354,7 +354,7 @@ void ClientScene::renderPreparePhase(GLFWwindow* window) {
 	/* Input */
 	glfwPollEvents();
 	nk_glfw3_new_frame();
-	prepare_layout(ctx, &media, ClientScene::width, ClientScene::height, &this->player);
+	prepare_layout(ctx, &media, ClientScene::width, ClientScene::height, &this->player, game);
 
 	nk_glfw3_render(NK_ANTI_ALIASING_OFF, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
 
