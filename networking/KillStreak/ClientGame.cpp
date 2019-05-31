@@ -249,6 +249,16 @@ int ClientGame::waitingInitScene() {
 	return 1;
 }
 
+int ClientGame::waitingPrepareScene() {
+	// TODO: waiting for prepare phase packets
+	currPhase = PREPARE;
+	std::chrono::seconds sec(10);
+	prepareTimer = nanoseconds(sec);
+	currentTime = Clock::now();
+	setup_callbacks(currPhase);
+	return 1;
+}
+
 void ClientGame::run() {
 	auto log = logger();
 	log->info("Client running...");
@@ -302,6 +312,9 @@ void ClientGame::run() {
 		}
 		else {
 			// Prepare Phase
+			auto now = Clock::now();
+			prepareTimer -= chrono::duration_cast<nanoseconds>(now - currentTime);
+			currentTime = now;
 			Window_static::display_callback(window);
 		}
 

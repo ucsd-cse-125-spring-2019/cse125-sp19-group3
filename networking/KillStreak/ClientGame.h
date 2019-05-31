@@ -22,6 +22,7 @@ public:
 	int handleCharacterSelectionPacket(ServerInputPacket* packet);
 	int sendCharacterSelection(string username, ArcheType character);
 	int waitingInitScene();
+	int waitingPrepareScene();
 	// initialize packet 
 	ClientInputPacket createClientInputPacket(InputType type, Point finalLocation, int skill_id);
 	ClientInputPacket createMovementPacket(Point newLocation);
@@ -38,6 +39,8 @@ protected:
 	ServerInputQueue* serverPackets;	// queue of packets from server
 	mutex* q_lock;						        // lock for queue
 	vector<int> cooldown_times;
+	nanoseconds prepareTimer;
+	chrono::steady_clock::time_point currentTime;
 
 	LeaderBoard* leaderBoard;
 
