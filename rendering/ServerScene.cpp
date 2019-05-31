@@ -525,7 +525,6 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			// TODO: Possibly modfiy 'createSceneProjectile' to handle this specific case, will need to update dirAOE.node-> scale...
 			// can define a default value that will state what to do
 			nodeIdCounter++;
-			initPoint = scenePlayers[player_id].currentPos + Point({ 0.0f, 5.0f, 0.0f });
 			SceneProjectile dirAOE = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range);
 			dirAOE.node->scale = glm::scale(glm::mat4(1.0f), Point(0.08f, 0.08f, 0.08f));
 			serverSceneGraphMap.insert({ nodeIdCounter, dirAOE.node });
