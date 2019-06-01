@@ -41,6 +41,8 @@ ServerGame::ServerGame(string host, string port, double tick_rate)
 	playerMetadatas     = new unordered_map<unsigned int, PlayerMetadata*>();
 	archetype_skillset  = new unordered_map<ArcheType, vector<unsigned int>>();
 
+	usernames = vector<string>(GAME_SIZE);
+
 	// initialize global skill map; load skills from config into skills maps
 	readMetaDataForSkills();	
 
@@ -50,6 +52,7 @@ ServerGame::ServerGame(string host, string port, double tick_rate)
 	scheduledEvent = ScheduledEvent(END_KILLPHASE, 10000000); // default huge value
 
 	char_select_lock = new mutex();
+
 }
 
 
@@ -305,6 +308,7 @@ void ServerGame::game_match()
 		unsigned int client_id = client_data->id;
 		unordered_map<unsigned int, PlayerMetadata*>::iterator m_it = playerMetadatas->find(client_id);
 		ArcheType cur_type = m_it->second->type;
+		usernames[client_id] = m_it->second->username;		// set username
 		scene->addPlayer(client_id, cur_type);
 	}
 
@@ -460,20 +464,18 @@ ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsig
 	char * bufPtr = buf;
 
 	// serialize all usernames; PlayerMeta.username
-	unordered_map<unsigned int, PlayerMetadata*>::iterator p_it = playerMetadatas->begin();
-	while (p_it != playerMetadatas->end())
+	for (int client_id = 0; client_id < usernames.size(); client_id++)
 	{
-		unsigned int client_id		= p_it->first;			
-		PlayerMetadata* player_meta = p_it->second;
+		unordered_map<unsigned int, PlayerMetadata*>::iterator m_it = playerMetadatas->find(client_id);
+		PlayerMetadata* player_meta = m_it->second;
 
 		char truncUsername[16] = { 0 };
-		memcpy(truncUsername, (player_meta->username).c_str(), (player_meta->username).length());
+		memcpy(truncUsername, usernames[client_id].c_str(), (player_meta->username).length());
 
 		// serialize sizusername 
 		memcpy(bufPtr, truncUsername, 16);
 		bufPtr += 16;
 
-		p_it++;
 	}
 
 	memcpy(bufPtr, &playerId, sizeof(unsigned int));

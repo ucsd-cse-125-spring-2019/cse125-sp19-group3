@@ -72,6 +72,7 @@ protected:
 	unordered_map<unsigned int, PlayerMetadata*> *playerMetadatas;				// map client_id to player meta_data
 	unordered_map<ArcheType, int> *selected_characters;							// Map selected character to client_id
 	unordered_map<ArcheType, vector<unsigned int>> *archetype_skillset;
+	vector<string> usernames;				// list of all client usernames indexed by client id
 
 	ServerScene * scene;
 	ServerNetwork* network;					// ptr to servers network
