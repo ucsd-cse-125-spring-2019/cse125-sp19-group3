@@ -317,7 +317,6 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 
 	// award kill & points to killer
 	leaderBoard->awardKill(killer_id);
-	leaderBoard->awardPoint(killer_id);
 
 }
 
