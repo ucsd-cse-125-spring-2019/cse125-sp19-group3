@@ -48,6 +48,7 @@ static void ui_killphase_header(struct nk_context *ctx, struct media *media, int
 		string roundStr = "ROUND: " + std::to_string(roundnum);
 		const char * round_char = roundStr.c_str();
 
+		string goldStr = std::to_string(gold);
 		string vicPtsStr = std::to_string(victory_points);
 		const char * gold_char = goldStr.c_str();
 		const char * vic_char = vicPtsStr.c_str();
