@@ -535,7 +535,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			nodeIdCounter++;
 			initPoint = initPoint + glm::vec3({ 0.0f, 30.0f, 0.0f });
 			SceneProjectile dirAOE = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range);
-			dirAOE.node->scale = glm::scale(glm::mat4(1.0f), Point(0.08f, 0.08f, 0.08f));
+			dirAOE.node->scale = glm::scale(glm::mat4(1.0f), Point(0.4f, 0.4f, 0.4f));
 			serverSceneGraphMap.insert({ nodeIdCounter, dirAOE.node });
 			skills.push_back(dirAOE);
 			break;

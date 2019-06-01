@@ -35,6 +35,53 @@ static void ui_leaderboard(struct nk_context *ctx, struct media *media) {
 	}
 	nk_end(ctx);
 }
+
+static void ui_killphase_header(struct nk_context *ctx, struct media *media, int width, int height, int roundnum, int gold, int victory_points) {
+	struct nk_style *s = &ctx->style;
+	nk_style_push_color(ctx, &s->window.background, nk_rgba(0, 0, 0, 0));
+	nk_style_push_style_item(ctx, &s->window.fixed_background, nk_style_item_color(nk_rgba(0, 0, 0, 0)));
+	int x_offset = (310 > width*0.3) ? 310 : width * 0.85;
+	if (nk_begin(ctx, "kill_header", nk_rect(x_offset, 10, width * 0.15, width * 0.09+65),
+		NK_WINDOW_NO_SCROLLBAR))
+	{
+		static const float ratio[] = { 0.3f,0.3f, 0.4f };  /* 0.3 + 0.4 + 0.3 = 1 */
+		string roundStr = "ROUND: " + std::to_string(roundnum);
+		const char * round_char = roundStr.c_str();
+
+		string vicPtsStr = std::to_string(victory_points);
+		const char * gold_char = goldStr.c_str();
+		const char * vic_char = vicPtsStr.c_str();
+		nk_style_set_font(ctx, &(media->font_64->handle));
+		nk_layout_row_dynamic(ctx, 65, 1);
+		nk_label(ctx, round_char, NK_TEXT_RIGHT | NK_TEXT_ALIGN_CENTERED);
+		nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
+
+		nk_layout_row(ctx, NK_DYNAMIC, width * 0.07,3, ratio);
+
+		nk_spacing(ctx, 1);
+		if (nk_group_begin(ctx, "icons", NK_WINDOW_NO_SCROLLBAR)) { // column 1
+			nk_layout_row_static(ctx, 48, 48, 1);
+			nk_image(ctx, media->gold);
+			nk_layout_row_static(ctx, 20, 1, 1);
+			nk_layout_row_static(ctx, 48, 48, 1);
+			nk_image(ctx, media->points);
+		}
+		nk_group_end(ctx);
+
+		if (nk_group_begin(ctx, "nums", NK_WINDOW_NO_SCROLLBAR)) { // column 1
+			nk_layout_row_static(ctx, 48, 48, 1);
+			nk_label(ctx, gold_char, NK_TEXT_RIGHT | NK_TEXT_ALIGN_CENTERED);
+			nk_layout_row_static(ctx, 20, 1, 1);
+			nk_layout_row_static(ctx, 48, 48, 1);
+			nk_text(ctx, vic_char, strlen(vic_char), NK_TEXT_RIGHT | NK_TEXT_ALIGN_CENTERED);
+		}
+		nk_group_end(ctx);
+	}
+	nk_end(ctx);
+	nk_style_pop_color(ctx);
+	nk_style_pop_style_item(ctx);
+}
+
 static void ui_skills(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, vector<nanoseconds> skill_timers) {
 	/*
 	Q --> Directional Skill (with the exception of King)
@@ -48,14 +95,18 @@ static void ui_skills(struct nk_context *ctx, struct media *media, int width, in
 	static const char *key_bindings[] = { "Q","W","E","R" };
 	static const unsigned int sequential_bindings[] = { DIR_SKILL_INDEX , OMNI_SKILL_INDEX , EVADE_INDEX , PROJ_INDEX };
 	static int op = HUMAN;
-	if (nk_begin(ctx, "skills", nk_rect(width*0.3,  height*0.83, width*0.4, height*0.17),
-		NK_WINDOW_BORDER| NK_WINDOW_NO_SCROLLBAR))
+	struct nk_style *s = &ctx->style;
+	nk_style_push_color(ctx, &s->window.background, nk_rgba(0, 0, 0, 0));
+	nk_style_push_style_item(ctx, &s->window.fixed_background, nk_style_item_color(nk_rgba(0, 0, 0, 0)));
+	nk_style_set_font(ctx, &(media->font_64->handle));
+	if (nk_begin(ctx, "skills", nk_rect(width*0.3,  height*0.84, width*0.4, height*0.16),
+		NK_WINDOW_NO_SCROLLBAR))
 	{
 		static const float ratio[] = { 0.143f,0.143f, 0.143f,0.143f, 0.143f,0.143f, 0.142f };  /* 0.3 + 0.4 + 0.3 = 1 */
 		nk_layout_row(ctx, NK_DYNAMIC, height *0.16, 7, ratio);
 		ArcheType type = player->modelType; 
 		for (int i = 0; i < 4; i++) {
-			if (nk_group_begin(ctx, key_bindings[i], NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR)) { // column 1
+			if (nk_group_begin(ctx, key_bindings[i], NK_WINDOW_NO_SCROLLBAR)) { // column 1
 				nk_layout_row_dynamic(ctx, width *0.05, 1); // nested row
 				std::chrono::nanoseconds nanoSecs = skill_timers[sequential_bindings[i]];
 				if (nanoSecs > std::chrono::seconds::zero()){
@@ -84,14 +135,17 @@ static void ui_skills(struct nk_context *ctx, struct media *media, int width, in
 
 	}
 	nk_end(ctx);
+	nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
+	nk_style_pop_color(ctx);
+	nk_style_pop_style_item(ctx);
 }
 static void
 kill_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, vector<nanoseconds> skill_timers) {
 	
 	set_style(ctx, THEME_BLACK);
 	ui_leaderboard(ctx, media);
-
 	ui_skills(ctx, media,  width,  height, player, skill_timers);
+	ui_killphase_header(ctx, media, width, height, 1, 10, 2);
 }
 
 static  void

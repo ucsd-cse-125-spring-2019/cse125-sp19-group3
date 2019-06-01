@@ -157,6 +157,7 @@ void ClientScene::initialize_UI(GLFWwindow* window) {
 	media.font_64 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/Roboto-Regular.ttf", 64.0f, &cfg);
 	nk_glfw3_font_stash_end();
 	}
+	glfw.atlas.default_font = media.font_22;
 	nk_style_set_font(ctx, &(media.font_22->handle));
 	//create media
 	media.mage = icon_load("../icon/mage_icon.png");
@@ -164,6 +165,8 @@ void ClientScene::initialize_UI(GLFWwindow* window) {
 	media.king = icon_load("../icon/king_icon.png");
 	media.warrior = icon_load("../icon/warrior_icon.png");
 
+	media.points = icon_load("../icon/trophy.png");
+	media.gold = icon_load("../icon/gold.png");
 	media.mage_skills[2] = icon_load("../icon/skills/evade.png");
 	media.mage_skills[3] = icon_load("../icon/skills/projectile.png");
 	media.mage_skills[1] = icon_load("../icon/skills/mage-aoe.png");
@@ -314,14 +317,18 @@ void ClientScene::resize_callback(GLFWwindow* window, int width, int height)
 		camera->SetAspect((float)width / (float)height);
 	}
 	if (width < 600) {
+		glfw.atlas.default_font = media.font_14;
 		nk_style_set_font(ctx, &(media.font_14->handle));
 	} else if(width < 900) {
+		glfw.atlas.default_font = media.font_18;
 		nk_style_set_font(ctx, &(media.font_18->handle));
 	}
 	else if (width < 1200) {
+		glfw.atlas.default_font = media.font_22;
 		nk_style_set_font(ctx, &(media.font_22->handle));
 	}
 	else {
+		glfw.atlas.default_font = media.font_32;
 		nk_style_set_font(ctx, &(media.font_32->handle));
 	}
 }
