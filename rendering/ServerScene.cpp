@@ -229,8 +229,6 @@ void ServerScene::update()
 
 	// check for collisions on all alive players
 	for (auto& element : scenePlayers) {
-
-		
 		unsigned int player_id = element.first;		
 
 		// get player metadata		
@@ -243,46 +241,14 @@ void ServerScene::update()
 			checkAndHandlePlayerCollision(player_id);	
 		}
 
-		/* NOTE: Moving this inside above condition will NOT allow dead player to move once hit
-				But they can still attack.
-		*/
 		element.second.update();		
+	}
 
+	// set movement mode on all players accordingly
+	for (auto& element : scenePlayers) {
+		element.second.movementMode = element.second.currentPos == element.second.destination ? idle : run;
 	}
 }
-
-
-/*
-
-	XXX Need to CREATE a leaderboard first and save it in server object?
-		XXX For the current game, allocate new board and init. all player values
-		XXX Add pointer to leaderboard in ServerScene
-		XXX Create function in PlayerData.cpp that updates kill score for index
-		XXX Test updating leaderBoard when client hit & see if server processes it correctly
-				I.E. correct client gets correct point, etc..
-
-	XXX Append leaderboard to EVERY server tick packet, broadcasting to all clients on 
-		every tick.
-
-		XXX In the main server loop just put the leaderboard into a packet and send
-			it to all the clients 
-
-	3. Update leader board on the server side when a player gets hit (this function!!!)
-		XXX The player who killed this player needs to get a point
-		XXX Access player meta data map & check if player is alive before processing hit detection
-		XXX Set player as 'dead' when hit by projectile by access MetaData
-		XXX update killstreak/losestreak of both players
-		XXX update gold accordingly
-			*** How much do we award for gold? How does gold logic work? 
-
-	4. Server needs to put this player to sleep for 3 seconds or something (also this function??)
-		XXX Tell client they're dead! 
-		--> After 3 seconds send packet waking player up with new location that 
-				doesn't hit any other objects. (Check hit detection logic)
-		--> Possibly make new packet type? Respawn packet?
-		--> Code to update location: player.setDestination(player.currentPos);	
-
-*/
 
 /*
 	Player has been hit, handle death...
@@ -294,6 +260,8 @@ void ServerScene::update()
 void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int killer_id)
 {
 	logger()->debug("Player {} killed player {}", killer_id, dead_player.player_id);
+	// set animation mode on dead player
+	dead_player.animationMode = die;
 
 	// get dead_players metadata 
 	unsigned int player_id = dead_player.player_id;
@@ -400,6 +368,7 @@ void ServerScene::createSceneProjectile(unsigned int player_id, Point finalPoint
 */
 void ServerScene::handlePyroBlast(unsigned int player_id, Point finalPoint, Point initPoint, Skill adjustedSkill)
 {
+
 	for (float z = -1; z < 2; z++) {
 		for (float x = -1; x < 2; x++) {
 			if (x == 0 && z == 0) continue;		// only shoot left and right from center
@@ -523,14 +492,16 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 		}
 		case PYROBLAST:
 		{
+			// set animation mode so everyone can see you're pyroblasting
+			scenePlayers[player_id].animationMode = skill_1;
 			handlePyroBlast(player_id, finalPoint, initPoint, adjustedSkill);
 			break;
 		}
 		case DRAGONS_BREATH:
 		{
-
-			// TODO: Possibly modfiy 'createSceneProjectile' to handle this specific case, will need to update dirAOE.node-> scale...
-			// can define a default value that will state what to do
+			
+			// set animation mode so everyone can see your dragon breath state
+			scenePlayers[player_id].animationMode = skill_2;
 			nodeIdCounter++;
 			initPoint = initPoint + glm::vec3({ 0.0f, 30.0f, 0.0f });
 			SceneProjectile dirAOE = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range);
@@ -540,9 +511,13 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			break;
 		}
 		case WHIRLWIND:
+			// set animation mode
+			scenePlayers[player_id].animationMode = skill_1;
 			handleWhirlWind(player_id, finalPoint, initPoint, adjustedSkill);
 			break;
 		case ROYAL_CROSS:
+			// set animation mode
+			scenePlayers[player_id].animationMode = skill_1;
 			handleRoyalCross(player_id, finalPoint, initPoint, adjustedSkill);
 			break;
 		case INVISIBILITY:
@@ -563,6 +538,8 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			// TODO: delay this skill by a bit to let animations/particle fx to play
 			// and then do hitbox calculations
 
+			// set animation mode
+			scenePlayers[player_id].animationMode = skill_2;
 			auto& king = scenePlayers[player_id];
 
 			// grab all players who are in the range of the skill.
