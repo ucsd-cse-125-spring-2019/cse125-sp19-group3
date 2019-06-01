@@ -145,16 +145,16 @@ void ClientScene::initialize_UI(GLFWwindow* window) {
 	struct nk_font_config cfg = nk_font_config(0);
 	struct nk_font_atlas *atlas;
 	nk_glfw3_font_stash_begin(&atlas);
-	media.font_14 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/ProggyClean.ttf", 14.0f, &cfg);
+	media.font_14 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/PermanentMarker-Regular.ttf", 14.0f, &cfg);
 
-	media.font_18 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/Roboto-Regular.ttf", 18.0f, &cfg);
+	media.font_18 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/PermanentMarker-Regular.ttf", 18.0f, &cfg);
 
-	media.font_20 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/Roboto-Regular.ttf", 20.0f, &cfg);
+	media.font_20 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/PermanentMarker-Regular.ttf", 20.0f, &cfg);
 
-	media.font_22 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/Roboto-Regular.ttf", 22.0f, &cfg);
-	media.font_32 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/Roboto-Regular.ttf", 32.0f, &cfg);
+	media.font_22 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/PermanentMarker-Regular.ttf", 22.0f, &cfg);
+	media.font_32 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/PermanentMarker-Regular.ttf", 32.0f, &cfg);
 
-	media.font_64 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/Roboto-Regular.ttf", 64.0f, &cfg);
+	media.font_64 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/PermanentMarker-Regular.ttf", 64.0f, &cfg);
 	nk_glfw3_font_stash_end();
 	}
 	glfw.atlas.default_font = media.font_22;

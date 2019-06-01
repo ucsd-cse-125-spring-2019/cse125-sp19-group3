@@ -35,7 +35,13 @@ static void ui_leaderboard(struct nk_context *ctx, struct media *media,
 	if (nk_begin(ctx, "Leaderboard", nk_rect(10, 10, 300, 300),
 		NK_WINDOW_BORDER | NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
 	{
-		static const float ratio[] = { 0.2f, 0.15f, 0.40f,0.25f };  /* 0.3 + 0.4 + 0.3 = 1 */
+		static const float ratio[] = { 0.25f, 0.50f,0.25f };  /* 0.3 + 0.4 + 0.3 = 1 */
+		nk_layout_row(ctx, NK_DYNAMIC, 45, 3, ratio);
+		nk_label(ctx, "Rank", NK_TEXT_LEFT);
+
+		// username & points
+		nk_label(ctx, "Name", NK_TEXT_LEFT);
+		nk_label(ctx, "Kills", NK_TEXT_LEFT);
 		for (int i = 0; i < GAME_SIZE; i++) {
 
 			const char * player_id;
@@ -47,9 +53,9 @@ static void ui_leaderboard(struct nk_context *ctx, struct media *media,
 			string point_s = std::to_string(kills[i]);
 			player_point = point_s.c_str();
 
-			nk_layout_row(ctx, NK_DYNAMIC, 45, 4, ratio);
+			nk_layout_row(ctx, NK_DYNAMIC, 45, 3, ratio);
 			nk_text(ctx, player_id, strlen(player_id), NK_TEXT_LEFT);
-			nk_image(ctx, media->king);
+			//nk_image(ctx, media->king);
 
 			// username & points
 			nk_text(ctx, ordered_usernames[i].c_str(), strlen(ordered_usernames[i].c_str()), NK_TEXT_LEFT);
@@ -64,8 +70,7 @@ static void ui_killphase_header(struct nk_context *ctx, struct media *media, int
 	struct nk_style *s = &ctx->style;
 	nk_style_push_color(ctx, &s->window.background, nk_rgba(0, 0, 0, 0));
 	nk_style_push_style_item(ctx, &s->window.fixed_background, nk_style_item_color(nk_rgba(0, 0, 0, 0)));
-	int x_offset = (310 > width*0.3) ? 310 : width * 0.85;
-	if (nk_begin(ctx, "kill_header", nk_rect(x_offset, 10, width * 0.15, width * 0.09+65),
+	if (nk_begin(ctx, "kill_header", nk_rect(width * 0.85, 10, width * 0.15, width * 0.09+65),
 		NK_WINDOW_NO_SCROLLBAR))
 	{
 		static const float ratio[] = { 0.3f,0.3f, 0.4f };  /* 0.3 + 0.4 + 0.3 = 1 */

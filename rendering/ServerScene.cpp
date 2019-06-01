@@ -483,7 +483,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 	// special case of undoing sprint
 	if (skill_id == UNSPRINT) {
 		auto &assassin = scenePlayers[player_id];
-		assassin.speed /= 2; // tweak values later
+		assassin.speed /= 1.5; // tweak values later
 		return;
 	}
 
@@ -555,7 +555,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 		case SPRINT: 
 		{
 			auto &assassin = scenePlayers[player_id];
-			assassin.speed *= 2; // twice as fast, tweak values later
+			assassin.speed *= 1.5; // twice as fast, tweak values later
 			break;
 		}
 		case SUBJUGATION:
