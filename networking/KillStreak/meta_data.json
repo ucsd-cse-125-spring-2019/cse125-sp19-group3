@@ -4,9 +4,9 @@
       "skill_id": 0,
       "initial_level": 1,
       "skill_name": "EVADE",
-      "cooldown": 10.0,
-      "range": 25.0,
-      "speed": 0.6,
+      "cooldown": 15.0,
+      "range": 0.0,
+      "speed": 0.0,
       "duration": 10.0
     },
     {
@@ -15,7 +15,7 @@
       "skill_name": "PROJECTILE",
       "cooldown": 10.0,
       "range": 25.0,
-      "speed": 0.6,
+      "speed": 0.5,
       "duration": 0.0
     },
     {
@@ -24,7 +24,7 @@
       "skill_name": "PYROBLAST",
       "cooldown": 7.0,
       "range": 30.0,
-      "speed": 0.8,
+      "speed": 0.6,
       "duration": 5.0
     },
     {
@@ -40,9 +40,9 @@
       "skill_id": 11,
       "initial_level": 1,
       "skill_name": "ASSASSIN PROJECTILE",
-      "cooldown": 5.0,
+      "cooldown": 6.0,
       "range": 25.0,
-      "speed": 0.8,
+      "speed": 0.5,
       "duration": 0.0
     },
     {
@@ -57,18 +57,18 @@
     {
       "skill_id": 13,
       "initial_level": 1,
-      "skill_name": "SIXTH SENSE",
-      "cooldown": 5.0,
+      "skill_name": "SPRINT",
+      "cooldown": 15.0,
       "range": 0.0,
-      "speed": 5.0,
-      "duration": 5.0
+      "speed": 0.0,
+      "duration": 10.0
     },
     {
       "skill_id": 22,
       "initial_level": 1,
       "skill_name": "WHIRLWIND",
       "cooldown": 5.0,
-      "range": 3.0,
+      "range": 5.0,
       "speed": 0.8,
       "duration": 5.0
     },
@@ -87,7 +87,7 @@
       "skill_name": "ROYAL CROSS",
       "cooldown": 5.0,
       "range": 25.0,
-      "speed": 0.8,
+      "speed": 0.7,
       "duration": 5.0
     },
     {

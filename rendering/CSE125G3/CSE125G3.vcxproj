@@ -37,6 +37,7 @@
     <ClInclude Include="..\Mesh.h" />
     <ClInclude Include="..\Model.h" />
     <ClInclude Include="..\NuklearInit.h" />
+    <ClInclude Include="..\Particle.h" />
     <ClInclude Include="..\ScenePlayer.h" />
     <ClInclude Include="..\SceneProjectile.h" />
     <ClInclude Include="..\Serialization.h" />
@@ -58,6 +59,7 @@
     <ClCompile Include="..\ClientScene.cpp" />
     <ClCompile Include="..\Cube.cpp" />
     <ClCompile Include="..\Model.cpp" />
+    <ClCompile Include="..\Particle.cpp" />
     <ClCompile Include="..\ScenePlayer.cpp" />
     <ClCompile Include="..\SceneProjectile.cpp" />
     <ClCompile Include="..\Serialization.cpp" />
@@ -75,6 +77,8 @@
     <None Include="..\model_paths.json" />
     <None Include="..\animatedShader.frag" />
     <None Include="..\animatedShader.vert" />
+    <None Include="..\particleShader.frag" />
+    <None Include="..\particleShader.vert" />
     <None Include="..\toonshader.frag" />
     <None Include="..\toonshader.vert" />
     <None Include="packages.config" />
@@ -82,7 +86,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EBF1E546-3F93-49DB-BD9A-B629C3C6DCB0}</ProjectGuid>
     <RootNamespace>CSE125G3</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
     <ProjectName>CSE125G3</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

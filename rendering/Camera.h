@@ -32,6 +32,8 @@ public:
 	float GetIncline()						{return Incline;}
 	float GetDepth();
 
+
+	const glm::mat4 &GetViewMtx() { return  glm::lookAt(cam_pos, cam_look_at, cam_up); }
 	const glm::mat4 &GetViewProjectMtx()	{return ViewProjectMtx;}
 
 	// Default camera parameters

@@ -44,7 +44,7 @@ unsigned int Serialization::serializeAnimationMode(unordered_map<unsigned int, S
 	memcpy(data, &numPlayers, sizeof(unsigned int));
 	data += sizeof(unsigned int);
 	size += sizeof(unsigned int);
-	for (auto p : scenePlayers) {
+	for (auto &p : scenePlayers) {
 		unsigned int modelId = p.second.modelType;
 		int movementMode = p.second.movementMode;
 		int animationMode = p.second.animationMode;
@@ -61,6 +61,65 @@ unsigned int Serialization::serializeAnimationMode(unordered_map<unsigned int, S
 		p.second.animationMode = -1;
 	}
 	return size;
+}
+
+// deserialize one of the leaderbo// serialize leaderboard
+unsigned int Serialization::serializeLeaderBoard(char* lb_data, LeaderBoard* leaderBoard)
+{
+	unsigned int size = 0;
+	for (int i = 0; i < GAME_SIZE; i++)			// kills
+	{
+		memcpy(lb_data, &leaderBoard->currentKills[i], sizeof(int));
+		size += sizeof(int);
+		lb_data += sizeof(int);
+	}
+	for (int i = 0; i < GAME_SIZE; i++)			// points
+	{
+		memcpy(lb_data, &leaderBoard->currPoints[i], sizeof(int));
+		size += sizeof(int);
+		lb_data += sizeof(int);
+	}
+	for (int i = 0; i < GAME_SIZE; i++)			// prizes
+	{
+		memcpy(lb_data, &leaderBoard->prizes[i], sizeof(int));
+		size += sizeof(int);
+		lb_data += sizeof(int);
+	}
+
+	memcpy(lb_data, &leaderBoard->prizeChange, sizeof(float));
+	size += sizeof(float);
+
+	return size;
+}
+
+// deserialize leaderboard
+unsigned int Serialization::deserializeLeaderBoard(char* lb_data, LeaderBoard* leaderBoard)
+{
+	unsigned int sz = 0;
+
+	for (int i = 0; i < GAME_SIZE; i++)		// kills
+	{
+		memcpy(&leaderBoard->currentKills[i], lb_data, sizeof(int));
+		lb_data += sizeof(int);
+		sz += sizeof(int);
+	}
+	for (int i = 0; i < GAME_SIZE; i++)		// points
+	{
+		memcpy(&leaderBoard->currPoints[i], lb_data, sizeof(int));
+		lb_data += sizeof(int);
+		sz += sizeof(int);
+	}
+	for (int i = 0; i < GAME_SIZE; i++)		// prizes
+	{
+		memcpy(&leaderBoard->prizes[i], lb_data, sizeof(int));
+		lb_data += sizeof(int);
+		sz += sizeof(int);
+	}
+
+	memcpy(&leaderBoard->prizeChange, lb_data, sizeof(float));
+	sz += sizeof(float);
+
+	return sz;
 }
 
 // must make sure that the first field in a serialized node is the node_id
@@ -82,7 +141,7 @@ unordered_set<unsigned int> compareSets(unordered_set<unsigned int> set1, unorde
 }
 
 
-Transform * Serialization::deserializeSceneGraph(char *data, unordered_map<unsigned int, Transform *> &clientSceneGraphMap) {
+Transform * Serialization::deserializeSceneGraph(char *data, unordered_map<unsigned int, Transform *> &clientSceneGraphMap, GLuint particleTexture, Shader * particleShader) {
 	Transform * root = NULL;
 	unsigned int numNodes;
 	memcpy(&numNodes, data, sizeof(unsigned int));
@@ -94,7 +153,7 @@ Transform * Serialization::deserializeSceneGraph(char *data, unordered_map<unsig
 		if (clientSceneGraphMap.count(node_id) != 0) {
 			Transform * node = clientSceneGraphMap[node_id];
 			std::unordered_set<unsigned int> oldChildren = node->children_ids;
-			size = node->deserializeAndUpdate(data);
+			size = node->deserializeAndUpdate(data, particleShader, particleTexture);
 			std::unordered_set<unsigned int> newChildren = node->children_ids;
 			auto toDelete = compareSets(oldChildren, newChildren);
 			for (auto element : toDelete) {
@@ -106,7 +165,7 @@ Transform * Serialization::deserializeSceneGraph(char *data, unordered_map<unsig
 		}
 		else {
 			Transform * newNode = new Transform();
-			size = newNode->deserializeAndUpdate(data);
+			size = newNode->deserializeAndUpdate(data, particleShader, particleTexture);
 			clientSceneGraphMap.insert({ node_id, newNode });
 			if (!root) {
 				root = newNode;
@@ -118,7 +177,7 @@ Transform * Serialization::deserializeSceneGraph(char *data, unordered_map<unsig
 }
 
 // Serialize the players' animation mode
-char * Serialization::deserializeAnimationMode(char *data, vector<pair<unsigned int, vector<int>>> &animationModes) {
+char * Serialization::deserializeAnimationMode(char *data, vector<pair<unsigned int, vector<int>>> &animationModes) { // TODO: maybe change to a map of vectors?
 	unsigned int numPlayers;
 	memcpy(&numPlayers, data, sizeof(unsigned int));
 	data += sizeof(unsigned int);

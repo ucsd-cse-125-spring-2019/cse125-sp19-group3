@@ -23,15 +23,35 @@ public:
 	int width;
 	int height;
 
+	// pointers to servers leaderBoard & player metadata map
+	LeaderBoard* leaderBoard;		
+	unordered_map<unsigned int, PlayerMetadata*>* playerMetadatas;	
+
 	unordered_map<unsigned int, ScenePlayer> scenePlayers;
+
 	//for player and projectiles
 	unordered_map<unsigned int, float> model_radius;
+
 	//for envs
 	std::unordered_map<unsigned int, Point> model_boundingbox;
 	std::vector<Transform *> env_objs;
 	std::vector<SceneProjectile> skills;
-	ServerScene();
+  //TODO: fill in the four corner
+	std::vector<glm::vec3> spawn_loc{
+								  //top left
+                                  glm::vec3(-0.169116f, 0.0f, -19.966980f),
+								  //bottom left
+                                  glm::vec3(-0.271529f, 0.0f, 75.787369f),
+								  //bottom right
+                                  glm::vec3(154.582565f, 0.0f, 75.737686f),
+								  //top right
+                                  glm::vec3(154.779358f, 0.0f, -18.759279f)
+                                  };
+
+	// constructor
+	ServerScene(LeaderBoard* leaderBoard, unordered_map<unsigned int, PlayerMetadata*>* playerMetadatas);
 	~ServerScene();
+
 	void addPlayer(unsigned int playerId, ArcheType modelType);
 	void update();
 	void handlePlayerMovement(unsigned int player_id, glm::vec3 destination);
@@ -50,9 +70,12 @@ public:
 
 	void handlePlayerSkill(unsigned int player_id, 
 		                   Point finalPoint, 
-		                   unsigned int skill_id, 
+		                   int skill_id, 
 		                   unordered_map<unsigned int, Skill> *skill_map,
-		                   PlayerMetadata &playerMetadata);
+		                   PlayerMetadata* playerMetadata);
+
+	void handlePlayerDeath(ScenePlayer &player, unsigned int killer_id);
+	void handlePlayerRespawn(unsigned int client_id);
 
 	void checkAndHandlePlayerCollision(unsigned int playerId);
 	/*unsigned int serializeInitScene(char* data, unsigned int playerId, unsigned int playerRootId);

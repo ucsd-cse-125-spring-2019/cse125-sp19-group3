@@ -18,7 +18,7 @@ void ScenePlayer::rotate(float angle, glm::vec3 axis) {
 void ScenePlayer::move() {
 	//printf("dest::%f %f %f\n", destination.x, destination.y, destination.z);
 	glm::vec3 forwardVector = destination - currentPos;
-	if (glm::length(forwardVector) > 0.2f) {
+	if (glm::length(forwardVector) > 0.3f) {
 		forwardVector = glm::normalize(forwardVector);
 		//printf("forward to: %f %f %f\n", forwardVector.x, forwardVector.y, forwardVector.z);
 		//moving forward :

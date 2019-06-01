@@ -10,14 +10,16 @@ using json = nlohmann::json;
 #define DEFAULT_Z 666
 
 // skill_id's
+#define UNEVADE            -1
 #define EVADE				0
 #define PROJECTILE			1
 #define PYROBLAST			2
 #define DRAGONS_BREATH		3
 #define ASSASSIN_PROJECTILE	11
 #define INVISIBILITY		12
-#define SIXTH_SENSE			13
-#define VISIBILITY           14
+#define SPRINT			    13
+#define VISIBILITY          14
+#define UNSPRINT            15
 #define WHIRLWIND			22
 #define CHARGE				23
 #define ROYAL_CROSS			32
@@ -25,7 +27,7 @@ using json = nlohmann::json;
 #define UNSILENCE           34
 
 
-ServerScene::ServerScene()
+ServerScene::ServerScene(LeaderBoard* leaderBoard, unordered_map<unsigned int, PlayerMetadata*>* playerMetadatas)
 {
 	root = new Transform(0, glm::mat4(1.0f));
 	serverSceneGraphMap.insert({ root->node_id, root });
@@ -37,6 +39,9 @@ ServerScene::ServerScene()
 	skillRoot = new Transform(nodeIdCounter, glm::mat4(1.0f));
 	serverSceneGraphMap.insert({ skillRoot->node_id, skillRoot });
 	root->addChild(nodeIdCounter);
+
+	this->leaderBoard = leaderBoard;	
+	this->playerMetadatas = playerMetadatas;
 
 	initModelPhysics();
 }
@@ -221,28 +226,128 @@ void ServerScene::update()
 			skillIter++;
 		}
 	}
+
+	// check for collisions on all alive players
 	for (auto& element : scenePlayers) {
-		checkAndHandlePlayerCollision(element.first);
-		element.second.update();
+
+		
+		unsigned int player_id = element.first;		
+
+		// get player metadata		
+		unordered_map<unsigned int, PlayerMetadata*>::iterator s_it = playerMetadatas->find(player_id);
+		PlayerMetadata* player_data = s_it->second;
+
+		// check collision for alive players
+		if (player_data->alive)	
+		{
+			checkAndHandlePlayerCollision(player_id);	
+		}
+
+		/* NOTE: Moving this inside above condition will NOT allow dead player to move once hit
+				But they can still attack.
+		*/
+		element.second.update();		
+
 	}
 }
 
+
+/*
+
+	XXX Need to CREATE a leaderboard first and save it in server object?
+		XXX For the current game, allocate new board and init. all player values
+		XXX Add pointer to leaderboard in ServerScene
+		XXX Create function in PlayerData.cpp that updates kill score for index
+		XXX Test updating leaderBoard when client hit & see if server processes it correctly
+				I.E. correct client gets correct point, etc..
+
+	XXX Append leaderboard to EVERY server tick packet, broadcasting to all clients on 
+		every tick.
+
+		XXX In the main server loop just put the leaderboard into a packet and send
+			it to all the clients 
+
+	3. Update leader board on the server side when a player gets hit (this function!!!)
+		XXX The player who killed this player needs to get a point
+		XXX Access player meta data map & check if player is alive before processing hit detection
+		XXX Set player as 'dead' when hit by projectile by access MetaData
+		XXX update killstreak/losestreak of both players
+		XXX update gold accordingly
+			*** How much do we award for gold? How does gold logic work? 
+
+	4. Server needs to put this player to sleep for 3 seconds or something (also this function??)
+		XXX Tell client they're dead! 
+		--> After 3 seconds send packet waking player up with new location that 
+				doesn't hit any other objects. (Check hit detection logic)
+		--> Possibly make new packet type? Respawn packet?
+		--> Code to update location: player.setDestination(player.currentPos);	
+
+*/
+
+/*
+	Player has been hit, handle death...
+	'dead_player' is the player that was just hit (duh!)
+	'killer_id' is the id of the player that made the kill
+
+	Update each players killstreak/losestreak, assign gold, update leaderboard.
+*/
+void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int killer_id)
+{
+	logger()->debug("Player {} killed player {}", killer_id, dead_player.player_id);
+
+	// get dead_players metadata 
+	unsigned int player_id = dead_player.player_id;
+	unordered_map<unsigned int, PlayerMetadata*>::iterator s_it = playerMetadatas->find(player_id);
+	PlayerMetadata* player_data = s_it->second;
+
+	// set dead_players status to dead, reset killstreak & increment losestreak
+	player_data->alive = false;
+	//player_data->died_this_tick = true;
+	player_data->currKillStreak  = 0;
+	player_data->currLoseStreak += 1;
+
+	// get killers metadata  
+	s_it = playerMetadatas->find(killer_id);
+	PlayerMetadata* killer_data = s_it->second;
+
+	// award killer gold, increment killstreak & reset losestreak 
+	killer_data->gold			+= 1;
+	killer_data->currKillStreak += 1;
+	killer_data->currLoseStreak  = 0;
+
+	// award kill & points to killer
+	leaderBoard->awardKill(killer_id);
+
+}
+
+
 //TODO: Refactoring, moving collision check to player??? Also find radius for various objs.
+/* 
+	Called for each player on every server tick. 
+	playerId is current player we're checking to see if they collided with anything.
+	On collisions must handle death accordingly.
+*/
 void ServerScene::checkAndHandlePlayerCollision(unsigned int playerId) {
 	ScenePlayer &player = scenePlayers[playerId];
 	glm::vec3 forwardVector = (player.destination - player.currentPos)* player.speed;
+
 	if(glm::length(forwardVector)>1)
 		forwardVector = glm::normalize(player.destination - player.currentPos)* player.speed;
+
+	// player - projectile hit detection
 	for (auto& skill : skills) {
-		if (skill.ownerId == playerId) {
+		// don't do hit detection against your own bullets or if the player is evading
+		if (skill.ownerId == playerId || player.isEvading) {
 			continue;
 		}
+
+		// collision detected --> handle player death
 		else if (player.playerRoot->isCollided(forwardVector, model_radius, serverSceneGraphMap, skill.node, model_boundingbox, false)) {
-			player.setDestination(player.currentPos);
-			printf("Player %d killed Player %d \n", skill.ownerId, playerId);
+			handlePlayerDeath(player, skill.ownerId);
 			return;
 		}
 	}
+
 	for (auto& envObj : env_objs) {
 		if (player.playerRoot->isCollided(forwardVector, model_radius, serverSceneGraphMap, envObj, model_boundingbox, true)) {
 			player.setDestination(player.currentPos);
@@ -355,7 +460,7 @@ void ServerScene::handleRoyalCross(unsigned int player_id, Point finalPoint, Poi
 	Handle incoming player skill received from client's incoming packet. Match skill_id and handle skill accordingly.
 */
 void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
-	unsigned int skill_id, unordered_map<unsigned int, Skill> *skill_map, PlayerMetadata &playerMetadata)
+	int skill_id, unordered_map<unsigned int, Skill> *skill_map, PlayerMetadata* playerMetadata)
 {
 	// special case of unsilence
 	if (skill_id == UNSILENCE) {
@@ -368,9 +473,24 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 
 	// special case of undoing invisibility
 	if (skill_id == VISIBILITY) {
+
 		logger()->debug("undo invisibility");
 		int node_id = scenePlayers[player_id].root_id;
 		serverSceneGraphMap[node_id]->enabled = true;
+		return;
+	}
+
+	// special case of undoing sprint
+	if (skill_id == UNSPRINT) {
+		auto &assassin = scenePlayers[player_id];
+		assassin.speed /= 1.5; // tweak values later
+		return;
+	}
+
+	// special case of unevade
+	if (skill_id == UNEVADE) {
+		logger()->debug("{} player stopped evading!", playerMetadata->username);
+		scenePlayers[player_id].isEvading = false; 
 		return;
 	}
 
@@ -381,7 +501,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 		}
 	}
 	// get skill & adjust accordinglyt o level
-	auto level = playerMetadata.skillLevels[skill_id];
+	auto level = playerMetadata->skillLevels[skill_id];
 	unordered_map<unsigned int, Skill>::iterator s_it = skill_map->find(skill_id);
 	Skill cur_skill = s_it->second;
 	Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(cur_skill, level);
@@ -390,6 +510,12 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 	skill_id = (skill_id % 10 == 1) ? 1 : skill_id;		// check if projectile; update skill_id if true
 	switch (skill_id)
 	{
+		case EVADE: 
+		{
+			logger()->debug("{} player is evading!", playerMetadata->username);
+			scenePlayers[player_id].isEvading = true;
+			break;
+		}
 		case PROJECTILE:
 		{
 			createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill);
@@ -406,9 +532,9 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			// TODO: Possibly modfiy 'createSceneProjectile' to handle this specific case, will need to update dirAOE.node-> scale...
 			// can define a default value that will state what to do
 			nodeIdCounter++;
-			initPoint = scenePlayers[player_id].currentPos + Point({ 0.0f, 5.0f, 0.0f });
+			initPoint = initPoint + glm::vec3({ 0.0f, 30.0f, 0.0f });
 			SceneProjectile dirAOE = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range);
-			dirAOE.node->scale = glm::scale(glm::mat4(1.0f), Point(0.08f, 0.08f, 0.08f));
+			dirAOE.node->scale = glm::scale(glm::mat4(1.0f), Point(0.4f, 0.4f, 0.4f));
 			serverSceneGraphMap.insert({ nodeIdCounter, dirAOE.node });
 			skills.push_back(dirAOE);
 			break;
@@ -421,10 +547,15 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			break;
 		case INVISIBILITY:
 		{
-			// be a little sneaky: every time i fire this, just flip the invisibility.
 			// client must send another skill packet after duration is over.
 			int node_id = scenePlayers[player_id].root_id;
 			serverSceneGraphMap[node_id]->enabled = false;
+			break;
+		}
+		case SPRINT: 
+		{
+			auto &assassin = scenePlayers[player_id];
+			assassin.speed *= 1.5; // twice as fast, tweak values later
 			break;
 		}
 		case SUBJUGATION:
@@ -434,9 +565,10 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 
 			auto& king = scenePlayers[player_id];
 
-			// grab all players who are in the range of the skill. @roy not sure if this is the right way to handle hit detection??
+			// grab all players who are in the range of the skill.
 			for (auto& player : scenePlayers) {
-				if (player_id == player.first) {
+				// you can't silence yourself && players that are evading
+				if (player_id == player.first || player.second.isEvading) {
 					continue;
 				}
 				if (glm::length(king.currentPos - player.second.currentPos) <= adjustedSkill.range) {
@@ -454,6 +586,40 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 
 	}
 } 
+
+
+/*
+	Client respawned; set status to alive and find new random location to spawn.
+*/
+void ServerScene::handlePlayerRespawn(unsigned int client_id)
+{
+
+	unordered_map<unsigned int, PlayerMetadata*>::iterator s_it = playerMetadatas->find(client_id);
+	PlayerMetadata* player_data = s_it->second;
+
+	player_data->alive = true;
+	ScenePlayer &player = scenePlayers[client_id];
+  // rand () % range - negative portion
+  // e.g rand() % 20 - 10 -> -10 to 10
+  // x: -9 to 164
+  // z: -28 to 83
+	float x = rand() % 173 - 9;
+	float z = rand() % 111 - 28;
+	glm::vec3 loc = glm::vec3(x, 0.0f, z);
+  glm::vec3 target;
+  float length = std::numeric_limits<float>::infinity();
+  //spawn_loc is defined in ServerScene
+  for(glm::vec3 temp_loc : spawn_loc){
+    float temp_len = glm::length(loc - temp_loc);
+    if (temp_len < length){
+      length = temp_len;
+      target = temp_loc;
+    }
+  }
+  player.playerRoot->translation = glm::translate(glm::mat4(1.0f), target);
+  player.currentPos = target;
+  player.setDestination(target);
+}
 
 
 Transform * ServerScene::getRoot() {

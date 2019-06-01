@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include "Model.h"
 #include "Shader.h"
+#include "Particle.h"
 
 enum RenderMode {
 	COLOR,
@@ -44,16 +45,16 @@ public:
 	std::unordered_set<unsigned int> children_ids;
 	std::unordered_set<unsigned int> model_ids;
 
-	
+	Particles * particle_effect;
 	Transform();
-	Transform(char * data);
+	
 	Transform(unsigned int nodeId, glm::mat4 M);
 	Transform(unsigned int nodeId, glm::mat4 translation, glm::mat4 rotation, glm::mat4 scale);
 
 	void addChild(const unsigned int id);
 	void removeChild(unsigned int id);
 	unsigned int serialize(char * data);
-	unsigned deserializeAndUpdate(char * data);
+	unsigned deserializeAndUpdate(char * data, Shader* particleShader, GLuint particleTexture);
 	void draw(std::unordered_map<unsigned int, ModelData> &models, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx, unordered_map<unsigned int, Transform *> &sceneGraphMap);
 	void update();
 

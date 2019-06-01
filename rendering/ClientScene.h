@@ -10,6 +10,7 @@
 #include "Camera.h"
 #include "Transform.h"
 #include "ScenePlayer.h"
+#include "Particle.h"
 #include "../networking/KillStreak/ClientGame.h"
 #include "../networking/KillStreak/ClientNetwork.hpp"
 #include "../networking/KillStreak/CoreTypes.hpp"
@@ -21,14 +22,22 @@
 #define TOON_VERTEX_SHADER_PATH "../toonshader.vert"
 #define TOON_FRAGMENT_SHADER_PATH "../toonshader.frag"
 
+#define PARTICLE_VERTEX_SHADER_PATH "../particleShader.vert"
+#define PARTICLE_FRAGMENT_SHADER_PATH "../particleShader.frag"
+
 class ClientScene {
 public:
+	Camera * camera;
 	int width;
 	int height;
 	glm::vec3 initCamPos;
 	std::unordered_map<unsigned int, Transform *> clientSceneGraphMap;
 
-	void initialize_objects(ClientGame * game, ClientNetwork* network);
+	vector<ArcheType> archetypes;	// list of all player archetypes
+	vector<string> usernames;		// list of all player usernames ordered by index of client id on server
+
+	GLuint particleTexture;
+	void initialize_objects(ClientGame * game, ClientNetwork* network, LeaderBoard* leaderBoard);
 	void initialize_skills(ArcheType selected_type);
 	//void playerInit(const ScenePlayer &player);
 	void clean_up();
@@ -54,11 +63,11 @@ private:
 	float min_scroll = 20.0f;
 	float max_scroll = 60.0f;
 	const char* window_title = "CSE 125 Group 3";
-	Shader * animationShader, * staticShader;
-	Camera * camera;
+	Shader * animationShader, * staticShader, * particleShader;
 	Model * floor;
 	ScenePlayer player;
 	Transform * root;
+	LeaderBoard* leaderBoard;
 
 	std::unordered_map<unsigned int, ModelData> models;
 	std::unordered_set<unsigned int> updated_ids;
@@ -70,8 +79,11 @@ private:
 	vector<Transform *> env_objs;
 	vector<Skill> personal_skills;
 	vector<nanoseconds> skill_timers;
+	nanoseconds respawn_timer;		// when should client respawn from death
 	nanoseconds animation_timer;
-	nanoseconds skillDurationTimer; // used for invisibility, silence, minimap(??), 
+	nanoseconds skillDurationTimer; // used for invisibility, silence
+	nanoseconds evadeDurationTimer; // used for evade
+	nanoseconds sprintDurationTimer; // used for sprint
 
 	// void removeTransform(Transform * parent, const unsigned int node_id);
 	
@@ -81,7 +93,7 @@ class Window_static
 {
 public:
 	static ClientScene * scene;
-	static void initialize_objects(ClientGame * game, ClientNetwork * network) { scene->initialize_objects(game, network); };
+	static void initialize_objects(ClientGame * game, ClientNetwork * network, LeaderBoard* leaderBoard) { scene->initialize_objects(game, network, leaderBoard); };
 	static void initialize_skills(ArcheType selected_type) { scene->initialize_skills(selected_type); };
 	static void updateTimers(nanoseconds timePassed) { scene->updateTimers(timePassed); };
 	static void initialize_UI(GLFWwindow* window) { scene->initialize_UI(window); };
