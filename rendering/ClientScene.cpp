@@ -695,17 +695,23 @@ void ClientScene::handleServerTickPacket(char * data) {
 		player.isAlive = true;
 	}
 
+	int packetCount;
+	memcpy(&packetCount, data, sizeof(int));
+	data += sizeof(int);
+    unordered_map<unsigned int, vector<int>> animationModes;
+	unsigned int animation_size = Serialization::deserializeAnimationMode(data, animationModes);
+	for (auto p : animationModes) {
+		models[p.first].model->movementMode = p.second[0]; // TODO: double check this (models)
+		models[p.first].model->animationMode = p.second[1];
+	}
+	data += animation_size;
+
 	// deserialize leaderboard
 	unsigned int leaderBoard_size = 0;
 	leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
 	data += leaderBoard_size;
 
-	vector<pair<unsigned int, vector<int>>> animationModes;
-	data = Serialization::deserializeAnimationMode(data, animationModes);
-	for (auto p : animationModes) {
-		models[p.first].model->movementMode = p.second[0]; // TODO: double check this (models)
-		models[p.first].model->animationMode = p.second[1];
-	}
+   
 	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap, particleTexture, particleShader);
 
 	// nullify invisibility state if you're assassin (duh)

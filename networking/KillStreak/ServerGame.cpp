@@ -492,7 +492,7 @@ ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsig
 	return createServerPacket(INIT_SCENE, 10000, buf);
 }
 
-
+static int packetCounter = 0;
 /*
 	Create packet with serialized scene graph and leaderboard.
 */
@@ -509,16 +509,21 @@ ServerInputPacket ServerGame::createServerTickPacket() {
 	sgSize += sizeof(died_this_tick);
 	bufPtr += sizeof(died_this_tick);
 
-	// serealize leaderboard
-	unsigned int leaderBoard_size = 0;
-	leaderBoard_size = Serialization::serializeLeaderBoard(bufPtr, leaderBoard);
-	bufPtr += leaderBoard_size;
-	sgSize += leaderBoard_size;
+	memcpy(bufPtr, &packetCounter, sizeof(int));
+	packetCounter++;
+	sgSize += sizeof(int);
+	bufPtr += sizeof(int);
 
 	unsigned int animation_size = 0;
 	animation_size = Serialization::serializeAnimationMode(scene->scenePlayers, bufPtr); // TODO: double check that this function is correctly returning size
 	bufPtr += animation_size;
 	sgSize += animation_size;
+
+	// serealize leaderboard
+	unsigned int leaderBoard_size = 0;
+	leaderBoard_size = Serialization::serializeLeaderBoard(bufPtr, leaderBoard);
+	bufPtr += leaderBoard_size;
+	sgSize += leaderBoard_size;
 
 	unsigned int sceneGraph_size = 0;
 	sceneGraph_size += Serialization::serializeSceneGraph(scene->getRoot(), bufPtr, scene->serverSceneGraphMap);

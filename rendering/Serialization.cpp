@@ -1,4 +1,5 @@
 #include "Serialization.h"
+#include "../networking/KillStreak/Logger.hpp"
 
 
 void removeSubtreeInSceneGraph(const unsigned int node_id, unordered_map<unsigned int, Transform *> &sceneGraphMap) {
@@ -57,6 +58,9 @@ unsigned int Serialization::serializeAnimationMode(unordered_map<unsigned int, S
 		memcpy(data, &animationMode, sizeof(int));
 		data += sizeof(int);
 		size += sizeof(int);
+		if (animationMode != -1) {
+			logger()->debug("CEREAL: animation mode is {}", animationMode);
+		}
 		// always set animationMode back to -1
 		p.second.animationMode = -1;
 	}
@@ -177,9 +181,11 @@ Transform * Serialization::deserializeSceneGraph(char *data, unordered_map<unsig
 }
 
 // Serialize the players' animation mode
-char * Serialization::deserializeAnimationMode(char *data, vector<pair<unsigned int, vector<int>>> &animationModes) { // TODO: maybe change to a map of vectors?
+unsigned int Serialization::deserializeAnimationMode(char *data, unordered_map<unsigned int, vector<int>> &animationModes) { // TODO: maybe change to a map of vectors?
 	unsigned int numPlayers;
+	unsigned int size = 0;
 	memcpy(&numPlayers, data, sizeof(unsigned int));
+	size += sizeof(unsigned int);
 	data += sizeof(unsigned int);
 	for (unsigned int i = 0; i < numPlayers; i++) {
 		unsigned int modelId;
@@ -191,9 +197,16 @@ char * Serialization::deserializeAnimationMode(char *data, vector<pair<unsigned 
 		data += sizeof(int);
 		memcpy(&animationMode, data, sizeof(int));
 		data += sizeof(int);
-		animationModes.push_back(pair<unsigned int, vector<int>>(modelId, vector<int>{movementMode, animationMode}));
+		vector<int> modes;
+		modes.push_back(movementMode);
+		modes.push_back(animationMode);
+		if (animationMode != -1) {
+			logger()->debug("DESERIALIZE: animation mode is {}", animationMode);
+		}
+		animationModes.insert({modelId, modes});
+		size += (sizeof(unsigned int) + sizeof(int) + sizeof(int));
 	}
-	return data;
+	return size;
 }
 
 
