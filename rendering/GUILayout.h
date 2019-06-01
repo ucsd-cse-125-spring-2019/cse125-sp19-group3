@@ -13,11 +13,15 @@ const char * intToCharArray(int i) {
 
 // order leaderboard by kills, most first
 static void ui_leaderboard(struct nk_context *ctx, struct media *media,
-	LeaderBoard* leaderBoard, vector<string> usernames) {
+	LeaderBoard* leaderBoard, vector<string> usernames, vector<ArcheType> archetypes ) {
 
+	// order kills, usernames, and archetypes by client with most kills first...
+	vector<int> kills;							
+	vector<string> ordered_usernames;		
+	vector<ArcheType> ordered_types;	
 	vector<int> curKills = leaderBoard->currentKills;
-	vector<string> ordered_usernames;
-	vector<int> kills;
+
+	// make parallel arrays 'kills' & 'ordered_usernames' having same index for players based on number of kills
 	for ( int i = 0; i < GAME_SIZE; i++)
 	{
 		// find max element in list; get total kills for that player
@@ -25,8 +29,9 @@ static void ui_leaderboard(struct nk_context *ctx, struct media *media,
 		int index = it - curKills.begin();
 		int numKills = *it;
 
-		// add next highest score & username
+		// add next client with most kills username, kills & archetype
 		ordered_usernames.push_back(usernames[index]);
+		ordered_types.push_back(archetypes[index]);
 		kills.push_back(numKills);
 
 		*it = -1;		// reset current max to -1
@@ -55,8 +60,15 @@ static void ui_leaderboard(struct nk_context *ctx, struct media *media,
 
 			nk_layout_row(ctx, NK_DYNAMIC, 45, 3, ratio);
 			nk_text(ctx, player_id, strlen(player_id), NK_TEXT_LEFT);
-			//nk_image(ctx, media->king);
 
+			switch (ordered_types[i])	// archetype icon on leaderboard
+			{
+				case MAGE	 : nk_image(ctx, media->mage);	  break;
+				case ASSASSIN: nk_image(ctx, media->assasin); break;
+				case WARRIOR : nk_image(ctx, media->warrior); break;
+				case KING	 : nk_image(ctx, media->king);	  break;
+			}
+			
 			// username & points
 			nk_text(ctx, ordered_usernames[i].c_str(), strlen(ordered_usernames[i].c_str()), NK_TEXT_LEFT);
 			nk_text(ctx, player_point, strlen(player_point), NK_TEXT_LEFT);
@@ -171,11 +183,11 @@ static void ui_skills(struct nk_context *ctx, struct media *media, int width, in
 }
 static void
 kill_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player,
-	vector<nanoseconds> skill_timers, LeaderBoard* leaderBoard, vector<string> usernames) {
+	vector<nanoseconds> skill_timers, LeaderBoard* leaderBoard, vector<string> usernames, vector<ArcheType> archetypes) {
 	
 	set_style(ctx, THEME_BLACK);
 
-	ui_leaderboard(ctx, media, leaderBoard, usernames);
+	ui_leaderboard(ctx, media, leaderBoard, usernames, archetypes);
 
 	ui_skills(ctx, media,  width,  height, player, skill_timers);
 	ui_killphase_header(ctx, media, width, height, 1, 10, 2);

@@ -41,6 +41,7 @@ ServerGame::ServerGame(string host, string port, double tick_rate)
 	playerMetadatas     = new unordered_map<unsigned int, PlayerMetadata*>();
 	archetype_skillset  = new unordered_map<ArcheType, vector<unsigned int>>();
 
+	archetypes = vector<int>(GAME_SIZE);
 	usernames = vector<string>(GAME_SIZE);
 
 	// initialize global skill map; load skills from config into skills maps
@@ -307,8 +308,9 @@ void ServerGame::game_match()
 	for (auto client_data : client_data_list) {
 		unsigned int client_id = client_data->id;
 		unordered_map<unsigned int, PlayerMetadata*>::iterator m_it = playerMetadatas->find(client_id);
-		ArcheType cur_type = m_it->second->type;
-		usernames[client_id] = m_it->second->username;		// set username
+		ArcheType cur_type	  = m_it->second->type;
+		usernames[client_id]  = m_it->second->username;		// set username
+		archetypes[client_id] = cur_type;					// set archetype
 		scene->addPlayer(client_id, cur_type);
 	}
 
@@ -466,16 +468,19 @@ ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsig
 	// serialize all usernames; PlayerMeta.username
 	for (int client_id = 0; client_id < usernames.size(); client_id++)
 	{
-		unordered_map<unsigned int, PlayerMetadata*>::iterator m_it = playerMetadatas->find(client_id);
-		PlayerMetadata* player_meta = m_it->second;
-
 		char truncUsername[16] = { 0 };
-		memcpy(truncUsername, usernames[client_id].c_str(), (player_meta->username).length());
+		memcpy(truncUsername, usernames[client_id].c_str(), usernames[client_id].length());
 
 		// serialize sizusername 
 		memcpy(bufPtr, truncUsername, 16);
 		bufPtr += 16;
+	}
 
+	// serialize all archetypes
+	for (int client_id = 0; client_id < archetypes.size(); client_id++)
+	{
+		memcpy(bufPtr, &archetypes[client_id], sizeof(int));
+		bufPtr += sizeof(int);
 	}
 
 	memcpy(bufPtr, &playerId, sizeof(unsigned int));

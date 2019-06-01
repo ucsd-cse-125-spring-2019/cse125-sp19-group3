@@ -396,7 +396,7 @@ void ClientScene::renderKillPhase(GLFWwindow* window) {
 
 	/* GUI */
 
-	kill_layout(ctx, &media, width, height, & this->player, skill_timers, leaderBoard, usernames);
+	kill_layout(ctx, &media, width, height, & this->player, skill_timers, leaderBoard, usernames, archetypes);
 	/* ----------------------------------------- */
 
 
@@ -643,7 +643,8 @@ glm::vec3 ClientScene::viewToWorldCoordTransform(int mouse_x, int mouse_y) {
 void ClientScene::handleInitScenePacket(char * data) {
 
 	// deserialize usernames
-	for (int i = 0; i < GAME_SIZE; i++) {
+	for (int i = 0; i < GAME_SIZE; i++) 
+	{
 		char username[16] = { 0 };
 		memcpy(&username, data, 16);
 
@@ -652,6 +653,16 @@ void ClientScene::handleInitScenePacket(char * data) {
 		data += 16;
 	}
 
+	// deserialize archetypes
+	for (int i = 0; i < GAME_SIZE; i++)
+	{
+		int d_type = -1;
+		memcpy(&d_type, data, sizeof(int));
+
+		ArcheType cur_type = static_cast<ArcheType>(d_type);
+		archetypes.push_back(cur_type);
+		data += sizeof(int);
+	}
 
 	memcpy(&player.player_id, data, sizeof(unsigned int));
 	data += sizeof(unsigned int);
