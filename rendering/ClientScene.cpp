@@ -389,7 +389,7 @@ void ClientScene::renderKillPhase(GLFWwindow* window) {
 
 	/* GUI */
 
-	kill_layout(ctx, &media, width, height, & this->player, skill_timers);
+	kill_layout(ctx, &media, width, height, & this->player, skill_timers, leaderBoard, usernames);
 	/* ----------------------------------------- */
 
 
@@ -634,6 +634,18 @@ glm::vec3 ClientScene::viewToWorldCoordTransform(int mouse_x, int mouse_y) {
 	Deserialize init scene packet from server, initialize player_id, root_id, root. 
 */
 void ClientScene::handleInitScenePacket(char * data) {
+
+	// deserialize usernames
+	for (int i = 0; i < GAME_SIZE; i++) {
+		char username[16] = { 0 };
+		memcpy(&username, data, 16);
+
+		string username_str = (string) username;
+		usernames.push_back(username_str);
+		data += 16;
+	}
+
+
 	memcpy(&player.player_id, data, sizeof(unsigned int));
 	data += sizeof(unsigned int);
 	memcpy(&player.root_id, data, sizeof(unsigned int));

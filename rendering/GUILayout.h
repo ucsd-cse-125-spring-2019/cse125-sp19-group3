@@ -10,25 +10,49 @@ const char * intToCharArray(int i) {
 	return s.c_str();
 }
 
-static void ui_leaderboard(struct nk_context *ctx, struct media *media) {
-	static const char *items[] = { "Player 0","Player 1","Player 2","Player 3" };
-	static const int points[] = { 15,40,30,10 };
+
+// order leaderboard by kills, most first
+static void ui_leaderboard(struct nk_context *ctx, struct media *media,
+	LeaderBoard* leaderBoard, vector<string> usernames) {
+
+	vector<int> curKills = leaderBoard->currentKills;
+	vector<string> ordered_usernames;
+	vector<int> kills;
+	for ( int i = 0; i < GAME_SIZE; i++)
+	{
+		// find max element in list; get total kills for that player
+		auto it = std::max_element(curKills.begin(), curKills.end());
+		int index = it - curKills.begin();
+		int numKills = *it;
+
+		// add next highest score & username
+		ordered_usernames.push_back(usernames[index]);
+		kills.push_back(numKills);
+
+		*it = -1;		// reset current max to -1
+	}
 
 	if (nk_begin(ctx, "Leaderboard", nk_rect(10, 10, 300, 300),
 		NK_WINDOW_BORDER | NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
 	{
 		static const float ratio[] = { 0.2f, 0.15f, 0.40f,0.25f };  /* 0.3 + 0.4 + 0.3 = 1 */
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < GAME_SIZE; i++) {
+
 			const char * player_id;
-			string s = std::to_string(i);
+			string s = std::to_string(i + 1);
 			player_id = s.c_str();
 			const char * player_point;
-			string point_s = std::to_string(points[i]);
+
+			// total kills for player
+			string point_s = std::to_string(kills[i]);
 			player_point = point_s.c_str();
+
 			nk_layout_row(ctx, NK_DYNAMIC, 45, 4, ratio);
 			nk_text(ctx, player_id, strlen(player_id), NK_TEXT_LEFT);
 			nk_image(ctx, media->king);
-			nk_text(ctx, items[i], strlen(items[i]), NK_TEXT_LEFT);
+
+			// username & points
+			nk_text(ctx, ordered_usernames[i].c_str(), strlen(ordered_usernames[i].c_str()), NK_TEXT_LEFT);
 			nk_text(ctx, player_point, strlen(player_point), NK_TEXT_LEFT);
 		}
 
@@ -86,10 +110,11 @@ static void ui_skills(struct nk_context *ctx, struct media *media, int width, in
 	nk_end(ctx);
 }
 static void
-kill_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, vector<nanoseconds> skill_timers) {
+kill_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player,
+	vector<nanoseconds> skill_timers, LeaderBoard* leaderBoard, vector<string> usernames) {
 	
 	set_style(ctx, THEME_BLACK);
-	ui_leaderboard(ctx, media);
+	ui_leaderboard(ctx, media, leaderBoard, usernames);
 
 	ui_skills(ctx, media,  width,  height, player, skill_timers);
 }
