@@ -17,8 +17,9 @@ using json = nlohmann::json;
 #define DRAGONS_BREATH		3
 #define ASSASSIN_PROJECTILE	11
 #define INVISIBILITY		12
-#define SIXTH_SENSE			13
-#define VISIBILITY           14
+#define SPRINT			    13
+#define VISIBILITY          14
+#define UNSPRINT            15
 #define WHIRLWIND			22
 #define CHARGE				23
 #define ROYAL_CROSS			32
@@ -479,6 +480,13 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 		return;
 	}
 
+	// special case of undoing sprint
+	if (skill_id == UNSPRINT) {
+		auto &assassin = scenePlayers[player_id];
+		assassin.speed /= 2; // tweak values later
+		return;
+	}
+
 	// special case of unevade
 	if (skill_id == UNEVADE) {
 		logger()->debug("{} player stopped evading!", playerMetadata->username);
@@ -524,6 +532,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			// TODO: Possibly modfiy 'createSceneProjectile' to handle this specific case, will need to update dirAOE.node-> scale...
 			// can define a default value that will state what to do
 			nodeIdCounter++;
+			initPoint = initPoint + glm::vec3({ 0.0f, 30.0f, 0.0f });
 			SceneProjectile dirAOE = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range);
 			dirAOE.node->scale = glm::scale(glm::mat4(1.0f), Point(0.08f, 0.08f, 0.08f));
 			serverSceneGraphMap.insert({ nodeIdCounter, dirAOE.node });
@@ -541,6 +550,12 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			// client must send another skill packet after duration is over.
 			int node_id = scenePlayers[player_id].root_id;
 			serverSceneGraphMap[node_id]->enabled = false;
+			break;
+		}
+		case SPRINT: 
+		{
+			auto &assassin = scenePlayers[player_id];
+			assassin.speed *= 2; // twice as fast, tweak values later
 			break;
 		}
 		case SUBJUGATION:
@@ -584,7 +599,26 @@ void ServerScene::handlePlayerRespawn(unsigned int client_id)
 
 	player_data->alive = true;
 	ScenePlayer &player = scenePlayers[client_id];
-	player.setDestination(NULL_POINT);		// TODO: FIX ME TO VALID RANDOM LOCATION
+  // rand () % range - negative portion
+  // e.g rand() % 20 - 10 -> -10 to 10
+  // x: -9 to 164
+  // z: -28 to 83
+	float x = rand() % 173 - 9;
+	float z = rand() % 111 - 28;
+	glm::vec3 loc = glm::vec3(x, 0.0f, z);
+  glm::vec3 target;
+  float length = std::numeric_limits<float>::infinity();
+  //spawn_loc is defined in ServerScene
+  for(glm::vec3 temp_loc : spawn_loc){
+    float temp_len = glm::length(loc - temp_loc);
+    if (temp_len < length){
+      length = temp_len;
+      target = temp_loc;
+    }
+  }
+  player.playerRoot->translation = glm::translate(glm::mat4(1.0f), target);
+  player.currentPos = target;
+  player.setDestination(target);
 }
 
 

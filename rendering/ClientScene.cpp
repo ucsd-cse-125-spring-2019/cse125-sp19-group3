@@ -13,6 +13,7 @@
 #define DIR_SKILL_INDEX 3
 #define UNSILENCE 34
 #define VISIBILITY 14
+#define UNSPRINT 15
 #define RESPAWN_TIME 3
 
 using json = nlohmann::json;
@@ -124,6 +125,7 @@ void ClientScene::initialize_skills(ArcheType selected_type) {
 	respawn_timer = nanoseconds::zero();
 	skillDurationTimer = nanoseconds::zero();
 	evadeDurationTimer = nanoseconds::zero();
+	sprintDurationTimer = nanoseconds::zero();
 	player.modelType = selected_type;
 }
 
@@ -288,6 +290,16 @@ void ClientScene::updateTimers(nanoseconds timePassed) {
 			evadeDurationTimer = nanoseconds::zero();
 		}
 	}
+
+	// update sprint duration
+	if (sprintDurationTimer > nanoseconds::zero()) {
+		sprintDurationTimer -= timePassed;
+		if (sprintDurationTimer <= nanoseconds::zero()) {
+			ClientInputPacket unsprintPacket = game->createSkillPacket(NULL_POINT, UNSPRINT);
+			network->sendToServer(unsprintPacket);
+			sprintDurationTimer = nanoseconds::zero();
+		}
+	}
 }
 
 void ClientScene::resize_callback(GLFWwindow* window, int width, int height)
@@ -434,24 +446,28 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 				return;
 			}
 
-			// ONLY EXCEPTION: KING
-			if (player.modelType == KING) {
-				Skill subjugation = personal_skills[DIR_SKILL_INDEX];
+			// EXCEPTIONS: KING AND ASSASSIN
+			if (player.modelType == KING || player.modelType == ASSASSIN) {
+				Skill skill = personal_skills[DIR_SKILL_INDEX];
 				Skill adjustedSkill = Skill::
-					calculateSkillBasedOnLevel(subjugation, subjugation.level);
+					calculateSkillBasedOnLevel(skill, skill.level);
 
 				// set cooldown
 				std::chrono::seconds sec((int)adjustedSkill.cooldown);
 				skill_timers[DIR_SKILL_INDEX] = nanoseconds(sec);
 
-				// hardcoded case for king (and assassin)
+				// set duration for silence / sprint
 				if (player.modelType == KING) {
-					// set duration for silence
 					std::chrono::seconds sec((int)adjustedSkill.duration);
 					skillDurationTimer = nanoseconds(sec);
 				}
-				ClientInputPacket subjugationPacket = game->createSkillPacket(NULL_POINT, adjustedSkill.skill_id);
-				network->sendToServer(subjugationPacket);
+				else {
+					std::chrono::seconds sec((int)adjustedSkill.duration);
+					sprintDurationTimer = nanoseconds(sec);
+				}
+
+				ClientInputPacket skillPacket = game->createSkillPacket(NULL_POINT, adjustedSkill.skill_id);
+				network->sendToServer(skillPacket);
 				return;
 			}
 
@@ -540,6 +556,7 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 			glfwGetCursorPos(window, &xpos, &ypos);
 			//printf("Cursor Position at %f: %f \n", xpos, ypos);
 			glm::vec3 new_dest = viewToWorldCoordTransform(xpos, ypos);
+			printf("Player's next Pos will be: %f, %f, %f \n", new_dest.x, new_dest.y, new_dest.z);
 			ClientInputPacket movementPacket = game->createMovementPacket(new_dest);
 			network->sendToServer(movementPacket);
 		// player shooting projectile
