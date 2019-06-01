@@ -40,10 +40,10 @@ static void ui_leaderboard(struct nk_context *ctx, struct media *media,
 	if (nk_begin(ctx, "Leaderboard", nk_rect(10, 10, 300, 300),
 		NK_WINDOW_BORDER | NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE))
 	{
-		static const float ratio[] = { 0.25f, 0.50f,0.25f };  /* 0.3 + 0.4 + 0.3 = 1 */
-		nk_layout_row(ctx, NK_DYNAMIC, 45, 3, ratio);
+		static const float lbratio[] = { 0.2f, 0.15f, 0.40f,0.25f };  /* 0.3 + 0.4 + 0.3 = 1 */
+		nk_layout_row(ctx, NK_DYNAMIC, 45, 4, lbratio);
 		nk_label(ctx, "Rank", NK_TEXT_LEFT);
-
+		nk_spacing(ctx, 1);
 		// username & points
 		nk_label(ctx, "Name", NK_TEXT_LEFT);
 		nk_label(ctx, "Kills", NK_TEXT_LEFT);
@@ -58,7 +58,7 @@ static void ui_leaderboard(struct nk_context *ctx, struct media *media,
 			string point_s = std::to_string(kills[i]);
 			player_point = point_s.c_str();
 
-			nk_layout_row(ctx, NK_DYNAMIC, 45, 3, ratio);
+			nk_layout_row(ctx, NK_DYNAMIC, 45, 4, lbratio);
 			nk_text(ctx, player_id, strlen(player_id), NK_TEXT_LEFT);
 
 			switch (ordered_types[i])	// archetype icon on leaderboard
@@ -85,7 +85,7 @@ static void ui_killphase_header(struct nk_context *ctx, struct media *media, int
 	if (nk_begin(ctx, "kill_header", nk_rect(width * 0.85, 10, width * 0.15, width * 0.09+65),
 		NK_WINDOW_NO_SCROLLBAR))
 	{
-		static const float ratio[] = { 0.3f,0.3f, 0.4f };  /* 0.3 + 0.4 + 0.3 = 1 */
+		static const float kill_ratio[] = { 0.3f,0.3f, 0.4f };  /* 0.3 + 0.4 + 0.3 = 1 */
 		string roundStr = "ROUND: " + std::to_string(roundnum);
 		const char * round_char = roundStr.c_str();
 
@@ -98,7 +98,7 @@ static void ui_killphase_header(struct nk_context *ctx, struct media *media, int
 		nk_label(ctx, round_char, NK_TEXT_RIGHT | NK_TEXT_ALIGN_CENTERED);
 		nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
 
-		nk_layout_row(ctx, NK_DYNAMIC, width * 0.07,3, ratio);
+		nk_layout_row(ctx, NK_DYNAMIC, width * 0.07,3, kill_ratio);
 
 		nk_spacing(ctx, 1);
 		if (nk_group_begin(ctx, "icons", NK_WINDOW_NO_SCROLLBAR)) { // column 1
