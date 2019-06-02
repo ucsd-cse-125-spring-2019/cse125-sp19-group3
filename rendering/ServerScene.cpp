@@ -247,10 +247,9 @@ void ServerScene::update()
 		element.second.update();		
 	}
 
-	// set movement mode on all players accordingly
+	// flip charging status when range is reach
 	for (auto& element : scenePlayers) {
 		auto& character = element.second;
-		//character.movementMode = character.currentPos == character.destination ? idle : run;
 		if (character.modelType == WARRIOR) {
 			if (character.warriorIsChargingServer && character.currentPos == character.destination) {
 				warriorIsCharging = false;
