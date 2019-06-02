@@ -83,6 +83,7 @@
     <None Include="..\particleShader.vert" />
     <None Include="..\toonshader.frag" />
     <None Include="..\toonshader.vert" />
+    <None Include="ClassDiagram.cd" />
     <None Include="packages.config" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
