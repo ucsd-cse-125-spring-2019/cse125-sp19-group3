@@ -436,6 +436,8 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 		return;
 	}
 
+	if (checkInAnimation()) return;
+
 	if (isCharging && player.modelType == WARRIOR) return;
 
 	// Check for a key press
@@ -563,6 +565,7 @@ void ClientScene::scroll_callback(GLFWwindow* window, double xoffset, double yof
 void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
 	if (respawn_timer > nanoseconds::zero()) return;		// player dead disable input
+	if (game->currPhase == KILL && checkInAnimation()) return;
 
 	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
 	{
@@ -749,3 +752,8 @@ void ClientScene::setRoot(Transform * newRoot) {
 	root = newRoot;
 }
 
+bool ClientScene::checkInAnimation() {
+	auto transform = clientSceneGraphMap[player.root_id];
+	auto thisModel = models[*(transform->model_ids.begin())].model;
+	return thisModel->curr_mode != thisModel->movementMode;
+}
