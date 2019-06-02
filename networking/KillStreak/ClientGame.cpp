@@ -229,7 +229,6 @@ int ClientGame::waitingInitScene() {
 	ServerInputPacket * initScenePacket = network->receivePacket();
 	handleServerInputPacket(initScenePacket);
 
-	/*
 	// allocate new data for server thread & launch (will recv() indefinitely)
 	server_data* server_arg = (server_data *)malloc(sizeof(server_data));
 	if (server_arg)
@@ -245,7 +244,7 @@ int ClientGame::waitingInitScene() {
 		closesocket(network->ConnectSocket);
 		return 0;
 	}
-	*/
+
 	currPhase = KILL;
 	setup_callbacks(currPhase);
 	return 1;
@@ -287,10 +286,24 @@ void ClientGame::run() {
 			Window_static::display_callback(window);
 		}
 		else if (currPhase == ClientStatus::KILL) {
+
 			// Kill Phase
 			auto start = Clock::now();
-			ServerInputPacket* packet = network->receivePacket();
-			handleServerInputPacket(packet);
+			
+			q_lock->lock();
+			vector<ServerInputPacket*> inputPackets;
+			while (!(serverPackets->empty()))
+			{
+				inputPackets.push_back(serverPackets->front());
+				serverPackets->pop();
+			}
+			q_lock->unlock();
+
+			// handle all packets from server
+			for (auto& packet : inputPackets)
+			{
+				handleServerInputPacket(packet);
+			}
 
 			// Main render display callback. Rendering of objects is done here.
 			Window_static::display_callback(window);

@@ -695,9 +695,11 @@ void ClientScene::handleServerTickPacket(char * data) {
 		player.isAlive = true;
 	}
 
+	/*
 	int packetCount;
 	memcpy(&packetCount, data, sizeof(int));
 	data += sizeof(int);
+	*/
 
     unordered_map<unsigned int, vector<int>> animationModes;
 	unsigned int animation_size = Serialization::deserializeAnimationMode(data, animationModes);
