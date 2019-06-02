@@ -511,16 +511,10 @@ ServerInputPacket ServerGame::createServerTickPacket() {
 	sgSize += sizeof(died_this_tick);
 	bufPtr += sizeof(died_this_tick);
 
-	/*
-	memcpy(bufPtr, &packetCounter, sizeof(int));
-	packetCounter++;
-	sgSize += sizeof(int);
-	bufPtr += sizeof(int);
-	*/
-	memcpy(bufPtr, &(scene->warriorIsDoneCharging), sizeof(bool));
+	memcpy(bufPtr, &(scene->warriorIsCharging), sizeof(bool));
 	bufPtr += sizeof(bool);
 	sgSize += sizeof(bool);
-	scene->warriorIsDoneCharging = false;
+	//scene->warriorIsCharging = false;
 
 	unsigned int animation_size = 0;
 	animation_size = Serialization::serializeAnimationMode(scene->scenePlayers, bufPtr); // TODO: double check that this function is correctly returning size

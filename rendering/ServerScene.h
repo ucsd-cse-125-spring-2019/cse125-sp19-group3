@@ -38,7 +38,7 @@ public:
 	std::unordered_map<unsigned int, Point> model_boundingbox;
 	std::vector<Transform *> env_objs;
 	std::vector<SceneProjectile> skills;
-	bool warriorIsDoneCharging = false;
+	bool warriorIsCharging = false;
 
   //TODO: fill in the four corner
 	std::vector<glm::vec3> spawn_loc{

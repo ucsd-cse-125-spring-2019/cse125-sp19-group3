@@ -249,7 +249,14 @@ void ServerScene::update()
 
 	// set movement mode on all players accordingly
 	for (auto& element : scenePlayers) {
-		element.second.movementMode = element.second.currentPos == element.second.destination ? idle : run;
+		auto& character = element.second;
+		character.movementMode = character.currentPos == character.destination ? idle : run;
+		if (character.modelType == WARRIOR) {
+			if (character.warriorIsChargingServer && character.currentPos == character.destination) {
+				warriorIsCharging = false;
+				character.warriorIsChargingServer = false;
+			}
+		}
 	}
 }
 
@@ -319,15 +326,28 @@ void ServerScene::checkAndHandlePlayerCollision(unsigned int playerId) {
 		}
 	}
 
+	// player - env model
 	for (auto& envObj : env_objs) {
 		if (player.playerRoot->isCollided(forwardVector, model_radius, serverSceneGraphMap, envObj, model_boundingbox, true)) {
 			player.setDestination(player.currentPos);
 			if (player.modelType == WARRIOR && player.warriorIsChargingServer) {
-				warriorIsDoneCharging = true;
+				warriorIsCharging = false;
 				player.warriorIsChargingServer = false;
 				player.speed = 0.3f; // hardcoding bs
 			}
 			break;
+		}
+	}
+	ScenePlayer warrior;
+
+	// player - player (only for warrior charge skill lul)
+	if (warriorIsCharging && player.modelType == WARRIOR) {
+		for (auto& element : scenePlayers ) {
+			auto& otherPlayer = element.second;
+			if (otherPlayer.modelType == WARRIOR) continue;
+			if (otherPlayer.playerRoot->isCollided(forwardVector, model_radius, serverSceneGraphMap, player.playerRoot, model_boundingbox, false)) {
+				handlePlayerDeath(otherPlayer, player.player_id);
+			}	
 		}
 	}
 
@@ -567,6 +587,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 		{
 			auto& warrior = scenePlayers[player_id];
 			warrior.warriorIsChargingServer = true;
+			warriorIsCharging = true;
 			warrior.speed = 1.0f;	//TODO: change to from json
 			auto direction = glm::normalize(finalPoint - initPoint);
 			auto& defaultSkill = warrior.availableSkills[3]; // hardcode bs??>?

@@ -44,7 +44,7 @@ void ScenePlayer::move() {
 	}
 	else {
 		if (modelType == WARRIOR && warriorIsChargingServer) {
-			serverScene->warriorIsDoneCharging = true;
+			serverScene->warriorIsCharging = false;
 			warriorIsChargingServer = false;
 			speed = 0.3f; // hardcoding bs
 		}
