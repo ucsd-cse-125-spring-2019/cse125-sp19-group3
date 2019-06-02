@@ -35,7 +35,8 @@ public:
 	unsigned int player_id;
 	unsigned int root_id;
 
-	unsigned int animationMode = idle;
+	int movementMode = idle;
+	int animationMode = -1;
 	ArcheType modelType;
 	Transform * playerRoot;
 	//Model * model;

@@ -23,10 +23,10 @@ void ScenePlayer::move() {
 		//printf("forward to: %f %f %f\n", forwardVector.x, forwardVector.y, forwardVector.z);
 		//moving forward :
 		translate(forwardVector);
-		animationMode = run;
+		movementMode = run;
 	}
 	else {
-		animationMode = idle;
+		movementMode = idle;
 	}
 }
 

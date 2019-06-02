@@ -39,15 +39,38 @@ void Model::draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &v
 
 void Model::BoneTransform(float timeToIncrement)
 {
-	if (animationMode != prev_animationMode) {
+	if (animationMode != -1) {
 		animationTime = animation_frames[animationMode][0];
-		prev_animationMode = animationMode;
+		curr_mode = animationMode;
+		switch (animationMode) {
+		case evade:
+		case projectile:
+		case skill_1:
+		case skill_2:
+		case die:
+		case spawn:
+			animationMode = -1;
+			animationTime = animation_frames[curr_mode][0];
+			break;
+		case idle:
+		case run: // just in case
+			animationMode = -1;
+			animationTime += timeToIncrement;
+			break;
+		}
 	}
 	else {
-		switch (animationMode) {
+		switch (curr_mode) {
 		case idle:
 		case run:
-			animationTime += timeToIncrement;
+			if (movementMode != prev_movementMode) {
+				prev_movementMode = movementMode;
+				curr_mode = movementMode;
+				animationTime = animation_frames[curr_mode][0];
+			}
+			else {
+				animationTime += timeToIncrement;
+			}
 			break;
 		case evade:
 		case projectile:
@@ -55,10 +78,9 @@ void Model::BoneTransform(float timeToIncrement)
 		case skill_2:
 		case die:
 		case spawn:
-			if (animationTime + timeToIncrement > animation_frames[animationMode][1]) {
-				animationMode = idle;
-				prev_animationMode = idle;
-				animationTime = animation_frames[idle][0];
+			if (animationTime + timeToIncrement > animation_frames[curr_mode][1]) {
+				curr_mode = movementMode;
+				animationTime = animation_frames[curr_mode][0];
 			}
 			else {
 				animationTime += timeToIncrement;
@@ -66,8 +88,8 @@ void Model::BoneTransform(float timeToIncrement)
 			break;
 		}
 	}
-	float animationDuration = animation_frames[animationMode][1] - animation_frames[animationMode][0];
-	animationTime = animation_frames[animationMode][0] + fmod(animationTime - animation_frames[animationMode][0], animationDuration);
+	float animationDuration = animation_frames[curr_mode][1] - animation_frames[curr_mode][0];
+	animationTime = animation_frames[curr_mode][0] + fmod(animationTime - animation_frames[curr_mode][0], animationDuration);
 
 	//float TicksPerSecond = scene->mAnimations[0]->mTicksPerSecond != 0 ?
 	//	scene->mAnimations[0]->mTicksPerSecond : 25.0f;

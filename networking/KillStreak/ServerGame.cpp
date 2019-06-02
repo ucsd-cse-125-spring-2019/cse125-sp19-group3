@@ -492,14 +492,13 @@ ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsig
 	return createServerPacket(INIT_SCENE, 10000, buf);
 }
 
+//static int packetCounter = 0;
 
 /*
 	Create packet with serialized scene graph and leaderboard.
 */
 ServerInputPacket ServerGame::createServerTickPacket() {
-
 	ServerInputPacket packet;		
-
 	unsigned int sgSize = 0;
 	char buf[SERVER_TICK_PACKET_SIZE] = { 0 };
 	char* headPtr = buf; // point to start of buffer
@@ -510,6 +509,18 @@ ServerInputPacket ServerGame::createServerTickPacket() {
 	memcpy(bufPtr, &died_this_tick, sizeof(died_this_tick));
 	sgSize += sizeof(died_this_tick);
 	bufPtr += sizeof(died_this_tick);
+
+	/*
+	memcpy(bufPtr, &packetCounter, sizeof(int));
+	packetCounter++;
+	sgSize += sizeof(int);
+	bufPtr += sizeof(int);
+	*/
+
+	unsigned int animation_size = 0;
+	animation_size = Serialization::serializeAnimationMode(scene->scenePlayers, bufPtr); // TODO: double check that this function is correctly returning size
+	bufPtr += animation_size;
+	sgSize += animation_size;
 
 	// serealize leaderboard
 	unsigned int leaderBoard_size = 0;
