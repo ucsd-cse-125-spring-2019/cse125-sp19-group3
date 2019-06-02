@@ -229,6 +229,7 @@ int ClientGame::waitingInitScene() {
 	ServerInputPacket * initScenePacket = network->receivePacket();
 	handleServerInputPacket(initScenePacket);
 
+	/*
 	// allocate new data for server thread & launch (will recv() indefinitely)
 	server_data* server_arg = (server_data *)malloc(sizeof(server_data));
 	if (server_arg)
@@ -244,6 +245,7 @@ int ClientGame::waitingInitScene() {
 		closesocket(network->ConnectSocket);
 		return 0;
 	}
+	*/
 	currPhase = KILL;
 	setup_callbacks(currPhase);
 	return 1;
