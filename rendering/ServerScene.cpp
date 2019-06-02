@@ -296,6 +296,11 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 	// award kill & points to killer
 	leaderBoard->awardKill(killer_id);
 
+	if (warriorIsCharging && dead_player.modelType == WARRIOR) {
+		warriorIsCharging = false;
+		dead_player.warriorIsChargingServer = false;
+	}
+
 }
 
 
