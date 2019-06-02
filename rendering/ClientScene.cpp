@@ -698,11 +698,8 @@ void ClientScene::handleServerTickPacket(char * data) {
 		player.isAlive = true;
 	}
 
-	/*
-	int packetCount;
-	memcpy(&packetCount, data, sizeof(int));
-	data += sizeof(int);
-	*/
+	int currKill = INT_MAX;
+	if (isCharging) currKill = leaderBoard->currentKills[player.player_id];
 
 	// deserialize charge
 	memcpy(&isCharging, data, sizeof(bool));
@@ -721,6 +718,9 @@ void ClientScene::handleServerTickPacket(char * data) {
 	unsigned int leaderBoard_size = 0;
 	leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
 	data += leaderBoard_size;
+
+	if (isCharging && (leaderBoard->currentKills[player.player_id] > currKill)) 
+		skill_timers[DIR_SKILL_INDEX] = nanoseconds::zero();	// reset cooldown when kill someone using charge
 
    
 	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap, particleTexture, particleShader);
