@@ -69,7 +69,7 @@ private:
 	ScenePlayer player;
 	Transform * root;
 	LeaderBoard* leaderBoard;
-
+	int killTextDeterminant = 0;
 	std::unordered_map<unsigned int, ModelData> models;
 	std::unordered_set<unsigned int> updated_ids;
 

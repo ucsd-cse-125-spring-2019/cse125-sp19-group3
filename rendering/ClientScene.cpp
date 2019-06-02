@@ -6,6 +6,7 @@
 #define MAX_VERTEX_BUFFER 512 * 1024
 #define MAX_ELEMENT_BUFFER 128 * 1024
 
+
 #define UNEVADE -1
 #define EVADE_INDEX 0
 #define PROJ_INDEX 1
@@ -396,7 +397,7 @@ void ClientScene::renderKillPhase(GLFWwindow* window) {
 
 	/* GUI */
 
-	kill_layout(ctx, &media, width, height, & this->player, skill_timers, leaderBoard, usernames, archetypes);
+	kill_layout(ctx, &media, width, height, & this->player, skill_timers, leaderBoard, usernames, archetypes, killTextDeterminant);
 	/* ----------------------------------------- */
 
 
@@ -689,6 +690,7 @@ void ClientScene::handleServerTickPacket(char * data) {
 		player.isAlive = false;
 		std::chrono::seconds sec((int)RESPAWN_TIME);
 		respawn_timer = sec;
+		killTextDeterminant = rand() % KILLED_TEXT_NUM;
 	}
 	// server respawning player (they're alive); client still thinks they're dead
 	else if ( server_alive && !player.isAlive) {
