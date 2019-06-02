@@ -429,6 +429,8 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 		return;
 	}
 
+	if (isCharging && player.modelType == WARRIOR) return;
+
 	// Check for a key press
 	if (action == GLFW_PRESS)
 	{
@@ -597,6 +599,7 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 			glfwGetCursorPos(window, &xpos, &ypos);
 			glm::vec3 new_dest = viewToWorldCoordTransform(xpos, ypos);
 
+			if (player.modelType == WARRIOR) isCharging = true;
 			// create skill packet and send to server
 			ClientInputPacket skillPacket = game->createSkillPacket(new_dest, adjustedSkill.skill_id);
 			logger()->debug("sending server skill packet w id of {}", adjustedSkill.skill_id);
@@ -697,11 +700,13 @@ void ClientScene::handleServerTickPacket(char * data) {
 		player.isAlive = true;
 	}
 
-	/*
-	int packetCount;
-	memcpy(&packetCount, data, sizeof(int));
-	data += sizeof(int);
-	*/
+	/*int currKill = INT_MAX;
+	if (isCharging) currKill = leaderBoard->currentKills[player.player_id];*/
+
+	// deserialize charge
+	memcpy(&isCharging, data, sizeof(bool));
+	sz += sizeof(bool);
+	data += sizeof(bool);
 
     unordered_map<unsigned int, vector<int>> animationModes;
 	unsigned int animation_size = Serialization::deserializeAnimationMode(data, animationModes);
@@ -712,10 +717,15 @@ void ClientScene::handleServerTickPacket(char * data) {
 	}
 	data += animation_size;
 
+	int currKill = leaderBoard->currentKills[player.player_id];
+
 	// deserialize leaderboard
 	unsigned int leaderBoard_size = 0;
 	leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
 	data += leaderBoard_size;
+
+	if (isCharging && (leaderBoard->currentKills[player.player_id] > currKill)) 
+		skill_timers[DIR_SKILL_INDEX] = nanoseconds::zero();	// reset cooldown when kill someone using charge
 
    
 	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap, particleTexture, particleShader);

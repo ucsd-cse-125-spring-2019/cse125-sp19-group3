@@ -90,6 +90,8 @@ protected:
 	ServerInputPacket createCharSelectPacket(char* data, int size);
 	
 	void handleClientInputPacket(ClientInputPacket* packet, int client_id);
+
+	friend class ScenePlayer;
 };
 
 #endif // SURFSTORESERVER_HPP

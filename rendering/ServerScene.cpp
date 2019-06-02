@@ -27,7 +27,8 @@ using json = nlohmann::json;
 #define UNSILENCE           34
 
 
-ServerScene::ServerScene(LeaderBoard* leaderBoard, unordered_map<unsigned int, PlayerMetadata*>* playerMetadatas)
+ServerScene::ServerScene(LeaderBoard* leaderBoard, unordered_map<unsigned int, PlayerMetadata*>* playerMetadatas,
+	unordered_map<unsigned int, Skill>* skill_map, unordered_map<ArcheType, vector<unsigned int>> *archetype_skillset)
 {
 	root = new Transform(0, glm::mat4(1.0f));
 	serverSceneGraphMap.insert({ root->node_id, root });
@@ -40,6 +41,8 @@ ServerScene::ServerScene(LeaderBoard* leaderBoard, unordered_map<unsigned int, P
 	serverSceneGraphMap.insert({ skillRoot->node_id, skillRoot });
 	root->addChild(nodeIdCounter);
 
+	this->skill_map = skill_map;
+	this->archetype_skillset = archetype_skillset;
 	this->leaderBoard = leaderBoard;	
 	this->playerMetadatas = playerMetadatas;
 
@@ -197,7 +200,7 @@ void ServerScene::addPlayer(unsigned int playerId, ArcheType modelType) {
 
 	// TODO: need to set model type based on player selection in lobby
 
-	ScenePlayer player = ScenePlayer(playerId, nodeIdCounter, modelType, playerObj);
+	ScenePlayer player = ScenePlayer(playerId, nodeIdCounter, modelType, playerObj, this);
 	//playerMap.insert(std::pair<unsigned int, Player *>(playerId, player));
 	scenePlayers.insert({ playerId, player });
 }
@@ -243,6 +246,18 @@ void ServerScene::update()
 
 		element.second.update();		
 	}
+
+	// set movement mode on all players accordingly
+	for (auto& element : scenePlayers) {
+		auto& character = element.second;
+		//character.movementMode = character.currentPos == character.destination ? idle : run;
+		if (character.modelType == WARRIOR) {
+			if (character.warriorIsChargingServer && character.currentPos == character.destination) {
+				warriorIsCharging = false;
+				character.warriorIsChargingServer = false;
+			}
+		}
+	}
 }
 
 /*
@@ -281,6 +296,11 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 	// award kill & points to killer
 	leaderBoard->awardKill(killer_id);
 
+	if (warriorIsCharging && dead_player.modelType == WARRIOR) {
+		warriorIsCharging = false;
+		dead_player.warriorIsChargingServer = false;
+	}
+
 }
 
 
@@ -311,10 +331,31 @@ void ServerScene::checkAndHandlePlayerCollision(unsigned int playerId) {
 		}
 	}
 
+	// player - env model
 	for (auto& envObj : env_objs) {
 		if (player.playerRoot->isCollided(forwardVector, model_radius, serverSceneGraphMap, envObj, model_boundingbox, true)) {
 			player.setDestination(player.currentPos);
+			if (player.modelType == WARRIOR && player.warriorIsChargingServer) {
+				warriorIsCharging = false;
+				player.warriorIsChargingServer = false;
+				player.speed = 0.3f; // hardcoding bs
+			}
 			break;
+		}
+	}
+	ScenePlayer warrior;
+
+	// player - player (only for warrior charge skill lul)
+	if (warriorIsCharging && player.modelType == WARRIOR) {
+		for (auto& element : scenePlayers ) {
+			auto& otherPlayer = element.second;
+			if (otherPlayer.modelType == WARRIOR) continue;
+			unordered_map<unsigned int, PlayerMetadata*>::iterator s_it = playerMetadatas->find(otherPlayer.player_id);
+			PlayerMetadata* player_data = s_it->second;
+			if (!player_data->alive) continue;
+			if (otherPlayer.playerRoot->isCollided(forwardVector, model_radius, serverSceneGraphMap, player.playerRoot, model_boundingbox, false)) {
+				handlePlayerDeath(otherPlayer, player.player_id);
+			}	
 		}
 	}
 
@@ -549,6 +590,29 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 				}
 			}
 			break;
+		}
+		case CHARGE:
+		{
+			auto& warrior = scenePlayers[player_id];
+			warrior.warriorIsChargingServer = true;
+			warriorIsCharging = true;
+			warrior.speed = 1.0f;	//TODO: change to from json
+			auto direction = glm::normalize(finalPoint - initPoint);
+			auto& defaultSkill = warrior.availableSkills[3]; // hardcode bs??>?
+			auto adjustedSkill = Skill::calculateSkillBasedOnLevel(defaultSkill, defaultSkill.level);
+			auto finalLocation = initPoint + (adjustedSkill.range * direction);
+			warrior.setDestination(finalLocation);
+
+			float dotResult = glm::dot(glm::normalize(finalLocation - warrior.currentPos), warrior.currentOri);
+
+			if (abs(dotResult) < 1.0) {
+				float angle = glm::acos(dotResult);
+				//printf("rotate angle = %f", angle);
+				glm::vec3 axis = glm::cross(warrior.currentOri, glm::normalize(finalLocation - warrior.currentPos));
+				if (glm::length(axis) != 0) {
+					warrior.rotate(angle, axis);
+				}
+			}
 		}
 		default:
 		{

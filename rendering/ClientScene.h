@@ -85,6 +85,7 @@ private:
 	nanoseconds skillDurationTimer; // used for invisibility, silence
 	nanoseconds evadeDurationTimer; // used for evade
 	nanoseconds sprintDurationTimer; // used for sprint
+	bool isCharging = false;
 
 	// void removeTransform(Transform * parent, const unsigned int node_id);
 	

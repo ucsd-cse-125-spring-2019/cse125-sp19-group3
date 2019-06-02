@@ -48,7 +48,7 @@ ServerGame::ServerGame(string host, string port, double tick_rate)
 	readMetaDataForSkills();	
 
 	leaderBoard = new LeaderBoard();
-	scene		= new ServerScene(leaderBoard, playerMetadatas);
+	scene		= new ServerScene(leaderBoard, playerMetadatas, skill_map, archetype_skillset);
 	network		= new ServerNetwork(this->host, this->port);
 	scheduledEvent = ScheduledEvent(END_KILLPHASE, 10000000); // default huge value
 
@@ -501,21 +501,20 @@ ServerInputPacket ServerGame::createServerTickPacket() {
 	ServerInputPacket packet;		
 	unsigned int sgSize = 0;
 	char buf[SERVER_TICK_PACKET_SIZE] = { 0 };
+
 	char* headPtr = buf; // point to start of buffer
 	char* bufPtr = buf;	
 
-	// default init the first byte (died_this_tick)
+	// serialize if user died; default init the first byte (died_this_tick)
 	bool died_this_tick = false;
 	memcpy(bufPtr, &died_this_tick, sizeof(died_this_tick));
 	sgSize += sizeof(died_this_tick);
 	bufPtr += sizeof(died_this_tick);
 
-	/*
-	memcpy(bufPtr, &packetCounter, sizeof(int));
-	packetCounter++;
-	sgSize += sizeof(int);
-	bufPtr += sizeof(int);
-	*/
+	memcpy(bufPtr, &(scene->warriorIsCharging), sizeof(bool));
+	bufPtr += sizeof(bool);
+	sgSize += sizeof(bool);
+	//scene->warriorIsCharging = false;
 
 	unsigned int animation_size = 0;
 	animation_size = Serialization::serializeAnimationMode(scene->scenePlayers, bufPtr); // TODO: double check that this function is correctly returning size
@@ -538,6 +537,7 @@ ServerInputPacket ServerGame::createServerTickPacket() {
 	memcpy(packet.data, headPtr, sgSize); 
 
 	return packet;
+
 }
 
 ServerInputPacket ServerGame::createServerPacket(ServerPacketType type, int size, char* data)
