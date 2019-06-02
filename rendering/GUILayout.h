@@ -161,14 +161,30 @@ static void ui_skills(struct nk_context *ctx, struct media *media, int width, in
 					nk_text(ctx, cooldown_char_array, strlen(cooldown_char_array), NK_TEXT_ALIGN_CENTERED);
 				}
 				else {
-					if (type == WARRIOR)
-						nk_image(ctx, media->warrior_skills[i]);
-					else if (type == MAGE)
-						nk_image(ctx, media->mage_skills[i]);
-					else if (type == ASSASSIN)
-						nk_image(ctx, media->assassin_skills[i]);
-					else
-						nk_image(ctx, media->king_skills[i]);
+					if (type == WARRIOR) {
+						if(i < 2 && player->isSilenced)
+							nk_image(ctx, media->warrior_silenced[i]);
+						else
+							nk_image(ctx, media->warrior_skills[i]);
+					}
+					else if (type == MAGE) {
+						if (i < 2 && player->isSilenced)
+							nk_image(ctx, media->mage_silenced[i]);
+						else
+							nk_image(ctx, media->mage_skills[i]);
+					}
+					else if (type == ASSASSIN) {
+						if (i < 2 && player->isSilenced)
+							nk_image(ctx, media->assassin_silenced[i]);
+						else
+							nk_image(ctx, media->assassin_skills[i]);
+					}
+					else {
+						if (i < 2 && player->isSilenced)
+							nk_image(ctx, media->king_silenced[i]);
+						else
+							nk_image(ctx, media->king_skills[i]);
+					}
 				}
 					nk_layout_row_dynamic(ctx, 24, 1);
 					nk_text(ctx, key_bindings[i], strlen(key_bindings[i]), NK_TEXT_ALIGN_CENTERED);
@@ -236,7 +252,7 @@ lobby_layout(struct nk_context *ctx, struct media *media, int width, int height,
 		NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR
 	))
 	{
-		static const char * characterTypeStrings[] = { "HUMAN", "MAGE", "ASSASIN","WARRIOR","KING" };
+		static const char * characterTypeStrings[] = { "HUMAN", "MAGE", "ASSASSIN","WARRIOR","KING" };
 		static const float ratio[] = { 0.35f, 0.3f, 0.35f };  /* 0.3 + 0.4 + 0.3 = 1 */
 		static const float text_input_ratio[] = { 0.15f, 0.85f };
 		nk_layout_row(ctx, NK_DYNAMIC, 40, 2, ratio);

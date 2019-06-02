@@ -172,19 +172,26 @@ void ClientScene::initialize_UI(GLFWwindow* window) {
 	media.mage_skills[3] = icon_load("../icon/skills/projectile.png");
 	media.mage_skills[1] = icon_load("../icon/skills/mage-aoe.png");
 	media.mage_skills[0] = icon_load("../icon/skills/mage-cone_aoe.png");
+	media.mage_silenced[1] = icon_load("../icon/skills/mage-aoe-silenced.png");
+	media.mage_silenced[0] = icon_load("../icon/skills/mage-cone_aoe-silenced.png");
 	media.warrior_skills[2] = icon_load("../icon/skills/evade.png");
 	media.warrior_skills[3] = icon_load("../icon/skills/projectile.png");
 	media.warrior_skills[1] = icon_load("../icon/skills/warrior-charge.png");
 	media.warrior_skills[0] = icon_load("../icon/skills/warrior-aoe.png");
+	media.warrior_silenced[1] = icon_load("../icon/skills/warrior-charge-silenced.png");
+	media.warrior_silenced[0] = icon_load("../icon/skills/warrior-aoe-silenced.png");
 	media.assassin_skills[2] = icon_load("../icon/skills/evade.png");
 	media.assassin_skills[3] = icon_load("../icon/skills/projectile.png");
 	media.assassin_skills[1] = icon_load("../icon/skills/assassin-invisiblity.png");
 	media.assassin_skills[0] = icon_load("../icon/skills/assassin-teleport.png");
+	media.assassin_silenced[1] = icon_load("../icon/skills/assassin-invisiblity-silenced.png");
+	media.assassin_silenced[0] = icon_load("../icon/skills/assassin-teleport-silenced.png");
 	media.king_skills[2] = icon_load("../icon/skills/evade.png");
 	media.king_skills[3] = icon_load("../icon/skills/projectile.png");
 	media.king_skills[1] = icon_load("../icon/skills/king-aoe.png");
 	media.king_skills[0] = icon_load("../icon/skills/king-silence.png");
-
+	media.king_silenced[1] = icon_load("../icon/skills/king-aoe.png");
+	media.king_silenced[0] = icon_load("../icon/skills/king-silence.png");
 }
 
 void  ClientScene::text_input(GLFWwindow *win, unsigned int codepoint)
@@ -708,6 +715,7 @@ void ClientScene::handleServerTickPacket(char * data) {
 	sz += sizeof(bool);
 	data += sizeof(bool);
 
+	//deserialize animation mode
     unordered_map<unsigned int, vector<int>> animationModes;
 	unsigned int animation_size = Serialization::deserializeAnimationMode(data, animationModes);
 	for (auto p : animationModes) {
