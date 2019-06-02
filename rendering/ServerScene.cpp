@@ -602,6 +602,17 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			auto adjustedSkill = Skill::calculateSkillBasedOnLevel(defaultSkill, defaultSkill.level);
 			auto finalLocation = initPoint + (adjustedSkill.range * direction);
 			warrior.setDestination(finalLocation);
+
+			float dotResult = glm::dot(glm::normalize(finalLocation - warrior.currentPos), warrior.currentOri);
+
+			if (abs(dotResult) < 1.0) {
+				float angle = glm::acos(dotResult);
+				//printf("rotate angle = %f", angle);
+				glm::vec3 axis = glm::cross(warrior.currentOri, glm::normalize(finalLocation - warrior.currentPos));
+				if (glm::length(axis) != 0) {
+					warrior.rotate(angle, axis);
+				}
+			}
 		}
 		default:
 		{

@@ -698,8 +698,8 @@ void ClientScene::handleServerTickPacket(char * data) {
 		player.isAlive = true;
 	}
 
-	int currKill = INT_MAX;
-	if (isCharging) currKill = leaderBoard->currentKills[player.player_id];
+	/*int currKill = INT_MAX;
+	if (isCharging) currKill = leaderBoard->currentKills[player.player_id];*/
 
 	// deserialize charge
 	memcpy(&isCharging, data, sizeof(bool));
@@ -713,6 +713,8 @@ void ClientScene::handleServerTickPacket(char * data) {
 		models[p.first].model->animationMode = p.second[1];
 	}
 	data += animation_size;
+
+	int currKill = leaderBoard->currentKills[player.player_id];
 
 	// deserialize leaderboard
 	unsigned int leaderBoard_size = 0;
