@@ -350,6 +350,9 @@ void ServerScene::checkAndHandlePlayerCollision(unsigned int playerId) {
 		for (auto& element : scenePlayers ) {
 			auto& otherPlayer = element.second;
 			if (otherPlayer.modelType == WARRIOR) continue;
+			unordered_map<unsigned int, PlayerMetadata*>::iterator s_it = playerMetadatas->find(otherPlayer.player_id);
+			PlayerMetadata* player_data = s_it->second;
+			if (!player_data->alive) continue;
 			if (otherPlayer.playerRoot->isCollided(forwardVector, model_radius, serverSceneGraphMap, player.playerRoot, model_boundingbox, false)) {
 				handlePlayerDeath(otherPlayer, player.player_id);
 			}	
