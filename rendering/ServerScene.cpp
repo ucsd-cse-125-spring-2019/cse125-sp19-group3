@@ -243,11 +243,6 @@ void ServerScene::update()
 
 		element.second.update();		
 	}
-
-	// set movement mode on all players accordingly
-	for (auto& element : scenePlayers) {
-		element.second.movementMode = element.second.currentPos == element.second.destination ? idle : run;
-	}
 }
 
 /*
@@ -596,6 +591,7 @@ void ServerScene::handlePlayerRespawn(unsigned int client_id)
   player.playerRoot->translation = glm::translate(glm::mat4(1.0f), target);
   player.currentPos = target;
   player.setDestination(target);
+  player.animationMode = spawn;
 }
 
 

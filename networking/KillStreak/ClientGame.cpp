@@ -304,7 +304,6 @@ void ClientGame::run() {
 			{
 				handleServerInputPacket(packet);
 			}
-
 			// Main render display callback. Rendering of objects is done here.
 			Window_static::display_callback(window);
 			// Idle callback. Updating objects, etc. can be done here.

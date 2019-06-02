@@ -705,7 +705,8 @@ void ClientScene::handleServerTickPacket(char * data) {
 	unsigned int animation_size = Serialization::deserializeAnimationMode(data, animationModes);
 	for (auto p : animationModes) {
 		models[p.first].model->movementMode = p.second[0]; // TODO: double check this (models)
-		models[p.first].model->animationMode = p.second[1];
+		if(models[p.first].model->animationMode == -1 || p.second[1] != -1)
+			models[p.first].model->animationMode = p.second[1];
 	}
 	data += animation_size;
 
@@ -722,6 +723,7 @@ void ClientScene::handleServerTickPacket(char * data) {
 		clientSceneGraphMap[player.root_id]->enabled = true;
 	}
 }
+
 
 void ClientScene::setRoot(Transform * newRoot) {
 	root = newRoot;

@@ -58,8 +58,9 @@ public:
 	void renderKillPhase(GLFWwindow* window);
 	void renderLobbyPhase(GLFWwindow* window);
 	void initialize_UI(GLFWwindow* window);
+
 private:
-	
+
 	float min_scroll = 20.0f;
 	float max_scroll = 60.0f;
 	const char* window_title = "CSE 125 Group 3";
