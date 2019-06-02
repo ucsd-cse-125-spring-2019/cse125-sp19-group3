@@ -93,6 +93,9 @@
     <ClInclude Include="..\Particle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Circle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\shader.cpp">
@@ -192,6 +195,12 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="..\particleShader.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\circleshader.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\circleshader.vert">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

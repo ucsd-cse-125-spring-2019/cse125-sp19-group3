@@ -11,6 +11,7 @@
 #include "Transform.h"
 #include "ScenePlayer.h"
 #include "Particle.h"
+#include "Circle.h"
 #include "../networking/KillStreak/ClientGame.h"
 #include "../networking/KillStreak/ClientNetwork.hpp"
 #include "../networking/KillStreak/CoreTypes.hpp"
@@ -24,6 +25,9 @@
 
 #define PARTICLE_VERTEX_SHADER_PATH "../particleShader.vert"
 #define PARTICLE_FRAGMENT_SHADER_PATH "../particleShader.frag"
+
+#define CIRCLE_VERTEX_SHADER_PATH "../circleshader.vert"
+#define CIRCLE_FRAGMENT_SHADER_PATH "../circleshader.frag"
 
 class ClientScene {
 public:
@@ -59,8 +63,10 @@ private:
 	float min_scroll = 20.0f;
 	float max_scroll = 60.0f;
 	const char* window_title = "CSE 125 Group 3";
-	Shader * animationShader, * staticShader, * particleShader;
+	Shader * animationShader, * staticShader, * particleShader, * circleShader;
 	Model * floor;
+	Model * arrow;
+	Circle * range;
 	ScenePlayer player;
 	Transform * root;
 	LeaderBoard* leaderBoard;

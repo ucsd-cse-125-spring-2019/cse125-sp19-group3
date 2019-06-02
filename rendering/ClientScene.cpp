@@ -58,6 +58,7 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network,
 	animationShader = new Shader(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
 	staticShader = new Shader(TOON_VERTEX_SHADER_PATH, TOON_FRAGMENT_SHADER_PATH);
 	particleShader = new Shader(PARTICLE_VERTEX_SHADER_PATH, PARTICLE_FRAGMENT_SHADER_PATH);
+	circleShader = new Shader(CIRCLE_VERTEX_SHADER_PATH, CIRCLE_FRAGMENT_SHADER_PATH);
 	particleTexture = loadTexture("../textures/flame.png");
 	ifstream json_model_paths("../model_paths.json");
 	json pathObjs = json::parse(json_model_paths);
@@ -98,8 +99,15 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network,
 	floor = new Model("../models/quad.obj", "../textures/floor.png", false);
 	floor->localMtx = glm::translate(glm::mat4(1.0f), glm::vec3(100.0f, 0.0f, 120.0f)) *
 		glm::rotate(glm::mat4(1.0f), -90.0f / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)) *
-		glm::scale(glm::mat4(1.0f), glm::vec3(2));
+		glm::scale(glm::mat4(1.0f), glm::vec3(200));
 
+	// Circle and arrow of directional skill rendering
+	range = new Circle();
+	range->localMtx = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, -0.8f));
+	arrow = new Model("../models/quad.obj", "../textures/arrow.png", false);
+	arrow->localMtx = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.0f, 10.0f)) *
+		glm::rotate(glm::mat4(1.0f), -90.0f / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)) *
+		glm::scale(glm::mat4(1.0f), glm::vec3(5));
 }
 
 void ClientScene::initialize_skills(ArcheType selected_type) {
@@ -131,9 +139,13 @@ void ClientScene::clean_up()
 {
 	delete(camera);
 	delete(root);
+	delete(floor);
+	delete(range);
+	delete(arrow);
 	delete(staticShader);
 	delete(animationShader);
 	delete(particleShader);
+	delete(circleShader);
 }
 
 void ClientScene::initialize_UI(GLFWwindow* window) {
@@ -371,6 +383,23 @@ void ClientScene::renderKillPhase(GLFWwindow* window) {
 
 	// players
 	root->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
+
+	// directional skill
+	if (player.action_state == ACTION_DIRECTIONAL_SKILL) {
+		glm::vec3 playerPos = glm::vec3(clientSceneGraphMap[player.root_id]->M[3][0], clientSceneGraphMap[player.root_id]->M[3][1], clientSceneGraphMap[player.root_id]->M[3][2]);
+		double xpos, ypos;
+		glfwGetCursorPos(window, &xpos, &ypos);
+		glm::vec3 direction = glm::normalize(viewToWorldCoordTransform(xpos, ypos) - playerPos);
+		float angle = glm::acos(glm::dot(direction, glm::vec3(0, 0, 1)));
+		glm::vec3 axis = glm::cross(direction, glm::vec3(0, 0, -1));
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_BLEND);
+		range->draw(circleShader, glm::translate(glm::mat4(1.0f), playerPos), vpMatrix);
+		arrow->draw(staticShader, glm::translate(glm::mat4(1.0f), playerPos) * glm::rotate(glm::mat4(1.0f), angle, axis), vpMatrix);
+		glDisable(GL_BLEND);
+
+	}
+
 	 /* Input */
 	glfwPollEvents();
 	nk_glfw3_new_frame();

@@ -533,7 +533,7 @@ unsigned int TextureFromFile(const string& path)
 	glGenTextures(1, &textureID);
 
 	int width, height, nrComponents;
-	unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrComponents, STBI_rgb);
+	unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrComponents, 0);
 	if (data)
 	{
 		GLenum format;
