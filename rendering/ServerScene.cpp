@@ -250,7 +250,7 @@ void ServerScene::update()
 	// set movement mode on all players accordingly
 	for (auto& element : scenePlayers) {
 		auto& character = element.second;
-		character.movementMode = character.currentPos == character.destination ? idle : run;
+		//character.movementMode = character.currentPos == character.destination ? idle : run;
 		if (character.modelType == WARRIOR) {
 			if (character.warriorIsChargingServer && character.currentPos == character.destination) {
 				warriorIsCharging = false;
@@ -655,6 +655,7 @@ void ServerScene::handlePlayerRespawn(unsigned int client_id)
   player.playerRoot->translation = glm::translate(glm::mat4(1.0f), target);
   player.currentPos = target;
   player.setDestination(target);
+  player.animationMode = spawn;
 }
 
 

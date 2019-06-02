@@ -39,53 +39,53 @@ void Model::draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &v
 
 void Model::BoneTransform(float timeToIncrement)
 {
-	if (animationMode != -1) {
-		animationTime = animation_frames[animationMode][0];
-		curr_mode = animationMode;
-		switch (animationMode) {
-		case evade:
-		case projectile:
-		case skill_1:
-		case skill_2:
-		case die:
-		case spawn:
-			animationMode = -1;
+	// ignore all input if we're still playing an active animation
+	if (isPlayingActiveAnimation) {
+		if (animationMode == spawn) {
+			curr_mode = animationMode;
 			animationTime = animation_frames[curr_mode][0];
-			break;
-		case idle:
-		case run: // just in case
 			animationMode = -1;
+		}
+
+		// death can trump all other active animations
+		else if (animationMode == die && curr_mode != die) {
+			curr_mode = animationMode;
+			animationTime = animation_frames[curr_mode][0];
+			animationMode = -1;
+		}
+
+		// done with active animation
+		else if (animationTime + timeToIncrement > animation_frames[curr_mode][1]) {
+			if (curr_mode != die) {
+				isPlayingActiveAnimation = false;
+				curr_mode = movementMode;
+				animationTime = animation_frames[curr_mode][0];
+			}
+		}
+		else {
 			animationTime += timeToIncrement;
-			break;
 		}
 	}
+	
+	// we have a request to start playing active animation
+	else if (animationMode != -1) {
+		curr_mode = animationMode;
+		isPlayingActiveAnimation = true;
+		animationTime = animation_frames[curr_mode][0];
+		animationMode = -1;
+	}
+
+	// no active animation playing and we don't want to start playing one, so play the movement animation
+
+	// we switched from walk <--> idle
 	else {
-		switch (curr_mode) {
-		case idle:
-		case run:
-			if (movementMode != prev_movementMode) {
-				prev_movementMode = movementMode;
-				curr_mode = movementMode;
-				animationTime = animation_frames[curr_mode][0];
-			}
-			else {
-				animationTime += timeToIncrement;
-			}
-			break;
-		case evade:
-		case projectile:
-		case skill_1:
-		case skill_2:
-		case die:
-		case spawn:
-			if (animationTime + timeToIncrement > animation_frames[curr_mode][1]) {
-				curr_mode = movementMode;
-				animationTime = animation_frames[curr_mode][0];
-			}
-			else {
-				animationTime += timeToIncrement;
-			}
-			break;
+		if (prev_movementMode != movementMode) {
+			prev_movementMode = movementMode;
+			curr_mode = movementMode;
+			animationTime = animation_frames[curr_mode][0];
+		}
+		else {
+			animationTime += timeToIncrement;
 		}
 	}
 	float animationDuration = animation_frames[curr_mode][1] - animation_frames[curr_mode][0];

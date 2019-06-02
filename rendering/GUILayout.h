@@ -4,6 +4,8 @@
 #define PROJ_INDEX 1
 #define OMNI_SKILL_INDEX 2
 #define DIR_SKILL_INDEX 3
+
+#define KILLED_TEXT_NUM 4
 const char * intToCharArray(int i) {
 	string s = std::to_string(i);
 	const int n = s.length();
@@ -181,16 +183,45 @@ static void ui_skills(struct nk_context *ctx, struct media *media, int width, in
 	nk_style_pop_color(ctx);
 	nk_style_pop_style_item(ctx);
 }
+
+
+static void ui_deadscreen(struct nk_context *ctx, struct media *media, int width, int height, int killTextDeterminant) {
+	int deathTextDisplay = killTextDeterminant% KILLED_TEXT_NUM;
+	//add a full screen layout that is grey with transparency 0.5
+	struct nk_style *s = &ctx->style;
+	nk_style_push_color(ctx, &s->window.background, nk_rgba(20, 20, 20, 140));
+	nk_style_push_style_item(ctx, &s->window.fixed_background, nk_style_item_color(nk_rgba(20, 20, 20, 140)));
+	if (nk_begin(ctx, "death screen", nk_rect(0, 0, width, height),
+		NK_WINDOW_NO_SCROLLBAR)) {
+		nk_style_set_font(ctx, &(media->font_64->handle));
+		nk_layout_row_dynamic(ctx, height*0.4, 1);
+		if (deathTextDisplay == 1)
+			nk_label(ctx, "You have been smashed!!!", NK_TEXT_CENTERED | NK_TEXT_ALIGN_CENTERED);
+		else if (deathTextDisplay == 2)
+			nk_label(ctx, "You have been strangled!!!", NK_TEXT_CENTERED | NK_TEXT_ALIGN_CENTERED);
+		else if (deathTextDisplay == 3)
+			nk_label(ctx, "You have been murdered!!!", NK_TEXT_CENTERED | NK_TEXT_ALIGN_CENTERED);
+		else
+			nk_label(ctx, "You have been shot through the heart!", NK_TEXT_CENTERED | NK_TEXT_ALIGN_CENTERED);
+		nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
+	} 
+	nk_end(ctx);
+	nk_style_pop_color(ctx);
+	nk_style_pop_style_item(ctx);
+}
 static void
 kill_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player,
-	vector<nanoseconds> skill_timers, LeaderBoard* leaderBoard, vector<string> usernames, vector<ArcheType> archetypes) {
+	vector<nanoseconds> skill_timers, LeaderBoard* leaderBoard, vector<string> usernames, vector<ArcheType> archetypes, int killTextDeterminant) {
 	
 	set_style(ctx, THEME_BLACK);
-
+	if (!player->isAlive) {
+		ui_deadscreen(ctx, media, width, height, killTextDeterminant);
+	}
 	ui_leaderboard(ctx, media, leaderBoard, usernames, archetypes);
 
 	ui_skills(ctx, media,  width,  height, player, skill_timers);
 	ui_killphase_header(ctx, media, width, height, 1, 10, 2);
+
 }
 
 static  void

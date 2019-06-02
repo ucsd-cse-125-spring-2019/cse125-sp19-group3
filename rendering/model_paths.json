@@ -46,7 +46,7 @@
       ],
       "rotate_angle": 0.0,
       "rotate_axis": [ 0.0, 1.0, 0.0 ],
-      "scale": 0.0004,
+      "scale": 0.0003,
       "animated": true,
       "radius": 1.5
     },
@@ -96,7 +96,7 @@
       ],
       "rotate_angle": 0.0,
       "rotate_axis": [ 0.0, 1.0, 0.0 ],
-      "scale": 0.020,
+      "scale": 0.025,
       "animated": true,
       "radius": 1.5
     },

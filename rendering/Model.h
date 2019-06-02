@@ -48,9 +48,11 @@ public:
 	bool isAnimated;
 	vector<string> m_Animations;
 	unsigned int curr_mode = spawn;
+	bool isPlayingActiveAnimation = true;
 	unsigned int prev_movementMode = idle;
 	int movementMode = idle;
 	int animationMode = -1;
+
 	float animationTime;
 	vector<vector<float>> animation_frames;
 	glm::mat4 localMtx = glm::mat4(1.0f);

@@ -58,8 +58,9 @@ public:
 	void renderKillPhase(GLFWwindow* window);
 	void renderLobbyPhase(GLFWwindow* window);
 	void initialize_UI(GLFWwindow* window);
+
 private:
-	
+
 	float min_scroll = 20.0f;
 	float max_scroll = 60.0f;
 	const char* window_title = "CSE 125 Group 3";
@@ -68,7 +69,7 @@ private:
 	ScenePlayer player;
 	Transform * root;
 	LeaderBoard* leaderBoard;
-
+	int killTextDeterminant = 0;
 	std::unordered_map<unsigned int, ModelData> models;
 	std::unordered_set<unsigned int> updated_ids;
 
