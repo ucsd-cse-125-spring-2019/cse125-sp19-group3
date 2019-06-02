@@ -41,6 +41,9 @@ ServerGame::ServerGame(string host, string port, double tick_rate)
 	playerMetadatas     = new unordered_map<unsigned int, PlayerMetadata*>();
 	archetype_skillset  = new unordered_map<ArcheType, vector<unsigned int>>();
 
+	archetypes = vector<int>(GAME_SIZE);
+	usernames = vector<string>(GAME_SIZE);
+
 	// initialize global skill map; load skills from config into skills maps
 	readMetaDataForSkills();	
 
@@ -50,6 +53,7 @@ ServerGame::ServerGame(string host, string port, double tick_rate)
 	scheduledEvent = ScheduledEvent(END_KILLPHASE, 10000000); // default huge value
 
 	char_select_lock = new mutex();
+
 }
 
 
@@ -304,7 +308,9 @@ void ServerGame::game_match()
 	for (auto client_data : client_data_list) {
 		unsigned int client_id = client_data->id;
 		unordered_map<unsigned int, PlayerMetadata*>::iterator m_it = playerMetadatas->find(client_id);
-		ArcheType cur_type = m_it->second->type;
+		ArcheType cur_type	  = m_it->second->type;
+		usernames[client_id]  = m_it->second->username;		// set username
+		archetypes[client_id] = cur_type;					// set archetype
 		scene->addPlayer(client_id, cur_type);
 	}
 
@@ -459,6 +465,24 @@ ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsig
 	char buf[10000] = { 0 };
 	char * bufPtr = buf;
 
+	// serialize all usernames; PlayerMeta.username
+	for (int client_id = 0; client_id < usernames.size(); client_id++)
+	{
+		char truncUsername[16] = { 0 };
+		memcpy(truncUsername, usernames[client_id].c_str(), usernames[client_id].length());
+
+		// serialize sizusername 
+		memcpy(bufPtr, truncUsername, 16);
+		bufPtr += 16;
+	}
+
+	// serialize all archetypes
+	for (int client_id = 0; client_id < archetypes.size(); client_id++)
+	{
+		memcpy(bufPtr, &archetypes[client_id], sizeof(int));
+		bufPtr += sizeof(int);
+	}
+
 	memcpy(bufPtr, &playerId, sizeof(unsigned int));
 	bufPtr += sizeof(unsigned int);
 	memcpy(bufPtr, &playerRootId, sizeof(unsigned int));
@@ -468,14 +492,13 @@ ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsig
 	return createServerPacket(INIT_SCENE, 10000, buf);
 }
 
+//static int packetCounter = 0;
 
 /*
 	Create packet with serialized scene graph and leaderboard.
 */
 ServerInputPacket ServerGame::createServerTickPacket() {
-
 	ServerInputPacket packet;		
-
 	unsigned int sgSize = 0;
 	char buf[SERVER_TICK_PACKET_SIZE] = { 0 };
 
@@ -488,11 +511,21 @@ ServerInputPacket ServerGame::createServerTickPacket() {
 	sgSize += sizeof(died_this_tick);
 	bufPtr += sizeof(died_this_tick);
 
-	// serialize charge; if you're warrior, whether or not you're done with charge; second byte
+	/*
+	memcpy(bufPtr, &packetCounter, sizeof(int));
+	packetCounter++;
+	sgSize += sizeof(int);
+	bufPtr += sizeof(int);
+	*/
 	memcpy(bufPtr, &(scene->warriorIsDoneCharging), sizeof(bool));
 	bufPtr += sizeof(bool);
 	sgSize += sizeof(bool);
 	scene->warriorIsDoneCharging = false;
+
+	unsigned int animation_size = 0;
+	animation_size = Serialization::serializeAnimationMode(scene->scenePlayers, bufPtr); // TODO: double check that this function is correctly returning size
+	bufPtr += animation_size;
+	sgSize += animation_size;
 
 	// serealize leaderboard
 	unsigned int leaderBoard_size = 0;

@@ -2,7 +2,7 @@
   "data": [
     {
       "path": "../models/mage/mage.dae",
-      "texture_path": "../textures/skeleton_mage_yellow.tga",
+      "texture_path": "../textures/skeleton_mage_blue.tga",
       "animations": [
         [ 390, 470 ],
         [ 853, 876 ],
@@ -77,7 +77,7 @@
     },
     {
       "path": "../models/king/allinone.fbx",
-      "texture_path": "../textures/skeleton_king_yellow.tga",
+      "texture_path": "../textures/skeleton_king_green.tga",
       "animations": [
         [ 60, 119 ],
         [ 1110, 1139 ],

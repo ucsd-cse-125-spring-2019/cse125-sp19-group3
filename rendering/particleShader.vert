@@ -7,7 +7,6 @@ layout(location = 2) in vec4 color; // Position of the center of the particule a
 
 // Output data ; will be interpolated for each fragment.
 out vec2 UV;
-out vec4 particlecolor;
 
 // Values that stay constant for the whole mesh.
 uniform vec3 CameraRight_worldspace;
@@ -29,6 +28,5 @@ void main()
 
 	// UV of the vertex. No special space for this one.
 	UV = squareVertices.xy + vec2(0.5, 0.5);
-	particlecolor = color;
 }
 

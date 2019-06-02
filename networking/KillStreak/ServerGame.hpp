@@ -73,6 +73,9 @@ protected:
 	unordered_map<ArcheType, int> *selected_characters;							// Map selected character to client_id
 	unordered_map<ArcheType, vector<unsigned int>> *archetype_skillset;
 
+	vector<int> archetypes;					// list of all client archetypes indexed by client id
+	vector<string> usernames;				// list of all client usernames indexed by client id
+
 	ServerScene * scene;
 	ServerNetwork* network;					// ptr to servers network
 	mutex* char_select_lock;				// lock for character selection
