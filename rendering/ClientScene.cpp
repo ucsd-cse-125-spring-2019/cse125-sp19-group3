@@ -698,6 +698,9 @@ void ClientScene::handleServerTickPacket(char * data) {
 	int packetCount;
 	memcpy(&packetCount, data, sizeof(int));
 	data += sizeof(int);
+
+	logger()->debug("PACKET: {}", packetCount);
+
     unordered_map<unsigned int, vector<int>> animationModes;
 	unsigned int animation_size = Serialization::deserializeAnimationMode(data, animationModes);
 	for (auto p : animationModes) {
@@ -710,7 +713,6 @@ void ClientScene::handleServerTickPacket(char * data) {
 	unsigned int leaderBoard_size = 0;
 	leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
 	data += leaderBoard_size;
-
    
 	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap, particleTexture, particleShader);
 

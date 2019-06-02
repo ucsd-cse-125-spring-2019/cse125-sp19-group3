@@ -509,6 +509,8 @@ ServerInputPacket ServerGame::createServerTickPacket() {
 	sgSize += sizeof(died_this_tick);
 	bufPtr += sizeof(died_this_tick);
 
+	logger()->debug("PACKET: {}", packetCounter);
+
 	memcpy(bufPtr, &packetCounter, sizeof(int));
 	packetCounter++;
 	sgSize += sizeof(int);

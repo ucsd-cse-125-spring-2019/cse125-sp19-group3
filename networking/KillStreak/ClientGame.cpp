@@ -8,7 +8,6 @@
 #include "../../rendering/ClientScene.h"
 #include "../../rendering/Serialization.h"
 
-
 /*
 	Contains pointer to network and queue that will store all 
 	incoming packets from server.
@@ -17,6 +16,7 @@ typedef struct {
 	std::queue<ServerInputPacket*>* queuePtr;
 	ClientNetwork* network;
 	mutex* q_lock;
+	ClientStatus* currPhase;
 } server_data;
 
 
@@ -133,10 +133,13 @@ void constantListenFromServer(void *arg)
 	mutex* q_lock = server_arg->q_lock;
 	ServerInputQueue* q_ptr = server_arg->queuePtr;
 	ClientNetwork* network = server_arg->network;
+	ClientStatus* curr_phase = server_arg->currPhase;
 
 	log->info("Launching thread on client to listen to server");
 	int keep_conn = 1;					// keep connection alive
 	do {
+
+		while ( *curr_phase != KILL ) {};
 
 		// get packet from client
 		ServerInputPacket* packet = network->receivePacket();
@@ -226,16 +229,17 @@ int ClientGame::join_game()
 int ClientGame::waitingInitScene() {
 	auto log = logger();
 
-	ServerInputPacket * initScenePacket = network->receivePacket();
-	handleServerInputPacket(initScenePacket);
+	//ServerInputPacket * initScenePacket = network->receivePacket();
+	//handleServerInputPacket(initScenePacket);
 
 	// allocate new data for server thread & launch (will recv() indefinitely)
 	server_data* server_arg = (server_data *)malloc(sizeof(server_data));
 	if (server_arg)
 	{
-		server_arg->q_lock = q_lock;				// ptr to queue lock
-		server_arg->queuePtr = serverPackets;		// ptr to server input queue
-		server_arg->network = network;				// ptr to network
+		server_arg->q_lock    = q_lock;				// ptr to queue lock
+		server_arg->queuePtr  = serverPackets;		// ptr to server input queue
+		server_arg->network   = network;			// ptr to network
+		server_arg->currPhase = &currPhase;			// ptr to current phase
 		_beginthread(constantListenFromServer, 0, (void*)server_arg);	
 	}
 	else	// error allocating server data; 
@@ -244,8 +248,8 @@ int ClientGame::waitingInitScene() {
 		closesocket(network->ConnectSocket);
 		return 0;
 	}
-	currPhase = KILL;
-	setup_callbacks(currPhase);
+	//currPhase = KILL;
+	//setup_callbacks(currPhase);
 	return 1;
 }
 
@@ -262,6 +266,7 @@ void ClientGame::run() {
 		return;
 	}
 
+
 	// GAME STARTING ******************************************************
 	// This part will run after all players have selected their characters!
 
@@ -274,12 +279,17 @@ void ClientGame::run() {
 	// Setup callbacks
 	setup_callbacks(currPhase);
 
+	// launch thread to receive packets 
+	waitingInitScene(); 
+
 	// Initialize objects/pointers for rendering
 	Window_static::initialize_objects(this, network, leaderBoard);
 	Window_static::initialize_UI(window);
 	// Loop while GLFW window should stay open
 	while (!glfwWindowShouldClose(window))
 	{
+		vector<ServerInputPacket*> inputPackets;
+
 		// Lobby Phase
 		if (currPhase == ClientStatus::LOBBY) {
 			Window_static::display_callback(window);
@@ -287,8 +297,28 @@ void ClientGame::run() {
 		else if (currPhase == ClientStatus::KILL) {
 			// Kill Phase
 			auto start = Clock::now();
+
+			// TODO: Loop through queue empty all packets
+			/*
 			ServerInputPacket* packet = network->receivePacket();
 			handleServerInputPacket(packet);
+			*/
+
+			// acquire lock & empty all packets from server
+			q_lock->lock();
+			while (!(serverPackets->empty()))
+			{
+				inputPackets.push_back(serverPackets->front());
+				serverPackets->pop();
+			}
+			q_lock->unlock();
+
+			// handle all packets from server
+			for (auto& packet : inputPackets)
+			{
+				handleServerInputPacket(packet);
+			}
+
 
 			// Main render display callback. Rendering of objects is done here.
 			Window_static::display_callback(window);
