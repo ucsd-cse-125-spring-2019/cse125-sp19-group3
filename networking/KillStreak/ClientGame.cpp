@@ -244,7 +244,34 @@ int ClientGame::waitingInitScene() {
 		closesocket(network->ConnectSocket);
 		return 0;
 	}
-	currPhase = KILL;
+	return 1;
+}
+
+int ClientGame::switchPhase() {
+	auto log = logger();
+	switch (currPhase) {
+		case LOBBY:
+			if (waitingInitScene() == 0)
+				return 0;
+			currPhase = KILL;
+			std::chrono::seconds secKill0(5);
+			prepareTimer = nanoseconds(secKill0);
+			break;
+		case KILL:
+			// TODO: waitingPreparePacket() -- need to direct to FINAL phase as well
+			std::chrono::seconds secPre(15);
+			prepareTimer = nanoseconds(secPre);
+			currPhase = PREPARE;
+			break;
+		case PREPARE:
+			 //TODO: waitingServerTickPacket()
+			currPhase = KILL;
+			std::chrono::seconds secKill(5);
+			prepareTimer = nanoseconds(secKill);
+			break;
+		default:
+			break;
+	}
 	setup_callbacks(currPhase);
 	return 1;
 }
@@ -277,6 +304,7 @@ void ClientGame::run() {
 	// Initialize objects/pointers for rendering
 	Window_static::initialize_objects(this, network, leaderBoard);
 	Window_static::initialize_UI(window);
+
 	// Loop while GLFW window should stay open
 	while (!glfwWindowShouldClose(window))
 	{
@@ -285,11 +313,24 @@ void ClientGame::run() {
 			Window_static::display_callback(window);
 		}
 		else if (currPhase == ClientStatus::KILL) {
+
 			// Kill Phase
 			auto start = Clock::now();
-			ServerInputPacket* packet = network->receivePacket();
-			handleServerInputPacket(packet);
+			
+			q_lock->lock();
+			vector<ServerInputPacket*> inputPackets;
+			while (!(serverPackets->empty()))
+			{
+				inputPackets.push_back(serverPackets->front());
+				serverPackets->pop();
+			}
+			q_lock->unlock();
 
+			// handle all packets from server
+			for (auto& packet : inputPackets)
+			{
+				handleServerInputPacket(packet);
+			}
 			// Main render display callback. Rendering of objects is done here.
 			Window_static::display_callback(window);
 			// Idle callback. Updating objects, etc. can be done here.
@@ -299,10 +340,15 @@ void ClientGame::run() {
 			auto end = Clock::now();
 			nanoseconds elapsed = chrono::duration_cast<nanoseconds>(end - start);
 			Window_static::updateTimers(elapsed);
+			prepareTimer -= elapsed;
 		}
 		else {
 			// Prepare Phase
-
+			auto start = Clock::now();
+			Window_static::display_callback(window);
+			auto end = Clock::now();
+			prepareTimer -= chrono::duration_cast<nanoseconds>(end - start);
+			
 		}
 
 		

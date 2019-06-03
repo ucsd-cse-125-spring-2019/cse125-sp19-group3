@@ -22,14 +22,37 @@ unordered_map<string, ArcheType> archetype_map = {
 };	
 
 
+// reset players kill streak in vector sent to all clients
+void LeaderBoard::resetKillStreak(unsigned int player_id) 
+{
+	killStreaks[player_id] = 0;
+}
+
+
+// increment players killstreak in vector sent to all clients
+void LeaderBoard::incKillStreak(unsigned int player_id)
+{
+	int curr_ks = killStreaks[player_id];
+	killStreaks[player_id] = ++curr_ks;
+}
+
+
 /*
-	Award kill to player by incrementing their kill score at index 'player_id'
+	Award kill to player on rounds leaderboard by incrementing their kill score at index 'player_id'
 	in the currentKills vector.
 */
-void LeaderBoard::awardKill(unsigned int player_id)
+void LeaderBoard::awardKillRound(unsigned int player_id)
 {
 	int kills = currentKills[player_id];
 	currentKills[player_id] = ++kills;
+}
+
+
+// Award kill to player on global leaderboard
+void LeaderBoard::awardKillGlobal(unsigned int player_id)
+{
+	int kills = globalKills[player_id];
+	globalKills[player_id] = ++kills;
 }
 
 /*
@@ -41,6 +64,14 @@ void LeaderBoard::awardPoint(unsigned int player_id)
 {
 	int cur_score = currPoints[player_id];
 	currPoints[player_id] = cur_score + KILL_POINTS;
+}
+
+
+// increment players death count
+void LeaderBoard::incDeath(unsigned int player_id) 
+{
+	int currDeaths = currentDeaths[player_id];
+	currentDeaths[player_id] = ++currDeaths;
 }
 
 
@@ -152,6 +183,38 @@ void LeaderBoard::printCurrPoints()
 	while (it != currPoints.end())
 	{
 		logger()->debug("Player {}: {} points", cur_player, *it);
+		it++; cur_player++;
+	}
+}
+
+
+/*
+	Mainly for testing purposes, print each value in killstreaks vector
+	of leaderboard.
+*/
+void LeaderBoard::printCurrentKillStreaks()
+{
+	int cur_player = 0;
+	vector<int>::iterator it = killStreaks.begin();
+	while (it != killStreaks.end())
+	{
+		logger()->debug("Player {}: {} Killstreak", cur_player, *it);
+		it++; cur_player++;
+	}
+}
+
+
+/*
+	Mainly for testing purposes, print each value in deathcount vector
+	of leaderboard.
+*/
+void LeaderBoard::printDeathCount()
+{
+	int cur_player = 0;
+	vector<int>::iterator it = currentDeaths.begin();
+	while (it != currentDeaths.end())
+	{
+		logger()->debug("Player {}: {} deaths", cur_player, *it);
 		it++; cur_player++;
 	}
 }

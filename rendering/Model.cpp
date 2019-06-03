@@ -39,37 +39,57 @@ void Model::draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &v
 
 void Model::BoneTransform(float timeToIncrement)
 {
-	if (animationMode != prev_animationMode) {
-		animationTime = animation_frames[animationMode][0];
-		prev_animationMode = animationMode;
-	}
-	else {
-		switch (animationMode) {
-		case idle:
-		case run:
+	// ignore all input if we're still playing an active animation
+	if (isPlayingActiveAnimation) {
+		if (animationMode == spawn) {
+			curr_mode = animationMode;
+			animationTime = animation_frames[curr_mode][0];
+			animationMode = -1;
+		}
+
+		// death can trump all other active animations
+		else if (animationMode == die && curr_mode != die) {
+			curr_mode = animationMode;
+			animationTime = animation_frames[curr_mode][0];
+			animationMode = -1;
+		}
+
+		// done with active animation
+		else if (animationTime + timeToIncrement > animation_frames[curr_mode][1]) {
+			if (curr_mode != die) {
+				isPlayingActiveAnimation = false;
+				curr_mode = movementMode;
+				animationTime = animation_frames[curr_mode][0];
+			}
+		}
+		else {
 			animationTime += timeToIncrement;
-			break;
-		case evade:
-		case projectile:
-		case skill_1:
-		case skill_2:
-		case die:
-		case spawn:
-			if (animationTime + timeToIncrement > animation_frames[animationMode][1]) {
-				animationMode = idle;
-				prev_animationMode = idle;
-				animationTime = animation_frames[idle][0];
-			}
-			else {
-				animationTime += timeToIncrement;
-			}
-			break;
 		}
 	}
 	
+	// we have a request to start playing active animation
+	else if (animationMode != -1) {
+		curr_mode = animationMode;
+		isPlayingActiveAnimation = true;
+		animationTime = animation_frames[curr_mode][0];
+		animationMode = -1;
+	}
 
-	float animationDuration = animation_frames[animationMode][1] - animation_frames[animationMode][0];
-	animationTime = animation_frames[animationMode][0] + fmod(animationTime - animation_frames[animationMode][0], animationDuration);
+	// no active animation playing and we don't want to start playing one, so play the movement animation
+
+	// we switched from walk <--> idle
+	else {
+		if (prev_movementMode != movementMode) {
+			prev_movementMode = movementMode;
+			curr_mode = movementMode;
+			animationTime = animation_frames[curr_mode][0];
+		}
+		else {
+			animationTime += timeToIncrement;
+		}
+	}
+	float animationDuration = animation_frames[curr_mode][1] - animation_frames[curr_mode][0];
+	animationTime = animation_frames[curr_mode][0] + fmod(animationTime - animation_frames[curr_mode][0], animationDuration);
 
 	/*float TicksPerSecond = scene->mAnimations[0]->mTicksPerSecond != 0 ?
 		scene->mAnimations[0]->mTicksPerSecond : 25.0f;

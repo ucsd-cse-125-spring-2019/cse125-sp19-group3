@@ -2,7 +2,7 @@
   "data": [
     {
       "path": "../models/mage/mage.dae",
-      "texture_path": "../textures/skeleton_mage_yellow.tga",
+      "texture_path": "../textures/skeleton_mage_blue.tga",
       "animations": [
         [ 390, 470 ],
         [ 853, 876 ],
@@ -48,7 +48,7 @@
       ],
       "rotate_angle": 0.0,
       "rotate_axis": [ 0.0, 1.0, 0.0 ],
-      "scale": 0.0004,
+      "scale": 0.0003,
       "animated": true,
       "radius": 1.5
     },
@@ -80,7 +80,7 @@
     },
     {
       "path": "../models/king/allinone.fbx",
-      "texture_path": "../textures/skeleton_king_yellow.tga",
+      "texture_path": "../textures/skeleton_king_green.tga",
       "animations": [
         [ 60, 119 ],
         [ 983, 1032 ],
@@ -100,7 +100,7 @@
       ],
       "rotate_angle": 0.0,
       "rotate_axis": [ 0.0, 1.0, 0.0 ],
-      "scale": 0.020,
+      "scale": 0.025,
       "animated": true,
       "radius": 1.5
     },

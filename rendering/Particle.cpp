@@ -184,7 +184,7 @@ void Particles::update(glm::vec3 move) {
 }
 
 void Particles::reinitParticle(Particle& p) {
-	p.life = 0.07f + (rand() % 2000) / 10000.0f;
+	p.life = 0.07f + (rand() % 2000) / 8000.0f;
 	p.pos = translation + glm::vec3(0.0f, 1.5f, 1.0f);
 
 	float spread = 5.0f;
