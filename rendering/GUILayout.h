@@ -12,7 +12,6 @@ const char * intToCharArray(int i) {
 	return s.c_str();
 }
 
-
 // order leaderboard by kills, most first
 static void ui_leaderboard(struct nk_context *ctx, struct media *media,
 	LeaderBoard* leaderBoard, vector<string> usernames, vector<ArcheType> archetypes ) {
@@ -225,19 +224,82 @@ static void ui_deadscreen(struct nk_context *ctx, struct media *media, int width
 	nk_style_pop_color(ctx);
 	nk_style_pop_style_item(ctx);
 }
+
+static void title_style(struct nk_context *ctx, struct media *media, int width) {
+	if (width < 600) {
+		nk_style_set_font(ctx, &((*media).font_20->handle));
+	}
+	else if (width < 900) {
+		nk_style_set_font(ctx, &((*media).font_32->handle));
+	}
+	else if (width < 1200) {
+		nk_style_set_font(ctx, &((*media).font_48->handle));
+	}
+	else {
+		nk_style_set_font(ctx, &((*media).font_64->handle));
+	}
+}
+
+static void timer_style(struct nk_context *ctx, struct media *media, int width) {
+	if (width < 600) {
+		nk_style_set_font(ctx, &((*media).font_18->handle));
+	}
+	else if (width < 900) {
+		nk_style_set_font(ctx, &((*media).font_22->handle));
+	}
+	else if (width < 1200) {
+		nk_style_set_font(ctx, &((*media).font_32->handle));
+	}
+	else {
+		nk_style_set_font(ctx, &((*media).font_48->handle));
+	}
+}
+
+static void ui_prepare_title(struct nk_context *ctx, struct media *media, int width, int height, char * title, ClientGame * game) {
+	if (nk_begin(ctx, "Prepare Phase", nk_rect(0, 0, width, height*0.16),
+		NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
+	{
+		nk_layout_row_static(ctx, height*0.042, 10, 1);
+		static const float ratio[] = { 0.5f, 0.5f };
+		nk_layout_row(ctx, NK_DYNAMIC, 40, 2, ratio);
+		title_style(ctx, media, width);
+		nk_text(ctx, title, strlen(title), NK_TEXT_RIGHT);
+
+		if (game->prepareTimer > std::chrono::seconds::zero()) {
+			timer_style(ctx, media, width);
+			auto timeExpr = chrono::duration_cast<chrono::seconds>(game->prepareTimer);
+			string result_string = to_string(timeExpr.count());
+			char * result = new char[100];
+			strcpy(result, ("Time Left:  " + result_string).c_str());
+			//const char* result = ("Time Left:  " + result_string).c_str();
+			nk_text(ctx, result, strlen(result), NK_TEXT_LEFT);
+		}
+		else {
+			game->switchPhase();
+		}
+
+	}
+	nk_end(ctx);
+}
+
 static void
 kill_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player,
-	vector<nanoseconds> skill_timers, LeaderBoard* leaderBoard, vector<string> usernames, vector<ArcheType> archetypes, int killTextDeterminant) {
+	vector<nanoseconds> skill_timers, LeaderBoard* leaderBoard, vector<string> usernames, vector<ArcheType> archetypes,
+	int killTextDeterminant, ClientGame* game) {
 	
-	set_style(ctx, THEME_BLACK);
-	if (!player->isAlive) {
-		ui_deadscreen(ctx, media, width, height, killTextDeterminant);
+	if (game->prepareTimer > std::chrono::seconds::zero()) {
+		set_style(ctx, THEME_BLACK);
+		if (!player->isAlive) {
+			ui_deadscreen(ctx, media, width, height, killTextDeterminant);
+		}
+		ui_leaderboard(ctx, media, leaderBoard, usernames, archetypes);
+
+		ui_skills(ctx, media, width, height, player, skill_timers);
+		ui_killphase_header(ctx, media, width, height, 1, player->gold, 2);
 	}
-	ui_leaderboard(ctx, media, leaderBoard, usernames, archetypes);
-
-	ui_skills(ctx, media,  width,  height, player, skill_timers);
-	ui_killphase_header(ctx, media, width, height, 1, 10, 2);
-
+	else {
+		game->switchPhase();
+	}
 }
 
 static  void
@@ -314,50 +376,83 @@ lobby_layout(struct nk_context *ctx, struct media *media, int width, int height,
 		selected = false;
 	}
 	else if (selected) {
-		game->waitingInitScene();
+		game->switchPhase();
 	}
 }
 
 static  void
-prepare_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player) {
+summary_layout(struct nk_context *ctx, struct media *media, int width, int height, ClientGame * game) {
+	set_style(ctx, THEME_BLACK);
+	ui_prepare_title(ctx, media, width, height, "SUMMARY", game);
+}
+
+static  void
+prepare_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, ClientGame * game) {
 	
 	set_style(ctx, THEME_BLACK);
-	if (nk_begin(ctx, "Prepare", nk_rect(0, 0, width, height),
+	ui_prepare_title(ctx, media, width, height, "SHOP", game);
+
+	if (nk_begin(ctx, "Prepare", nk_rect(0, height*0.16, width, height*0.84),
 		NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR
 	))
 	{
 		char* skill_string [4] = { "Evade", "Projectile", "AOE", "Cone AOE" };
 		char* prices[4] = { "5", "10", "15", "20" };
 
-		static int op = 0;
-		static const float ratio[] = { 0.35f, 0.3f, 0.35f };  /* 0.3 + 0.4 + 0.3 = 1 */
-		nk_layout_row_static(ctx, 0.15*height, 15, 1);
+		nk_layout_row_static(ctx, 0.1*height, 15, 1);
 
-		static const float choice_ratio[] = { 0.12f, 0.19f, 0.19f, 0.19f, 0.19f,0.12f };
-
-		nk_layout_row(ctx, NK_DYNAMIC, height *0.35, 6, choice_ratio);
+		static const float choice_ratio[] = { 0.2f, 0.2f, 0.2f, 0.2f, 0.2f };
+		nk_layout_row(ctx, NK_DYNAMIC, height *0.4, 5, choice_ratio);
 		nk_spacing(ctx, 1);
-		for (int i = 0; i < 4; i++) {
-			if (nk_group_begin(ctx, skill_string[i], NK_WINDOW_NO_SCROLLBAR)) { // column 1
-				nk_layout_row_dynamic(ctx, width *0.18, 1); // nested row
+		for (int j = 0; j < 3; j++) {
+			int i = j / 2;
+			if (j % 2 == 0) {
+				if (nk_group_begin(ctx, skill_string[i], NK_WINDOW_NO_SCROLLBAR)) { // column 1
+					nk_layout_row_dynamic(ctx, width *0.15, 1); // nested row
 
-				nk_image(ctx, media->mage_skills[i]);
-				//nk_layout_row_static(ctx, 0.1*height, 15, 1);
-				nk_layout_row_dynamic(ctx, 20, 1);
-				if (nk_option_label(ctx, skill_string[i], op == i)) op = i;
-				nk_text(ctx, prices[i], strlen(prices[i]), NK_TEXT_RIGHT);
+					nk_image(ctx, media->mage_skills[i]);
+					nk_layout_row_dynamic(ctx, 20, 1);
+					nk_text(ctx, skill_string[i], strlen(skill_string[i]), NK_TEXT_LEFT);
+					nk_text(ctx, prices[i], strlen(prices[i]), NK_TEXT_LEFT);
+					nk_layout_row_dynamic(ctx, 20, 1);
+					if (nk_button_label(ctx, "LEVEL UP")) {
+						//TODO: level up
+					}
 
-				nk_group_end(ctx);
+					nk_group_end(ctx);
+				}
+			}
+			else {
+				nk_spacing(ctx, 1);
 			}
 		}
-		nk_spacing(ctx, 1);
 
-		//horizontal centered
-		nk_layout_row(ctx, NK_DYNAMIC, 50, 3, ratio);
+		nk_spacing(ctx, 0.3);
+
+		nk_layout_row(ctx, NK_DYNAMIC, height *0.4, 5, choice_ratio);
 		nk_spacing(ctx, 1);
-		if (nk_button_label(ctx, "Confirm"))
-			fprintf(stdout, "button pressed\n" );
-		nk_spacing(ctx, 1);
+		for (int j = 2; j < 5; j++) {
+			int i = j / 2 + 1;
+			if (j % 2 == 0) {
+				if (nk_group_begin(ctx, skill_string[i], NK_WINDOW_NO_SCROLLBAR)) { // column 1
+					nk_layout_row_dynamic(ctx, width *0.15, 1); // nested row
+
+					nk_image(ctx, media->mage_skills[i]);
+					nk_layout_row_dynamic(ctx, 20, 1);
+					nk_text(ctx, skill_string[i], strlen(skill_string[i]), NK_TEXT_LEFT);
+					nk_text(ctx, prices[i], strlen(prices[i]), NK_TEXT_LEFT);
+					nk_layout_row_dynamic(ctx, 20, 1);
+					if (nk_button_label(ctx, "LEVEL UP")) {
+						//TODO: level up
+					}
+
+					nk_group_end(ctx);
+				}
+			}
+			else {
+				nk_spacing(ctx, 1);
+			}
+		}
 
 	}
 	nk_end(ctx);
