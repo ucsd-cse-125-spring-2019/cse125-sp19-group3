@@ -11,6 +11,7 @@
 #include "Transform.h"
 #include "ScenePlayer.h"
 #include "Particle.h"
+#include "Audio.h"
 #include "../networking/KillStreak/ClientGame.h"
 #include "../networking/KillStreak/ClientNetwork.hpp"
 #include "../networking/KillStreak/CoreTypes.hpp"
@@ -60,9 +61,8 @@ public:
 	void renderSummaryPhase(GLFWwindow* window);
 	void initialize_UI(GLFWwindow* window);
 	bool checkInAnimation();
-
 private:
-
+	Audio audio;
 	float min_scroll = 20.0f;
 	float max_scroll = 60.0f;
 	const char* window_title = "CSE 125 Group 3";
