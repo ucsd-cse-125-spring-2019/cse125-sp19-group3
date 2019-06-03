@@ -57,6 +57,9 @@ public:
 
 	const int NUM_THREADS = 8;
 
+	int end_kill_phase = 0;			// true if any client initiated end_kill_phase
+	int total_end_kill_packets = 0; // number of end_kill_phase packets received from clients 
+
 protected:
 	PCSTR host;
 	PCSTR port;
@@ -85,11 +88,12 @@ protected:
 	// create packet for server to send to client
 	ServerInputPacket createServerPacket(ServerPacketType type, int temp, char* data);
 	ServerInputPacket createInitScenePacket(unsigned int playerId, unsigned int playerRootid);
+	ServerInputPacket createStartPrepPhasePacket();
 	ServerInputPacket createServerTickPacket();
 	ServerInputPacket createWelcomePacket();
 	ServerInputPacket createCharSelectPacket(char* data, int size);
 	
-	void handleClientInputPacket(ClientInputPacket* packet, int client_id);
+	int handleClientInputPacket(ClientInputPacket* packet, int client_id);
 
 	friend class ScenePlayer;
 };

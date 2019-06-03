@@ -80,12 +80,14 @@ unsigned int Serialization::serializeLeaderBoard(char* lb_data, LeaderBoard* lea
 		size += sizeof(int);
 		lb_data += sizeof(int);
 	}
+	/*
 	for (int i = 0; i < GAME_SIZE; i++)			// prizes
 	{
 		memcpy(lb_data, &leaderBoard->prizes[i], sizeof(int));
 		size += sizeof(int);
 		lb_data += sizeof(int);
 	}
+	*/
 	for (int i = 0; i < GAME_SIZE; i++)			// killstreak
 	{
 		memcpy(lb_data, &leaderBoard->killStreaks[i], sizeof(int));
@@ -96,6 +98,12 @@ unsigned int Serialization::serializeLeaderBoard(char* lb_data, LeaderBoard* lea
 	for (int i = 0; i < GAME_SIZE; i++)			// deaths
 	{
 		memcpy(lb_data, &leaderBoard->currentDeaths[i], sizeof(int));
+		size += sizeof(int);
+		lb_data += sizeof(int);
+	}
+	for (int i = 0; i < GAME_SIZE; i++)			// global kills
+	{
+		memcpy(lb_data, &leaderBoard->globalKills[i], sizeof(int));
 		size += sizeof(int);
 		lb_data += sizeof(int);
 	}
@@ -123,12 +131,14 @@ unsigned int Serialization::deserializeLeaderBoard(char* lb_data, LeaderBoard* l
 		lb_data += sizeof(int);
 		sz += sizeof(int);
 	}
+	/*
 	for (int i = 0; i < GAME_SIZE; i++)		// prizes
 	{
 		memcpy(&leaderBoard->prizes[i], lb_data, sizeof(int));
 		lb_data += sizeof(int);
 		sz += sizeof(int);
 	}
+	*/
 	for (int i = 0; i < GAME_SIZE; i++)		// killstreak
 	{
 		memcpy(&leaderBoard->killStreaks[i], lb_data, sizeof(int));
@@ -138,6 +148,12 @@ unsigned int Serialization::deserializeLeaderBoard(char* lb_data, LeaderBoard* l
 	for (int i = 0; i < GAME_SIZE; i++)		// deathcount
 	{
 		memcpy(&leaderBoard->currentDeaths[i], lb_data, sizeof(int));
+		lb_data += sizeof(int);
+		sz += sizeof(int);
+	}
+	for (int i = 0; i < GAME_SIZE; i++)		// glboal kills
+	{
+		memcpy(&leaderBoard->globalKills[i], lb_data, sizeof(int));
 		lb_data += sizeof(int);
 		sz += sizeof(int);
 	}

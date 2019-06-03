@@ -247,31 +247,63 @@ int ClientGame::waitingInitScene() {
 	return 1;
 }
 
+/*
+	Called to switch from Lobby -> kill -> prep -> etc..
+*/
 int ClientGame::switchPhase() {
 	auto log = logger();
-	switch (currPhase) {
-		case LOBBY:
-			if (waitingInitScene() == 0)
-				return 0;
-			currPhase = KILL;
-			std::chrono::seconds secKill0(5);
-			prepareTimer = nanoseconds(secKill0);
-			break;
-		case KILL:
-			// TODO: waitingPreparePacket() -- need to direct to FINAL phase as well
-			std::chrono::seconds secPre(15);
-			prepareTimer = nanoseconds(secPre);
-			currPhase = PREPARE;
-			break;
-		case PREPARE:
-			 //TODO: waitingServerTickPacket()
-			currPhase = KILL;
-			std::chrono::seconds secKill(5);
-			prepareTimer = nanoseconds(secKill);
-			break;
-		default:
-			break;
+
+	if (currPhase == LOBBY)
+	{
+		if (waitingInitScene() == 0)
+			return 0;
+		currPhase = KILL;
+		std::chrono::seconds secKill0(90);
+		prepareTimer = nanoseconds(secKill0);
 	}
+	else if (currPhase == KILL)	// kill phase over
+	{
+		// send empty packet to server telling them clients kill phase is over (time up)
+		ClientInputPacket endKillPacket = createEndKillPhasePacket();
+		int iResult = network->sendToServer(endKillPacket);
+
+		// wait for confirmation from server to start prep phase
+		int startPrepPhase = 0;
+		while (!startPrepPhase)
+		{
+			// block on recv(); drop non START_PREP_PHASE packets
+			ServerInputPacket* start_prep_packet = network->receivePacket();
+			if (start_prep_packet->packetType == START_PREP_PHASE)
+			{
+				// continue to enter prepare
+				std::chrono::seconds secPre(15);
+				prepareTimer = nanoseconds(secPre);
+				currPhase = PREPARE;
+				startPrepPhase = 1;
+			}
+		}
+
+	}
+	else if (currPhase == PREPARE)	// prepare phase over
+	{
+		/* TODO: Send packet to server with
+			a.) remaining gold
+			b.) skill levels
+			c.) investment
+			d.) cheating
+		*/
+
+		// block on recv() until server sends start_kill phase
+
+
+		// then start kill phase
+		currPhase = KILL;
+		std::chrono::seconds secKill(5);
+		prepareTimer = nanoseconds(secKill);
+	}
+
+	else logger()->error("Invalid phase!!!");
+
 	setup_callbacks(currPhase);
 	return 1;
 }
@@ -533,6 +565,11 @@ ClientInputPacket ClientGame::createSkillPacket(Point destLocation, int skill_id
 ClientInputPacket ClientGame::createRespawnPacket()
 {
 	return createClientInputPacket(RESPAWN, NULL_POINT, -1);
+}
+
+ClientInputPacket ClientGame::createEndKillPhasePacket()
+{
+	return createClientInputPacket(END_KILL_PHASE, NULL_POINT, -1);
 }
 
 ClientInputPacket ClientGame::createInitPacket() {

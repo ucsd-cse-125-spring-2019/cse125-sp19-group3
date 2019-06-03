@@ -419,9 +419,41 @@ void ServerGame::updateKillPhase() {
 	// Process packets from client (movement, attack, etc..)
 	for (int i = 0; i < GAME_SIZE; i++) {
 		for (auto &packet : inputPackets[i]) {
-			handleClientInputPacket(packet, i);
+
+			// end of kill phase not initiated by any clients
+			if (!end_kill_phase)		
+			{
+				// handle packet; check if client initiated end kill phase
+				int endKillPacket = handleClientInputPacket(packet, i);
+				if (endKillPacket)
+				{
+					end_kill_phase = 1;				// set end_kill_phase as initiated
+					total_end_kill_packets++;		// inc total end kill phase packets received
+				}
+			}
+			// end kill phase has been initiated
+			else		
+			{
+				// inc. total end kill phase packets if matches type; otherwise drop packet
+				if (packet->inputType == END_KILL_PHASE) total_end_kill_packets++;
+
+				// all clients ended kill phase -> reset values & broadcast start prep phase packet
+				if (total_end_kill_packets >= GAME_SIZE)
+				{
+					end_kill_phase = 0;
+					total_end_kill_packets = 0;
+
+					// serialize data & broadcast to all clients
+					ServerInputPacket start_prep_phase_packet = createStartPrepPhasePacket();
+					network->broadcastSend(start_prep_phase_packet);
+					return;
+				}
+			}
 		}
 	}
+
+	// TODO: Reset end_kill_phase to 0 once all clients sent packet
+
 	scene->update();	// update scene graph
 
 	// Serialize scene graph & leaderboard -> send packet to clients
@@ -440,7 +472,6 @@ void ServerGame::updateKillPhase() {
 
 		// set first byte of data to players dead/alive state
 		memcpy(next_packet.data, &p_it->second->alive, sizeof(bool));
-
 
 		// set first byte of data to silenced
 		memcpy(next_packet.data+sizeof(bool), &p_it->second->silenced, sizeof(bool));
@@ -499,6 +530,48 @@ ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsig
 	return createServerPacket(INIT_SCENE, 10000, buf);
 }
 
+
+
+
+/*
+	Create start prep phase packet with serialized leaderboard and gold of all players.
+*/
+ServerInputPacket ServerGame::createStartPrepPhasePacket()
+{
+	// (leaderboard, gold, points)
+	ServerInputPacket packet;		
+	unsigned int sgSize = 0;
+	char buf[SERVER_TICK_PACKET_SIZE] = { 0 };
+	char* headPtr = buf;
+	char* bufPtr = buf;
+
+	// serealize leaderboard
+	unsigned int leaderBoard_size = 0;
+	leaderBoard_size = Serialization::serializeLeaderBoard(bufPtr, leaderBoard);
+	bufPtr += leaderBoard_size;
+	sgSize += leaderBoard_size;
+
+	// serialize gold
+	for (int client_id = 0; client_id < GAME_SIZE; client_id++)
+	{
+		// get clients gold 
+		unordered_map<unsigned int, PlayerMetadata*>::iterator p_it = playerMetadatas->find(client_id);
+		PlayerMetadata* player_meta = p_it->second;
+		int curr_gold = player_meta->gold;
+		memcpy(bufPtr, &curr_gold, sizeof(int));
+		sgSize += sizeof(int);
+		bufPtr += sizeof(int);
+	}
+
+	packet.packetType = START_PREP_PHASE;
+	packet.size = sgSize;
+	memcpy(packet.data, headPtr, sgSize); 
+
+	return packet;
+
+}
+
+
 //static int packetCounter = 0;
 
 /*
@@ -531,14 +604,10 @@ ServerInputPacket ServerGame::createServerTickPacket() {
 	bufPtr += sizeof(int);
 	sgSize += sizeof(int);
 
-
 	memcpy(bufPtr, &(scene->warriorIsCharging), sizeof(bool));
 	bufPtr += sizeof(bool);
 	sgSize += sizeof(bool);
 	//scene->warriorIsCharging = false;
-
-
-	
 
 	unsigned int animation_size = 0;
 	animation_size = Serialization::serializeAnimationMode(scene->scenePlayers, bufPtr); // TODO: double check that this function is correctly returning size
@@ -595,8 +664,9 @@ ServerInputPacket ServerGame::createCharSelectPacket(char* data, int size)
 /*
 	Process client input (movement, attack, etc..). 
 	Delegates to function corresponding to packet-type. 
+	-- Return 1 when END_KILL_PHASE packet received from clients, 0 for all other packets.
 */
-void ServerGame::handleClientInputPacket(ClientInputPacket* packet, int client_id) {
+int ServerGame::handleClientInputPacket(ClientInputPacket* packet, int client_id) {
 
 	unordered_map<unsigned int, PlayerMetadata*>::iterator m_it = playerMetadatas->find(client_id);
 	PlayerMetadata* player_metadata = m_it->second;
@@ -615,8 +685,12 @@ void ServerGame::handleClientInputPacket(ClientInputPacket* packet, int client_i
 	case RESPAWN:
 		scene->handlePlayerRespawn(client_id);
 		break;
+	case END_KILLPHASE:
+		free(packet);
+		return 1;
 	default:
 		break;
 	}
 	free(packet);
+	return 0;
 }

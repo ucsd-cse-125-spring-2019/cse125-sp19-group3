@@ -32,6 +32,7 @@ public:
 	ClientInputPacket createSkillPacket(Point destLocation, int skill_id);
 	ClientInputPacket createRespawnPacket();
 	ClientInputPacket createInitPacket();
+	ClientInputPacket createEndKillPhasePacket();
 	ClientSelectionPacket createCharacterSelectedPacket(std::string username, ArcheType type);
 
 protected:
