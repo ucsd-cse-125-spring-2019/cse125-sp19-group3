@@ -15,7 +15,7 @@ public:
 	//~ClientGame(void);
 
 	ClientNetwork * network;
-	nanoseconds prepareTimer = nanoseconds(std::chrono::seconds(10));
+	nanoseconds prepareTimer;
 	LeaderBoard* leaderBoard;
 
 	void run();
