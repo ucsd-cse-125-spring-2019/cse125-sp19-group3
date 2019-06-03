@@ -320,6 +320,13 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 		dead_player.warriorIsChargingServer = false;
 	}
 
+	// show animation for assassin if they die while invisible
+	if (dead_player.modelType == ASSASSIN)
+	{
+		int node_id = dead_player.root_id;
+		serverSceneGraphMap[node_id]->enabled = true;
+	}
+
 }
 
 
