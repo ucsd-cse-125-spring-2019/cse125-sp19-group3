@@ -58,9 +58,6 @@ unsigned int Serialization::serializeAnimationMode(unordered_map<unsigned int, S
 		memcpy(data, &animationMode, sizeof(int));
 		data += sizeof(int);
 		size += sizeof(int);
-		if (animationMode != -1) {
-			logger()->debug("CEREAL: animation mode is {}", animationMode);
-		}
 		// always set animationMode back to -1
 		p.second.animationMode = -1;
 	}
@@ -225,9 +222,6 @@ unsigned int Serialization::deserializeAnimationMode(char *data, unordered_map<u
 		vector<int> modes;
 		modes.push_back(movementMode);
 		modes.push_back(animationMode);
-		if (animationMode != -1) {
-			logger()->debug("DESERIALIZE: animation mode is {}", animationMode);
-		}
 		animationModes.insert({modelId, modes});
 		size += (sizeof(unsigned int) + sizeof(int) + sizeof(int));
 	}

@@ -9,8 +9,9 @@ using json = nlohmann::json;
 #define DEFAULT_X 666
 #define DEFAULT_Z 666
 
-#define GOLD			5
-#define GOLD_MULTIPLIER 3		// number of kills in killstreak before next bonus
+#define GOLD			 5
+#define GOLD_MULTIPLIER  3		// number of kills in killstreak before next bonus
+#define LOSESTREAK_BONUS 2		// gold awarded for losestreak
 
 // skill_id's
 #define UNEVADE            -1
@@ -288,6 +289,9 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 	player_data->currLoseStreak += 1;
 	leaderBoard->resetKillStreak(dead_player_id);	// reset kill streak
 	leaderBoard->incDeath(dead_player_id);			// inc death count
+
+	// award extra gold for large lose streak
+	if (player_data->currLoseStreak > GOLD_MULTIPLIER) player_data->gold += LOSESTREAK_BONUS;
 
 	// get killers metadata  
 	s_it = playerMetadatas->find(killer_id);
