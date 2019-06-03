@@ -609,7 +609,7 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 				}
 				// hardcode assassin: on firing projectile, you instantly cancel invisibility if active
 				if (player.modelType == ASSASSIN && skillDurationTimer > nanoseconds::zero()) {
-					ClientInputPacket cancelInvisibilityPacket = game->createSkillPacket(NULL_POINT, personal_skills[OMNI_SKILL_INDEX].skill_id);
+					ClientInputPacket cancelInvisibilityPacket = game->createSkillPacket(NULL_POINT, VISIBILITY);
 					network->sendToServer(cancelInvisibilityPacket);
 					skillDurationTimer = nanoseconds::zero();
 				}
@@ -635,6 +635,7 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 		}
 	}
 }
+
 
 // SCREEN SPACE: mouse_x and mouse_y are screen space
 glm::vec3 ClientScene::viewToWorldCoordTransform(int mouse_x, int mouse_y) {
@@ -723,9 +724,14 @@ void ClientScene::handleServerTickPacket(char * data) {
 	{
 		player.isAlive = false;
 		std::chrono::seconds sec((int)RESPAWN_TIME);
+
 		respawn_timer = sec;
 		killTextDeterminant = rand() % KILLED_TEXT_NUM;
+
+		// reset cooldowns
+		for (int i = 0; i < skill_timers.size(); i++) skill_timers[i] = nanoseconds::zero();
 	}
+
 	// server respawning player (they're alive); client still thinks they're dead
 	else if ( server_alive && !player.isAlive) {
 		player.isAlive = true;
@@ -772,7 +778,6 @@ void ClientScene::handleServerTickPacket(char * data) {
 
 	if (isCharging && (leaderBoard->currentKills[player.player_id] > currKill)) 
 		skill_timers[DIR_SKILL_INDEX] = nanoseconds::zero();	// reset cooldown when kill someone using charge
-
    
 	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap, particleTexture, particleShader);
 

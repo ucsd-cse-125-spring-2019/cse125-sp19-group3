@@ -9,8 +9,9 @@ using json = nlohmann::json;
 #define DEFAULT_X 666
 #define DEFAULT_Z 666
 
-#define GOLD			5
-#define GOLD_MULTIPLIER 3		// number of kills in killstreak before next bonus
+#define GOLD			 5
+#define GOLD_MULTIPLIER  3		// number of kills in killstreak before next bonus
+#define LOSESTREAK_BONUS 2		// gold awarded for losestreak
 
 // skill_id's
 #define UNEVADE            -1
@@ -286,7 +287,11 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 	player_data->alive = false;
 	player_data->currKillStreak  = 0;
 	player_data->currLoseStreak += 1;
-	leaderBoard->resetKillStreak(dead_player_id);
+	leaderBoard->resetKillStreak(dead_player_id);	// reset kill streak
+	leaderBoard->incDeath(dead_player_id);			// inc death count
+
+	// award extra gold for large lose streak
+	if (player_data->currLoseStreak > GOLD_MULTIPLIER) player_data->gold += LOSESTREAK_BONUS;
 
 	// get killers metadata  
 	s_it = playerMetadatas->find(killer_id);
@@ -313,6 +318,13 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 	if (warriorIsCharging && dead_player.modelType == WARRIOR) {
 		warriorIsCharging = false;
 		dead_player.warriorIsChargingServer = false;
+	}
+
+	// show animation for assassin if they die while invisible
+	if (dead_player.modelType == ASSASSIN)
+	{
+		int node_id = dead_player.root_id;
+		serverSceneGraphMap[node_id]->enabled = true;
 	}
 
 }

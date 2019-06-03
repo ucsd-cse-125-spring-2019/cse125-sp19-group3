@@ -67,6 +67,14 @@ void LeaderBoard::awardPoint(unsigned int player_id)
 }
 
 
+// increment players death count
+void LeaderBoard::incDeath(unsigned int player_id) 
+{
+	int currDeaths = currentDeaths[player_id];
+	currentDeaths[player_id] = ++currDeaths;
+}
+
+
 vector<int>* LeaderBoard::roundSummary() {
 	// get the ranking result of this round
 	vector<int> temp(currentKills);
@@ -191,6 +199,22 @@ void LeaderBoard::printCurrentKillStreaks()
 	while (it != killStreaks.end())
 	{
 		logger()->debug("Player {}: {} Killstreak", cur_player, *it);
+		it++; cur_player++;
+	}
+}
+
+
+/*
+	Mainly for testing purposes, print each value in deathcount vector
+	of leaderboard.
+*/
+void LeaderBoard::printDeathCount()
+{
+	int cur_player = 0;
+	vector<int>::iterator it = currentDeaths.begin();
+	while (it != currentDeaths.end())
+	{
+		logger()->debug("Player {}: {} deaths", cur_player, *it);
 		it++; cur_player++;
 	}
 }

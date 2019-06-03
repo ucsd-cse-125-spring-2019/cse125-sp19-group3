@@ -58,9 +58,6 @@ unsigned int Serialization::serializeAnimationMode(unordered_map<unsigned int, S
 		memcpy(data, &animationMode, sizeof(int));
 		data += sizeof(int);
 		size += sizeof(int);
-		if (animationMode != -1) {
-			logger()->debug("CEREAL: animation mode is {}", animationMode);
-		}
 		// always set animationMode back to -1
 		p.second.animationMode = -1;
 	}
@@ -96,6 +93,13 @@ unsigned int Serialization::serializeLeaderBoard(char* lb_data, LeaderBoard* lea
 		lb_data += sizeof(int);
 	}
 
+	for (int i = 0; i < GAME_SIZE; i++)			// deaths
+	{
+		memcpy(lb_data, &leaderBoard->currentDeaths[i], sizeof(int));
+		size += sizeof(int);
+		lb_data += sizeof(int);
+	}
+	
 	memcpy(lb_data, &leaderBoard->prizeChange, sizeof(float));
 	size += sizeof(float);
 
@@ -128,6 +132,12 @@ unsigned int Serialization::deserializeLeaderBoard(char* lb_data, LeaderBoard* l
 	for (int i = 0; i < GAME_SIZE; i++)		// killstreak
 	{
 		memcpy(&leaderBoard->killStreaks[i], lb_data, sizeof(int));
+		lb_data += sizeof(int);
+		sz += sizeof(int);
+	}
+	for (int i = 0; i < GAME_SIZE; i++)		// deathcount
+	{
+		memcpy(&leaderBoard->currentDeaths[i], lb_data, sizeof(int));
 		lb_data += sizeof(int);
 		sz += sizeof(int);
 	}
@@ -212,9 +222,6 @@ unsigned int Serialization::deserializeAnimationMode(char *data, unordered_map<u
 		vector<int> modes;
 		modes.push_back(movementMode);
 		modes.push_back(animationMode);
-		if (animationMode != -1) {
-			logger()->debug("DESERIALIZE: animation mode is {}", animationMode);
-		}
 		animationModes.insert({modelId, modes});
 		size += (sizeof(unsigned int) + sizeof(int) + sizeof(int));
 	}
