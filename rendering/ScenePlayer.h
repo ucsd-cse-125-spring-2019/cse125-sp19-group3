@@ -44,6 +44,7 @@ public:
 	bool isAlive = true;
 	bool isEvading;
 	bool warriorIsChargingServer = false;
+	int gold = 0;
 	vector<Skill> availableSkills;
 
 };

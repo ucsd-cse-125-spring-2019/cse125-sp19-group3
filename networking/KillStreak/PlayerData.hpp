@@ -18,23 +18,30 @@ public:
 	}
 
 	// default constructor
-	LeaderBoard() : currentKills(vector<int>(GAME_SIZE, 0)), currPoints(vector<int>(GAME_SIZE, 0)),
-					prizes(vector<int>(GAME_SIZE, 0)), prizeChange(0) {}
+	LeaderBoard() : currentKills(vector<int>(GAME_SIZE, 0)), globalKills(vector<int>(GAME_SIZE,0)),
+					currPoints(vector<int>(GAME_SIZE, 0)), prizes(vector<int>(GAME_SIZE, 0)), 
+					killStreaks(vector<int>(GAME_SIZE, 0)), prizeChange(0) {}
 
 	~LeaderBoard() {}
 
 	vector<int>* roundSummary ();						// Update vectors for the round and return the ranking of each player
-	void awardKill(unsigned int player_id);				// award point to player_id
-	void awardPoint(unsigned int player_id);				// award point to player_id
+	void awardKillRound(unsigned int player_id);		// award point to player_id on rounds leaderboard
+	void awardKillGlobal(unsigned int player_id);		// award point to player_id on global leaderboard
+	void resetKillStreak(unsigned int player_id);		// reset players kill streak
+	void incKillStreak(unsigned int player_id);			// increment players killstreak
+	void awardPoint(unsigned int player_id);			// award point to player_id
 
 	float getPrizeChanges()		{return prizeChange;}
 
 	// for testing
+	void printCurrentKillStreaks();	
 	void printCurrentKills();	
 	void printCurrPoints();	
 	void printPrizes();	
 
 	vector<int> currentKills;	// # of kills in each round of each player
+	vector<int> killStreaks;	// current rounds killstreaks for each player
+	vector<int> globalKills;	// total # of kills in all rounds
 	vector<int> currPoints;		// accumulative points of each player
 	vector<int> prizes;			// points added to player each round based on ranking
 	float prizeChange;			// prizes increases per round (1.2)
@@ -89,7 +96,6 @@ public:
 		}
 
 		alive = true;
-//		died_this_tick = false;		
 		gold = 0;
 		currKillStreak = 0;
 		currLoseStreak = 0;
