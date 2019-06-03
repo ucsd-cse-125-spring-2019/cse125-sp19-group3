@@ -297,6 +297,10 @@ void ClientGame::run() {
 	// GAME STARTING ******************************************************
 	// This part will run after all players have selected their characters!
 
+	// TODO: REMOVE ME
+	int counter = 0;
+	// TODO: REMOVE ME
+
 	// Create the GLFW window
 	window = Window_static::create_window(640, 480);
 	// Setup OpenGL settings, including lighting, materials, etc.
@@ -340,6 +344,16 @@ void ClientGame::run() {
 			Window_static::display_callback(window);
 			// Idle callback. Updating objects, etc. can be done here.
 			Window_static::idle_callback();
+
+			// TODO: REMOVE ME *********************
+			// TESTING LEADERBOARD ON CLIENT
+			counter++;
+			if (counter % 100 == 0) {
+				leaderBoard->printDeathCount();
+				log->debug("");
+			}
+			// TODO: REMOVE ME *********************
+
 
 			// update all timers based on time elapsed
 			auto end = Clock::now();

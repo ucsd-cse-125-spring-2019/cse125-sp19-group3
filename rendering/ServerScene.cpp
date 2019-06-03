@@ -286,7 +286,8 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 	player_data->alive = false;
 	player_data->currKillStreak  = 0;
 	player_data->currLoseStreak += 1;
-	leaderBoard->resetKillStreak(dead_player_id);
+	leaderBoard->resetKillStreak(dead_player_id);	// reset kill streak
+	leaderBoard->incDeath(dead_player_id);			// inc death count
 
 	// get killers metadata  
 	s_it = playerMetadatas->find(killer_id);
