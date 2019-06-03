@@ -26,6 +26,11 @@ unsigned int Transform::serialize(char * data) {
 	currLoc += sizeof(bool);
 	size += sizeof(bool);
 
+	// copy over evading status
+	memcpy(currLoc, &isEvading, sizeof(bool));
+	currLoc += sizeof(bool);
+	size += sizeof(bool);
+
 	//copying over the Transfromation Matrix
 	memcpy(currLoc, &(M[0][0]), sizeof(glm::mat4));
 	currLoc += sizeof(glm::mat4);
@@ -66,7 +71,7 @@ unsigned int Transform::deserializeAndUpdate(char * data, Shader* particleShader
 	children_ids.clear();
 
 
-	//memCopy of node id + enabled + transform mat
+	//memCopy of node id + enabled + evading status + transform mat
 	memcpy(&node_id, currLoc, sizeof(unsigned int));
 	size += sizeof(unsigned int);
 	currLoc += sizeof(unsigned int);
@@ -74,6 +79,11 @@ unsigned int Transform::deserializeAndUpdate(char * data, Shader* particleShader
 	memcpy(&enabled, currLoc, sizeof(bool));
 	size += sizeof(bool);
 	currLoc += sizeof(bool);
+
+	memcpy(&isEvading, currLoc, sizeof(bool));
+	size += sizeof(bool);
+	currLoc += sizeof(bool);
+
 
 	memcpy(&(M[0][0]), currLoc, sizeof(glm::mat4));
 	size += sizeof(glm::mat4);
@@ -133,6 +143,16 @@ void Transform::draw( std::unordered_map<unsigned int, ModelData> &models, const
 		child->draw( models, childMtx, viewProjMtx, sceneGraphMap);
 	}
 
+	if (isEvading) {
+		for (unsigned int model_id : model_ids) {
+			models[model_id].shader->use();
+			models[model_id].shader->setInt("UseTex", 0);
+			models[model_id].shader->setVec4("color", glm::vec4(1, 1, 1, 0.4));
+			models[model_id].model->draw(models[model_id].shader, childMtx, viewProjMtx);
+		}
+		return;
+	}
+
 	for (unsigned int model_id : model_ids) {
 		if (models[model_id].renderMode == COLOR) {
 			models[model_id].shader->use();
@@ -141,6 +161,7 @@ void Transform::draw( std::unordered_map<unsigned int, ModelData> &models, const
 		}
 		else if (models[model_id].renderMode == TEXTURE) {
 			models[model_id].shader->use();
+			models[model_id].shader->setInt("UseTex", 1);
 			glBindTexture(GL_TEXTURE_2D, models[model_id].texID);
 			models[model_id].model->draw(models[model_id].shader, childMtx, viewProjMtx);
 			glBindTexture(GL_TEXTURE_2D, 0);
