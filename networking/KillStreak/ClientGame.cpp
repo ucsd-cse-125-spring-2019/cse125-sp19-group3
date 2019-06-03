@@ -321,7 +321,7 @@ void ClientGame::endKillPhase()
 			// TODO: REMOVE ME ***********
 
 			// continue to enter prepare
-			std::chrono::seconds secPre(10);
+			std::chrono::seconds secPre(PREPHASE_TIME);
 			prepareTimer = nanoseconds(secPre);
 			currPhase = PREPARE;
 			startPrepPhase = 1;
@@ -423,7 +423,7 @@ void ClientGame::endPrepPhase()
 
 	// server starting kill phase! 
 	currPhase = KILL;
-	std::chrono::seconds secKill(20);
+	std::chrono::seconds secKill(KILLPHASE_TIME);
 	prepareTimer = nanoseconds(secKill);
 
 }
@@ -439,8 +439,9 @@ int ClientGame::switchPhase() {
 		case LOBBY: 
 			if (waitingInitScene() == 0)
 				return 0;
+
 			currPhase = KILL;
-			std::chrono::seconds secKill0(20);
+			std::chrono::seconds secKill0(KILLPHASE_TIME);
 			prepareTimer = nanoseconds(secKill0);
 			break;
 
@@ -451,7 +452,7 @@ int ClientGame::switchPhase() {
 		case PREPARE: endPrepPhase(); break;
 
 		// should never occur
-		default: logger()->error("INVALID PHASE!");
+		default: logger()->error("INVALID PHASE!"); break;
 	}
 
 	setup_callbacks(currPhase);

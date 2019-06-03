@@ -476,14 +476,17 @@ bool ServerGame::updateKillPhase() {
 		ServerInputPacket next_packet; 
 		memcpy(&next_packet, &serverTickPacket, sizeof(serverTickPacket));
 
+		char * temp_data = next_packet.data;
 		// set first byte of data to players dead/alive state
-		memcpy(next_packet.data, &p_it->second->alive, sizeof(bool));
+		memcpy(temp_data, &p_it->second->alive, sizeof(bool));
 
 		// set first byte of data to silenced
-		memcpy(next_packet.data+sizeof(bool), &p_it->second->silenced, sizeof(bool));
+		temp_data += sizeof(bool);
+		memcpy(temp_data, &p_it->second->silenced, sizeof(bool));
 
 		// set client gold after first byte
-		memcpy(next_packet.data + sizeof(bool), &p_it->second->gold, sizeof(int));
+		temp_data += sizeof(bool);
+		memcpy(temp_data, &p_it->second->gold, sizeof(int));
 
 		network->sendToClient(client_id, next_packet);
 		p_it++;

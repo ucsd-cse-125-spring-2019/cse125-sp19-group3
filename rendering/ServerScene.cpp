@@ -668,9 +668,7 @@ void ServerScene::handlePlayerRespawn(unsigned int client_id)
 	PlayerMetadata* player_data = s_it->second;
 
 	player_data->alive = true;
-	player_data->silenced = false;
 	ScenePlayer &player = scenePlayers[client_id];
-	player.isSilenced = false;
   // rand () % range - negative portion
   // e.g rand() % 20 - 10 -> -10 to 10
   // x: -9 to 164
