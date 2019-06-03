@@ -276,7 +276,7 @@ lobby_layout(struct nk_context *ctx, struct media *media, int width, int height,
 	static char buf[256] = { 0 };
 	set_style(ctx, THEME_RED);
 
-	static ArcheType op = HUMAN;
+	static ArcheType op = MAGE;
 	ctx->style.window.fixed_background = nk_style_item_image(media->lobby_background);
 
 	if (nk_begin(ctx, "Lobby", nk_rect(0, 0, width, height),
