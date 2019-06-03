@@ -72,7 +72,7 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network,
 				0 
 			};
 			for (unsigned int i = 0; i < 8; i++) {
-				models[(unsigned int)obj["model_id"]].model->animation_frames.push_back(vector<float>{ ((unsigned int)obj["animations"][i][0]) / 30.0f, ((unsigned int)obj["animations"][i][1]) / 30.0f });
+				models[(unsigned int)obj["model_id"]].model->animation_frames.push_back(vector<float>{ ((unsigned int)obj["animations"][i][0]) / 30.0f * (unsigned int)obj["ticks_per_second"], ((unsigned int)obj["animations"][i][1]) / 30.0f * (unsigned int)obj["ticks_per_second"]});
 			}
 		}
 		else {
@@ -330,14 +330,16 @@ void ClientScene::idle_callback()
 {
 	// Call the update function the cube
 	//cube->update();
-	time += 2.0 / 60;
+	
 	glm::mat4 playerNode = clientSceneGraphMap[player.root_id]->M;
 	camera->cam_look_at = { playerNode[3][0],playerNode[3][1],playerNode[3][2] };
 	camera->cam_pos = initCamPos + glm::vec3({ playerNode[3][0],playerNode[3][1],playerNode[3][2] });
 	camera->Update();
 	for (auto &model : models) {
-		if(model.second.model->isAnimated)
-			model.second.model->BoneTransform(2.0f / 60);
+		if (model.second.model->isAnimated) {
+			float timeToIncrement = model.first == 4 ? 2.0f / 60.0f * 33.0f : 2.0f / 60.0f;
+			model.second.model->BoneTransform(timeToIncrement);
+		}
 	}
 }
 

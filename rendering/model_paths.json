@@ -13,6 +13,7 @@
         [ 135, 165 ],
         [ 1085, 1160 ]
       ],
+      "ticks_per_second": 1,
       "model_id": 1,
       "color_rgb": [
         0.5,
@@ -38,6 +39,7 @@
         [ 220, 249 ],
         [ 905, 994 ]
       ],
+      "ticks_per_second": 1,
       "model_id": 2,
       "color_rgb": [
         0.5,
@@ -63,6 +65,7 @@
         [ 250, 285 ],
         [ 1075, 1125 ]
       ],
+      "ticks_per_second": 1,
       "model_id": 3,
       "color_rgb": [
         0.5,
@@ -80,7 +83,7 @@
       "texture_path": "../textures/skeleton_king_yellow.tga",
       "animations": [
         [ 60, 119 ],
-        [ 1110, 1139 ],
+        [ 983, 1032 ],
         [ 613, 647 ],
         [ 699, 752 ],
         [ 752, 934 ],
@@ -88,6 +91,7 @@
         [ 1303, 1377 ],
         [ 1254, 1303 ]
       ],
+      "ticks_per_second": 33,
       "model_id": 4,
       "color_rgb": [
         0.5,
