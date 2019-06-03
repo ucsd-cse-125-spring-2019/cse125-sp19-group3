@@ -96,7 +96,6 @@ public:
 		}
 
 		alive = true;
-//		died_this_tick = false;		
 		gold = 0;
 		currKillStreak = 0;
 		currLoseStreak = 0;

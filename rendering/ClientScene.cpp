@@ -710,6 +710,11 @@ void ClientScene::handleServerTickPacket(char * data) {
 		player.isAlive = true;
 	}
 
+	// deserialize client gold
+	memcpy(&player.gold, data, sizeof(int));
+	sz += sizeof(int);
+	data += sizeof(int);
+
 	/*int currKill = INT_MAX;
 	if (isCharging) currKill = leaderBoard->currentKills[player.player_id];*/
 
