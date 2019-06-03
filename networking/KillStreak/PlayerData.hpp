@@ -42,7 +42,7 @@ public:
 	void printDeathCount();	
 	void printPrizes();	
 
-	// TODO: RESET THESE VECTORS AFTER EVERY ROUND
+	// RESET THESE VECTORS THREE VECTORS AFTER EVERY ROUND
 	vector<int> currentKills;	// current rounds kills for each player
 	vector<int> currentDeaths;  // current rounds deaths for each player
 	vector<int> killStreaks;	// current rounds killstreaks for each player

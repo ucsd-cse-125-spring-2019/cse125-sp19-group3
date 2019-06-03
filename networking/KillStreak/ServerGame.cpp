@@ -447,13 +447,16 @@ bool ServerGame::updateKillPhase() {
 					end_kill_phase = 0;
 					total_end_kill_packets = 0;
 
-					// serialize data & broadcast to all clients
+					// serialize leaderboard and gold of all players then broadcast to all clients
 					ServerInputPacket start_prep_phase_packet = createStartPrepPhasePacket();
 					network->broadcastSend(start_prep_phase_packet);
 					logger()->debug("BROADCAST START PREP PHASE PACKET");
 
+					// reset corresponding leaderboard data 
+					std::fill(leaderBoard->killStreaks.begin(),   leaderBoard->killStreaks.end(), 0);
+					std::fill(leaderBoard->currentKills.begin(),  leaderBoard->currentKills.end(), 0);
+					std::fill(leaderBoard->currentDeaths.begin(), leaderBoard->currentDeaths.end(), 0);
 
-					// TODO: Reset leaderboard data here? Before starting prep phase...
 					// TODO: What other values do we need to reset?
 
 
@@ -533,7 +536,16 @@ bool ServerGame::updatePreparePhase() {
 		for (auto& packet : inputPackets[i]) {
 
 			// inc. total end prep phase packets if matches type; otherwise drop packet
-			if (packet->inputType == END_PREP_PHASE) total_end_prep_packets++;
+			if (packet->inputType == END_PREP_PHASE)
+			{
+				total_end_prep_packets++;
+
+				// TODO: deserialize data and update local data structures
+				// NOTE: Gold should update the playerMetadata field gold... 
+				//      --> COULD also update the vector in leaderboard but not necessary
+
+
+			}
 
 			// all clients ended prep phase -> reset values & broadcast start kill phase packet
 			if (total_end_prep_packets >= GAME_SIZE)
@@ -542,28 +554,17 @@ bool ServerGame::updatePreparePhase() {
 				total_end_prep_packets = 0;
 
 				// serialize data & broadcast to all clients
-				ServerInputPacket start_prep_phase_packet = createStartKillPhasePacket();
-				network->broadcastSend(start_prep_phase_packet);
+				ServerInputPacket start_kill_phase_packet = createStartKillPhasePacket();
+				network->broadcastSend(start_kill_phase_packet);
 				logger()->debug("BROADCAST START KILL PHASE PACKET");
 
-				return false;	// dont care about any other packets; kill phase over start prep!
+				return true;	// dont care about any other packets;  prep phase over start kill!
 			}
 
 		}
 	}
 
-
-	// TODO: deserialize data and update local data structures
-	// NOTE: Gold should update the playerMetadata field gold... 
-	// COULD also update the vector in leaderboard but not necessary
-
-
-	// once all clients sent end prep phase packet 
-	// a.) broadcast start kill packet 
-	// b.) return true to start kill phase
-
-
-	return false;
+	return false;	// prep phase not over
 }
 
 
