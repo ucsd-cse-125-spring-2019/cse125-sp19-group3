@@ -477,8 +477,11 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 					calculateSkillBasedOnLevel(skill, skill.level);
 
 				// set cooldown
-				std::chrono::seconds sec((int)adjustedSkill.cooldown);
-				skill_timers[DIR_SKILL_INDEX] = nanoseconds(sec);
+				if (!player.isSilenced) {
+					logger()->debug("q key cooldown set");
+					std::chrono::seconds sec((int)adjustedSkill.cooldown);
+					skill_timers[DIR_SKILL_INDEX] = nanoseconds(sec);
+				}
 
 				// set duration for silence / sprint
 				if (player.modelType == KING) {
@@ -521,11 +524,14 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 			Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(omniSkill, omniSkill.level);
 			
 			// set cooldown
-			std::chrono::seconds sec((int)adjustedSkill.cooldown);
-			skill_timers[OMNI_SKILL_INDEX] = nanoseconds(sec);
+			if (!player.isSilenced) {
+				logger()->debug("w key cooldown set");
+				std::chrono::seconds sec((int)adjustedSkill.cooldown);
+				skill_timers[OMNI_SKILL_INDEX] = nanoseconds(sec);
+			}
 
 			// hardcoded case for assassin (and king)
-			if (player.modelType == ASSASSIN) {
+			if (player.modelType == ASSASSIN && !player.isSilenced) {
 				// set duration for invisibility / minimap skill
 				std::chrono::seconds sec((int)adjustedSkill.duration);
 				skillDurationTimer = nanoseconds(sec);
@@ -597,7 +603,10 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 			// set cooldown
 			std::chrono::seconds sec((int)adjustedSkill.cooldown);
 			if (player.isPrepProjectile) {
-				skill_timers[PROJ_INDEX] = nanoseconds(sec);
+				if (!player.isSilenced) {
+					logger()->debug("left key cooldown set");
+					skill_timers[PROJ_INDEX] = nanoseconds(sec);
+				}
 				// hardcode assassin: on firing projectile, you instantly cancel invisibility if active
 				if (player.modelType == ASSASSIN && skillDurationTimer > nanoseconds::zero()) {
 					ClientInputPacket cancelInvisibilityPacket = game->createSkillPacket(NULL_POINT, personal_skills[OMNI_SKILL_INDEX].skill_id);
@@ -606,7 +615,10 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 				}
 			}
 			else {
-				skill_timers[DIR_SKILL_INDEX] = nanoseconds(sec);
+				if (!player.isSilenced) {
+					logger()->debug("left key cooldown set");
+					skill_timers[DIR_SKILL_INDEX] = nanoseconds(sec);
+				}
 			}
 
 			// get cursor position and translate it to world point
@@ -717,12 +729,21 @@ void ClientScene::handleServerTickPacket(char * data) {
 	// server respawning player (they're alive); client still thinks they're dead
 	else if ( server_alive && !player.isAlive) {
 		player.isAlive = true;
+		//reset silence when spawn
+		player.isSilenced = false;
 	}
+
+
+	//deserialize silence
+	memcpy(&player.isSilenced, data, sizeof(bool));
+	sz += sizeof(bool);
+	data += sizeof(bool);
 
 	// deserialize client gold
 	memcpy(&player.gold, data, sizeof(int));
 	sz += sizeof(int);
 	data += sizeof(int);
+
 
 	/*int currKill = INT_MAX;
 	if (isCharging) currKill = leaderBoard->currentKills[player.player_id];*/
