@@ -5,6 +5,7 @@ in vec3 fragNormal;
 in vec2 texCoord;
 
 uniform int UseTex = 0;
+uniform float alpha = 1.0;
 uniform sampler2D Texture;
 
 uniform vec3 AmbientColor = vec3(0.01, 0.02, 0.22);
@@ -36,6 +37,6 @@ void main() {
 		finalColor = vec4(lightFactor * sqrt(irradiance), 1);
 	}
 	else {
-		finalColor = lightFactor * texture(Texture, texCoord);
+		finalColor = vec4(vec3(lightFactor * texture(Texture, texCoord)), alpha);
 	}
 }

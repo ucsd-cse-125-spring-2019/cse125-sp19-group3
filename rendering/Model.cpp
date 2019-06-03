@@ -91,10 +91,10 @@ void Model::BoneTransform(float timeToIncrement)
 	float animationDuration = animation_frames[curr_mode][1] - animation_frames[curr_mode][0];
 	animationTime = animation_frames[curr_mode][0] + fmod(animationTime - animation_frames[curr_mode][0], animationDuration);
 
-	//float TicksPerSecond = scene->mAnimations[0]->mTicksPerSecond != 0 ?
-	//	scene->mAnimations[0]->mTicksPerSecond : 25.0f;
-	//float TimeInTicks = fmod(animationTime * TicksPerSecond, animationDuration);
-	//float AnimationTime = fmod(TimeInTicks, animationDuration);
+	/*float TicksPerSecond = scene->mAnimations[0]->mTicksPerSecond != 0 ?
+		scene->mAnimations[0]->mTicksPerSecond : 25.0f;
+	float TimeInTicks = animationTime * TicksPerSecond;
+	float AnimationTimeInTicks = fmod(TimeInTicks, animationDuration * TicksPerSecond);*/
 
 	glm::mat4 Identity = glm::mat4(1.0f);
 	ReadNodeHeirarchy(animationTime, scene->mRootNode, Identity);
@@ -555,7 +555,7 @@ unsigned int TextureFromFile(const string& path)
 	glGenTextures(1, &textureID);
 
 	int width, height, nrComponents;
-	unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrComponents, STBI_rgb);
+	unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrComponents, 0);
 	if (data)
 	{
 		GLenum format;

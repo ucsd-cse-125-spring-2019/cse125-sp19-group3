@@ -32,6 +32,7 @@
     <ClInclude Include="..\..\networking\KillStreak\sysexits.h" />
     <ClInclude Include="..\Audio.h" />
     <ClInclude Include="..\Camera.h" />
+    <ClInclude Include="..\Circle.h" />
     <ClInclude Include="..\ClientScene.h" />
     <ClInclude Include="..\Cube.h" />
     <ClInclude Include="..\GUILayout.h" />
@@ -75,6 +76,8 @@
     <None Include="..\..\networking\KillStreak\config.ini" />
     <None Include="..\..\networking\KillStreak\meta_data.json" />
     <None Include="..\..\networking\KillStreak\server_config.json" />
+    <None Include="..\circleshader.frag" />
+    <None Include="..\circleshader.vert" />
     <None Include="..\env_model_locations.json" />
     <None Include="..\model_paths.json" />
     <None Include="..\animatedShader.frag" />
