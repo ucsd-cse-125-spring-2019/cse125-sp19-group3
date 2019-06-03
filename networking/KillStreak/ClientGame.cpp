@@ -366,10 +366,9 @@ void ClientGame::endPrepPhase()
 	// serialize cheating
 
 
-	// send packet
 
-
-	// block on recv() until server sends start_kill phase
+	// (DONE) send packet
+	// (DONE) block on recv() until server sends start_kill phase
 
 
 	// create packet; copy all serialized data into packet.data & send to server
@@ -389,10 +388,9 @@ void ClientGame::endPrepPhase()
 	
 	// block on recv() until confirmation to start kill phase from server
 	int endPrepPhase = 0;
+	ServerInputPacket* end_prep_packet = NULL;
 	while (!endPrepPhase)
 	{
-		ServerInputPacket* end_prep_packet = NULL;
-
 		// empty packets queue; drop all non start_kill_phase packets; 
 		q_lock->lock();
 		while (!(serverPackets->empty()))
@@ -408,9 +406,24 @@ void ClientGame::endPrepPhase()
 		q_lock->unlock();
 	}
 
+
+	// TODO: Deserialize data from end_prep_packet before starting kill phase
+
+
+	// deserialzie leaderboard & all player gold
+	unsigned int sz = 0;
+	char* data = end_prep_packet->data;
+
+	// deserialize leaderboard
+	unsigned int leaderBoard_size = 0;
+	leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
+	data += leaderBoard_size;
+
+
+
 	// server starting kill phase! 
 	currPhase = KILL;
-	std::chrono::seconds secKill(5);
+	std::chrono::seconds secKill(20);
 	prepareTimer = nanoseconds(secKill);
 
 }

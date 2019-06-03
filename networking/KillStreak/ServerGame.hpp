@@ -84,6 +84,7 @@ protected:
 	ServerNetwork* network;					// ptr to servers network
 	mutex* char_select_lock;				// lock for character selection
 
+	void resetValuesPreKillPhase();
 	void readMetaDataForSkills();
 
 	// create packet for server to send to client

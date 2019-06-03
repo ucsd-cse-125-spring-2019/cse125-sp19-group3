@@ -452,14 +452,6 @@ bool ServerGame::updateKillPhase() {
 					network->broadcastSend(start_prep_phase_packet);
 					logger()->debug("BROADCAST START PREP PHASE PACKET");
 
-					// reset corresponding leaderboard data 
-					std::fill(leaderBoard->killStreaks.begin(),   leaderBoard->killStreaks.end(), 0);
-					std::fill(leaderBoard->currentKills.begin(),  leaderBoard->currentKills.end(), 0);
-					std::fill(leaderBoard->currentDeaths.begin(), leaderBoard->currentDeaths.end(), 0);
-
-					// TODO: What other values do we need to reset?
-
-
 					return false;	// dont care about any other packets; kill phase over start prep!
 				}
 			}
@@ -535,14 +527,24 @@ bool ServerGame::updatePreparePhase() {
 	for (int i = 0; i < GAME_SIZE; i++) {
 		for (auto& packet : inputPackets[i]) {
 
-			// inc. total end prep phase packets if matches type; otherwise drop packet
+			// drop non prep phase packets; otherwise deserialize data and inc. total number received
 			if (packet->inputType == END_PREP_PHASE)
 			{
 				total_end_prep_packets++;
 
-				// TODO: deserialize data and update local data structures
-				// NOTE: Gold should update the playerMetadata field gold... 
-				//      --> COULD also update the vector in leaderboard but not necessary
+				// 1.)
+				// 	deserialize remaining gold for each player (update playerMetadata field gold)
+				//	 NOTE: Should we send updated gold in start kill phase packet? Or just wait for first server tick?
+				//	 probably wait for server tick...
+
+
+				// 2.) deserialize skill levels for each player
+
+
+				// 3.) deserialize invest for each player 
+
+
+				// 4.) deserialize cheating for each player
 
 
 			}
@@ -552,6 +554,9 @@ bool ServerGame::updatePreparePhase() {
 			{
 				logger()->debug("END PREP PHASE INITIATED BY ALL CLIENTS");
 				total_end_prep_packets = 0;
+
+				// reset all values before next kill phase
+				resetValuesPreKillPhase();
 
 				// serialize data & broadcast to all clients
 				ServerInputPacket start_kill_phase_packet = createStartKillPhasePacket();
@@ -565,6 +570,22 @@ bool ServerGame::updatePreparePhase() {
 	}
 
 	return false;	// prep phase not over
+}
+
+
+/*
+	Reset/update all values on server at end of prep phase before next kill phase.
+*/
+void ServerGame::resetValuesPreKillPhase()
+{
+
+	// reset corresponding leaderboard data 
+	std::fill(leaderBoard->killStreaks.begin(),   leaderBoard->killStreaks.end(), 0);
+	std::fill(leaderBoard->currentKills.begin(),  leaderBoard->currentKills.end(), 0);
+	std::fill(leaderBoard->currentDeaths.begin(), leaderBoard->currentDeaths.end(), 0);
+
+	// TODO: What other values do we need to reset/update?
+
 }
 
 
@@ -609,13 +630,32 @@ ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsig
 
 
 /*
-	Creates start kill phase packet 
+	Creates start kill phase packet by serializing corresponding data.
 */
 ServerInputPacket ServerGame::createStartKillPhasePacket()
 {
 
-	// TODO: serialzie and send reset leaderboard data?
+	ServerInputPacket packet;		
+	unsigned int sgSize = 0;
+	char buf[SERVER_TICK_PACKET_SIZE] = { 0 };
+	char* headPtr = buf;
+	char* bufPtr = buf;
 
+	// serealize leaderboard
+	unsigned int leaderBoard_size = 0;
+	leaderBoard_size = Serialization::serializeLeaderBoard(bufPtr, leaderBoard);
+	bufPtr += leaderBoard_size;
+	sgSize += leaderBoard_size;
+
+	// TODO: What else do we need to serialzie before next kill phase?
+
+
+
+	packet.packetType = START_KILL_PHASE;
+	packet.size = sgSize;
+	memcpy(packet.data, headPtr, sgSize); 
+
+	return packet;
 }
 
 
