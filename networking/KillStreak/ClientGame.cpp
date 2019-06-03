@@ -279,12 +279,12 @@ void ClientGame::endKillPhase()
 		}
 		q_lock->unlock();
 
-
+		// start prep phase; deserialzie data & start prep phase timer
 		if ( startPrepPhase )
 		{
 			logger()->debug("Received start_prep_phase from server!");
 
-			// TODO: Deserialize packet & update values accordingly
+			// deserialzie leaderboard & all player gold
 			unsigned int sz = 0;
 			char* data = start_prep_packet->data;
 
@@ -293,7 +293,25 @@ void ClientGame::endKillPhase()
 			leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
 			data += leaderBoard_size;
 
-			// TODO: deserialize gold of all clients
+			// deserialize gold of all clients
+			for (int client_id = 0; client_id < GAME_SIZE; client_id++)
+			{
+				int curr_gold = 0;
+				memcpy(&curr_gold, data, sizeof(int));
+				round_gold.push_back(curr_gold);
+				data += sizeof(int);
+			}
+
+			// TODO: REMOVE ME ***********
+			logger()->debug("");
+			logger()->debug("* * * Kills, Deaths, Gold * * *");
+			for (int client_id = 0; client_id < GAME_SIZE; client_id++)
+			{
+				logger()->debug("Client {}: Global Kills {}, Deaths {}, Gold {}", 
+					client_id, leaderBoard->globalKills[client_id], leaderBoard->currentDeaths[client_id], round_gold[client_id]);
+			}
+			logger()->debug("");
+			// TODO: REMOVE ME ***********
 
 			// continue to enter prepare
 			std::chrono::seconds secPre(10);
@@ -317,7 +335,7 @@ int ClientGame::switchPhase() {
 		if (waitingInitScene() == 0)
 			return 0;
 		currPhase = KILL;
-		std::chrono::seconds secKill0(10);
+		std::chrono::seconds secKill0(20);
 		prepareTimer = nanoseconds(secKill0);
 	}
 	else if (currPhase == KILL)	// kill phase over

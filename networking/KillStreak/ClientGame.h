@@ -17,6 +17,7 @@ public:
 	ClientNetwork * network;
 	nanoseconds prepareTimer;
 	LeaderBoard* leaderBoard;
+	vector<int> round_gold;				// gold for all players after prev. round (indexed by player id)
 
 	void run();
 	int join_game();
@@ -40,9 +41,9 @@ protected:
 	PCSTR host;
 	PCSTR serverPort;
 	ClientStatus currPhase = LOBBY;
-	int char_select_time;				      // time allotted to make character selection
+	int char_select_time;				// time allotted to make character selection
 	ServerInputQueue* serverPackets;	// queue of packets from server
-	mutex* q_lock;						        // lock for queue
+	mutex* q_lock;						// lock for queue
 	vector<int> cooldown_times;
 
 	friend class ClientScene;
