@@ -723,7 +723,11 @@ void ClientScene::handleServerTickPacket(char * data) {
 
 		respawn_timer = sec;
 		killTextDeterminant = rand() % KILLED_TEXT_NUM;
+
+		// reset cooldowns
+		for (int i = 0; i < skill_timers.size(); i++) skill_timers[i] = nanoseconds::zero();
 	}
+
 	// server respawning player (they're alive); client still thinks they're dead
 	else if ( server_alive && !player.isAlive) {
 		player.isAlive = true;
