@@ -247,6 +247,65 @@ int ClientGame::waitingInitScene() {
 	return 1;
 }
 
+
+/*
+	Switch from kill phase to prepare phase...
+*/
+void ClientGame::endKillPhase()
+{
+	logger()->debug("Sending kill phase over request to server!");
+
+	// send empty packet to server telling them clients kill phase is over (time up)
+	ClientInputPacket endKillPacket = createEndKillPhasePacket();
+	int iResult = network->sendToServer(endKillPacket);
+
+	// wait for confirmation from server to start prep phase
+	int startPrepPhase = 0;
+	while (!startPrepPhase)
+	{
+		ServerInputPacket* start_prep_packet = NULL;
+
+		// empty packets queue; drop all non start_prep_phase packets; 
+		q_lock->lock();
+		while (!(serverPackets->empty()))
+		{
+			ServerInputPacket* curr_packet = serverPackets->front();
+			if (curr_packet->packetType == START_PREP_PHASE)
+			{
+				start_prep_packet = curr_packet;
+				startPrepPhase = 1;
+			}
+			serverPackets->pop();	// remove from queue
+		}
+		q_lock->unlock();
+
+
+		if ( startPrepPhase )
+		{
+			logger()->debug("Received start_prep_phase from server!");
+
+			// TODO: Deserialize packet & update values accordingly
+			unsigned int sz = 0;
+			char* data = start_prep_packet->data;
+
+			// deserialize leaderboard
+			unsigned int leaderBoard_size = 0;
+			leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
+			data += leaderBoard_size;
+
+			// TODO: deserialize gold of all clients
+
+			// continue to enter prepare
+			std::chrono::seconds secPre(10);
+			prepareTimer = nanoseconds(secPre);
+			currPhase = PREPARE;
+			startPrepPhase = 1;
+			break;
+		}
+	}
+}
+
+
 /*
 	Called to switch from Lobby -> kill -> prep -> etc..
 */
@@ -263,51 +322,7 @@ int ClientGame::switchPhase() {
 	}
 	else if (currPhase == KILL)	// kill phase over
 	{
-		logger()->debug("Sending kill phase over request to server!");
-
-		// send empty packet to server telling them clients kill phase is over (time up)
-		ClientInputPacket endKillPacket = createEndKillPhasePacket();
-		int iResult = network->sendToServer(endKillPacket);
-
-		// wait for confirmation from server to start prep phase
-		int startPrepPhase = 0;
-		while (!startPrepPhase)
-		{
-			// block on recv(); drop non START_PREP_PHASE packets
-			ServerInputPacket* start_prep_packet = network->receivePacket();
-
-			// BUG: IT NEVER RETURNS FROM RECEIVE?!?!?!?! However, if I remove the call to 
-			// updatePrepPhase it does recv() for a while.... not sure why the broadcast isn't working?
-			logger()->debug("RECEIVED PACKET {}", start_prep_packet->packetType);
-			if (start_prep_packet->packetType == START_PREP_PHASE)
-			{
-				logger()->debug("Received start_prep_phase from server!");
-
-				// TODO: Deserialize packet & update values accordingly
-				unsigned int sz = 0;
-				char* data = start_prep_packet->data;
-
-				// deserialize leaderboard
-				unsigned int leaderBoard_size = 0;
-				leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
-				data += leaderBoard_size;
-
-				// TODO: deserialize gold of all clients
-
-				// continue to enter prepare
-				std::chrono::seconds secPre(10);
-				prepareTimer = nanoseconds(secPre);
-				currPhase = PREPARE;
-				startPrepPhase = 1;
-				break;
-			}
-			// TODO: REMOVE ME!!!
-			else {
-				logger()->debug("Received non start prep packet from server; DROPPING! TYPE {}", start_prep_packet->packetType);
-			}
-			// TODO: REMOVE ME!!!
-
-		}
+		endKillPhase();
 	}
 	else if (currPhase == PREPARE)	// prepare phase over
 	{

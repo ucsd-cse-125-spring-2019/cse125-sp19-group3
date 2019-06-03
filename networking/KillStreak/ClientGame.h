@@ -25,6 +25,7 @@ public:
 	int sendCharacterSelection(string username, ArcheType character);
 	int waitingInitScene();
 	int switchPhase();
+	void endKillPhase();
 
 	// initialize packet 
 	ClientInputPacket createClientInputPacket(InputType type, Point finalLocation, int skill_id);

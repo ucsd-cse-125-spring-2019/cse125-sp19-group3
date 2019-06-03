@@ -441,17 +441,13 @@ bool ServerGame::updateKillPhase() {
 				// all clients ended kill phase -> reset values & broadcast start prep phase packet
 				if (total_end_kill_packets >= GAME_SIZE)
 				{
-					logger()->debug("ALL CLIENTS SENT END KILL PACKET --> SENDING START PREP!");
 					end_kill_phase = 0;
 					total_end_kill_packets = 0;
 
 					// serialize data & broadcast to all clients
 					ServerInputPacket start_prep_phase_packet = createStartPrepPhasePacket();
-//					network->broadcastSend(start_prep_phase_packet);
-					for (int i = 0; i < GAME_SIZE; i++)
-					{
-						network->sendToClient(i, start_prep_phase_packet);
-					}
+					network->broadcastSend(start_prep_phase_packet);
+					logger()->debug("BROADCAST START PREP PACKET");
 
 					return false;	// dont care about any other packets; kill phase over!
 				}
