@@ -780,10 +780,6 @@ void ClientScene::handleServerTickPacket(char * data) {
 	sz += sizeof(bool);
 	data += sizeof(bool);
 
-	if ( player.gold != 0 )
-		logger()->debug("DECEREALED GOLD {}", player.gold);
-
-
 	/*int currKill = INT_MAX;
 	if (isCharging) currKill = leaderBoard->currentKills[player.player_id];*/
 

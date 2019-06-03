@@ -4,10 +4,10 @@
 #include <queue>
 #include <string>
 
-#define GAME_SIZE			 2			// total players required to start game
-#define NULL_POINT Point(0.0,0.0,0.0)
+#define GAME_SIZE				2			// total players required to start game
+#define NULL_POINT				Point(0.0,0.0,0.0)
 #define SERVER_TICK_PACKET_SIZE 10000
-#define LEADERBOARD_PACKET_SIZE 256
+#define END_PHASE_PACKET_SIZE   512
 
 typedef glm::vec3 Point;
 
@@ -36,7 +36,8 @@ typedef struct {
 */
 typedef struct {
 	InputType inputType;
-	char* data; 
+	int size;
+	char data[END_PHASE_PACKET_SIZE]; 
 } ClientStartKillPhasePacket;
 
 
@@ -57,7 +58,6 @@ typedef struct {
 	ServerPacketType packetType;
 	int size;
 	char data[SERVER_TICK_PACKET_SIZE];
-	//char leaderBoard_data[LEADERBOARD_PACKET_SIZE];
 	bool died_this_tick;	// true only on server tick client died
 } ServerInputPacket;
 

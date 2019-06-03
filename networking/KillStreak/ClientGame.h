@@ -17,7 +17,6 @@ public:
 	ClientNetwork * network;
 	nanoseconds prepareTimer;
 	LeaderBoard* leaderBoard;
-	vector<int> round_gold;				// gold for all players after prev. round (indexed by player id)
 
 	void run();
 	int join_game();
@@ -27,6 +26,7 @@ public:
 	int waitingInitScene();
 	int switchPhase();
 	void endKillPhase();
+	void endPrepPhase();
 
 	// initialize packet 
 	ClientInputPacket createClientInputPacket(InputType type, Point finalLocation, int skill_id);

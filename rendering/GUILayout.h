@@ -260,7 +260,6 @@ kill_layout(struct nk_context *ctx, struct media *media, int width, int height, 
 		ui_leaderboard(ctx, media, leaderBoard, usernames, archetypes);
 
 		ui_skills(ctx, media, width, height, player, skill_timers);
-		logger()->debug("PLAYER GOLD {}", player->gold);
 		ui_killphase_header(ctx, media, width, height, 1, player->gold, 2);
 	}
 	else {

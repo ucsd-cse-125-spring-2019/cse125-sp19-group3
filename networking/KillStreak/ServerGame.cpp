@@ -489,15 +489,26 @@ bool ServerGame::updateKillPhase() {
 	return true;	// kill phase not over
 }
 
+
 /*
-	-- Return True while it's still prep phase; false when its kill phase
+	-- Return false while it's still prep phase; true when its kill phase
 */
 bool ServerGame::updatePreparePhase() {
 	auto log = logger();
 	log->info("MT: Game server update prepare phase...");
 
-	while (1) {};
-	return true;
+
+	// TODO: deserialize data and update local data structures
+	// NOTE: Gold should update the playerMetadata field gold... 
+	// COULD also update the vector in leaderboard but not necessary
+
+
+	// once all clients sent end prep phase packet 
+	// a.) broadcast start kill packet 
+	// b.) return true to start kill phase
+
+
+	return false;
 }
 
 

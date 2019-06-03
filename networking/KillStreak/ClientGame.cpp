@@ -258,6 +258,12 @@ void ClientGame::endKillPhase()
 	// send empty packet to server telling them clients kill phase is over (time up)
 	ClientInputPacket endKillPacket = createEndKillPhasePacket();
 	int iResult = network->sendToServer(endKillPacket);
+	if (!iResult)
+	{
+		logger()->error("Error sending to server; closing connection");
+		closesocket(network->ConnectSocket);
+		return;
+	}
 
 	// wait for confirmation from server to start prep phase
 	int startPrepPhase = 0;
@@ -296,9 +302,9 @@ void ClientGame::endKillPhase()
 			// deserialize gold of all clients
 			for (int client_id = 0; client_id < GAME_SIZE; client_id++)
 			{
-				int curr_gold = 0;
-				memcpy(&curr_gold, data, sizeof(int));
-				round_gold.push_back(curr_gold);
+				int gold = 0;
+				memcpy(&gold, data, sizeof(int));
+				leaderBoard->currGold.push_back(gold);
 				data += sizeof(int);
 			}
 
@@ -308,7 +314,8 @@ void ClientGame::endKillPhase()
 			for (int client_id = 0; client_id < GAME_SIZE; client_id++)
 			{
 				logger()->debug("Client {}: Global Kills {}, Deaths {}, Gold {}", 
-					client_id, leaderBoard->globalKills[client_id], leaderBoard->currentDeaths[client_id], round_gold[client_id]);
+					client_id, leaderBoard->globalKills[client_id], leaderBoard->currentDeaths[client_id],
+					leaderBoard->currGold[client_id]);
 			}
 			logger()->debug("");
 			// TODO: REMOVE ME ***********
@@ -325,62 +332,116 @@ void ClientGame::endKillPhase()
 
 
 /*
+	Switch from prep phase to kill phase...
+*/
+void ClientGame::endPrepPhase()
+{
+
+	logger()->debug("Sending prep phase over request to server!");
+
+	ClientStartKillPhasePacket endPrepPacket;		
+	unsigned int sgSize = 0;
+	char buf[END_PHASE_PACKET_SIZE] = { 0 };
+
+	char* headPtr = buf; // point to start of buffer
+	char* bufPtr = buf;	 // follow next open space of buffer 
+
+
+	/* TODO: Send packet to server with
+		a.) remaining gold
+		b.) skill levels
+		c.) investment
+		d.) cheating
+	*/
+
+	// serialize gold (NOTE: ASSUMING GOLD UPDATED IN SCENE PLAYER OBJECT)
+
+
+	// serialzie skill levels
+
+
+	// serialize investment 
+
+
+	// serialize cheating
+
+
+	// send packet
+
+
+	// block on recv() until server sends start_kill phase
+
+
+	// create packet; copy all serialized data into packet.data & send to server
+	endPrepPacket.inputType = START_PREP;
+	endPrepPacket.size = sgSize;
+	memcpy(endPrepPacket.data, headPtr, sgSize); 
+	int iResult = network->sendToServer(endPrepPacket);
+	if (!iResult)
+	{
+		logger()->error("Error sending to server; closing connection");
+		closesocket(network->ConnectSocket);
+		return;
+	}
+	
+	// block on recv() until confirmation to start kill phase from server
+	int endPrepPhase = 0;
+	while (!endPrepPhase)
+	{
+		ServerInputPacket* end_prep_packet = NULL;
+
+		// empty packets queue; drop all non start_prep_phase packets; 
+		q_lock->lock();
+		while (!(serverPackets->empty()))
+		{
+			ServerInputPacket* curr_packet = serverPackets->front();
+			if (curr_packet->packetType == START_PREP_PHASE)
+			{
+				end_prep_packet = curr_packet;
+				endPrepPhase = 1;
+			}
+			serverPackets->pop();	// remove from queue
+		}
+		q_lock->unlock();
+	}
+
+	// server starting kill phase! 
+	currPhase = KILL;
+	std::chrono::seconds secKill(5);
+	prepareTimer = nanoseconds(secKill);
+
+}
+
+
+/*
 	Called to switch from Lobby -> kill -> prep -> etc..
 */
 int ClientGame::switchPhase() {
 	auto log = logger();
-
-	if (currPhase == LOBBY)
+	switch (currPhase)
 	{
-		if (waitingInitScene() == 0)
-			return 0;
-		currPhase = KILL;
-		std::chrono::seconds secKill0(20);
-		prepareTimer = nanoseconds(secKill0);
+		case LOBBY: 
+			if (waitingInitScene() == 0)
+				return 0;
+			currPhase = KILL;
+			std::chrono::seconds secKill0(20);
+			prepareTimer = nanoseconds(secKill0);
+			break;
+
+		// kill phase over --> request to start prep phase
+		case KILL: endKillPhase(); break;
+
+		// prepare phase over --> request to start kill phase
+		case PREPARE: endPrepPhase(); break;
+
+		// should never occur
+		default: logger()->error("INVALID PHASE!");
 	}
-
-	// kill phase over --> request to start prep phase
-	else if (currPhase == KILL)	endKillPhase();
-
-	else if (currPhase == PREPARE)	// prepare phase over
-	{
-		logger()->debug("Starting prep phase!");
-
-		/* TODO: Send packet to server with
-			a.) remaining gold
-			b.) skill levels
-			c.) investment
-			d.) cheating
-		*/
-
-
-		// serialize gold (NOTE: ASSUMING GOLD UPDATED IN SCENE PLAYER OBJECT)
-
-
-		// serialzie skill levels
-
-
-		// serialize investment 
-
-
-		// serialize cheating
-
-
-		// block on recv() until server sends start_kill phase
-
-
-
-		// then start kill phase
-		currPhase = KILL;
-		std::chrono::seconds secKill(5);
-		prepareTimer = nanoseconds(secKill);
-	}
-
-	else logger()->error("Invalid phase!!!");
 
 	setup_callbacks(currPhase);
 	return 1;
 }
+
 
 void ClientGame::run() {
 	auto log = logger();
