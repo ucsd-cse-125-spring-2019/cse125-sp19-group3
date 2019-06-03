@@ -27,7 +27,6 @@ void Model::draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &v
 	shader->use();
 	shader->setMat4("ModelMtx", modelMtx);
 	shader->setMat4("ModelViewProjMtx", viewProjMtx * modelMtx);
-	shader->setInt("UseTex", 1);
 
 	for (unsigned int i = 0; i < boneTransforms.size(); i++) {
 		shader->setMat4(m_BoneInfo[i].BoneLocation, boneTransforms[i]);

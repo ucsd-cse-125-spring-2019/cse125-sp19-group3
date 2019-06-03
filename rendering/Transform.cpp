@@ -136,18 +136,26 @@ void Transform::draw( std::unordered_map<unsigned int, ModelData> &models, const
 	for (unsigned int model_id : model_ids) {
 		if (models[model_id].renderMode == COLOR) {
 			models[model_id].shader->use();
+			models[model_id].shader->setInt("UseTex", 0);
 			models[model_id].shader->setVec4("color", models[model_id].color);
-			models[model_id].model->draw(models[model_id].shader, childMtx, viewProjMtx);
+			if (models[model_id].alpha != 1.0) {
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				glEnable(GL_BLEND);
+				models[model_id].shader->setFloat("alpha", models[model_id].alpha);
+			}
+ 			models[model_id].model->draw(models[model_id].shader, childMtx, viewProjMtx);
+			glDisable(GL_BLEND);
 		}
 		else if (models[model_id].renderMode == TEXTURE) {
 			models[model_id].shader->use();
+			models[model_id].shader->setInt("UseTex", 1);
 			glBindTexture(GL_TEXTURE_2D, models[model_id].texID);
 			models[model_id].model->draw(models[model_id].shader, childMtx, viewProjMtx);
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}
 		//TODO: CHANGE THIS LATER
 		if (model_id == 200) {
-				particle_effect->draw();
+			particle_effect->draw();
 		}
 	}
 }

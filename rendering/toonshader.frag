@@ -12,6 +12,9 @@ uniform vec3 LightDirection=normalize(vec3(10, 5, 10));
 uniform vec3 LightColor=vec3(0.84, 0.68, 0.63);
 uniform vec3 DiffuseColor = vec3(0.2, 0.2, 0.2);
 
+uniform vec3 color = vec3(1, 1, 1);
+uniform float alpha = 1.0;
+
 out vec4 finalColor;
 
 float getLightFactor(float intensity) {
@@ -34,7 +37,7 @@ void main() {
 
 	if (UseTex == 0) {
 		// Gamma correction
-		finalColor = vec4(lightFactor * sqrt(irradiance), 1);
+		finalColor = vec4(lightFactor * color, alpha);
 	}
 	else {
 		finalColor = lightFactor * texture(Texture, texCoord);

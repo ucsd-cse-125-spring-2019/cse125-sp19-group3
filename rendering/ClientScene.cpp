@@ -65,20 +65,18 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network,
 	ifstream json_model_paths("../model_paths.json");
 	json pathObjs = json::parse(json_model_paths);
 	for (auto & obj : pathObjs["data"]) {
+		models[(unsigned int)obj["model_id"]] = ModelData{ 
+			new Model(obj["path"], obj["texture_path"], obj["animated"]), 
+			glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), 
+			obj["animated"] ? animationShader : staticShader, 
+			obj["useTex"] ? TEXTURE : COLOR,
+			0,
+			(float)obj["alpha"]
+		};
 		if (obj["animated"]) {
-			models[(unsigned int)obj["model_id"]] = ModelData{ 
-				new Model(obj["path"], obj["texture_path"], true), 
-				glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), 
-				animationShader, 
-				COLOR, 
-				0 
-			};
 			for (unsigned int i = 0; i < 8; i++) {
 				models[(unsigned int)obj["model_id"]].model->animation_frames.push_back(vector<float>{ ((unsigned int)obj["animations"][i][0]) / 30.0f * (unsigned int)obj["ticks_per_second"], ((unsigned int)obj["animations"][i][1]) / 30.0f * (unsigned int)obj["ticks_per_second"]});
 			}
-		}
-		else {
-			models[(unsigned int)obj["model_id"]] = ModelData{ new Model(obj["path"], obj["texture_path"], false), glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), staticShader, COLOR, 0 };
 		}
 	}
 

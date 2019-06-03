@@ -22,6 +22,7 @@ struct ModelData {
 	Shader * shader;
 	RenderMode renderMode;
 	GLuint texID;
+	float alpha;
 };
 
 enum ModelIds {
