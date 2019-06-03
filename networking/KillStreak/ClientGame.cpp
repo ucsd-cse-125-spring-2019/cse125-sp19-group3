@@ -278,6 +278,16 @@ void ClientGame::run() {
 	// Initialize objects/pointers for rendering
 	Window_static::initialize_objects(this, network, leaderBoard);
 	Window_static::initialize_UI(window);
+
+
+	// TODO: REMOVE ME!!!!
+	// TODO: REMOVE ME *********************
+	// TESTING LEADERBOARD ON CLIENT
+	int counter = 0;
+	// TODO: REMOVE ME!!!!
+	// TODO: REMOVE ME *********************
+
+
 	// Loop while GLFW window should stay open
 	while (!glfwWindowShouldClose(window))
 	{
@@ -308,6 +318,22 @@ void ClientGame::run() {
 			Window_static::display_callback(window);
 			// Idle callback. Updating objects, etc. can be done here.
 			Window_static::idle_callback();
+
+			// TODO: REMOVE ME *********************
+			// TESTING LEADERBOARD ON CLIENT
+			counter++;
+			if (counter % 750 == 0) {
+				log->debug("CURRENT KILLS - - - - - - - - - - - -");
+				leaderBoard->printCurrentKills();
+				log->debug("");
+				log->debug("");
+				log->debug("CURRENT KILLSTREAKS - - - - - - - - -");
+				leaderBoard->printCurrentKillStreaks();
+				log->debug("");
+				log->debug("");
+			}
+			// TODO: REMOVE ME *********************
+
 
 			// update all timers based on time elapsed
 			auto end = Clock::now();
