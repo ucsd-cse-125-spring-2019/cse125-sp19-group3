@@ -17,8 +17,8 @@ Audio::~Audio() {
 }
 
 void Audio::loadWAVFiles() {
-	if (!fireBuffer.loadFromFile("./audio/fire_aoe.mp3"))
-		cout << "unable to load wav file " << "fire.wav" << endl;
+	if (!fireBuffer.loadFromFile("../audio/mage/fire_cone_aoe.wav"))
+		cout << "unable to load wav file " << "fire_cone_aoe.wav" << endl;
 }
 
 void Audio::play(glm::vec3 pos, unsigned int audio_id) {

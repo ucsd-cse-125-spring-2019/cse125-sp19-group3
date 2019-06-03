@@ -683,6 +683,8 @@ void ClientScene::handleInitScenePacket(char * data) {
 	memcpy(&player.root_id, data, sizeof(unsigned int));
 	data += sizeof(unsigned int);
 	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap, particleTexture, particleShader);
+	audio.initListener(glm::vec3(0));
+	audio.play(glm::vec3(0), 0);
 }
 
 /*
