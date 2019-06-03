@@ -18,6 +18,9 @@ public:
 	// Serialize character selection packet & send to server
 	int sendToServer(ClientSelectionPacket packet);
 
+	// Serialize end prep phase packet & send to server
+	//int sendToServer(ClientStartKillPhasePacket packet);
+
 	// Serialize packet & send to server
 	int sendToServer(ClientInputPacket packet);
 

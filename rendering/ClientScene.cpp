@@ -770,17 +770,15 @@ void ClientScene::handleServerTickPacket(char * data) {
 		player.isAlive = true;
 	}
 
-
-	//deserialize silence
-	memcpy(&player.isSilenced, data, sizeof(bool));
-	sz += sizeof(bool);
-	data += sizeof(bool);
-
 	// deserialize client gold
 	memcpy(&player.gold, data, sizeof(int));
 	sz += sizeof(int);
 	data += sizeof(int);
 
+	//deserialize silence
+	memcpy(&player.isSilenced, data, sizeof(bool));
+	sz += sizeof(bool);
+	data += sizeof(bool);
 
 	/*int currKill = INT_MAX;
 	if (isCharging) currKill = leaderBoard->currentKills[player.player_id];*/

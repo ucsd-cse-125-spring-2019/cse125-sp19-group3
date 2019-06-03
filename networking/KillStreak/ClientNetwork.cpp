@@ -93,6 +93,18 @@ int ClientNetwork::sendToServer(ClientSelectionPacket packet) {
 	return sentLength;
 }
 
+/*
+	Serialize end prep phase packet then send to server.
+*/
+/*
+int ClientNetwork::sendToServer(ClientStartKillPhasePacket packet) {
+	char serialized[sizeof(ClientStartKillPhasePacket)];
+	memcpy(serialized, &packet, sizeof(ClientStartKillPhasePacket));
+
+	int sentLength = send(ConnectSocket, serialized, sizeof(ClientStartKillPhasePacket), 0);
+	return sentLength;
+}
+*/
 
 /*
 	Serialize a packet then send to server.

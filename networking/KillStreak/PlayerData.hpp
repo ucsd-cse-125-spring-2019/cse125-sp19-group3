@@ -20,8 +20,8 @@ public:
 	// default constructor
 	LeaderBoard() : currentKills(vector<int>(GAME_SIZE, 0)), currentDeaths(vector<int>(GAME_SIZE,0)),
 					killStreaks(vector<int>(GAME_SIZE, 0)), globalKills(vector<int>(GAME_SIZE,0)),
-					currPoints(vector<int>(GAME_SIZE, 0)), prizes(vector<int>(GAME_SIZE, 0)), 
-					prizeChange(0) {}
+					currPoints(vector<int>(GAME_SIZE, 0)), currGold(vector<int>(GAME_SIZE,0)),
+					prizes(vector<int>(GAME_SIZE, 0)), prizeChange(0) {}
 
 	~LeaderBoard() {}
 
@@ -42,13 +42,14 @@ public:
 	void printDeathCount();	
 	void printPrizes();	
 
-	// TODO: RESET THESE VECTORS AFTER EVERY ROUND
+	// RESET THESE VECTORS THREE VECTORS AFTER EVERY ROUND
 	vector<int> currentKills;	// current rounds kills for each player
 	vector<int> currentDeaths;  // current rounds deaths for each player
 	vector<int> killStreaks;	// current rounds killstreaks for each player
 
 	vector<int> globalKills;	// total # of kills in all rounds
 	vector<int> currPoints;		// accumulative points of each player
+	vector<int> currGold;		// accumulative gold of each player
 
 	vector<int> prizes;			// points added to player each round based on ranking
 	float prizeChange;			// prizes increases per round (1.2)
