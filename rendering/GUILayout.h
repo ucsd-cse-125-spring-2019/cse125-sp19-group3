@@ -260,11 +260,11 @@ static void ui_prepare_title(struct nk_context *ctx, struct media *media, int wi
 		NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR))
 	{
 		nk_layout_row_static(ctx, height*0.042, 10, 1);
-		static const float ratio[] = { 0.5f, 0.5f }; 
+		static const float ratio[] = { 0.5f, 0.5f };
 		nk_layout_row(ctx, NK_DYNAMIC, 40, 2, ratio);
 		title_style(ctx, media, width);
 		nk_text(ctx, title, strlen(title), NK_TEXT_RIGHT);
-		
+
 		if (game->prepareTimer > std::chrono::seconds::zero()) {
 			timer_style(ctx, media, width);
 			auto timeExpr = chrono::duration_cast<chrono::seconds>(game->prepareTimer);
@@ -277,12 +277,15 @@ static void ui_prepare_title(struct nk_context *ctx, struct media *media, int wi
 		else {
 			game->switchPhase();
 		}
-		
+
 	}
 	nk_end(ctx);
+}
 
+static void
 kill_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player,
-	vector<nanoseconds> skill_timers, LeaderBoard* leaderBoard, vector<string> usernames, vector<ArcheType> archetypes, int killTextDeterminant) {
+	vector<nanoseconds> skill_timers, LeaderBoard* leaderBoard, vector<string> usernames, vector<ArcheType> archetypes,
+	int killTextDeterminant, ClientGame* game) {
 	
 	if (game->prepareTimer > std::chrono::seconds::zero()) {
 		set_style(ctx, THEME_BLACK);
