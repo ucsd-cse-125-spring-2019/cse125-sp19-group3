@@ -416,6 +416,9 @@ bool ServerGame::updateKillPhase() {
 		client_data->q_lock->unlock();
 	}
 
+	// POSSIBLE BUG: Possible issue if client sends same END KILL PHASE packet twice (cant happen?)
+	// solution... make map check if already received from same client
+
 	// Process packets from client (movement, attack, etc..)
 	for (int i = 0; i < GAME_SIZE; i++) {
 		for (auto &packet : inputPackets[i]) {
@@ -447,7 +450,12 @@ bool ServerGame::updateKillPhase() {
 					// serialize data & broadcast to all clients
 					ServerInputPacket start_prep_phase_packet = createStartPrepPhasePacket();
 					network->broadcastSend(start_prep_phase_packet);
-					logger()->debug("BROADCAST START PREP PACKET");
+					logger()->debug("BROADCAST START PREP PHASE PACKET");
+
+
+					// TODO: Reset leaderboard data here? Before starting prep phase...
+					// TODO: What other values do we need to reset?
+
 
 					return false;	// dont care about any other packets; kill phase over start prep!
 				}
@@ -495,7 +503,54 @@ bool ServerGame::updateKillPhase() {
 */
 bool ServerGame::updatePreparePhase() {
 	auto log = logger();
-	log->info("MT: Game server update prepare phase...");
+	//log->info("MT: Game server update prepare phase...");
+
+	// create temp vectors for each client to dump all incoming packets into
+	vector<vector<ClientInputPacket*>> inputPackets;
+	for (int i = 0; i < GAME_SIZE; i++) {
+		inputPackets.push_back(vector<ClientInputPacket*>());
+	}
+
+	// Drain all packets from all client inputs
+	for (auto client_data : client_data_list) {
+		int i = client_data->id;
+		ClientThreadQueue * q_ptr = client_data->q_ptr;
+
+		// acquire lock; empty entire queue
+		client_data->q_lock->lock();
+		while (!(q_ptr->empty())) {
+			inputPackets[i].push_back(q_ptr->front());
+			q_ptr->pop();
+		}
+		client_data->q_lock->unlock();
+	}
+
+	// POSSIBLE BUG: Possible issue if client sends same END_PREP_PHASE packet twice (cant happen?)
+	// solution... make map check if already received from same client
+
+	// handle all incoming packets; drop non prep phase packets;
+	for (int i = 0; i < GAME_SIZE; i++) {
+		for (auto& packet : inputPackets[i]) {
+
+			// inc. total end prep phase packets if matches type; otherwise drop packet
+			if (packet->inputType == END_PREP_PHASE) total_end_prep_packets++;
+
+			// all clients ended prep phase -> reset values & broadcast start kill phase packet
+			if (total_end_prep_packets >= GAME_SIZE)
+			{
+				logger()->debug("END PREP PHASE INITIATED BY ALL CLIENTS");
+				total_end_prep_packets = 0;
+
+				// serialize data & broadcast to all clients
+				ServerInputPacket start_prep_phase_packet = createStartKillPhasePacket();
+				network->broadcastSend(start_prep_phase_packet);
+				logger()->debug("BROADCAST START KILL PHASE PACKET");
+
+				return false;	// dont care about any other packets; kill phase over start prep!
+			}
+
+		}
+	}
 
 
 	// TODO: deserialize data and update local data structures
@@ -552,6 +607,15 @@ ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsig
 }
 
 
+/*
+	Creates start kill phase packet 
+*/
+ServerInputPacket ServerGame::createStartKillPhasePacket()
+{
+
+	// TODO: serialzie and send reset leaderboard data?
+
+}
 
 
 /*

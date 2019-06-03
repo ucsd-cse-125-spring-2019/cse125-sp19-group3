@@ -11,9 +11,10 @@
 
 typedef glm::vec3 Point;
 
-typedef enum {INIT_CONN, CHAR_SELECT, MOVEMENT, SKILL, RESPAWN, END_KILL_PHASE, START_PREP } InputType;
+typedef enum {INIT_CONN, CHAR_SELECT, MOVEMENT, SKILL, RESPAWN, END_KILL_PHASE, END_PREP_PHASE } InputType;
 
-typedef enum { WELCOME, INIT_SCENE, UPDATE_SCENE_GRAPH, CHAR_SELECT_PHASE, START_PREP_PHASE } ServerPacketType;
+typedef enum { WELCOME, INIT_SCENE, UPDATE_SCENE_GRAPH, 
+				CHAR_SELECT_PHASE, START_PREP_PHASE, START_KILL_PHASE } ServerPacketType;
 
 typedef enum { HUMAN, MAGE, ASSASSIN, WARRIOR, KING } ArcheType;
 
@@ -33,13 +34,15 @@ typedef struct {
 /*
 	Packet sent from the client to the server when client wants to 
 	tell the server their prep phase is over... start kill phase!!!
-*/
+
+	NOTE: COULDN'T USE THIS... server queue is of type ClientInputPacket...
 typedef struct {
 	InputType inputType;
 	int size;
 	char data[END_PHASE_PACKET_SIZE]; 
 } ClientStartKillPhasePacket;
 
+*/
 
 /*
 	Packet sent from the client to the server.
@@ -48,6 +51,8 @@ typedef struct {
 	InputType inputType;
 	Point finalLocation;
 	int skill_id; // indexes to which skill to access
+	int size;
+	char data[END_PHASE_PACKET_SIZE];
 } ClientInputPacket;
 
 

@@ -339,7 +339,7 @@ void ClientGame::endPrepPhase()
 
 	logger()->debug("Sending prep phase over request to server!");
 
-	ClientStartKillPhasePacket endPrepPacket;		
+	ClientInputPacket endPrepPacket;		
 	unsigned int sgSize = 0;
 	char buf[END_PHASE_PACKET_SIZE] = { 0 };
 
@@ -373,9 +373,12 @@ void ClientGame::endPrepPhase()
 
 
 	// create packet; copy all serialized data into packet.data & send to server
-	endPrepPacket.inputType = START_PREP;
+	endPrepPacket.inputType = END_PREP_PHASE;
 	endPrepPacket.size = sgSize;
+	endPrepPacket.skill_id = 0;
+	endPrepPacket.finalLocation = NULL_POINT;
 	memcpy(endPrepPacket.data, headPtr, sgSize); 
+
 	int iResult = network->sendToServer(endPrepPacket);
 	if (!iResult)
 	{
@@ -390,12 +393,12 @@ void ClientGame::endPrepPhase()
 	{
 		ServerInputPacket* end_prep_packet = NULL;
 
-		// empty packets queue; drop all non start_prep_phase packets; 
+		// empty packets queue; drop all non start_kill_phase packets; 
 		q_lock->lock();
 		while (!(serverPackets->empty()))
 		{
 			ServerInputPacket* curr_packet = serverPackets->front();
-			if (curr_packet->packetType == START_PREP_PHASE)
+			if (curr_packet->packetType == START_KILL_PHASE)
 			{
 				end_prep_packet = curr_packet;
 				endPrepPhase = 1;
@@ -518,7 +521,6 @@ void ClientGame::run() {
 			
 		}
 
-		
 	}
 
 	Window_static::clean_up();
@@ -685,6 +687,11 @@ ClientInputPacket ClientGame::createClientInputPacket(InputType type, Point fina
 	packet.inputType = type;
 	packet.finalLocation = finalLocation;
 	packet.skill_id = skill_id;
+
+	// used for end prep phase (default init them to 0)
+	packet.size = 0;
+	char buff[END_PHASE_PACKET_SIZE] = { 0 };
+	memcpy(&packet.data, buff, END_PHASE_PACKET_SIZE);
 
 	return packet;
 }

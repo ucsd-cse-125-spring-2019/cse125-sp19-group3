@@ -59,6 +59,7 @@ public:
 
 	int end_kill_phase = 0;			// true if any client initiated end_kill_phase
 	int total_end_kill_packets = 0; // number of end_kill_phase packets received from clients 
+	int total_end_prep_packets = 0; // number of end_prep_phase packets received from clients
 
 protected:
 	PCSTR host;
@@ -89,6 +90,7 @@ protected:
 	ServerInputPacket createServerPacket(ServerPacketType type, int temp, char* data);
 	ServerInputPacket createInitScenePacket(unsigned int playerId, unsigned int playerRootid);
 	ServerInputPacket createStartPrepPhasePacket();
+	ServerInputPacket createStartKillPhasePacket();
 	ServerInputPacket createServerTickPacket();
 	ServerInputPacket createWelcomePacket();
 	ServerInputPacket createCharSelectPacket(char* data, int size);
