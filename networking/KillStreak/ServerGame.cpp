@@ -378,7 +378,7 @@ void ServerGame::launch() {
 			}
 
 			if (isKillPhase) {
-				updateKillPhase();
+				isKillPhase = updateKillPhase();
 			}
 			else {
 				updatePreparePhase();
@@ -392,7 +392,7 @@ void ServerGame::launch() {
 	Runs on every server tick. Empties all client_thread queues, updates the game state, and 
 	broadcasts updated state back to all clients.
 */
-void ServerGame::updateKillPhase() {
+bool ServerGame::updateKillPhase() {
 	auto log = logger();
 	// log->info("MT: Game server kill phase update...");
 
@@ -434,25 +434,32 @@ void ServerGame::updateKillPhase() {
 			// end kill phase has been initiated
 			else		
 			{
+				logger()->debug("END KILL PHASE INITIATED BY CLIENT(S)");
 				// inc. total end kill phase packets if matches type; otherwise drop packet
 				if (packet->inputType == END_KILL_PHASE) total_end_kill_packets++;
 
 				// all clients ended kill phase -> reset values & broadcast start prep phase packet
 				if (total_end_kill_packets >= GAME_SIZE)
 				{
+					logger()->debug("ALL CLIENTS SENT END KILL PACKET --> SENDING START PREP!");
 					end_kill_phase = 0;
 					total_end_kill_packets = 0;
 
 					// serialize data & broadcast to all clients
 					ServerInputPacket start_prep_phase_packet = createStartPrepPhasePacket();
-					network->broadcastSend(start_prep_phase_packet);
-					return;
+//					network->broadcastSend(start_prep_phase_packet);
+					for (int i = 0; i < GAME_SIZE; i++)
+					{
+						network->sendToClient(i, start_prep_phase_packet);
+					}
+
+					return false;	// dont care about any other packets; kill phase over!
 				}
 			}
 		}
 	}
 
-	// TODO: Reset end_kill_phase to 0 once all clients sent packet
+	if (end_kill_phase) return true;	// don't update; return treu b/c kill phase not over just yet!
 
 	scene->update();	// update scene graph
 
@@ -483,11 +490,14 @@ void ServerGame::updateKillPhase() {
 		p_it++;
 	}
 
+	return true;	// kill phase not over
 }
 
 void ServerGame::updatePreparePhase() {
 	auto log = logger();
 	log->info("MT: Game server update prepare phase...");
+
+	while (1) {};
 }
 
 
@@ -685,7 +695,7 @@ int ServerGame::handleClientInputPacket(ClientInputPacket* packet, int client_id
 	case RESPAWN:
 		scene->handlePlayerRespawn(client_id);
 		break;
-	case END_KILLPHASE:
+	case END_KILL_PHASE:
 		free(packet);
 		return 1;
 	default:

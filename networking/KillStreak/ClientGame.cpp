@@ -258,11 +258,13 @@ int ClientGame::switchPhase() {
 		if (waitingInitScene() == 0)
 			return 0;
 		currPhase = KILL;
-		std::chrono::seconds secKill0(90);
+		std::chrono::seconds secKill0(10);
 		prepareTimer = nanoseconds(secKill0);
 	}
 	else if (currPhase == KILL)	// kill phase over
 	{
+		logger()->debug("Sending kill phase over request to server!");
+
 		// send empty packet to server telling them clients kill phase is over (time up)
 		ClientInputPacket endKillPacket = createEndKillPhasePacket();
 		int iResult = network->sendToServer(endKillPacket);
@@ -273,16 +275,39 @@ int ClientGame::switchPhase() {
 		{
 			// block on recv(); drop non START_PREP_PHASE packets
 			ServerInputPacket* start_prep_packet = network->receivePacket();
+
+			// BUG: IT NEVER RETURNS FROM RECEIVE?!?!?!?! However, if I remove the call to 
+			// updatePrepPhase it does recv() for a while.... not sure why the broadcast isn't working?
+			logger()->debug("RECEIVED PACKET {}", start_prep_packet->packetType);
 			if (start_prep_packet->packetType == START_PREP_PHASE)
 			{
+				logger()->debug("Received start_prep_phase from server!");
+
+				// TODO: Deserialize packet & update values accordingly
+				unsigned int sz = 0;
+				char* data = start_prep_packet->data;
+
+				// deserialize leaderboard
+				unsigned int leaderBoard_size = 0;
+				leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
+				data += leaderBoard_size;
+
+				// TODO: deserialize gold of all clients
+
 				// continue to enter prepare
-				std::chrono::seconds secPre(15);
+				std::chrono::seconds secPre(10);
 				prepareTimer = nanoseconds(secPre);
 				currPhase = PREPARE;
 				startPrepPhase = 1;
+				break;
 			}
-		}
+			// TODO: REMOVE ME!!!
+			else {
+				logger()->debug("Received non start prep packet from server; DROPPING! TYPE {}", start_prep_packet->packetType);
+			}
+			// TODO: REMOVE ME!!!
 
+		}
 	}
 	else if (currPhase == PREPARE)	// prepare phase over
 	{
@@ -294,6 +319,11 @@ int ClientGame::switchPhase() {
 		*/
 
 		// block on recv() until server sends start_kill phase
+
+		// TODO REMOVE ME!!
+		logger()->debug("Starting prep phase!");
+		while (1) {};
+		// TODO REMOVE ME!!
 
 
 		// then start kill phase

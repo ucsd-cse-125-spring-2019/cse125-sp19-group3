@@ -49,7 +49,7 @@ public:
 
 	void game_match();
 
-	void updateKillPhase();
+	bool updateKillPhase();
 
 	void updatePreparePhase();
 
