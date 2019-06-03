@@ -53,6 +53,7 @@ public:
 	void renderPreparePhase(GLFWwindow* window);
 	void renderKillPhase(GLFWwindow* window);
 	void renderLobbyPhase(GLFWwindow* window);
+	void renderSummaryPhase(GLFWwindow* window);
 	void initialize_UI(GLFWwindow* window);
 private:
 	

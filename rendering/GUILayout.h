@@ -11,7 +11,7 @@ const char * intToCharArray(int i) {
 }
 
 static void ui_leaderboard(struct nk_context *ctx, struct media *media, LeaderBoard * leaderboard) {
-	vector<int> * ranking = leaderboard->roundSummary();
+	//vector<int> * ranking = leaderboard->roundSummary();
 	static const char *items[] = { "Player 0","Player 1","Player 2","Player 3" };
 	static const int points[] = { 15,40,30,10 };
 
@@ -87,12 +87,17 @@ static void ui_skills(struct nk_context *ctx, struct media *media, int width, in
 	nk_end(ctx);
 }
 static void
-kill_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, vector<nanoseconds> skill_timers, ClientGame * game) {
-	
-	set_style(ctx, THEME_BLACK);
-	ui_leaderboard(ctx, media, game->leaderBoard);
+kill_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, 
+	vector<nanoseconds> skill_timers, ClientGame * game) {
+	if (game->prepareTimer > std::chrono::seconds::zero()) {
+		set_style(ctx, THEME_BLACK);
+		ui_leaderboard(ctx, media, game->leaderBoard);
 
-	ui_skills(ctx, media,  width,  height, player, skill_timers);
+		ui_skills(ctx, media, width, height, player, skill_timers);
+	}
+	else {
+		game->switchPhase();
+	}
 }
 
 static void title_style(struct nk_context *ctx, struct media *media, int width) {
@@ -135,7 +140,7 @@ static void ui_prepare_title(struct nk_context *ctx, struct media *media, int wi
 		title_style(ctx, media, width);
 		nk_text(ctx, title, strlen(title), NK_TEXT_RIGHT);
 		
-		//if (game->prepareTimer > std::chrono::seconds::zero()) {
+		if (game->prepareTimer > std::chrono::seconds::zero()) {
 			timer_style(ctx, media, width);
 			auto timeExpr = chrono::duration_cast<chrono::seconds>(game->prepareTimer);
 			string result_string = to_string(timeExpr.count());
@@ -143,10 +148,10 @@ static void ui_prepare_title(struct nk_context *ctx, struct media *media, int wi
 			strcpy(result, ("Time Left:  " + result_string).c_str());
 			//const char* result = ("Time Left:  " + result_string).c_str();
 			nk_text(ctx, result, strlen(result), NK_TEXT_LEFT);
-		//}
-		//else {
-		//	//TODO switch phase
-		//}
+		}
+		else {
+			game->switchPhase();
+		}
 		
 	}
 	nk_end(ctx);
@@ -226,8 +231,14 @@ lobby_layout(struct nk_context *ctx, struct media *media, int width, int height,
 		selected = false;
 	}
 	else if (selected) {
-		game->waitingInitScene();
+		game->switchPhase();
 	}
+}
+
+static  void
+summary_layout(struct nk_context *ctx, struct media *media, int width, int height, ClientGame * game) {
+	set_style(ctx, THEME_BLACK);
+	ui_prepare_title(ctx, media, width, height, "SUMMARY", game);
 }
 
 static  void

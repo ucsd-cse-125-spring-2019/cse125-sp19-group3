@@ -8,7 +8,7 @@
 #include "PlayerData.hpp"
 #include <queue>
 
-typedef enum { LOBBY, KILL, PREPARE } ClientStatus;
+typedef enum { LOBBY, KILL, SUMMARY, PREPARE, FINAL } ClientStatus;
 class ClientGame {
 public:
 	ClientGame(string host, string port, int char_select_time);
@@ -24,7 +24,8 @@ public:
 	int handleCharacterSelectionPacket(ServerInputPacket* packet);
 	int sendCharacterSelection(string username, ArcheType character);
 	int waitingInitScene();
-	int waitingPrepareScene();
+	int switchPhase();
+
 	// initialize packet 
 	ClientInputPacket createClientInputPacket(InputType type, Point finalLocation, int skill_id);
 	ClientInputPacket createMovementPacket(Point newLocation);
@@ -36,7 +37,7 @@ public:
 protected:
 	PCSTR host;
 	PCSTR serverPort;
-	ClientStatus currPhase = PREPARE;
+	ClientStatus currPhase = LOBBY;
 	int char_select_time;				      // time allotted to make character selection
 	ServerInputQueue* serverPackets;	// queue of packets from server
 	mutex* q_lock;						        // lock for queue

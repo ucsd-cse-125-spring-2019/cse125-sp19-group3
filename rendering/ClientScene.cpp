@@ -75,50 +75,50 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network,
 	camera->SetAspect(width / height);
 	camera->Reset();
 
-	//animationShader = new Shader(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
-	//staticShader = new Shader(TOON_VERTEX_SHADER_PATH, TOON_FRAGMENT_SHADER_PATH);
-	//particleShader = new Shader(PARTICLE_VERTEX_SHADER_PATH, PARTICLE_FRAGMENT_SHADER_PATH);
-	//particleTexture = loadTexture("../textures/flame.png");
-	//ifstream json_model_paths("../model_paths.json");
-	//json pathObjs = json::parse(json_model_paths);
-	//for (auto & obj : pathObjs["data"]) {
-	//	if (obj["animated"]) {
-	//		models[(unsigned int)obj["model_id"]] = ModelData{ 
-	//			new Model(obj["path"], obj["texture_path"], true), 
-	//			glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), 
-	//			animationShader, 
-	//			COLOR, 
-	//			0 
-	//		};
-	//		for (unsigned int i = 0; i < 8; i++) {
-	//			models[(unsigned int)obj["model_id"]].model->animation_frames.push_back(vector<float>{ ((unsigned int)obj["animations"][i][0]) / 30.0f, ((unsigned int)obj["animations"][i][1]) / 30.0f });
-	//		}
-	//	}
-	//	else {
-	//		models[(unsigned int)obj["model_id"]] = ModelData{ new Model(obj["path"], obj["texture_path"], false), glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), staticShader, COLOR, 0 };
-	//	}
-	//}
+	animationShader = new Shader(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
+	staticShader = new Shader(TOON_VERTEX_SHADER_PATH, TOON_FRAGMENT_SHADER_PATH);
+	particleShader = new Shader(PARTICLE_VERTEX_SHADER_PATH, PARTICLE_FRAGMENT_SHADER_PATH);
+	particleTexture = loadTexture("../textures/flame.png");
+	ifstream json_model_paths("../model_paths.json");
+	json pathObjs = json::parse(json_model_paths);
+	for (auto & obj : pathObjs["data"]) {
+		if (obj["animated"]) {
+			models[(unsigned int)obj["model_id"]] = ModelData{ 
+				new Model(obj["path"], obj["texture_path"], true), 
+				glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), 
+				animationShader, 
+				COLOR, 
+				0 
+			};
+			for (unsigned int i = 0; i < 8; i++) {
+				models[(unsigned int)obj["model_id"]].model->animation_frames.push_back(vector<float>{ ((unsigned int)obj["animations"][i][0]) / 30.0f, ((unsigned int)obj["animations"][i][1]) / 30.0f });
+			}
+		}
+		else {
+			models[(unsigned int)obj["model_id"]] = ModelData{ new Model(obj["path"], obj["texture_path"], false), glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), staticShader, COLOR, 0 };
+		}
+	}
 
-	//ifstream json_model_locations("../env_model_locations.json");
-	//unsigned int envCounter = 4000000000;
-	//json jsonObjs = json::parse(json_model_locations);
-	//for (auto & obj : jsonObjs["data"]) {
-	//	Transform * envobj = new Transform(envCounter++, glm::translate(glm::mat4(1.0f), glm::vec3((float)(obj["translate"][0]), (float)(obj["translate"][1]), (float)(obj["translate"][2]))),
-	//		glm::rotate(glm::mat4(1.0f), (float)obj["rotate"] / 180.0f * glm::pi<float>(), glm::vec3(0, 1, 0)),
-	//		glm::scale(glm::mat4(1.0f), glm::vec3((float)obj["scale"], (float)obj["scale"], (float)obj["scale"])));
+	ifstream json_model_locations("../env_model_locations.json");
+	unsigned int envCounter = 4000000000;
+	json jsonObjs = json::parse(json_model_locations);
+	for (auto & obj : jsonObjs["data"]) {
+		Transform * envobj = new Transform(envCounter++, glm::translate(glm::mat4(1.0f), glm::vec3((float)(obj["translate"][0]), (float)(obj["translate"][1]), (float)(obj["translate"][2]))),
+			glm::rotate(glm::mat4(1.0f), (float)obj["rotate"] / 180.0f * glm::pi<float>(), glm::vec3(0, 1, 0)),
+			glm::scale(glm::mat4(1.0f), glm::vec3((float)obj["scale"], (float)obj["scale"], (float)obj["scale"])));
 
-	//	envobj->model_ids.insert((int)obj["model_id"]);
-	//	env_objs.push_back(envobj);
-	//}
+		envobj->model_ids.insert((int)obj["model_id"]);
+		env_objs.push_back(envobj);
+	}
 	this->game = game;
 	this->network = network;
 	this->leaderBoard = leaderBoard;
 
-	//// Floor
-	//floor = new Model("../models/quad.obj", "../textures/floor.png", false);
-	//floor->localMtx = glm::translate(glm::mat4(1.0f), glm::vec3(100.0f, 0.0f, 120.0f)) *
-	//	glm::rotate(glm::mat4(1.0f), -90.0f / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)) *
-	//	glm::scale(glm::mat4(1.0f), glm::vec3(2));
+	// Floor
+	floor = new Model("../models/quad.obj", "../textures/floor.png", false);
+	floor->localMtx = glm::translate(glm::mat4(1.0f), glm::vec3(100.0f, 0.0f, 120.0f)) *
+		glm::rotate(glm::mat4(1.0f), -90.0f / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)) *
+		glm::scale(glm::mat4(1.0f), glm::vec3(2));
 
 }
 
@@ -361,6 +361,20 @@ void ClientScene::renderPreparePhase(GLFWwindow* window) {
 	// Swap buffers
 	glfwSwapBuffers(window);
 }
+ 
+void ClientScene::renderSummaryPhase(GLFWwindow* window) {
+
+
+	/* Input */
+	glfwPollEvents();
+	nk_glfw3_new_frame();
+	summary_layout(ctx, &media, ClientScene::width, ClientScene::height, game);
+
+	nk_glfw3_render(NK_ANTI_ALIASING_OFF, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+
+	// Swap buffers
+	glfwSwapBuffers(window);
+}
 
 void ClientScene::renderLobbyPhase(GLFWwindow* window) {
 	
@@ -416,6 +430,7 @@ void ClientScene::display_callback(GLFWwindow* window)
 
 	if (game->currPhase == ClientStatus::LOBBY) renderLobbyPhase(window);
 	else if (game->currPhase == ClientStatus::KILL) renderKillPhase(window);
+	else if (game->currPhase == ClientStatus::SUMMARY) renderSummaryPhase(window);
 	else renderPreparePhase(window);
 }
 
