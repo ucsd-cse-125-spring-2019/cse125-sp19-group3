@@ -51,7 +51,7 @@ public:
 
 	bool updateKillPhase();
 
-	void updatePreparePhase();
+	bool updatePreparePhase();
 
 	void launch_client_threads();
 

@@ -381,7 +381,7 @@ void ServerGame::launch() {
 				isKillPhase = updateKillPhase();
 			}
 			else {
-				updatePreparePhase();
+				isKillPhase = updatePreparePhase();
 			}
 		}
 	}
@@ -449,7 +449,7 @@ bool ServerGame::updateKillPhase() {
 					network->broadcastSend(start_prep_phase_packet);
 					logger()->debug("BROADCAST START PREP PACKET");
 
-					return false;	// dont care about any other packets; kill phase over!
+					return false;	// dont care about any other packets; kill phase over start prep!
 				}
 			}
 		}
@@ -489,11 +489,15 @@ bool ServerGame::updateKillPhase() {
 	return true;	// kill phase not over
 }
 
-void ServerGame::updatePreparePhase() {
+/*
+	-- Return True while it's still prep phase; false when its kill phase
+*/
+bool ServerGame::updatePreparePhase() {
 	auto log = logger();
 	log->info("MT: Game server update prepare phase...");
 
 	while (1) {};
+	return true;
 }
 
 
@@ -597,18 +601,18 @@ ServerInputPacket ServerGame::createServerTickPacket() {
 	sgSize += sizeof(died_this_tick);
 	bufPtr += sizeof(died_this_tick);
 
+	// serialize client gold
+	// NOTE: THIS MUST BE SECOND BYTE 
+	int client_gold = 0;
+	memcpy(bufPtr, &client_gold, sizeof(int));
+	bufPtr += sizeof(int);
+	sgSize += sizeof(int);
 
 	// serialize if user silenced; default init the first byte (silenced)
 	bool silenced = false;
 	memcpy(bufPtr, &silenced, sizeof(silenced));
 	sgSize += sizeof(silenced);
 	bufPtr += sizeof(silenced);
-
-	// serialize client gold
-	int client_gold = 0;
-	memcpy(bufPtr, &client_gold, sizeof(int));
-	bufPtr += sizeof(int);
-	sgSize += sizeof(int);
 
 	memcpy(bufPtr, &(scene->warriorIsCharging), sizeof(bool));
 	bufPtr += sizeof(bool);

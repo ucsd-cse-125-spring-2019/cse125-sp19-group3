@@ -11,7 +11,7 @@
 
 typedef glm::vec3 Point;
 
-typedef enum {INIT_CONN, CHAR_SELECT, MOVEMENT, SKILL, RESPAWN, END_KILL_PHASE } InputType;
+typedef enum {INIT_CONN, CHAR_SELECT, MOVEMENT, SKILL, RESPAWN, END_KILL_PHASE, START_PREP } InputType;
 
 typedef enum { WELCOME, INIT_SCENE, UPDATE_SCENE_GRAPH, CHAR_SELECT_PHASE, START_PREP_PHASE } ServerPacketType;
 
@@ -30,7 +30,14 @@ typedef struct {
 } ClientSelectionPacket;
 
 
-// TODO: Make new packet for client to send to server when going from prepare->kill
+/*
+	Packet sent from the client to the server when client wants to 
+	tell the server their prep phase is over... start kill phase!!!
+*/
+typedef struct {
+	InputType inputType;
+	char* data; 
+} ClientStartKillPhasePacket;
 
 
 /*

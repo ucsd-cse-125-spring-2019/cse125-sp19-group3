@@ -338,12 +338,14 @@ int ClientGame::switchPhase() {
 		std::chrono::seconds secKill0(20);
 		prepareTimer = nanoseconds(secKill0);
 	}
-	else if (currPhase == KILL)	// kill phase over
-	{
-		endKillPhase();
-	}
+
+	// kill phase over --> request to start prep phase
+	else if (currPhase == KILL)	endKillPhase();
+
 	else if (currPhase == PREPARE)	// prepare phase over
 	{
+		logger()->debug("Starting prep phase!");
+
 		/* TODO: Send packet to server with
 			a.) remaining gold
 			b.) skill levels
@@ -351,12 +353,21 @@ int ClientGame::switchPhase() {
 			d.) cheating
 		*/
 
+
+		// serialize gold (NOTE: ASSUMING GOLD UPDATED IN SCENE PLAYER OBJECT)
+
+
+		// serialzie skill levels
+
+
+		// serialize investment 
+
+
+		// serialize cheating
+
+
 		// block on recv() until server sends start_kill phase
 
-		// TODO REMOVE ME!!
-		logger()->debug("Starting prep phase!");
-		while (1) {};
-		// TODO REMOVE ME!!
 
 
 		// then start kill phase

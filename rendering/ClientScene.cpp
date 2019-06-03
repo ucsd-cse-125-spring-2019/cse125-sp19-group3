@@ -770,16 +770,18 @@ void ClientScene::handleServerTickPacket(char * data) {
 		player.isSilenced = false;
 	}
 
+	// deserialize client gold
+	memcpy(&player.gold, data, sizeof(int));
+	sz += sizeof(int);
+	data += sizeof(int);
 
 	//deserialize silence
 	memcpy(&player.isSilenced, data, sizeof(bool));
 	sz += sizeof(bool);
 	data += sizeof(bool);
 
-	// deserialize client gold
-	memcpy(&player.gold, data, sizeof(int));
-	sz += sizeof(int);
-	data += sizeof(int);
+	if ( player.gold != 0 )
+		logger()->debug("DECEREALED GOLD {}", player.gold);
 
 
 	/*int currKill = INT_MAX;
