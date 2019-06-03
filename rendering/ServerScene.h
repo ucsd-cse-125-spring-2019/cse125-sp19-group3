@@ -18,6 +18,8 @@
 #define VERTEX_SHADER_PATH "../shader.vert"
 #define FRAGMENT_SHADER_PATH "../shader.frag"
 
+enum PROJECTILE_MODEL_TYPE {PROJECTILE_MODEL_ID = 200, PYROBLAST_MODEL_ID = 201, WHIRLWIND_MODEL_ID = 202, SILENCE_MODEL_ID = 203};
+
 class ScenePlayer;
 
 class ServerScene {
@@ -65,7 +67,8 @@ public:
 								Point finalPoint,
 								Point initPoint,
 								Skill adjustedSkill,
-								float x, float z);
+								float x, float z,
+								bool isAOE, bool isSilence);
 
 	void handlePyroBlast(unsigned int player_id, Point finalPoint, Point initPoint, Skill adjustedSkill);
 
@@ -101,5 +104,4 @@ private:
 	double time = 0.0;
 	unsigned int nodeIdCounter = 0;
 };
-
 #endif

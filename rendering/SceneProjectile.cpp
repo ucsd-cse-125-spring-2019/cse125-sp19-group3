@@ -17,11 +17,17 @@ void SceneProjectile::move() {
 }
 
 void SceneProjectile::update() {
-	move();
-	node->update();
+	if (!isAOE) {
+		move();
+		node->update();
+	}
+	else {
+		node->scale = glm::scale(glm::mat4(1.0f), glm::vec3(node->scale[0][0] + speed));
+		node->update();
+	}
 }
 
 bool SceneProjectile::outOfRange() {
-	return glm::length(currentPos - initPos) > range;
+	return isAOE ? node->scale[0][0] >= range : glm::length(currentPos - initPos) > range;
 }
 

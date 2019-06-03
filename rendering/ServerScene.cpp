@@ -215,10 +215,12 @@ void ServerScene::update()
 	while (skillIter != skills.end()) {
 		auto & skill = *skillIter;
 		bool skillCollidedEnv = false;
-		for (auto& envObj : env_objs) {
-			glm::vec3 forwardVector = skill.direction*skill.speed;
-			if (skill.node->isCollided(forwardVector, model_radius, serverSceneGraphMap, envObj, model_boundingbox, true)) {
-				skillCollidedEnv = true;
+		if (!skill.isAOE) {
+			for (auto& envObj : env_objs) {
+				glm::vec3 forwardVector = skill.direction*skill.speed;
+				if (skill.node->isCollided(forwardVector, model_radius, serverSceneGraphMap, envObj, model_boundingbox, true)) {
+					skillCollidedEnv = true;
+				}
 			}
 		}
 		if (skill.outOfRange() || skillCollidedEnv) {
@@ -352,8 +354,14 @@ void ServerScene::checkAndHandlePlayerCollision(unsigned int playerId) {
 
 		// collision detected --> handle player death
 		else if (player.playerRoot->isCollided(forwardVector, model_radius, serverSceneGraphMap, skill.node, model_boundingbox, false)) {
-			handlePlayerDeath(player, skill.ownerId);
-			return;
+			if (skill.isSilence) {
+				player.isSilenced = true;
+				playerMetadatas->find(player.player_id)->second->silenced = true;
+			}
+			else {
+				handlePlayerDeath(player, skill.ownerId);
+				return;
+			}
 		}
 	}
 
@@ -413,13 +421,30 @@ void ServerScene::handlePlayerMovement(unsigned int playerId, glm::vec3 destinat
 		--> See handlePyroBlast for non-default example
 */
 void ServerScene::createSceneProjectile(unsigned int player_id, Point finalPoint, Point initPoint, Skill adjustedSkill,
-	float x=DEFAULT_X, float z=DEFAULT_Z)
+	float x=DEFAULT_X, float z=DEFAULT_Z, bool isAOE=false, bool isSilence=false)
 {
 	// modify final point for non default projectile (e.g. Pyroblast)
 	if ( x != DEFAULT_X || z != DEFAULT_Z ) finalPoint = initPoint + Point({x, 0.0f, z});
 
 	nodeIdCounter++;
-	SceneProjectile proj = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range);
+	unsigned int projectileModelType = 200;
+	if (isAOE) {
+		switch (adjustedSkill.skill_id)
+		{
+		case PYROBLAST:
+			projectileModelType = PYROBLAST_MODEL_ID;
+			break;
+		case WHIRLWIND:
+			projectileModelType = WHIRLWIND_MODEL_ID;
+			break;
+		case SUBJUGATION:
+			projectileModelType = SILENCE_MODEL_ID;
+			break;
+		}
+	}
+	SceneProjectile proj = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range, projectileModelType);
+	proj.isAOE = isAOE;
+	proj.isSilence = isSilence;
 	serverSceneGraphMap.insert({ nodeIdCounter, proj.node });
 	skills.push_back(proj);
 }
@@ -430,26 +455,26 @@ void ServerScene::createSceneProjectile(unsigned int player_id, Point finalPoint
 */
 void ServerScene::handlePyroBlast(unsigned int player_id, Point finalPoint, Point initPoint, Skill adjustedSkill)
 {
+	createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, DEFAULT_X, DEFAULT_Z, true, false);
+	//for (float z = -1; z < 2; z++) {
+	//	for (float x = -1; x < 2; x++) {
+	//		if (x == 0 && z == 0) continue;		// only shoot left and right from center
 
-	for (float z = -1; z < 2; z++) {
-		for (float x = -1; x < 2; x++) {
-			if (x == 0 && z == 0) continue;		// only shoot left and right from center
+	//		// create projectile; check if want to make more for this coordinate
+	//		createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x, z);
+	//		if ((x == 0) && (abs(z) == 1)) // +/- 0.5 to x-axis
+	//		{
+	//			createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x - 0.5, z);
+	//			createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x + 0.5, z);
+	//		}
+	//		else if (z == 0 && (abs(x) == 1)) // +/- 0.5 to z-axis
+	//		{
+	//			createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x, z - 0.5);
+	//			createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x, z + 0.5);
+	//		}
+	//	}
 
-			// create projectile; check if want to make more for this coordinate
-			createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x, z);
-			if ((x == 0) && (abs(z) == 1)) // +/- 0.5 to x-axis
-			{
-				createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x - 0.5, z);
-				createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x + 0.5, z);
-			}
-			else if (z == 0 && (abs(x) == 1)) // +/- 0.5 to z-axis
-			{
-				createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x, z - 0.5);
-				createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x, z + 0.5);
-			}
-		}
-
-	}
+	//}
 
 }
 
@@ -461,7 +486,7 @@ void ServerScene::handlePyroBlast(unsigned int player_id, Point finalPoint, Poin
 */
 void ServerScene::handleWhirlWind(unsigned int player_id, Point finalPoint, Point initPoint, Skill adjustedSkill)
 {
-	handlePyroBlast(player_id, finalPoint, initPoint, adjustedSkill);
+	createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, DEFAULT_X, DEFAULT_Z, true, true);
 }
 
 
@@ -474,11 +499,11 @@ void ServerScene::handleRoyalCross(unsigned int player_id, Point finalPoint, Poi
 		for (float x = -1; x < 2; x++) {
 
 			if (abs(z) == 1 && x == 0) {	  // shoot up & down
-				createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x, z);
+				createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x, z, false, false);
 			}
 
 			else if (abs(x) == 1 && z == 0) { // shoot left & right
-				createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x, z);
+				createSceneProjectile(player_id, finalPoint, initPoint, adjustedSkill, x, z, false, false);
 			}
 
 		}
@@ -568,7 +593,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			scenePlayers[player_id].animationMode = skill_2;
 			nodeIdCounter++;
 			initPoint = initPoint + glm::vec3({ 0.0f, 30.0f, 0.0f });
-			SceneProjectile dirAOE = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range);
+			SceneProjectile dirAOE = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range, PROJECTILE_MODEL_ID);
 			dirAOE.node->scale = glm::scale(glm::mat4(1.0f), Point(0.4f, 0.4f, 0.4f));
 			serverSceneGraphMap.insert({ nodeIdCounter, dirAOE.node });
 			skills.push_back(dirAOE);
@@ -607,18 +632,19 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			auto& king = scenePlayers[player_id];
 
 			// grab all players who are in the range of the skill.
-			for (auto& player : scenePlayers) {
-				// you can't silence yourself && players that are evading
-				if (player_id == player.first || player.second.isEvading) {
-					continue;
-				}
-				if (glm::length(king.currentPos - player.second.currentPos) <= adjustedSkill.range) {
-					player.second.isSilenced = true;
-					playerMetadatas->find(player.first)->second->silenced = true;
-					
-					logger()->debug("Player {} (model: {}) was silenced", player.first, player.second.modelType);
-				}
-			}
+			//for (auto& player : scenePlayers) {
+			//	// you can't silence yourself && players that are evading
+			//	if (player_id == player.first || player.second.isEvading) {
+			//		continue;
+			//	}
+			//	if (glm::length(king.currentPos - player.second.currentPos) <= adjustedSkill.range) {
+			//		player.second.isSilenced = true;
+			//		playerMetadatas->find(player.first)->second->silenced = true;
+			//		
+			//		logger()->debug("Player {} (model: {}) was silenced", player.first, player.second.modelType);
+			//	}
+			//}
+			createSceneProjectile(player_id, NULL_POINT, NULL_POINT, adjustedSkill, DEFAULT_X, DEFAULT_Z, true, true);
 			break;
 		}
 		case CHARGE:

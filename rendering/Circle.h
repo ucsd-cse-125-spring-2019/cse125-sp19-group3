@@ -18,7 +18,6 @@ public:
 	// constructor, expects a filepath to a 3D model.
 	Circle() { 
 		createCircle(radius); 
-		setup();
 	}
 
 	// draws the model, and thus all its meshes
@@ -33,20 +32,24 @@ public:
 		glActiveTexture(GL_TEXTURE0);
 	}
 
-	void createCircle(float radius) {
+	void createCircle(float r) {
+		radius = r;
+		vertices.resize(0);
 		vertices.push_back(glm::vec3(0));
 		for (unsigned int i = 0; i < 100; i++) {
 			float theta = 2.0f * glm::pi<float>() * float(i) / 100;
-			float x = radius * glm::cos(theta);
-			float y = radius * glm::sin(theta);
+			float x = r * glm::cos(theta);
+			float y = r * glm::sin(theta);
 			vertices.push_back(glm::vec3(x, 0, y));
 		}
 		vertices.push_back(vertices[1]);
+		indices.resize(0);
 		for (unsigned int i = 1; i < 101; i++) {
 			indices.push_back(0);
 			indices.push_back(i);
 			indices.push_back(i + 1);
 		}
+		setup();
 	}
 
 	void setup() {

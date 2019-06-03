@@ -7,9 +7,8 @@
 #include "../networking/KillStreak/CoreTypes.hpp"
 
 class SceneProjectile {
-	const static unsigned int KUNAI_ID = 200;
 public:
-		SceneProjectile(unsigned int nodeIdCounter, unsigned int ownerId, Point initPoint, Point finalPoint, Transform * skillRoot, float speed, float range) {
+		SceneProjectile(unsigned int nodeIdCounter, unsigned int ownerId, Point initPoint, Point finalPoint, Transform * skillRoot, float speed, float range, unsigned int projectileModelType) {
 			this->ownerId = ownerId;
 			this->currentPos = initPoint;
 			this->direction = glm::normalize(finalPoint - initPoint);
@@ -21,7 +20,7 @@ public:
 				glm::rotate(glm::mat4(1.0f), 0 / 180.f * glm::pi<float>(), glm::vec3(1, 0, 0)),
 				glm::scale(glm::mat4(1.0f), Point(0.02f, 0.02f, 0.02f))
 			);
-			node->model_ids.insert(KUNAI_ID);
+			node->model_ids.insert(projectileModelType);
 			skillRoot->addChild(nodeIdCounter);
 		
 			float dotResult = glm::dot(glm::normalize(finalPoint - initPoint), currentOri);
@@ -44,6 +43,8 @@ public:
 		Transform* node;
 		float speed = 0.6f;
 		float range = 1.0f;
+		bool isAOE = false;
+		bool isSilence = false;
 };
 
 
