@@ -588,7 +588,23 @@ void ServerGame::resetValuesPreKillPhase()
 	std::fill(leaderBoard->currentDeaths.begin(), leaderBoard->currentDeaths.end(), 0);
 
 	// TODO: What other values do we need to reset/update?
+	//position
+	//move this to ServerScene
+	for (std::pair<unsigned int, ScenePlayer> player : scene->scenePlayers) {
+		player.second.playerRoot->translation = glm::translate(glm::mat4(1.0f), spawn_loc[player.first]);
+		player.second.currentPos = spawn_loc[player.first];
+		player.second.setDestination(spawn_loc[player.first]);
+	}
 
+	//cooldown
+
+	//death / alive ?
+
+	//invis
+
+	//silence
+
+	//charge
 }
 
 
