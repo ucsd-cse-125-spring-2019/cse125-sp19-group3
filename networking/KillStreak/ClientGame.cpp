@@ -244,8 +244,39 @@ int ClientGame::waitingInitScene() {
 		closesocket(network->ConnectSocket);
 		return 0;
 	}
+	return 1;
+}
 
-	currPhase = KILL;
+int ClientGame::switchPhase() {
+	auto log = logger();
+	switch (currPhase) {
+		case LOBBY:
+			if (waitingInitScene() == 0)
+				return 0;
+			currPhase = KILL;
+			std::chrono::seconds secKill0(90);
+			prepareTimer = nanoseconds(secKill0);
+			break;
+		case KILL:
+			// TODO: waitingPreparePacket() -- need to direct to FINAL phase as well
+			std::chrono::seconds secSum(15);
+			prepareTimer = nanoseconds(secSum);
+			currPhase = SUMMARY;
+			break;
+		case SUMMARY:
+			std::chrono::seconds secPre(30);
+			prepareTimer = nanoseconds(secPre);
+			currPhase = PREPARE;
+			break;
+		case PREPARE:
+			 //TODO: waitingServerTickPacket()
+			currPhase = KILL;
+			std::chrono::seconds secKill(90);
+			prepareTimer = nanoseconds(secKill);
+			break;
+		default:
+			break;
+	}
 	setup_callbacks(currPhase);
 	return 1;
 }
@@ -314,10 +345,15 @@ void ClientGame::run() {
 			auto end = Clock::now();
 			nanoseconds elapsed = chrono::duration_cast<nanoseconds>(end - start);
 			Window_static::updateTimers(elapsed);
+			prepareTimer -= elapsed;
 		}
 		else {
 			// Prepare Phase
-
+			auto start = Clock::now();
+			Window_static::display_callback(window);
+			auto end = Clock::now();
+			prepareTimer -= chrono::duration_cast<nanoseconds>(end - start);
+			
 		}
 
 		

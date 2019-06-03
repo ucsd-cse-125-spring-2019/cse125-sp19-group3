@@ -8,13 +8,15 @@
 #include "PlayerData.hpp"
 #include <queue>
 
-typedef enum { LOBBY, KILL, PREPARE } ClientStatus;
+typedef enum { LOBBY, KILL, SUMMARY, PREPARE, FINAL } ClientStatus;
 class ClientGame {
 public:
 	ClientGame(string host, string port, int char_select_time);
 	//~ClientGame(void);
 
 	ClientNetwork * network;
+	nanoseconds prepareTimer;
+	LeaderBoard* leaderBoard;
 
 	void run();
 	int join_game();
@@ -22,6 +24,8 @@ public:
 	int handleCharacterSelectionPacket(ServerInputPacket* packet);
 	int sendCharacterSelection(string username, ArcheType character);
 	int waitingInitScene();
+	int switchPhase();
+
 	// initialize packet 
 	ClientInputPacket createClientInputPacket(InputType type, Point finalLocation, int skill_id);
 	ClientInputPacket createMovementPacket(Point newLocation);
@@ -38,8 +42,6 @@ protected:
 	ServerInputQueue* serverPackets;	// queue of packets from server
 	mutex* q_lock;						        // lock for queue
 	vector<int> cooldown_times;
-
-	LeaderBoard* leaderBoard;
 
 	friend class ClientScene;
 

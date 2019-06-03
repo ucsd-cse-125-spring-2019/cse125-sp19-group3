@@ -151,9 +151,9 @@ void ClientScene::initialize_UI(GLFWwindow* window) {
 	media.font_18 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/PermanentMarker-Regular.ttf", 18.0f, &cfg);
 
 	media.font_20 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/PermanentMarker-Regular.ttf", 20.0f, &cfg);
-
 	media.font_22 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/PermanentMarker-Regular.ttf", 22.0f, &cfg);
 	media.font_32 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/PermanentMarker-Regular.ttf", 32.0f, &cfg);
+	media.font_48 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/PermanentMarker-Regular.ttf", 48.0f, &cfg);
 
 	media.font_64 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/PermanentMarker-Regular.ttf", 64.0f, &cfg);
 	nk_glfw3_font_stash_end();
@@ -362,7 +362,21 @@ void ClientScene::renderPreparePhase(GLFWwindow* window) {
 	/* Input */
 	glfwPollEvents();
 	nk_glfw3_new_frame();
-	prepare_layout(ctx, &media, ClientScene::width, ClientScene::height, &this->player);
+	prepare_layout(ctx, &media, ClientScene::width, ClientScene::height, &this->player, game);
+
+	nk_glfw3_render(NK_ANTI_ALIASING_OFF, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+
+	// Swap buffers
+	glfwSwapBuffers(window);
+}
+ 
+void ClientScene::renderSummaryPhase(GLFWwindow* window) {
+
+
+	/* Input */
+	glfwPollEvents();
+	nk_glfw3_new_frame();
+	summary_layout(ctx, &media, ClientScene::width, ClientScene::height, game);
 
 	nk_glfw3_render(NK_ANTI_ALIASING_OFF, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
 
@@ -404,7 +418,9 @@ void ClientScene::renderKillPhase(GLFWwindow* window) {
 
 	/* GUI */
 
-	kill_layout(ctx, &media, width, height, & this->player, skill_timers, leaderBoard, usernames, archetypes, killTextDeterminant);
+
+	kill_layout(ctx, &media, width, height, & this->player, skill_timers, leaderBoard, usernames, archetypes, killTextDeterminant, game);
+
 	/* ----------------------------------------- */
 
 
@@ -425,6 +441,7 @@ void ClientScene::display_callback(GLFWwindow* window)
 
 	if (game->currPhase == ClientStatus::LOBBY) renderLobbyPhase(window);
 	else if (game->currPhase == ClientStatus::KILL) renderKillPhase(window);
+	else if (game->currPhase == ClientStatus::SUMMARY) renderSummaryPhase(window);
 	else renderPreparePhase(window);
 }
 
