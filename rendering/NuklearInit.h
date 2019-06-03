@@ -51,6 +51,8 @@ struct media {
 	struct nk_image assassin_skills[4];
 	struct nk_image king_skills[4];
 
+	struct nk_image lobby_background;
+	struct nk_image prepare_background;
 	struct nk_image mage_silenced[2];
 	struct nk_image warrior_silenced[2];
 	struct nk_image assassin_silenced[2];
@@ -327,22 +329,22 @@ set_style(struct nk_context *ctx, enum theme theme)
 		nk_style_from_table(ctx, table);
 	}
 	else if (theme == THEME_RED) {
-		table[NK_COLOR_TEXT] = nk_rgba(190, 190, 190, 255);
+		table[NK_COLOR_TEXT] = nk_rgba(255, 255, 255, 255);
 		table[NK_COLOR_WINDOW] = nk_rgba(30, 33, 40, 215);
 		table[NK_COLOR_HEADER] = nk_rgba(181, 45, 69, 220);
 		table[NK_COLOR_BORDER] = nk_rgba(51, 55, 67, 255);
-		table[NK_COLOR_BUTTON] = nk_rgba(181, 45, 69, 255);
-		table[NK_COLOR_BUTTON_HOVER] = nk_rgba(190, 50, 70, 255);
-		table[NK_COLOR_BUTTON_ACTIVE] = nk_rgba(195, 55, 75, 255);
+		table[NK_COLOR_BUTTON] = nk_rgba(136, 0, 21, 255);
+		table[NK_COLOR_BUTTON_HOVER] = nk_rgba(110, 0, 16, 255);
+		table[NK_COLOR_BUTTON_ACTIVE] = nk_rgba(170, 0, 28, 255);
 		table[NK_COLOR_TOGGLE] = nk_rgba(51, 55, 67, 255);
 		table[NK_COLOR_TOGGLE_HOVER] = nk_rgba(45, 60, 60, 255);
-		table[NK_COLOR_TOGGLE_CURSOR] = nk_rgba(181, 45, 69, 255);
+		table[NK_COLOR_TOGGLE_CURSOR] = nk_rgba(170, 0, 28, 255);
 		table[NK_COLOR_SELECT] = nk_rgba(51, 55, 67, 255);
-		table[NK_COLOR_SELECT_ACTIVE] = nk_rgba(181, 45, 69, 255);
+		table[NK_COLOR_SELECT_ACTIVE] = nk_rgba(136, 0, 21, 255);
 		table[NK_COLOR_SLIDER] = nk_rgba(51, 55, 67, 255);
-		table[NK_COLOR_SLIDER_CURSOR] = nk_rgba(181, 45, 69, 255);
-		table[NK_COLOR_SLIDER_CURSOR_HOVER] = nk_rgba(186, 50, 74, 255);
-		table[NK_COLOR_SLIDER_CURSOR_ACTIVE] = nk_rgba(191, 55, 79, 255);
+		table[NK_COLOR_SLIDER_CURSOR] = nk_rgba(136, 0, 21, 255);
+		table[NK_COLOR_SLIDER_CURSOR_HOVER] = nk_rgba(110, 0, 16, 255);
+		table[NK_COLOR_SLIDER_CURSOR_ACTIVE] = nk_rgba(170, 0, 28, 255);
 		table[NK_COLOR_PROPERTY] = nk_rgba(51, 55, 67, 255);
 		table[NK_COLOR_EDIT] = nk_rgba(51, 55, 67, 225);
 		table[NK_COLOR_EDIT_CURSOR] = nk_rgba(190, 190, 190, 255);

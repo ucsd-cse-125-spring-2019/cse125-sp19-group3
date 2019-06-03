@@ -274,29 +274,33 @@ lobby_layout(struct nk_context *ctx, struct media *media, int width, int height,
 	static bool available = true;
 	static bool selected = false;
 	static char buf[256] = { 0 };
-	set_style(ctx, THEME_BLACK);
+	set_style(ctx, THEME_RED);
 
 	static ArcheType op = HUMAN;
+	ctx->style.window.fixed_background = nk_style_item_image(media->lobby_background);
+
 	if (nk_begin(ctx, "Lobby", nk_rect(0, 0, width, height),
-		NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR
+		NK_WINDOW_NO_SCROLLBAR
 	))
 	{
+		ctx->style.window.fixed_background = nk_style_item_color(nk_rgba(0, 0, 0, 0));
 		static const char * characterTypeStrings[] = { "HUMAN", "MAGE", "ASSASSIN","WARRIOR","KING" };
 		static const float ratio[] = { 0.35f, 0.3f, 0.35f };  /* 0.3 + 0.4 + 0.3 = 1 */
 		static const float text_input_ratio[] = { 0.15f, 0.85f };
+		static const float choice_ratio[] = { 0.30f, 0.10f, 0.10f, 0.10f, 0.10f,0.30f };
+		nk_layout_row_static(ctx, 0.4*height, 15, 1);
+
 		nk_layout_row(ctx, NK_DYNAMIC, 40, 2, ratio);
 		nk_text(ctx, "Username: ", 10, NK_TEXT_ALIGN_RIGHT);
 		// in window
 		nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, buf, sizeof(buf) - 1, nk_filter_default);
-
-		static const float choice_ratio[] = { 0.18f, 0.16f, 0.16f, 0.16f, 0.16f,0.18f };
 		nk_layout_row_static(ctx, 0.03*height, 15, 1);
-		nk_layout_row(ctx, NK_DYNAMIC, height *0.35, 6, choice_ratio);
+		nk_layout_row(ctx, NK_DYNAMIC, height *0.25, 6, choice_ratio);
 		// somewhere out of cycle
 		nk_spacing(ctx, 1);
 		for (int i = 1; i < 5; i++) {
-			if (nk_group_begin(ctx, characterTypeStrings[i], NK_WINDOW_NO_SCROLLBAR)) { // column 1
-				nk_layout_row_dynamic(ctx, width *0.15, 1); // nested row
+			if (nk_group_begin(ctx, characterTypeStrings[i], 0)) { // column 1
+				nk_layout_row_dynamic(ctx, width *0.10, 1); // nested row
 
 				if (i == WARRIOR)
 					nk_image(ctx, media->warrior);
@@ -313,7 +317,7 @@ lobby_layout(struct nk_context *ctx, struct media *media, int width, int height,
 			}
 			nk_group_end(ctx);
 		}
-		nk_spacing(ctx, 1);
+		//nk_spacing(ctx, 1);
 
 		//horizontal centered
 		nk_layout_row(ctx, NK_DYNAMIC, 60, 3, ratio);
@@ -327,7 +331,6 @@ lobby_layout(struct nk_context *ctx, struct media *media, int width, int height,
 		nk_spacing(ctx, 1);
 	}
 	nk_end(ctx);
-
 	if (!available) {
 		if (nk_begin(ctx, "Alert", nk_rect(width*0.3, height*0.3, width*0.4, 200),
 			NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_CLOSABLE
@@ -482,7 +485,7 @@ static void ui_shop(struct nk_context *ctx, struct media *media, int width, int 
 		
 
 		static const float choice_ratio[] = { 0.12f, 0.19f, 0.19f, 0.19f, 0.19f,0.12f };
-
+		ctx->style.window.fixed_background = nk_style_item_color(nk_rgba(0, 0, 0, 0));
 		ui_prepare_title(ctx, media, width, height, "Shop", game);
 
 		nk_layout_row(ctx, NK_DYNAMIC, height *0.35, 6, choice_ratio);
@@ -553,6 +556,7 @@ static  void
 prepare_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, LeaderBoard* leaderBoard, vector<string> usernames, vector<ArcheType> archetypes, ClientGame * game) {
 	static int curr = 0;// 0 for summary, 1 for shop
 	set_style(ctx, THEME_BLACK);
+	ctx->style.window.fixed_background = nk_style_item_image(media->prepare_background);
 	if (curr == 0) {
 		ui_round_results(ctx, media, leaderBoard, usernames, archetypes, width, height, curr, game);
 	}
