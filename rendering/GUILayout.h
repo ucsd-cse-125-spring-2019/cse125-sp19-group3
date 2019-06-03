@@ -356,7 +356,9 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 	vector<string> ordered_usernames;
 	vector<ArcheType> ordered_types;
 	vector<int> curKills = leaderBoard->currentKills;
-
+	static const float lbratio[] = { 0.20f, 0.08f, 0.02f, 0.30f,0.4f };  /* 0.3 + 0.4 + 0.3 = 1 */
+	static const float globalLBratio[] = { 0.20f, 0.08f, 0.02f, 0.30f,0.20f,0.20f };  /* 0.3 + 0.4 + 0.3 = 1 */
+	static const float btnRatio[] = { 0.97f, 0.03f };
 	// make parallel arrays 'kills' & 'ordered_usernames' having same index for players based on number of kills
 	for (int i = 0; i < GAME_SIZE; i++)
 	{
@@ -372,19 +374,9 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 
 		*it = -1;		// reset current max to -1
 	}
-
-	struct nk_style *s = &ctx->style;
 	if (nk_begin(ctx, "round result", nk_rect(0, 0, width, height),
-		NK_WINDOW_BORDER))
+		NK_WINDOW_NO_SCROLLBAR))
 	{
-		static const float lbratio[] = { 0.20f, 0.08f, 0.02f, 0.30f,0.4f };  /* 0.3 + 0.4 + 0.3 = 1 */
-		static const float globalLBratio[] = { 0.20f, 0.08f, 0.02f, 0.30f,0.20f,0.20f };  /* 0.3 + 0.4 + 0.3 = 1 */
-		static const float btnRatio[] = { 0.97f, 0.03f };
-		nk_layout_row(ctx, NK_DYNAMIC, width*0.03f, 2, btnRatio);
-		nk_spacing(ctx, 1);
-		if (nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_RIGHT)) {
-			currPreparePage = 1;
-		}
 		ui_prepare_title(ctx, media, width, height, "Summary", game);
 		nk_style_set_font(ctx, &(media->font_64->handle));
 		nk_layout_row_dynamic(ctx, height*0.15, 1);
@@ -466,12 +458,21 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 
 	}
 	nk_end(ctx);
+
+	if (nk_begin(ctx, "SwitchPage", nk_rect(0.03*width, 0.9*height, height*0.1, height*0.1),
+		NK_WINDOW_NO_SCROLLBAR)) {
+		nk_layout_row_static(ctx, height*0.1, height*0.1, 1);
+		if (nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_RIGHT)) {
+			currPreparePage = 1;
+		}
+	}
+	nk_end(ctx);
 }
 
 static void ui_shop(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, int & currPreparePage, ClientGame * game) {
 
 	if (nk_begin(ctx, "Prepare", nk_rect(0, 0, width, height),
-		NK_WINDOW_BORDER | NK_WINDOW_NO_SCROLLBAR
+		NK_WINDOW_NO_SCROLLBAR
 	))
 	{
 		char* skill_string[4] = { "Evade", "Projectile", "AOE", "Cone AOE" };
@@ -482,13 +483,6 @@ static void ui_shop(struct nk_context *ctx, struct media *media, int width, int 
 		
 
 		static const float choice_ratio[] = { 0.12f, 0.19f, 0.19f, 0.19f, 0.19f,0.12f };
-
-		static const float btnRatio[] = { 0.03f, 0.97f };
-		nk_layout_row(ctx, NK_DYNAMIC, width*0.03f, 2, btnRatio);
-		if (nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_LEFT)) {
-			currPreparePage = 0;
-		}
-		nk_spacing(ctx, 1);
 
 		ui_prepare_title(ctx, media, width, height, "Shop", game);
 
@@ -543,6 +537,15 @@ static void ui_shop(struct nk_context *ctx, struct media *media, int width, int 
 			}
 		}
 
+	}
+	nk_end(ctx);
+
+	if (nk_begin(ctx, "SwitchPageBack", nk_rect(0.03*width, 0.9*height, height*0.1, height*0.1),
+		NK_WINDOW_NO_SCROLLBAR)) {
+		nk_layout_row_static(ctx, height*0.1, height*0.1, 1);
+		if (nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_LEFT)) {
+			currPreparePage = 0;
+		}
 	}
 	nk_end(ctx);
 }

@@ -690,8 +690,8 @@ void ClientScene::handleInitScenePacket(char * data) {
 	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap, particleTexture, particleShader);
 
 	//**Audio Test (Currently plays ASSASSIN_TELEPORT.wav)**//
-	audio.initListener(glm::vec3(0));
-	audio.play(glm::vec3(0), 2);
+	//audio.initListener(glm::vec3(0));
+	//audio.play(glm::vec3(0), 2);
 }
 
 /*
