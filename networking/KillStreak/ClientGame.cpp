@@ -254,19 +254,19 @@ int ClientGame::switchPhase() {
 			if (waitingInitScene() == 0)
 				return 0;
 			currPhase = KILL;
-			std::chrono::seconds secKill0(90);
+			std::chrono::seconds secKill0(5);
 			prepareTimer = nanoseconds(secKill0);
 			break;
 		case KILL:
 			// TODO: waitingPreparePacket() -- need to direct to FINAL phase as well
-			std::chrono::seconds secPre(45);
+			std::chrono::seconds secPre(15);
 			prepareTimer = nanoseconds(secPre);
 			currPhase = PREPARE;
 			break;
 		case PREPARE:
 			 //TODO: waitingServerTickPacket()
 			currPhase = KILL;
-			std::chrono::seconds secKill(90);
+			std::chrono::seconds secKill(5);
 			prepareTimer = nanoseconds(secKill);
 			break;
 		default:
