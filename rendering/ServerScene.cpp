@@ -9,6 +9,9 @@ using json = nlohmann::json;
 #define DEFAULT_X 666
 #define DEFAULT_Z 666
 
+#define GOLD			5
+#define GOLD_MULTIPLIER 3		// number of kills in killstreak before next bonus
+
 // skill_id's
 #define UNEVADE            -1
 #define EVADE				0
@@ -17,16 +20,17 @@ using json = nlohmann::json;
 #define DRAGONS_BREATH		3
 #define ASSASSIN_PROJECTILE	11
 #define INVISIBILITY		12
-#define SIXTH_SENSE			13
-#define VISIBILITY           14
+#define SPRINT			    13
+#define VISIBILITY          14
+#define UNSPRINT            15
 #define WHIRLWIND			22
 #define CHARGE				23
 #define ROYAL_CROSS			32
 #define SUBJUGATION			33
 #define UNSILENCE           34
 
-
-ServerScene::ServerScene(LeaderBoard* leaderBoard, unordered_map<unsigned int, PlayerMetadata*>* playerMetadatas)
+ServerScene::ServerScene(LeaderBoard* leaderBoard, unordered_map<unsigned int, PlayerMetadata*>* playerMetadatas,
+	unordered_map<unsigned int, Skill>* skill_map, unordered_map<ArcheType, vector<unsigned int>> *archetype_skillset)
 {
 	root = new Transform(0, glm::mat4(1.0f));
 	serverSceneGraphMap.insert({ root->node_id, root });
@@ -39,6 +43,8 @@ ServerScene::ServerScene(LeaderBoard* leaderBoard, unordered_map<unsigned int, P
 	serverSceneGraphMap.insert({ skillRoot->node_id, skillRoot });
 	root->addChild(nodeIdCounter);
 
+	this->skill_map = skill_map;
+	this->archetype_skillset = archetype_skillset;
 	this->leaderBoard = leaderBoard;	
 	this->playerMetadatas = playerMetadatas;
 
@@ -196,7 +202,7 @@ void ServerScene::addPlayer(unsigned int playerId, ArcheType modelType) {
 
 	// TODO: need to set model type based on player selection in lobby
 
-	ScenePlayer player = ScenePlayer(playerId, nodeIdCounter, modelType, playerObj);
+	ScenePlayer player = ScenePlayer(playerId, nodeIdCounter, modelType, playerObj, this);
 	//playerMap.insert(std::pair<unsigned int, Player *>(playerId, player));
 	scenePlayers.insert({ playerId, player });
 }
@@ -228,8 +234,6 @@ void ServerScene::update()
 
 	// check for collisions on all alive players
 	for (auto& element : scenePlayers) {
-
-		
 		unsigned int player_id = element.first;		
 
 		// get player metadata		
@@ -242,46 +246,20 @@ void ServerScene::update()
 			checkAndHandlePlayerCollision(player_id);	
 		}
 
-		/* NOTE: Moving this inside above condition will NOT allow dead player to move once hit
-				But they can still attack.
-		*/
 		element.second.update();		
+	}
 
+	// flip charging status when range is reach
+	for (auto& element : scenePlayers) {
+		auto& character = element.second;
+		if (character.modelType == WARRIOR) {
+			if (character.warriorIsChargingServer && character.currentPos == character.destination) {
+				warriorIsCharging = false;
+				character.warriorIsChargingServer = false;
+			}
+		}
 	}
 }
-
-
-/*
-
-	XXX Need to CREATE a leaderboard first and save it in server object?
-		XXX For the current game, allocate new board and init. all player values
-		XXX Add pointer to leaderboard in ServerScene
-		XXX Create function in PlayerData.cpp that updates kill score for index
-		XXX Test updating leaderBoard when client hit & see if server processes it correctly
-				I.E. correct client gets correct point, etc..
-
-	XXX Append leaderboard to EVERY server tick packet, broadcasting to all clients on 
-		every tick.
-
-		XXX In the main server loop just put the leaderboard into a packet and send
-			it to all the clients 
-
-	3. Update leader board on the server side when a player gets hit (this function!!!)
-		XXX The player who killed this player needs to get a point
-		XXX Access player meta data map & check if player is alive before processing hit detection
-		XXX Set player as 'dead' when hit by projectile by access MetaData
-		XXX update killstreak/losestreak of both players
-		XXX update gold accordingly
-			*** How much do we award for gold? How does gold logic work? 
-
-	4. Server needs to put this player to sleep for 3 seconds or something (also this function??)
-		XXX Tell client they're dead! 
-		--> After 3 seconds send packet waking player up with new location that 
-				doesn't hit any other objects. (Check hit detection logic)
-		--> Possibly make new packet type? Respawn packet?
-		--> Code to update location: player.setDestination(player.currentPos);	
-
-*/
 
 /*
 	Player has been hit, handle death...
@@ -293,30 +271,49 @@ void ServerScene::update()
 void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int killer_id)
 {
 	logger()->debug("Player {} killed player {}", killer_id, dead_player.player_id);
+	// set animation mode on dead player
+	dead_player.animationMode = die;
 
 	// get dead_players metadata 
-	unsigned int player_id = dead_player.player_id;
-	unordered_map<unsigned int, PlayerMetadata*>::iterator s_it = playerMetadatas->find(player_id);
+	unsigned int dead_player_id = dead_player.player_id;
+	unordered_map<unsigned int, PlayerMetadata*>::iterator s_it = playerMetadatas->find(dead_player_id);
 	PlayerMetadata* player_data = s_it->second;
+
+	// save dead player current killstreak
+	int dead_player_ks = player_data->currKillStreak;	
 
 	// set dead_players status to dead, reset killstreak & increment losestreak
 	player_data->alive = false;
-	//player_data->died_this_tick = true;
 	player_data->currKillStreak  = 0;
 	player_data->currLoseStreak += 1;
+	leaderBoard->resetKillStreak(dead_player_id);
 
 	// get killers metadata  
 	s_it = playerMetadatas->find(killer_id);
 	PlayerMetadata* killer_data = s_it->second;
 
+	// award bonus gold for kilstreak 
+	int killstreak_bonus = killer_data->currKillStreak / GOLD_MULTIPLIER;	
+	killer_data->gold	+= (GOLD * killstreak_bonus);
+
 	// award killer gold, increment killstreak & reset losestreak 
-	killer_data->gold			+= 1;
+	killer_data->gold			+= GOLD;
 	killer_data->currKillStreak += 1;
 	killer_data->currLoseStreak  = 0;
 
-	// award kill & points to killer
-	leaderBoard->awardKill(killer_id);
-	leaderBoard->awardPoint(killer_id);
+	// if killer ended killstreak they get bonus points
+	int shutdown_bonus = GOLD * (dead_player_ks / GOLD_MULTIPLIER);
+	killer_data->gold += shutdown_bonus;
+
+	// award kill to player (global & current rounds leaderboard)
+	leaderBoard->awardKillRound(killer_id);
+	leaderBoard->awardKillGlobal(killer_id);
+	leaderBoard->incKillStreak(killer_id);
+
+	if (warriorIsCharging && dead_player.modelType == WARRIOR) {
+		warriorIsCharging = false;
+		dead_player.warriorIsChargingServer = false;
+	}
 
 }
 
@@ -348,10 +345,31 @@ void ServerScene::checkAndHandlePlayerCollision(unsigned int playerId) {
 		}
 	}
 
+	// player - env model
 	for (auto& envObj : env_objs) {
 		if (player.playerRoot->isCollided(forwardVector, model_radius, serverSceneGraphMap, envObj, model_boundingbox, true)) {
 			player.setDestination(player.currentPos);
+			if (player.modelType == WARRIOR && player.warriorIsChargingServer) {
+				warriorIsCharging = false;
+				player.warriorIsChargingServer = false;
+				player.speed = 0.3f; // hardcoding bs
+			}
 			break;
+		}
+	}
+	ScenePlayer warrior;
+
+	// player - player (only for warrior charge skill lul)
+	if (warriorIsCharging && player.modelType == WARRIOR) {
+		for (auto& element : scenePlayers ) {
+			auto& otherPlayer = element.second;
+			if (otherPlayer.modelType == WARRIOR) continue;
+			unordered_map<unsigned int, PlayerMetadata*>::iterator s_it = playerMetadatas->find(otherPlayer.player_id);
+			PlayerMetadata* player_data = s_it->second;
+			if (!player_data->alive) continue;
+			if (otherPlayer.playerRoot->isCollided(forwardVector, model_radius, serverSceneGraphMap, player.playerRoot, model_boundingbox, false)) {
+				handlePlayerDeath(otherPlayer, player.player_id);
+			}	
 		}
 	}
 
@@ -400,6 +418,7 @@ void ServerScene::createSceneProjectile(unsigned int player_id, Point finalPoint
 */
 void ServerScene::handlePyroBlast(unsigned int player_id, Point finalPoint, Point initPoint, Skill adjustedSkill)
 {
+
 	for (float z = -1; z < 2; z++) {
 		for (float x = -1; x < 2; x++) {
 			if (x == 0 && z == 0) continue;		// only shoot left and right from center
@@ -480,6 +499,13 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 		return;
 	}
 
+	// special case of undoing sprint
+	if (skill_id == UNSPRINT) {
+		auto &assassin = scenePlayers[player_id];
+		assassin.speed /= 1.5; // tweak values later
+		return;
+	}
+
 	// special case of unevade
 	if (skill_id == UNEVADE) {
 		logger()->debug("{} player stopped evading!", playerMetadata->username);
@@ -516,26 +542,32 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 		}
 		case PYROBLAST:
 		{
+			// set animation mode so everyone can see you're pyroblasting
+			scenePlayers[player_id].animationMode = skill_1;
 			handlePyroBlast(player_id, finalPoint, initPoint, adjustedSkill);
 			break;
 		}
 		case DRAGONS_BREATH:
 		{
-
-			// TODO: Possibly modfiy 'createSceneProjectile' to handle this specific case, will need to update dirAOE.node-> scale...
-			// can define a default value that will state what to do
+			
+			// set animation mode so everyone can see your dragon breath state
+			scenePlayers[player_id].animationMode = skill_2;
 			nodeIdCounter++;
-			initPoint = scenePlayers[player_id].currentPos + Point({ 0.0f, 5.0f, 0.0f });
+			initPoint = initPoint + glm::vec3({ 0.0f, 30.0f, 0.0f });
 			SceneProjectile dirAOE = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range);
-			dirAOE.node->scale = glm::scale(glm::mat4(1.0f), Point(0.08f, 0.08f, 0.08f));
+			dirAOE.node->scale = glm::scale(glm::mat4(1.0f), Point(0.4f, 0.4f, 0.4f));
 			serverSceneGraphMap.insert({ nodeIdCounter, dirAOE.node });
 			skills.push_back(dirAOE);
 			break;
 		}
 		case WHIRLWIND:
+			// set animation mode
+			scenePlayers[player_id].animationMode = skill_1;
 			handleWhirlWind(player_id, finalPoint, initPoint, adjustedSkill);
 			break;
 		case ROYAL_CROSS:
+			// set animation mode
+			scenePlayers[player_id].animationMode = skill_1;
 			handleRoyalCross(player_id, finalPoint, initPoint, adjustedSkill);
 			break;
 		case INVISIBILITY:
@@ -545,11 +577,19 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			serverSceneGraphMap[node_id]->enabled = false;
 			break;
 		}
+		case SPRINT: 
+		{
+			auto &assassin = scenePlayers[player_id];
+			assassin.speed *= 1.5; // twice as fast, tweak values later
+			break;
+		}
 		case SUBJUGATION:
 		{
 			// TODO: delay this skill by a bit to let animations/particle fx to play
 			// and then do hitbox calculations
 
+			// set animation mode
+			scenePlayers[player_id].animationMode = skill_2;
 			auto& king = scenePlayers[player_id];
 
 			// grab all players who are in the range of the skill.
@@ -564,6 +604,29 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 				}
 			}
 			break;
+		}
+		case CHARGE:
+		{
+			auto& warrior = scenePlayers[player_id];
+			warrior.warriorIsChargingServer = true;
+			warriorIsCharging = true;
+			warrior.speed = 1.0f;	//TODO: change to from json
+			auto direction = glm::normalize(finalPoint - initPoint);
+			auto& defaultSkill = warrior.availableSkills[3]; // hardcode bs??>?
+			auto adjustedSkill = Skill::calculateSkillBasedOnLevel(defaultSkill, defaultSkill.level);
+			auto finalLocation = initPoint + (adjustedSkill.range * direction);
+			warrior.setDestination(finalLocation);
+
+			float dotResult = glm::dot(glm::normalize(finalLocation - warrior.currentPos), warrior.currentOri);
+
+			if (abs(dotResult) < 1.0) {
+				float angle = glm::acos(dotResult);
+				//printf("rotate angle = %f", angle);
+				glm::vec3 axis = glm::cross(warrior.currentOri, glm::normalize(finalLocation - warrior.currentPos));
+				if (glm::length(axis) != 0) {
+					warrior.rotate(angle, axis);
+				}
+			}
 		}
 		default:
 		{
@@ -586,7 +649,27 @@ void ServerScene::handlePlayerRespawn(unsigned int client_id)
 
 	player_data->alive = true;
 	ScenePlayer &player = scenePlayers[client_id];
-	player.setDestination(NULL_POINT);		// TODO: FIX ME TO VALID RANDOM LOCATION
+  // rand () % range - negative portion
+  // e.g rand() % 20 - 10 -> -10 to 10
+  // x: -9 to 164
+  // z: -28 to 83
+	float x = rand() % 173 - 9;
+	float z = rand() % 111 - 28;
+	glm::vec3 loc = glm::vec3(x, 0.0f, z);
+  glm::vec3 target;
+  float length = std::numeric_limits<float>::infinity();
+  //spawn_loc is defined in ServerScene
+  for(glm::vec3 temp_loc : spawn_loc){
+    float temp_len = glm::length(loc - temp_loc);
+    if (temp_len < length){
+      length = temp_len;
+      target = temp_loc;
+    }
+  }
+  player.playerRoot->translation = glm::translate(glm::mat4(1.0f), target);
+  player.currentPos = target;
+  player.setDestination(target);
+  player.animationMode = spawn;
 }
 
 

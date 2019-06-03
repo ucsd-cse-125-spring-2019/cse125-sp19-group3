@@ -6,6 +6,7 @@
 #define MAX_VERTEX_BUFFER 512 * 1024
 #define MAX_ELEMENT_BUFFER 128 * 1024
 
+
 #define UNEVADE -1
 #define EVADE_INDEX 0
 #define PROJ_INDEX 1
@@ -13,6 +14,7 @@
 #define DIR_SKILL_INDEX 3
 #define UNSILENCE 34
 #define VISIBILITY 14
+#define UNSPRINT 15
 #define RESPAWN_TIME 3
 
 using json = nlohmann::json;
@@ -30,7 +32,6 @@ GLuint loadTexture(const char * imagepath) {
 	if (!data) {
 		if (!data) printf("[Particle]: failed to load image: %s", imagepath);
 	}
-
 	GLuint textureID;
 	glActiveTexture(GL_TEXTURE0);
 	glGenTextures(1, &textureID);
@@ -45,25 +46,6 @@ GLuint loadTexture(const char * imagepath) {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(data);
-	// Give the image to OpenGL
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-
-	//// OpenGL has now copied the data. Free our own version
-	//delete[] data;
-
-	//// Poor filtering, or ...
-	////glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	////glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); 
-
-	//// ... nice trilinear filtering ...
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	//// ... which requires mipmaps. Generate them automatically.
-	//glGenerateMipmap(GL_TEXTURE_2D);
-
-	// Return the ID of the texture we just created
 	return textureID;
 }
 
@@ -144,6 +126,7 @@ void ClientScene::initialize_skills(ArcheType selected_type) {
 	respawn_timer = nanoseconds::zero();
 	skillDurationTimer = nanoseconds::zero();
 	evadeDurationTimer = nanoseconds::zero();
+	sprintDurationTimer = nanoseconds::zero();
 	player.modelType = selected_type;
 }
 
@@ -153,6 +136,7 @@ void ClientScene::clean_up()
 	delete(root);
 	delete(staticShader);
 	delete(animationShader);
+	delete(particleShader);
 }
 
 void ClientScene::initialize_UI(GLFWwindow* window) {
@@ -162,18 +146,19 @@ void ClientScene::initialize_UI(GLFWwindow* window) {
 	struct nk_font_config cfg = nk_font_config(0);
 	struct nk_font_atlas *atlas;
 	nk_glfw3_font_stash_begin(&atlas);
-	media.font_14 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/ProggyClean.ttf", 14.0f, &cfg);
+	media.font_14 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/PermanentMarker-Regular.ttf", 14.0f, &cfg);
 
-	media.font_18 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/Roboto-Regular.ttf", 18.0f, &cfg);
+	media.font_18 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/PermanentMarker-Regular.ttf", 18.0f, &cfg);
 
-	media.font_20 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/Roboto-Regular.ttf", 20.0f, &cfg);
+	media.font_20 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/PermanentMarker-Regular.ttf", 20.0f, &cfg);
+	media.font_22 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/PermanentMarker-Regular.ttf", 22.0f, &cfg);
+	media.font_32 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/PermanentMarker-Regular.ttf", 32.0f, &cfg);
+	media.font_48 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/PermanentMarker-Regular.ttf", 48.0f, &cfg);
 
-	media.font_22 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/Roboto-Regular.ttf", 22.0f, &cfg);
-	media.font_32 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/Roboto-Regular.ttf", 32.0f, &cfg);
-	media.font_48 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/Roboto-Regular.ttf", 48.0f, &cfg);
-	media.font_64 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/Roboto-Regular.ttf", 64.0f, &cfg);
+	media.font_64 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/PermanentMarker-Regular.ttf", 64.0f, &cfg);
 	nk_glfw3_font_stash_end();
 	}
+	glfw.atlas.default_font = media.font_22;
 	nk_style_set_font(ctx, &(media.font_22->handle));
 	//create media
 	media.mage = icon_load("../icon/mage_icon.png");
@@ -181,23 +166,32 @@ void ClientScene::initialize_UI(GLFWwindow* window) {
 	media.king = icon_load("../icon/king_icon.png");
 	media.warrior = icon_load("../icon/warrior_icon.png");
 
+	media.points = icon_load("../icon/trophy.png");
+	media.gold = icon_load("../icon/gold.png");
 	media.mage_skills[2] = icon_load("../icon/skills/evade.png");
 	media.mage_skills[3] = icon_load("../icon/skills/projectile.png");
 	media.mage_skills[1] = icon_load("../icon/skills/mage-aoe.png");
 	media.mage_skills[0] = icon_load("../icon/skills/mage-cone_aoe.png");
+	media.mage_silenced[1] = icon_load("../icon/skills/mage-aoe-silenced.png");
+	media.mage_silenced[0] = icon_load("../icon/skills/mage-cone_aoe-silenced.png");
 	media.warrior_skills[2] = icon_load("../icon/skills/evade.png");
 	media.warrior_skills[3] = icon_load("../icon/skills/projectile.png");
 	media.warrior_skills[1] = icon_load("../icon/skills/warrior-charge.png");
 	media.warrior_skills[0] = icon_load("../icon/skills/warrior-aoe.png");
+	media.warrior_silenced[1] = icon_load("../icon/skills/warrior-charge-silenced.png");
+	media.warrior_silenced[0] = icon_load("../icon/skills/warrior-aoe-silenced.png");
 	media.assassin_skills[2] = icon_load("../icon/skills/evade.png");
 	media.assassin_skills[3] = icon_load("../icon/skills/projectile.png");
 	media.assassin_skills[1] = icon_load("../icon/skills/assassin-invisiblity.png");
 	media.assassin_skills[0] = icon_load("../icon/skills/assassin-teleport.png");
+	media.assassin_silenced[1] = icon_load("../icon/skills/assassin-invisiblity-silenced.png");
+	media.assassin_silenced[0] = icon_load("../icon/skills/assassin-teleport-silenced.png");
 	media.king_skills[2] = icon_load("../icon/skills/evade.png");
 	media.king_skills[3] = icon_load("../icon/skills/projectile.png");
 	media.king_skills[1] = icon_load("../icon/skills/king-aoe.png");
 	media.king_skills[0] = icon_load("../icon/skills/king-silence.png");
-
+	media.king_silenced[1] = icon_load("../icon/skills/king-aoe.png");
+	media.king_silenced[0] = icon_load("../icon/skills/king-silence.png");
 }
 
 void  ClientScene::text_input(GLFWwindow *win, unsigned int codepoint)
@@ -307,6 +301,16 @@ void ClientScene::updateTimers(nanoseconds timePassed) {
 			evadeDurationTimer = nanoseconds::zero();
 		}
 	}
+
+	// update sprint duration
+	if (sprintDurationTimer > nanoseconds::zero()) {
+		sprintDurationTimer -= timePassed;
+		if (sprintDurationTimer <= nanoseconds::zero()) {
+			ClientInputPacket unsprintPacket = game->createSkillPacket(NULL_POINT, UNSPRINT);
+			network->sendToServer(unsprintPacket);
+			sprintDurationTimer = nanoseconds::zero();
+		}
+	}
 }
 
 void ClientScene::resize_callback(GLFWwindow* window, int width, int height)
@@ -321,14 +325,18 @@ void ClientScene::resize_callback(GLFWwindow* window, int width, int height)
 		camera->SetAspect((float)width / (float)height);
 	}
 	if (width < 600) {
+		glfw.atlas.default_font = media.font_14;
 		nk_style_set_font(ctx, &(media.font_14->handle));
 	} else if(width < 900) {
+		glfw.atlas.default_font = media.font_18;
 		nk_style_set_font(ctx, &(media.font_18->handle));
 	}
 	else if (width < 1200) {
+		glfw.atlas.default_font = media.font_22;
 		nk_style_set_font(ctx, &(media.font_22->handle));
 	}
 	else {
+		glfw.atlas.default_font = media.font_32;
 		nk_style_set_font(ctx, &(media.font_32->handle));
 	}
 }
@@ -393,8 +401,7 @@ void ClientScene::renderLobbyPhase(GLFWwindow* window) {
 void ClientScene::renderKillPhase(GLFWwindow* window) {
 
 	auto vpMatrix = camera->GetViewProjectMtx();
-	// players
-	root->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
+
 	// environment objects
 	for (auto &env_obj : env_objs) {
 		env_obj->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
@@ -403,13 +410,17 @@ void ClientScene::renderKillPhase(GLFWwindow* window) {
 	// floor
 	floor->draw(staticShader, glm::mat4(1.0f), vpMatrix);
 
+	// players
+	root->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
 	 /* Input */
 	glfwPollEvents();
 	nk_glfw3_new_frame();
 
 	/* GUI */
 
-	kill_layout(ctx, &media, width, height, & this->player, skill_timers, game);
+
+	kill_layout(ctx, &media, width, height, & this->player, skill_timers, leaderBoard, usernames, archetypes, killTextDeterminant);
+
 	/* ----------------------------------------- */
 
 
@@ -442,6 +453,10 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 		return;
 	}
 
+	if (checkInAnimation()) return;
+
+	if (isCharging && player.modelType == WARRIOR) return;
+
 	// Check for a key press
 	if (action == GLFW_PRESS)
 	{
@@ -467,24 +482,28 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 				return;
 			}
 
-			// ONLY EXCEPTION: KING
-			if (player.modelType == KING) {
-				Skill subjugation = personal_skills[DIR_SKILL_INDEX];
+			// EXCEPTIONS: KING AND ASSASSIN
+			if (player.modelType == KING || player.modelType == ASSASSIN) {
+				Skill skill = personal_skills[DIR_SKILL_INDEX];
 				Skill adjustedSkill = Skill::
-					calculateSkillBasedOnLevel(subjugation, subjugation.level);
+					calculateSkillBasedOnLevel(skill, skill.level);
 
 				// set cooldown
 				std::chrono::seconds sec((int)adjustedSkill.cooldown);
 				skill_timers[DIR_SKILL_INDEX] = nanoseconds(sec);
 
-				// hardcoded case for king (and assassin)
+				// set duration for silence / sprint
 				if (player.modelType == KING) {
-					// set duration for silence
 					std::chrono::seconds sec((int)adjustedSkill.duration);
 					skillDurationTimer = nanoseconds(sec);
 				}
-				ClientInputPacket subjugationPacket = game->createSkillPacket(NULL_POINT, adjustedSkill.skill_id);
-				network->sendToServer(subjugationPacket);
+				else {
+					std::chrono::seconds sec((int)adjustedSkill.duration);
+					sprintDurationTimer = nanoseconds(sec);
+				}
+
+				ClientInputPacket skillPacket = game->createSkillPacket(NULL_POINT, adjustedSkill.skill_id);
+				network->sendToServer(skillPacket);
 				return;
 			}
 
@@ -563,6 +582,7 @@ void ClientScene::scroll_callback(GLFWwindow* window, double xoffset, double yof
 void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
 	if (respawn_timer > nanoseconds::zero()) return;		// player dead disable input
+	if (game->currPhase == KILL && checkInAnimation()) return;
 
 	if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
 	{
@@ -573,6 +593,7 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 			glfwGetCursorPos(window, &xpos, &ypos);
 			//printf("Cursor Position at %f: %f \n", xpos, ypos);
 			glm::vec3 new_dest = viewToWorldCoordTransform(xpos, ypos);
+			printf("Player's next Pos will be: %f, %f, %f \n", new_dest.x, new_dest.y, new_dest.z);
 			ClientInputPacket movementPacket = game->createMovementPacket(new_dest);
 			network->sendToServer(movementPacket);
 		// player shooting projectile
@@ -605,6 +626,7 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 			glfwGetCursorPos(window, &xpos, &ypos);
 			glm::vec3 new_dest = viewToWorldCoordTransform(xpos, ypos);
 
+			if (player.modelType == WARRIOR) isCharging = true;
 			// create skill packet and send to server
 			ClientInputPacket skillPacket = game->createSkillPacket(new_dest, adjustedSkill.skill_id);
 			logger()->debug("sending server skill packet w id of {}", adjustedSkill.skill_id);
@@ -650,6 +672,29 @@ glm::vec3 ClientScene::viewToWorldCoordTransform(int mouse_x, int mouse_y) {
 	Deserialize init scene packet from server, initialize player_id, root_id, root. 
 */
 void ClientScene::handleInitScenePacket(char * data) {
+
+	// deserialize usernames
+	for (int i = 0; i < GAME_SIZE; i++) 
+	{
+		char username[16] = { 0 };
+		memcpy(&username, data, 16);
+
+		string username_str = (string) username;
+		usernames.push_back(username_str);
+		data += 16;
+	}
+
+	// deserialize archetypes
+	for (int i = 0; i < GAME_SIZE; i++)
+	{
+		int d_type = -1;
+		memcpy(&d_type, data, sizeof(int));
+
+		ArcheType cur_type = static_cast<ArcheType>(d_type);
+		archetypes.push_back(cur_type);
+		data += sizeof(int);
+	}
+
 	memcpy(&player.player_id, data, sizeof(unsigned int));
 	data += sizeof(unsigned int);
 	memcpy(&player.root_id, data, sizeof(unsigned int));
@@ -661,7 +706,6 @@ void ClientScene::handleInitScenePacket(char * data) {
 	Deserialize updated scene graph & leaderboard from server.
 */
 void ClientScene::handleServerTickPacket(char * data) {
-
 	unsigned int sz = 0;
 
 	// deserialize if they client is alive/dead
@@ -676,27 +720,62 @@ void ClientScene::handleServerTickPacket(char * data) {
 		player.isAlive = false;
 		std::chrono::seconds sec((int)RESPAWN_TIME);
 		respawn_timer = sec;
+		killTextDeterminant = rand() % KILLED_TEXT_NUM;
 	}
 	// server respawning player (they're alive); client still thinks they're dead
 	else if ( server_alive && !player.isAlive) {
 		player.isAlive = true;
 	}
 
+	// deserialize client gold
+	memcpy(&player.gold, data, sizeof(int));
+	sz += sizeof(int);
+	data += sizeof(int);
+
+	/*int currKill = INT_MAX;
+	if (isCharging) currKill = leaderBoard->currentKills[player.player_id];*/
+
+	// deserialize charge
+	memcpy(&isCharging, data, sizeof(bool));
+	sz += sizeof(bool);
+	data += sizeof(bool);
+
+	//deserialize animation mode
+    unordered_map<unsigned int, vector<int>> animationModes;
+	unsigned int animation_size = Serialization::deserializeAnimationMode(data, animationModes);
+	for (auto p : animationModes) {
+		models[p.first].model->movementMode = p.second[0]; // TODO: double check this (models)
+		if(models[p.first].model->animationMode == -1 || p.second[1] != -1)
+			models[p.first].model->animationMode = p.second[1];
+	}
+	data += animation_size;
+
+	int currKill = leaderBoard->currentKills[player.player_id];
+
 	// deserialize leaderboard
 	unsigned int leaderBoard_size = 0;
 	leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
 	data += leaderBoard_size;
 
+	if (isCharging && (leaderBoard->currentKills[player.player_id] > currKill)) 
+		skill_timers[DIR_SKILL_INDEX] = nanoseconds::zero();	// reset cooldown when kill someone using charge
+
+   
 	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap, particleTexture, particleShader);
 
 	// nullify invisibility state if you're assassin (duh)
 	if (player.modelType == ASSASSIN) {
 		clientSceneGraphMap[player.root_id]->enabled = true;
 	}
-
 }
+
 
 void ClientScene::setRoot(Transform * newRoot) {
 	root = newRoot;
 }
 
+bool ClientScene::checkInAnimation() {
+	auto transform = clientSceneGraphMap[player.root_id];
+	auto thisModel = models[*(transform->model_ids.begin())].model;
+	return thisModel->curr_mode != thisModel->movementMode;
+}

@@ -276,7 +276,7 @@ int ClientGame::switchPhase() {
 			break;
 		default:
 			break;
-	}	
+	}
 	setup_callbacks(currPhase);
 	return 1;
 }
@@ -309,6 +309,7 @@ void ClientGame::run() {
 	// Initialize objects/pointers for rendering
 	Window_static::initialize_objects(this, network, leaderBoard);
 	Window_static::initialize_UI(window);
+
 	// Loop while GLFW window should stay open
 	while (!glfwWindowShouldClose(window))
 	{
@@ -317,11 +318,24 @@ void ClientGame::run() {
 			Window_static::display_callback(window);
 		}
 		else if (currPhase == ClientStatus::KILL) {
+
 			// Kill Phase
 			auto start = Clock::now();
-			ServerInputPacket* packet = network->receivePacket();
-			handleServerInputPacket(packet);
+			
+			q_lock->lock();
+			vector<ServerInputPacket*> inputPackets;
+			while (!(serverPackets->empty()))
+			{
+				inputPackets.push_back(serverPackets->front());
+				serverPackets->pop();
+			}
+			q_lock->unlock();
 
+			// handle all packets from server
+			for (auto& packet : inputPackets)
+			{
+				handleServerInputPacket(packet);
+			}
 			// Main render display callback. Rendering of objects is done here.
 			Window_static::display_callback(window);
 			// Idle callback. Updating objects, etc. can be done here.

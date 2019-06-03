@@ -32,6 +32,10 @@ public:
 	int height;
 	glm::vec3 initCamPos;
 	std::unordered_map<unsigned int, Transform *> clientSceneGraphMap;
+
+	vector<ArcheType> archetypes;	// list of all player archetypes
+	vector<string> usernames;		// list of all player usernames ordered by index of client id on server
+
 	GLuint particleTexture;
 	void initialize_objects(ClientGame * game, ClientNetwork* network, LeaderBoard* leaderBoard);
 	void initialize_skills(ArcheType selected_type);
@@ -55,8 +59,10 @@ public:
 	void renderLobbyPhase(GLFWwindow* window);
 	void renderSummaryPhase(GLFWwindow* window);
 	void initialize_UI(GLFWwindow* window);
+	bool checkInAnimation();
+
 private:
-	
+
 	float min_scroll = 20.0f;
 	float max_scroll = 60.0f;
 	const char* window_title = "CSE 125 Group 3";
@@ -65,7 +71,7 @@ private:
 	ScenePlayer player;
 	Transform * root;
 	LeaderBoard* leaderBoard;
-
+	int killTextDeterminant = 0;
 	std::unordered_map<unsigned int, ModelData> models;
 	std::unordered_set<unsigned int> updated_ids;
 
@@ -80,6 +86,8 @@ private:
 	nanoseconds animation_timer;
 	nanoseconds skillDurationTimer; // used for invisibility, silence
 	nanoseconds evadeDurationTimer; // used for evade
+	nanoseconds sprintDurationTimer; // used for sprint
+	bool isCharging = false;
 
 	// void removeTransform(Transform * parent, const unsigned int node_id);
 	
