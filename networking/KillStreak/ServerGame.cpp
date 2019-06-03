@@ -441,6 +441,9 @@ void ServerGame::updateKillPhase() {
 		// set first byte of data to players dead/alive state
 		memcpy(next_packet.data, &p_it->second->alive, sizeof(bool));
 
+		// set client gold after first byte
+		memcpy(next_packet.data + sizeof(bool), &p_it->second->gold, sizeof(int));
+
 		network->sendToClient(client_id, next_packet);
 		p_it++;
 	}
@@ -510,6 +513,12 @@ ServerInputPacket ServerGame::createServerTickPacket() {
 	memcpy(bufPtr, &died_this_tick, sizeof(died_this_tick));
 	sgSize += sizeof(died_this_tick);
 	bufPtr += sizeof(died_this_tick);
+
+	// serialize client gold
+	int client_gold = 0;
+	memcpy(bufPtr, &client_gold, sizeof(int));
+	bufPtr += sizeof(int);
+	sgSize += sizeof(int);
 
 	memcpy(bufPtr, &(scene->warriorIsCharging), sizeof(bool));
 	bufPtr += sizeof(bool);
