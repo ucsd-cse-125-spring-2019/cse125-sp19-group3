@@ -9,6 +9,9 @@ using json = nlohmann::json;
 #define DEFAULT_X 666
 #define DEFAULT_Z 666
 
+#define GOLD			5
+#define GOLD_MULTIPLIER 3		// number of kills in killstreak before next bonus
+
 // skill_id's
 #define UNEVADE            -1
 #define EVADE				0
@@ -25,7 +28,6 @@ using json = nlohmann::json;
 #define ROYAL_CROSS			32
 #define SUBJUGATION			33
 #define UNSILENCE           34
-
 
 ServerScene::ServerScene(LeaderBoard* leaderBoard, unordered_map<unsigned int, PlayerMetadata*>* playerMetadatas,
 	unordered_map<unsigned int, Skill>* skill_map, unordered_map<ArcheType, vector<unsigned int>> *archetype_skillset)
@@ -273,27 +275,40 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 	dead_player.animationMode = die;
 
 	// get dead_players metadata 
-	unsigned int player_id = dead_player.player_id;
-	unordered_map<unsigned int, PlayerMetadata*>::iterator s_it = playerMetadatas->find(player_id);
+	unsigned int dead_player_id = dead_player.player_id;
+	unordered_map<unsigned int, PlayerMetadata*>::iterator s_it = playerMetadatas->find(dead_player_id);
 	PlayerMetadata* player_data = s_it->second;
+
+	// save dead player current killstreak
+	int dead_player_ks = player_data->currKillStreak;	
 
 	// set dead_players status to dead, reset killstreak & increment losestreak
 	player_data->alive = false;
-	//player_data->died_this_tick = true;
 	player_data->currKillStreak  = 0;
 	player_data->currLoseStreak += 1;
+	leaderBoard->resetKillStreak(dead_player_id);
 
 	// get killers metadata  
 	s_it = playerMetadatas->find(killer_id);
 	PlayerMetadata* killer_data = s_it->second;
 
+	// award bonus gold for kilstreak 
+	int killstreak_bonus = killer_data->currKillStreak / GOLD_MULTIPLIER;	
+	killer_data->gold	+= (GOLD * killstreak_bonus);
+
 	// award killer gold, increment killstreak & reset losestreak 
-	killer_data->gold			+= 1;
+	killer_data->gold			+= GOLD;
 	killer_data->currKillStreak += 1;
 	killer_data->currLoseStreak  = 0;
 
-	// award kill & points to killer
-	leaderBoard->awardKill(killer_id);
+	// if killer ended killstreak they get bonus points
+	int shutdown_bonus = GOLD * (dead_player_ks / GOLD_MULTIPLIER);
+	killer_data->gold += shutdown_bonus;
+
+	// award kill to player (global & current rounds leaderboard)
+	leaderBoard->awardKillRound(killer_id);
+	leaderBoard->awardKillGlobal(killer_id);
+	leaderBoard->incKillStreak(killer_id);
 
 	if (warriorIsCharging && dead_player.modelType == WARRIOR) {
 		warriorIsCharging = false;

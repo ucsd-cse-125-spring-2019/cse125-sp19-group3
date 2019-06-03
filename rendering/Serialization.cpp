@@ -89,6 +89,12 @@ unsigned int Serialization::serializeLeaderBoard(char* lb_data, LeaderBoard* lea
 		size += sizeof(int);
 		lb_data += sizeof(int);
 	}
+	for (int i = 0; i < GAME_SIZE; i++)			// killstreak
+	{
+		memcpy(lb_data, &leaderBoard->killStreaks[i], sizeof(int));
+		size += sizeof(int);
+		lb_data += sizeof(int);
+	}
 
 	memcpy(lb_data, &leaderBoard->prizeChange, sizeof(float));
 	size += sizeof(float);
@@ -116,6 +122,12 @@ unsigned int Serialization::deserializeLeaderBoard(char* lb_data, LeaderBoard* l
 	for (int i = 0; i < GAME_SIZE; i++)		// prizes
 	{
 		memcpy(&leaderBoard->prizes[i], lb_data, sizeof(int));
+		lb_data += sizeof(int);
+		sz += sizeof(int);
+	}
+	for (int i = 0; i < GAME_SIZE; i++)		// killstreak
+	{
+		memcpy(&leaderBoard->killStreaks[i], lb_data, sizeof(int));
 		lb_data += sizeof(int);
 		sz += sizeof(int);
 	}
