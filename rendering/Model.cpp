@@ -69,13 +69,13 @@ void Model::BoneTransform(float timeToIncrement)
 	float animationDuration = animation_frames[animationMode][1] - animation_frames[animationMode][0];
 	animationTime = animation_frames[animationMode][0] + fmod(animationTime - animation_frames[animationMode][0], animationDuration);
 
-	//float TicksPerSecond = scene->mAnimations[0]->mTicksPerSecond != 0 ?
-	//	scene->mAnimations[0]->mTicksPerSecond : 25.0f;
-	//float TimeInTicks = fmod(animationTime * TicksPerSecond, animationDuration);
-	//float AnimationTime = fmod(TimeInTicks, animationDuration);
+	float TicksPerSecond = scene->mAnimations[0]->mTicksPerSecond != 0 ?
+		scene->mAnimations[0]->mTicksPerSecond : 25.0f;
+	float TimeInTicks = animationTime * TicksPerSecond;
+	float AnimationTimeInTicks = fmod(TimeInTicks, animationDuration * TicksPerSecond);
 
 	glm::mat4 Identity = glm::mat4(1.0f);
-	ReadNodeHeirarchy(animationTime, scene->mRootNode, Identity);
+	ReadNodeHeirarchy(AnimationTimeInTicks, scene->mRootNode, Identity);
 
 	boneTransforms.resize(m_NumBones);
 
