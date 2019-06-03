@@ -768,8 +768,6 @@ void ClientScene::handleServerTickPacket(char * data) {
 	// server respawning player (they're alive); client still thinks they're dead
 	else if ( server_alive && !player.isAlive) {
 		player.isAlive = true;
-		//reset silence when spawn
-		player.isSilenced = false;
 	}
 
 
