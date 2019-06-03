@@ -441,6 +441,10 @@ void ServerGame::updateKillPhase() {
 		// set first byte of data to players dead/alive state
 		memcpy(next_packet.data, &p_it->second->alive, sizeof(bool));
 
+
+		// set first byte of data to silenced
+		memcpy(next_packet.data+sizeof(bool), &p_it->second->silenced, sizeof(bool));
+
 		// set client gold after first byte
 		memcpy(next_packet.data + sizeof(bool), &p_it->second->gold, sizeof(int));
 
@@ -514,16 +518,27 @@ ServerInputPacket ServerGame::createServerTickPacket() {
 	sgSize += sizeof(died_this_tick);
 	bufPtr += sizeof(died_this_tick);
 
+
+	// serialize if user silenced; default init the first byte (silenced)
+	bool silenced = false;
+	memcpy(bufPtr, &silenced, sizeof(silenced));
+	sgSize += sizeof(silenced);
+	bufPtr += sizeof(silenced);
+
 	// serialize client gold
 	int client_gold = 0;
 	memcpy(bufPtr, &client_gold, sizeof(int));
 	bufPtr += sizeof(int);
 	sgSize += sizeof(int);
 
+
 	memcpy(bufPtr, &(scene->warriorIsCharging), sizeof(bool));
 	bufPtr += sizeof(bool);
 	sgSize += sizeof(bool);
 	//scene->warriorIsCharging = false;
+
+
+	
 
 	unsigned int animation_size = 0;
 	animation_size = Serialization::serializeAnimationMode(scene->scenePlayers, bufPtr); // TODO: double check that this function is correctly returning size

@@ -259,12 +259,7 @@ int ClientGame::switchPhase() {
 			break;
 		case KILL:
 			// TODO: waitingPreparePacket() -- need to direct to FINAL phase as well
-			std::chrono::seconds secSum(15);
-			prepareTimer = nanoseconds(secSum);
-			currPhase = SUMMARY;
-			break;
-		case SUMMARY:
-			std::chrono::seconds secPre(30);
+			std::chrono::seconds secPre(45);
 			prepareTimer = nanoseconds(secPre);
 			currPhase = PREPARE;
 			break;

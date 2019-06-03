@@ -8,7 +8,7 @@
 #include "PlayerData.hpp"
 #include <queue>
 
-typedef enum { LOBBY, KILL, SUMMARY, PREPARE, FINAL } ClientStatus;
+typedef enum { LOBBY, KILL, PREPARE, FINAL } ClientStatus;
 class ClientGame {
 public:
 	ClientGame(string host, string port, int char_select_time);
