@@ -18,17 +18,17 @@
 #include "../networking/KillStreak/CoreTypes.hpp"
 #include "../rendering/Serialization.h"
 // On some systems you need to change this to the absolute path
-#define VERTEX_SHADER_PATH "../animatedShader.vert"
-#define FRAGMENT_SHADER_PATH "../animatedShader.frag"
+#define VERTEX_SHADER_PATH "../shaders/animatedShader.vert"
+#define FRAGMENT_SHADER_PATH "../shaders/animatedShader.frag"
 
-#define TOON_VERTEX_SHADER_PATH "../toonshader.vert"
-#define TOON_FRAGMENT_SHADER_PATH "../toonshader.frag"
+#define TOON_VERTEX_SHADER_PATH "../shaders/toonshader.vert"
+#define TOON_FRAGMENT_SHADER_PATH "../shaders/toonshader.frag"
 
-#define PARTICLE_VERTEX_SHADER_PATH "../particleShader.vert"
-#define PARTICLE_FRAGMENT_SHADER_PATH "../particleShader.frag"
+#define PARTICLE_VERTEX_SHADER_PATH "../shaders/particleShader.vert"
+#define PARTICLE_FRAGMENT_SHADER_PATH "../shaders/particleShader.frag"
 
-#define CIRCLE_VERTEX_SHADER_PATH "../circleshader.vert"
-#define CIRCLE_FRAGMENT_SHADER_PATH "../circleshader.frag"
+#define CIRCLE_VERTEX_SHADER_PATH "../shaders/circleshader.vert"
+#define CIRCLE_FRAGMENT_SHADER_PATH "../shaders/circleshader.frag"
 
 class ClientScene {
 public:

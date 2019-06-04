@@ -94,7 +94,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Circle.h">
-	  <Filter>Header Files</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Audio.h">
       <Filter>Header Files</Filter>
@@ -175,18 +175,6 @@
     <None Include="..\env_model_locations.json">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\toonshader.frag">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\toonshader.vert">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\animatedShader.vert">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\animatedShader.frag">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="packages.config" />
     <None Include="..\..\networking\KillStreak\client_config.json">
       <Filter>Resource Files</Filter>
@@ -197,18 +185,30 @@
     <None Include="..\..\networking\KillStreak\server_config.json">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="..\particleShader.frag">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\particleShader.vert">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\circleshader.frag">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="..\circleshader.vert">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="ClassDiagram.cd" />
+    <None Include="..\shaders\animatedShader.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\shaders\animatedShader.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\shaders\circleshader.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\shaders\circleshader.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\shaders\particleShader.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\shaders\particleShader.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\shaders\toonshader.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\shaders\toonshader.vert">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

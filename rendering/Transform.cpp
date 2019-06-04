@@ -26,6 +26,11 @@ unsigned int Transform::serialize(char * data) {
 	currLoc += sizeof(bool);
 	size += sizeof(bool);
 
+	// copy over evading status
+	memcpy(currLoc, &isEvading, sizeof(bool));
+	currLoc += sizeof(bool);
+	size += sizeof(bool);
+
 	// copy over the invincible state
 	memcpy(currLoc, &isInvincible, sizeof(bool));
 	currLoc += sizeof(bool);
@@ -71,12 +76,16 @@ unsigned int Transform::deserializeAndUpdate(char * data, Shader* particleShader
 	children_ids.clear();
 
 
-	//memCopy of node id + enabled + transform mat
+	//memCopy of node id + enabled + evading status + transform mat
 	memcpy(&node_id, currLoc, sizeof(unsigned int));
 	size += sizeof(unsigned int);
 	currLoc += sizeof(unsigned int);
 
 	memcpy(&enabled, currLoc, sizeof(bool));
+	size += sizeof(bool);
+	currLoc += sizeof(bool);
+
+	memcpy(&isEvading, currLoc, sizeof(bool));
 	size += sizeof(bool);
 	currLoc += sizeof(bool);
 
@@ -150,15 +159,18 @@ void Transform::draw( std::unordered_map<unsigned int, ModelData> &models, const
 		}
 		else if (models[model_id].renderMode == TEXTURE) {
 			models[model_id].shader->use();
+			models[model_id].shader->setInt("isEvading", isEvading ? 1 : 0);
+			models[model_id].shader->setInt("UseTex", 1);
 			glBindTexture(GL_TEXTURE_2D, models[model_id].texID);
 			models[model_id].model->draw(models[model_id].shader, childMtx, viewProjMtx);
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}
 		//TODO: CHANGE THIS LATER
 		if (model_id == 200) {
-				particle_effect->draw();
+			particle_effect->draw();
 		}
 	}
+
 }
 
 bool collisionSphere2Sphere(glm::vec3 myNextPos, float myRadius, glm::vec3 otherPos, float otherRadius) {

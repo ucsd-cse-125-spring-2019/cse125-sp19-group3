@@ -114,9 +114,36 @@ public:
 		glActiveTexture(GL_TEXTURE0);
 	}
 
+	//void prepareBloomEffect(unsigned int width, unsigned int height) {
+	//	glGenFramebuffers(1, &FBO);
+	//	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+	//	unsigned int colorBuffers[2];
+	//	glGenTextures(2, colorBuffers);
+	//	for (unsigned int i = 0; i < 2; i++) {
+	//		glBindTexture(GL_TEXTURE_2D, colorBuffers[i]);
+	//		glTexImage2D(
+	//			GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, NULL
+	//		);
+	//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	//		// attach texture to framebuffer
+	//		glFramebufferTexture2D(
+	//			GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorBuffers[i], 0
+	//		);
+	//	}
+	//}
+
+	//void renderBloomEffect() {
+	//	unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+	//	glDrawBuffers(2, attachments);
+	//}
+
 private:
 	/*  Render data  */
 	unsigned int VBO, EBO;
+	unsigned int FBO;
 
 	/*  Functions    */
 	// initializes all the buffer objects/arrays
