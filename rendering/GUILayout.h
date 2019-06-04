@@ -518,11 +518,8 @@ static void ui_shop_header(struct nk_context *ctx, struct media *media, int widt
 	nk_style_pop_style_item(ctx);
 }
 
-static void ui_skills_shop(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, ClientGame * game) {
-	char* skill_string[4] = { "Cone AOE", "AOE", "Evade", "Projectile" };
-	char* prices[4] = { "Cost: 5", "Cost: 10", "Cost: 15", "Cost: 20" };
-	ArcheType type = player->modelType;
-
+static void 
+ui_skill_group(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, ClientGame * game) {
 	for (int i = 0; i < 4; i++) {
 		if (nk_group_begin(ctx, skill_string[i], NK_WINDOW_NO_SCROLLBAR)) { // column 1
 			nk_layout_row_dynamic(ctx, width *0.05, 1); // nested row
@@ -547,8 +544,45 @@ static void ui_skills_shop(struct nk_context *ctx, struct media *media, int widt
 				//Buying
 			}
 		}
+		nk_group_end(ctx);
+	}
+}
+
+static void ui_skills_shop(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, ClientGame * game) {
+	char* skill_string[4] = { "Cone AOE", "AOE", "Evade", "Projectile" };
+	char* prices[4] = { "Cost: 5", "Cost: 10", "Cost: 15", "Cost: 20" };
+	ArcheType type = player->modelType;
+	static const float skratio[] = { 0.25f, 0.25f, 0.25f,0.25f };  /* 0.3 + 0.4 + 0.3 = 1 */
+	if (nk_group_begin(ctx, "skillpurchase", NK_WINDOW_NO_SCROLLBAR)) {
+		nk_layout_row(ctx, NK_DYNAMIC, height*0.8, 4, skratio);
+		for (int i = 0; i < 4; i++) {
+			if (nk_group_begin(ctx, skill_string[i], NK_WINDOW_NO_SCROLLBAR)) { // column 1
+				nk_layout_row_dynamic(ctx, width *0.05, 1); // nested row
+				if (type == WARRIOR) {
+					nk_image(ctx, media->warrior_skills[i]);
+				}
+				else if (type == MAGE) {
+					nk_image(ctx, media->mage_skills[i]);
+				}
+				else if (type == ASSASSIN) {
+					nk_image(ctx, media->assassin_skills[i]);
+				}
+				else {
+					nk_image(ctx, media->king_skills[i]);
+				}
+				nk_layout_row_dynamic(ctx, 32, 1);
+				nk_label(ctx, skill_string[i], NK_TEXT_ALIGN_CENTERED);
+				nk_layout_row_dynamic(ctx, 32, 1);
+				nk_label(ctx, prices[i], NK_TEXT_ALIGN_CENTERED);
+				nk_layout_row_dynamic(ctx, 32, 1);
+				if (nk_button_label(ctx, "upgrade")) {
+					//Buying
+				}
+			}
 			nk_group_end(ctx);
 		}
+	}
+	nk_group_end(ctx);
 }
 
 static void ui_shop(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, int & currPreparePage, ClientGame * game) {
@@ -589,7 +623,7 @@ static void ui_shop(struct nk_context *ctx, struct media *media, int width, int 
 			ui_skills_shop(ctx, media, width, height, player, game);
 		}
 		else if (shop_category == 1) {
-			ui_skills_shop(ctx, media, width, height, player, game);
+			//ui_skills_shop(ctx, media, width, height, player, game);
 		}
 		else {
 			ui_skills_shop(ctx, media, width, height, player, game);
