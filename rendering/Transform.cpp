@@ -143,16 +143,6 @@ void Transform::draw( std::unordered_map<unsigned int, ModelData> &models, const
 		child->draw( models, childMtx, viewProjMtx, sceneGraphMap);
 	}
 
-	if (isEvading) {
-		for (unsigned int model_id : model_ids) {
-			models[model_id].shader->use();
-			models[model_id].shader->setInt("UseTex", 0);
-			models[model_id].shader->setVec4("color", glm::vec4(1, 1, 1, 0.4));
-			models[model_id].model->draw(models[model_id].shader, childMtx, viewProjMtx);
-		}
-		return;
-	}
-
 	for (unsigned int model_id : model_ids) {
 		if (models[model_id].renderMode == COLOR) {
 			models[model_id].shader->use();
@@ -161,6 +151,7 @@ void Transform::draw( std::unordered_map<unsigned int, ModelData> &models, const
 		}
 		else if (models[model_id].renderMode == TEXTURE) {
 			models[model_id].shader->use();
+			models[model_id].shader->setInt("isEvading", isEvading ? 1 : 0);
 			models[model_id].shader->setInt("UseTex", 1);
 			glBindTexture(GL_TEXTURE_2D, models[model_id].texID);
 			models[model_id].model->draw(models[model_id].shader, childMtx, viewProjMtx);
@@ -168,9 +159,10 @@ void Transform::draw( std::unordered_map<unsigned int, ModelData> &models, const
 		}
 		//TODO: CHANGE THIS LATER
 		if (model_id == 200) {
-				particle_effect->draw();
+			particle_effect->draw();
 		}
 	}
+
 }
 
 bool collisionSphere2Sphere(glm::vec3 myNextPos, float myRadius, glm::vec3 otherPos, float otherRadius) {

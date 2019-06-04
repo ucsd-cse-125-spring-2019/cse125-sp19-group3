@@ -7,10 +7,11 @@ in vec2 texCoord;
 uniform int UseTex = 0;
 uniform sampler2D Texture;
 
-uniform vec3 AmbientColor = vec3(0.22, 0.02, 0.01);
-uniform vec3 LightDirection=normalize(vec3(10, 5, 10));
-uniform vec3 LightColor=vec3(0.84, 0.68, 0.63);
-uniform vec3 DiffuseColor = vec3(0.2, 0.2, 0.2);
+uniform vec3 ambientColor = vec3(0.3, 0.3, 0.3);
+uniform vec3 lightDirection = normalize(vec3(5, 15, 10));
+uniform vec3 lightColor = vec3(0.63, 0.68, 0.84);
+
+uniform vec4 color = vec4(1);
 
 out vec4 finalColor;
 
@@ -23,20 +24,15 @@ float getLightFactor(float intensity) {
 }
 
 void main() {
-	// Compute irradiance (sum of ambient & direct lighting)
-	float intensity = dot(LightDirection, fragNormal);
+	float intensity = dot(lightDirection, fragNormal);
 	float lightFactor = getLightFactor(intensity);
-
-	vec3 irradiance = AmbientColor + LightColor * max(0, intensity);
-
-	// Diffuse reflectance
-	vec3 reflectance = irradiance * DiffuseColor;
+	vec3 diffuseColor = lightColor * max(0, intensity);
 
 	if (UseTex == 0) {
 		// Gamma correction
-		finalColor = vec4(lightFactor * sqrt(irradiance), 1);
+		finalColor = vec4(lightFactor * (ambientColor + diffuseColor) * vec3(color), color[3]);
 	}
 	else {
-		finalColor = lightFactor * texture(Texture, texCoord);
+		finalColor = vec4(lightFactor * (ambientColor + diffuseColor) * vec3(texture(Texture, texCoord)), 1.0);
 	}
 }
