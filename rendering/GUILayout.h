@@ -558,7 +558,14 @@ ui_skill_group(struct nk_context *ctx, struct media *media, int width, int heigh
 					nk_label(ctx, level.c_str(), NK_TEXT_ALIGN_LEFT);
 					nk_layout_row_dynamic(ctx, 32, 1);
 					if (nk_button_label(ctx, "upgrade")) {
-						//Buying
+						//Gold check
+						if (player->gold >= prices[i]) {
+							player->gold -= prices[i];
+						}
+						//Max Level check
+						if (skill.level < 3) {
+							skill.level++;
+						}
 					}
 				}
 				nk_group_end(ctx);
