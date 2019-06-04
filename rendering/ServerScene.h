@@ -13,6 +13,7 @@
 #include "Transform.h"
 #include "../rendering/ScenePlayer.h"
 #include "SceneProjectile.h"
+#include "Audio.h"
 
 // On some systems you need to change this to the absolute path
 #define VERTEX_SHADER_PATH "../shader.vert"
@@ -38,6 +39,7 @@ public:
 	std::unordered_map<unsigned int, Point> model_boundingbox;
 	std::vector<Transform *> env_objs;
 	std::vector<SceneProjectile> skills;
+	std::vector<int> soundsToPlay;
 	bool warriorIsCharging = false;
 
   //TODO: fill in the four corner

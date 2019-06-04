@@ -44,6 +44,8 @@ public:
 	GLuint particleTexture;
 	void initialize_objects(ClientGame * game, ClientNetwork* network, LeaderBoard* leaderBoard);
 	void initialize_skills(ArcheType selected_type);
+	void playPreparePhaseBGM();
+	void playKillPhaseBGM();
 	//void playerInit(const ScenePlayer &player);
 	void clean_up();
 	GLFWwindow * create_window(int width, int height);
@@ -122,6 +124,8 @@ public:
 	static void handleInitScenePacket(char * data) { scene->handleInitScenePacket(data); };
 	static void handleServerTickPacket(char* data) { scene->handleServerTickPacket(data); };
 	static void resetPreKillPhase() { scene->resetPreKillPhase(); };
+	static void playPreparePhaseBGM() { scene->playPreparePhaseBGM(); };
+	static void playKillPhaseBGM() { scene->playKillPhaseBGM(); };
 };
 
 

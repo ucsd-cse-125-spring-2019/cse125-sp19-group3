@@ -396,6 +396,9 @@ bool ServerGame::updateKillPhase() {
 	auto log = logger();
 	// log->info("MT: Game server kill phase update...");
 
+	// clear the sounds vector
+	(scene->soundsToPlay).clear();
+
 	// create temp vectors for each client to dump all incoming packets into
 	vector<vector<ClientInputPacket*>> inputPackets;
 	for (int i = 0; i < GAME_SIZE; i++) {
@@ -726,18 +729,24 @@ ServerInputPacket ServerGame::createServerTickPacket() {
 	bufPtr += sizeof(int);
 	sgSize += sizeof(int);
 
-	// TODO: REMOVE ME!
-	if (client_gold != 0)
-	{
-		logger()->debug("Create tick packet serialized gold {}", client_gold);
-	}
-
-
 	// serialize if user silenced; default init the first byte (silenced)
+	// NOTE: THIS MUST BE THE THIRD BYTE
 	bool silenced = false;
 	memcpy(bufPtr, &silenced, sizeof(silenced));
 	sgSize += sizeof(silenced);
 	bufPtr += sizeof(silenced);
+
+	// serialize variable number of global sounds to play
+	int numSounds = (scene->soundsToPlay).size();
+	memcpy(bufPtr, &numSounds, sizeof(int));
+	bufPtr += sizeof(int);
+	sgSize += sizeof(int);
+
+	for (auto& sound : scene->soundsToPlay) {
+		memcpy(bufPtr, &sound, sizeof(int));
+		bufPtr += sizeof(int);
+		sgSize += sizeof(int);
+	}
 
 	memcpy(bufPtr, &(scene->warriorIsCharging), sizeof(bool));
 	bufPtr += sizeof(bool);

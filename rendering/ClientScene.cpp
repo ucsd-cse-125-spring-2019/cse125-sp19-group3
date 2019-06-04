@@ -612,9 +612,12 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 				skill_timers[OMNI_SKILL_INDEX] = nanoseconds(sec);
 			}
 
-			// hardcoded case for assassin (and king)
+			// hardcoded case for assassin
 			if (player.modelType == ASSASSIN && !player.isSilenced) {
-				// set duration for invisibility / minimap skill
+				// play localized sound
+				audio.play(glm::vec3(0), ASSASSIN_STEALTH_AUDIO);
+
+				// set duration for invisibility
 				std::chrono::seconds sec((int)adjustedSkill.duration);
 				skillDurationTimer = nanoseconds(sec);
 			}
@@ -642,6 +645,9 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 			sec = std::chrono::seconds((int)adjustedSkill.duration);
 			evadeDurationTimer = nanoseconds(sec);
 
+			// play sound
+			audio.play(glm::vec3(0), SKELETON_EVADE_2_AUDIO);
+
 			// send server skill packet
 			ClientInputPacket evadeSkillPacket = game->createSkillPacket(NULL_POINT, adjustedSkill.skill_id);
 			network->sendToServer(evadeSkillPacket);
@@ -653,6 +659,14 @@ void ClientScene::scroll_callback(GLFWwindow* window, double xoffset, double yof
 	glm::vec3 z_dir = camera->cam_look_at - camera->cam_pos;
 	if (!((camera->cam_pos.y < min_scroll && yoffset > 0) || (camera->cam_pos.y > max_scroll && yoffset < 0)))
 		initCamPos -= ((float)-yoffset * glm::normalize(z_dir));
+}
+
+void ClientScene::playPreparePhaseBGM() {
+	audio.play(glm::vec3(0), PREPARE_PHASE_MUSIC);
+}
+
+void ClientScene::playKillPhaseBGM() {
+	audio.play(glm::vec3(0), KILL_PHASE_MUSIC);
 }
 
 void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
@@ -784,7 +798,6 @@ void ClientScene::handleInitScenePacket(char * data) {
 	data += sizeof(unsigned int);
 	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap, particleTexture, particleShader);
 
-	//**Audio Test (Currently plays ASSASSIN_TELEPORT.wav)**//
 	audio.initListener(glm::vec3(0));
 	audio.play(glm::vec3(0), 21);
 }
@@ -833,6 +846,22 @@ void ClientScene::handleServerTickPacket(char * data) {
 	sz += sizeof(bool);
 	data += sizeof(bool);
 
+	// deserialize audio
+	int numSounds = 0;
+	memcpy(&numSounds, data, sizeof(int));
+	sz += sizeof(int);
+	data += sizeof(int);
+
+	for (int i = 0; i < numSounds; i++) {
+		int soundToPlay = 0;
+		memcpy(&soundToPlay, data, sizeof(int));
+		sz += sizeof(int);
+		data += sizeof(int);
+
+		// play the sound
+		audio.play(glm::vec3(0), soundToPlay);
+	}
+
 	/*int currKill = INT_MAX;
 	if (isCharging) currKill = leaderBoard->currentKills[player.player_id];*/
 
@@ -857,6 +886,10 @@ void ClientScene::handleServerTickPacket(char * data) {
 	unsigned int leaderBoard_size = 0;
 	leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
 	data += leaderBoard_size;
+
+	if (leaderBoard->currentKills[player.player_id] > currKill) {
+		audio.play(glm::vec3(0), SKELETON_DEATH_2_AUDIO);
+	}
 
 	if (isCharging && (leaderBoard->currentKills[player.player_id] > currKill)) 
 		skill_timers[DIR_SKILL_INDEX] = nanoseconds::zero();	// reset cooldown when kill someone using charge

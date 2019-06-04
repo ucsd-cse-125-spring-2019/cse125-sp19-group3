@@ -320,6 +320,7 @@ void ClientGame::endKillPhase()
 			logger()->debug("");
 			// TODO: REMOVE ME ***********
 
+			Window_static::playPreparePhaseBGM();
 			// continue to enter prepare
 			std::chrono::seconds secPre(PREPHASE_TIME);
 			prepareTimer = nanoseconds(secPre);
@@ -425,6 +426,7 @@ void ClientGame::endPrepPhase()
 	Window_static::scene->resetPreKillPhase();
 
 	// server starting kill phase! 
+	Window_static::playKillPhaseBGM();
 	currPhase = KILL;
 	std::chrono::seconds secKill(KILLPHASE_TIME);
 	prepareTimer = nanoseconds(secKill);
