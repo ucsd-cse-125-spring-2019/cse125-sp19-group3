@@ -76,6 +76,10 @@ void Audio::loadWAVFiles() {
 		cout << "unable to load wav file " << "equipItem_1.wav" << endl;
 	if (!equipItem_2_Buffer.loadFromFile("../audio/store/equipItem_2.wav"))
 		cout << "unable to load wav file " << "equipItem_2.wav" << endl;
+	if (!prepare_phase_music.openFromFile("../audio/phases/prepare_phase.wav"))
+		cout << "unable to load wav file " << "prepare_phase.wav" << endl;
+	if (!kill_phase_music.openFromFile("../audio/phases/kill_phase.wav"))
+		cout << "unable to load wav file " << "kill_phase.wav" << endl;
 }
 
 void Audio::play(glm::vec3 pos, unsigned int audio_id) {
@@ -139,6 +143,12 @@ void Audio::play(glm::vec3 pos, unsigned int audio_id) {
 		break;
 	case EQUIP_ITEM_2_AUDIO:
 		equipItem_2.play();
+		break;
+	case PREPARE_PHASE_MUSIC:
+		prepare_phase_music.play();
+		break;
+	case KILL_PHASE_MUSIC:
+		kill_phase_music.play();
 		break;
 	}
 }
