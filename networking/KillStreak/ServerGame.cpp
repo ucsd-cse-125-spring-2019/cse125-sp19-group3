@@ -432,6 +432,20 @@ bool ServerGame::updateKillPhase() {
 				{
 					end_kill_phase = 1;				// set end_kill_phase as initiated
 					total_end_kill_packets++;		// inc total end kill phase packets received
+
+					// For testing with single player... 
+					if (total_end_kill_packets >= GAME_SIZE)
+					{
+						end_kill_phase = 0;
+						total_end_kill_packets = 0;
+
+						// serialize leaderboard and gold of all players then broadcast to all clients
+						ServerInputPacket start_prep_phase_packet = createStartPrepPhasePacket();
+						network->broadcastSend(start_prep_phase_packet);
+						logger()->debug("BROADCAST START PREP PHASE PACKET");
+
+						return false;	// dont care about any other packets; kill phase over start prep!
+					}
 				}
 			}
 			// end kill phase has been initiated
