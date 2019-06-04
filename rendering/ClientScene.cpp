@@ -6,7 +6,7 @@
 #define MAX_VERTEX_BUFFER 512 * 1024
 #define MAX_ELEMENT_BUFFER 128 * 1024
 
-
+#define VULNERABLE -2
 #define UNEVADE -1
 #define EVADE_INDEX 0
 #define PROJ_INDEX 1
@@ -16,6 +16,7 @@
 #define VISIBILITY 14
 #define UNSPRINT 15
 #define RESPAWN_TIME 3
+#define INVINCIBILITY_TIME 1
 
 using json = nlohmann::json;
 struct nk_context * ctx;
@@ -112,6 +113,41 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network,
 		glm::scale(glm::mat4(1.0f), glm::vec3(5));
 }
 
+
+/*
+	Reset scene elements before kill phase.
+*/
+void ClientScene::resetPreKillPhase()
+{
+	// reset directional skill input
+	player.action_state = ACTION_MOVEMENT; 
+	player.isPrepProjectile = false;
+
+	// reset all timers
+	for (auto & timer : skill_timers) {
+		timer = nanoseconds::zero();
+	}
+	respawn_timer = nanoseconds::zero();
+	animation_timer = nanoseconds::zero();
+	skillDurationTimer = nanoseconds::zero();
+	evadeDurationTimer = nanoseconds::zero();
+	sprintDurationTimer = nanoseconds::zero();
+	invincibilityTimer = nanoseconds::zero();
+	isCharging = false;
+
+	// interrupt death animation if necessary
+	for (auto & model : models) {
+		if (model.second.model->isAnimated) {
+			auto & modelPtr = model.second.model;
+			modelPtr->isPlayingActiveAnimation = false;
+			modelPtr->curr_mode = idle;
+			modelPtr->movementMode = idle;
+			modelPtr->animationMode = -1;
+		}
+	}
+}
+
+
 void ClientScene::initialize_skills(ArcheType selected_type) {
 
 	unordered_map<unsigned int, Skill>* skill_map = new unordered_map<unsigned int, Skill>();
@@ -135,6 +171,7 @@ void ClientScene::initialize_skills(ArcheType selected_type) {
 	skillDurationTimer = nanoseconds::zero();
 	evadeDurationTimer = nanoseconds::zero();
 	sprintDurationTimer = nanoseconds::zero();
+	invincibilityTimer = nanoseconds::zero();
 	player.modelType = selected_type;
 }
 
@@ -325,6 +362,17 @@ void ClientScene::updateTimers(nanoseconds timePassed) {
 			sprintDurationTimer = nanoseconds::zero();
 		}
 	}
+
+	// update invincibility duration
+	if (invincibilityTimer > nanoseconds::zero()) {
+		invincibilityTimer -= timePassed;
+		if (invincibilityTimer <= nanoseconds::zero()) {
+			ClientInputPacket vulnerablePacket = game->createSkillPacket(NULL_POINT, VULNERABLE);
+			network->sendToServer(vulnerablePacket);
+			invincibilityTimer = nanoseconds::zero();
+		}
+	}
+
 }
 
 void ClientScene::resize_callback(GLFWwindow* window, int width, int height)
@@ -352,6 +400,7 @@ void ClientScene::resize_callback(GLFWwindow* window, int width, int height)
 	else {
 		glfw.atlas.default_font = media.font_32;
 		nk_style_set_font(ctx, &(media.font_32->handle));
+
 	}
 }
 
@@ -758,7 +807,7 @@ void ClientScene::handleServerTickPacket(char * data) {
 		player.isAlive = false;
 		std::chrono::seconds sec((int)RESPAWN_TIME);
 
-		respawn_timer = sec;
+		respawn_timer = nanoseconds(sec);
 		killTextDeterminant = rand() % KILLED_TEXT_NUM;
 
 		// reset cooldowns
@@ -768,19 +817,21 @@ void ClientScene::handleServerTickPacket(char * data) {
 	// server respawning player (they're alive); client still thinks they're dead
 	else if ( server_alive && !player.isAlive) {
 		player.isAlive = true;
+		// start the invincibility timer
+		std::chrono::seconds sec((int)INVINCIBILITY_TIME);
+		invincibilityTimer = nanoseconds(sec);
+
 	}
-
-
-	//deserialize silence
-	memcpy(&player.isSilenced, data, sizeof(bool));
-	sz += sizeof(bool);
-	data += sizeof(bool);
 
 	// deserialize client gold
 	memcpy(&player.gold, data, sizeof(int));
 	sz += sizeof(int);
 	data += sizeof(int);
 
+	//deserialize silence
+	memcpy(&player.isSilenced, data, sizeof(bool));
+	sz += sizeof(bool);
+	data += sizeof(bool);
 
 	/*int currKill = INT_MAX;
 	if (isCharging) currKill = leaderBoard->currentKills[player.player_id];*/

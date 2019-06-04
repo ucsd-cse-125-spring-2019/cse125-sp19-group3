@@ -63,6 +63,7 @@ public:
 	void renderKillPhase(GLFWwindow* window);
 	void renderLobbyPhase(GLFWwindow* window);
 	void initialize_UI(GLFWwindow* window);
+	void resetPreKillPhase();
 	bool checkInAnimation();
 private:
 	Audio audio;
@@ -92,6 +93,7 @@ private:
 	nanoseconds skillDurationTimer; // used for invisibility, silence
 	nanoseconds evadeDurationTimer; // used for evade
 	nanoseconds sprintDurationTimer; // used for sprint
+	nanoseconds invincibilityTimer;
 	bool isCharging = false;
 
 	// void removeTransform(Transform * parent, const unsigned int node_id);
@@ -119,6 +121,7 @@ public:
 	static void mouse_button_callback(GLFWwindow* win, int button, int action, int mods) { scene->mouse_button_callback(win, button, action, mods); };
 	static void handleInitScenePacket(char * data) { scene->handleInitScenePacket(data); };
 	static void handleServerTickPacket(char* data) { scene->handleServerTickPacket(data); };
+	static void resetPreKillPhase() { scene->resetPreKillPhase(); };
 };
 
 

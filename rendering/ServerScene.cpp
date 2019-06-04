@@ -14,6 +14,7 @@ using json = nlohmann::json;
 #define LOSESTREAK_BONUS 2		// gold awarded for losestreak
 
 // skill_id's
+#define VULNERABLE         -2
 #define UNEVADE            -1
 #define EVADE				0
 #define PROJECTILE			1
@@ -212,6 +213,57 @@ void ServerScene::addPlayer(unsigned int playerId, ArcheType modelType) {
 	scenePlayers.insert({ playerId, player });
 }
 
+
+/*
+	Reset values before kill phase
+*/
+void ServerScene::resetScene()
+{
+	// iterate over all clients reseting corresponding values
+	for (auto& element : scenePlayers)
+	{
+		auto& player = element.second;
+
+		// reset position
+		player.currentPos = spawn_loc[player.player_id];
+		player.playerRoot->translation = glm::translate(glm::mat4(1.0f), spawn_loc[player.player_id]);
+		player.setDestination(spawn_loc[player.player_id]);
+
+		// reset is_silence
+		unordered_map<unsigned int, PlayerMetadata*>::iterator p_it = playerMetadatas->find(player.player_id);
+		PlayerMetadata* metaData = p_it->second;
+		metaData->silenced = false;
+		player.isSilenced = false;
+
+		// is_charge
+		player.warriorIsChargingServer = false;
+
+		// death state
+		player.isAlive = true;
+		metaData->alive = true;
+
+		// invisibility
+		int node_id = player.root_id;
+		serverSceneGraphMap[node_id]->enabled = true;
+
+		// clear remaining data
+		player.movementMode = idle;
+		player.animationMode = -1;
+		player.isEvading = false;
+
+		// clear projectiles
+		auto skillIter = skills.begin();
+		while (skillIter != skills.end()) {
+			auto & skill = *skillIter;
+			serverSceneGraphMap.erase(skill.node->node_id);
+			skillRoot->removeChild(skill.node->node_id);
+			delete(skill.node);
+			skillIter = skills.erase(skillIter);
+		}
+	}
+	warriorIsCharging = false;
+}
+
 void ServerScene::update()
 {
 	time += 1.0 / 60;
@@ -350,7 +402,7 @@ void ServerScene::checkAndHandlePlayerCollision(unsigned int playerId) {
 	// player - projectile hit detection
 	for (auto& skill : skills) {
 		// don't do hit detection against your own bullets or if the player is evading
-		if (skill.ownerId == playerId || player.isEvading) {
+		if (skill.ownerId == playerId || player.isEvading || player.isInvincible) {
 			continue;
 		}
 
@@ -383,7 +435,7 @@ void ServerScene::checkAndHandlePlayerCollision(unsigned int playerId) {
 			unordered_map<unsigned int, PlayerMetadata*>::iterator s_it = playerMetadatas->find(otherPlayer.player_id);
 			PlayerMetadata* player_data = s_it->second;
 			if (!player_data->alive) continue;
-			if (otherPlayer.playerRoot->isCollided(forwardVector, model_radius, serverSceneGraphMap, player.playerRoot, model_boundingbox, false)) {
+			if (!otherPlayer.isInvincible && !otherPlayer.isEvading && otherPlayer.playerRoot->isCollided(forwardVector, model_radius, serverSceneGraphMap, player.playerRoot, model_boundingbox, false)) {
 				handlePlayerDeath(otherPlayer, player.player_id);
 			}	
 		}
@@ -530,6 +582,13 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 		auto &player = scenePlayers[player_id];
 		player.isEvading = false;
 		serverSceneGraphMap[player.root_id]->isEvading = false;
+		return;
+	}
+
+	if (skill_id == VULNERABLE) {
+		auto &player = scenePlayers[player_id];
+		player.isInvincible = false;
+		serverSceneGraphMap[player.root_id]->isInvincible = false;
 		return;
 	}
 
@@ -693,7 +752,14 @@ void ServerScene::handlePlayerRespawn(unsigned int client_id)
   player.playerRoot->translation = glm::translate(glm::mat4(1.0f), target);
   player.currentPos = target;
   player.setDestination(target);
+  // todo: no animation for spawn?
   player.animationMode = spawn;
+
+  player.isInvincible = true;
+  serverSceneGraphMap[player.root_id]->isInvincible = true;
+
+
+
 }
 
 
