@@ -623,8 +623,11 @@ static void ui_bets_shop(struct nk_context *ctx, struct media *media, int width,
 		nk_spacing(ctx, 1);
 		nk_layout_row(ctx, NK_DYNAMIC, height*0.05f, 3, bet_ratio);
 		nk_spacing(ctx, 1);
-		if ( op>= 1 && nk_button_label(ctx, "Bet!")) {
+		if (guiS.betAmount > 0 && nk_button_label(ctx, "Bet!")) {
 			//TODO: SEND BET
+			if (op >= 1) {
+
+			}
 		}
 		nk_spacing(ctx, 1);
 	
@@ -719,7 +722,7 @@ static  void
 prepare_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, LeaderBoard* leaderBoard, vector<string> usernames, vector<ArcheType> archetypes, ClientGame * game, guiStatus & gStatuses) {
 	
 	set_style(ctx, THEME_BLACK);
-	//ctx->style.window.fixed_background = nk_style_item_image(media->prepare_background);
+	ctx->style.window.fixed_background = nk_style_item_image(media->prepare_background);
 	if (gStatuses.currPrepareLayout == 0) {
 		ui_round_results(ctx, media, leaderBoard, usernames, archetypes, width, height, game, gStatuses);
 	}
