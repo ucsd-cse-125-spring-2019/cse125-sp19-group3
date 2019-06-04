@@ -91,6 +91,7 @@ public:
 	unordered_map<ArcheType, vector<unsigned int>> *archetype_skillset;
 	void initEnv();
 	void initModelPhysics();
+  void ResetGameState();
 	unordered_map<unsigned int, Skill>* skill_map;
 
 private:

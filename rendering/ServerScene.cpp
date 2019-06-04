@@ -696,3 +696,12 @@ void ServerScene::handlePlayerRespawn(unsigned int client_id)
 Transform * ServerScene::getRoot() {
 	return root;
 }
+
+void ServerScene::ResetGameState(){
+  //location
+	for (std::pair<unsigned int, ScenePlayer> player : scenePlayers) {
+		player.second.playerRoot->translation = glm::translate(glm::mat4(1.0f), spawn_loc[player.first]);
+		player.second.currentPos = spawn_loc[player.first];
+		player.second.setDestination(spawn_loc[player.first]);
+	}
+}
