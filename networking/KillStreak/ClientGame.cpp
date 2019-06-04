@@ -38,6 +38,8 @@ ClientGame::ClientGame(string host, string port, int char_select_time)
 	leaderBoard   = new LeaderBoard();
 	serverPackets = new ServerInputQueue();
 	network		  = new ClientNetwork(this->host, this->serverPort);
+
+	round_number  = 1;
 }
 
 
@@ -267,20 +269,28 @@ void ClientGame::endKillPhase()
 
 	// wait for confirmation from server to start prep phase
 	int startPrepPhase = 0;
-	while (!startPrepPhase)
+	int startEndGamePhase = 0;
+	while (!startPrepPhase && !startEndGamePhase)		// end if either true
 	{
 		ServerInputPacket* start_prep_packet = NULL;
+		ServerInputPacket* start_end_game_packet = NULL;
 
 		// empty packets queue; drop all non start_prep_phase packets; 
 		q_lock->lock();
 		while (!(serverPackets->empty()))
 		{
 			ServerInputPacket* curr_packet = serverPackets->front();
-			if (curr_packet->packetType == START_PREP_PHASE)
+			if (curr_packet->packetType == START_PREP_PHASE)		  // server saying start prep phase
 			{
 				start_prep_packet = curr_packet;
 				startPrepPhase = 1;
 			}
+			else if (curr_packet->packetType == START_END_GAME_PHASE) // server saying start end game phase!
+			{
+				start_end_game_packet = curr_packet;
+				startEndGamePhase = 1;
+			}
+
 			serverPackets->pop();	// remove from queue
 		}
 		q_lock->unlock();
@@ -291,8 +301,11 @@ void ClientGame::endKillPhase()
 			logger()->debug("Received start_prep_phase from server!");
 
 			// deserialzie leaderboard & all player gold
-			unsigned int sz = 0;
 			char* data = start_prep_packet->data;
+
+			// deserialize round number
+			memcpy(&round_number, data, sizeof(int));
+			data += sizeof(int);
 
 			// deserialize leaderboard
 			unsigned int leaderBoard_size = 0;
@@ -308,23 +321,34 @@ void ClientGame::endKillPhase()
 				data += sizeof(int);
 			}
 
-			// TODO: REMOVE ME ***********
-			logger()->debug("");
-			logger()->debug("* * * Kills, Deaths, Gold * * *");
-			for (int client_id = 0; client_id < GAME_SIZE; client_id++)
-			{
-				logger()->debug("Client {}: Global Kills {}, Deaths {}, Gold {}", 
-					client_id, leaderBoard->globalKills[client_id], leaderBoard->currentDeaths[client_id],
-					leaderBoard->currGold[client_id]);
-			}
-			logger()->debug("");
-			// TODO: REMOVE ME ***********
-
 			// continue to enter prepare
 			std::chrono::seconds secPre(PREPHASE_TIME);
 			prepareTimer = nanoseconds(secPre);
 			currPhase = PREPARE;
 			startPrepPhase = 1;
+			break;
+		}
+		// start end game phase; deserialzie data & start end game phase timer
+		else if (startEndGamePhase)
+		{
+
+			logger()->debug("Received end game from server!");
+
+			char* data = start_end_game_packet->data;
+
+			// deserialize leaderboard
+			unsigned int leaderBoard_size = 0;
+			leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
+			data += leaderBoard_size;
+
+			// TODO: Deserialize any more data? 
+
+
+			// TODO: FINISH ME!!!
+			//std::chrono::seconds secPre(ENDGAME_TIME);
+			//prepareTimer = nanoseconds(secPre);
+			currPhase = FINAL;
+			startEndGamePhase = 1;
 			break;
 		}
 	}
@@ -474,6 +498,12 @@ int ClientGame::switchPhase() {
 		// prepare phase over --> request to start kill phase
 		case PREPARE: endPrepPhase(); break;
 
+		// TODO: End game scene
+		case FINAL: 
+			logger()->debug("GAME OVER!!!!");
+			while (1) {};
+			break;
+
 		// should never occur
 		default: logger()->error("INVALID PHASE!"); break;
 	}
@@ -512,6 +542,10 @@ void ClientGame::run() {
 	Window_static::initialize_objects(this, network, leaderBoard);
 	Window_static::initialize_UI(window);
 
+	// TODO: REMOVE ME ****
+	int counter = 0;
+	// TODO: REMOVE ME ****
+
 	// Loop while GLFW window should stay open
 	while (!glfwWindowShouldClose(window))
 	{
@@ -542,6 +576,10 @@ void ClientGame::run() {
 			Window_static::display_callback(window);
 			// Idle callback. Updating objects, etc. can be done here.
 			Window_static::idle_callback();
+
+			// TODO: REMOVE ME ****
+			if (counter % 1000 == 0) logger()->debug("ROUND {}", round_number);
+			// TODO: REMOVE ME ****
 
 			// update all timers based on time elapsed
 			auto end = Clock::now();

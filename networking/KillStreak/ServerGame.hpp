@@ -49,9 +49,9 @@ public:
 
 	void game_match();
 
-	bool updateKillPhase();
+	int updateKillPhase();
 
-	bool updatePreparePhase();
+	int updatePreparePhase();
 
 	void launch_client_threads();
 
@@ -60,6 +60,7 @@ public:
 	int end_kill_phase = 0;			// true if any client initiated end_kill_phase
 	int total_end_kill_packets = 0; // number of end_kill_phase packets received from clients 
 	int total_end_prep_packets = 0; // number of end_prep_phase packets received from clients
+	int round_number = 1;			// curent round number
 
 protected:
 	PCSTR host;
@@ -90,6 +91,7 @@ protected:
 	// create packet for server to send to client
 	ServerInputPacket createServerPacket(ServerPacketType type, int temp, char* data);
 	ServerInputPacket createInitScenePacket(unsigned int playerId, unsigned int playerRootid);
+	ServerInputPacket createStartEndPhasePacket();
 	ServerInputPacket createStartPrepPhasePacket();
 	ServerInputPacket createStartKillPhasePacket();
 	ServerInputPacket createServerTickPacket();
