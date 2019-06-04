@@ -37,7 +37,6 @@ public:
 	int height;
 	glm::vec3 initCamPos;
 	std::unordered_map<unsigned int, Transform *> clientSceneGraphMap;
-
 	vector<ArcheType> archetypes;	// list of all player archetypes
 	vector<string> usernames;		// list of all player usernames ordered by index of client id on server
 
@@ -64,6 +63,7 @@ public:
 	void renderLobbyPhase(GLFWwindow* window);
 	void initialize_UI(GLFWwindow* window);
 	bool checkInAnimation();
+	void resetGUIStatus();
 private:
 	Audio audio;
 	float min_scroll = 20.0f;
@@ -119,6 +119,7 @@ public:
 	static void mouse_button_callback(GLFWwindow* win, int button, int action, int mods) { scene->mouse_button_callback(win, button, action, mods); };
 	static void handleInitScenePacket(char * data) { scene->handleInitScenePacket(data); };
 	static void handleServerTickPacket(char* data) { scene->handleServerTickPacket(data); };
+	static void resetGUIStatus() { scene->resetGUIStatus(); };
 };
 
 

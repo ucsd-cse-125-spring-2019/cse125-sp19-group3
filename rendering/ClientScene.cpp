@@ -22,7 +22,7 @@ struct nk_context * ctx;
 struct nk_colorf bg = { 0.1f,0.1f,0.1f,1.0f };
 ClientScene * Window_static::scene = new ClientScene();
 struct media media;
-
+struct guiStatus guiStatuses;
 GLuint loadTexture(const char * imagepath) {
 	int width, height, n;
 	// Actual RGB data
@@ -49,6 +49,11 @@ GLuint loadTexture(const char * imagepath) {
 	return textureID;
 }
 
+void ClientScene::resetGUIStatus() {
+	guiStatuses.betAmount = 0;
+	guiStatuses.currPrepareLayout = 0;
+	guiStatuses.shopCategory = 0;
+}
 
 void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network, LeaderBoard* leaderBoard)
 {
@@ -206,6 +211,10 @@ void ClientScene::initialize_UI(GLFWwindow* window) {
 	media.king_skills[0] = icon_load("../icon/skills/king-silence.png");
 	media.king_silenced[1] = icon_load("../icon/skills/king-aoe.png");
 	media.king_silenced[0] = icon_load("../icon/skills/king-silence.png");
+
+	guiStatuses.betAmount = 0;
+	guiStatuses.currPrepareLayout = 0;
+	guiStatuses.shopCategory = 0;
 }
 
 void  ClientScene::text_input(GLFWwindow *win, unsigned int codepoint)
@@ -378,7 +387,7 @@ void ClientScene::renderPreparePhase(GLFWwindow* window) {
 	/* Input */
 	glfwPollEvents();
 	nk_glfw3_new_frame();
-	prepare_layout(ctx, &media, ClientScene::width, ClientScene::height, &this->player, leaderBoard,usernames, archetypes,game);
+	prepare_layout(ctx, &media, ClientScene::width, ClientScene::height, &this->player, leaderBoard,usernames, archetypes,game, guiStatuses);
 
 
 	nk_glfw3_render(NK_ANTI_ALIASING_OFF, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
