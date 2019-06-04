@@ -121,9 +121,6 @@ public:
 
 	bool alive;
 	bool silenced;
-	//bool died_this_tick;
-	Point currLocation;
-	// Omitting Point desiredFinalLocation
 
 	// TODO: currently not plan to implement gold, purchase
 	// TODO: how to implement weapons

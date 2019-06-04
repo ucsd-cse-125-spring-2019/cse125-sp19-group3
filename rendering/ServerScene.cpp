@@ -212,6 +212,58 @@ void ServerScene::addPlayer(unsigned int playerId, ArcheType modelType) {
 	scenePlayers.insert({ playerId, player });
 }
 
+
+/*
+	Reset values before kill phase
+*/
+void ServerScene::resetScene()
+{
+	// iterate over all clients reseting corresponding values
+	for (auto& element : scenePlayers)
+	{
+		auto& player = element.second;
+
+		// reset position
+		player.currentPos = spawn_loc[player.player_id];
+		player.playerRoot->translation = glm::translate(glm::mat4(1.0f), spawn_loc[player.player_id]);
+		player.setDestination(spawn_loc[player.player_id]);
+
+		// reset is_silence
+		unordered_map<unsigned int, PlayerMetadata*>::iterator p_it = playerMetadatas->find(player.player_id);
+		PlayerMetadata* metaData = p_it->second;
+		metaData->silenced = false;
+		player.isSilenced = false;
+
+		// is_charge
+		player.warriorIsChargingServer = false;
+
+		// death state
+		player.isAlive = true;
+		metaData->alive = true;
+
+		// invisibility
+		int node_id = player.root_id;
+		serverSceneGraphMap[node_id]->enabled = true;
+
+		// clear remaining data
+		player.action_state = ACTION_MOVEMENT;
+		player.movementMode = idle;
+		player.animationMode = -1;
+		player.isEvading = false;
+		player.isPrepProjectile = false;
+
+		// clear projectiles
+		auto skillIter = skills.begin();
+		while (skillIter != skills.end()) {
+			auto & skill = *skillIter;
+			serverSceneGraphMap.erase(skill.node->node_id);
+			skillRoot->removeChild(skill.node->node_id);
+			delete(skill.node);
+			skillIter = skills.erase(skillIter);
+		}
+	}
+}
+
 void ServerScene::update()
 {
 	time += 1.0 / 60;

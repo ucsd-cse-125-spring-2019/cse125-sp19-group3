@@ -581,14 +581,13 @@ bool ServerGame::updatePreparePhase() {
 */
 void ServerGame::resetValuesPreKillPhase()
 {
-
 	// reset corresponding leaderboard data 
 	std::fill(leaderBoard->killStreaks.begin(),   leaderBoard->killStreaks.end(), 0);
 	std::fill(leaderBoard->currentKills.begin(),  leaderBoard->currentKills.end(), 0);
 	std::fill(leaderBoard->currentDeaths.begin(), leaderBoard->currentDeaths.end(), 0);
 
-	// TODO: What other values do we need to reset/update?
-
+	// reset scene data
+	scene->resetScene();
 }
 
 
@@ -651,8 +650,6 @@ ServerInputPacket ServerGame::createStartKillPhasePacket()
 	sgSize += leaderBoard_size;
 
 	// TODO: What else do we need to serialzie before next kill phase?
-
-
 
 	packet.packetType = START_KILL_PHASE;
 	packet.size = sgSize;
