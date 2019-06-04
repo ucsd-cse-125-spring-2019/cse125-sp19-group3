@@ -356,11 +356,13 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 
 	// order kills, usernames, and archetypes by client with most kills first...
 	vector<int> kills;
+	vector<int> deaths;
 	vector<string> ordered_usernames;
 	vector<ArcheType> ordered_types;
 	vector<int> curKills = leaderBoard->currentKills;
-	static const float lbratio[] = { 0.20f, 0.08f, 0.02f, 0.30f,0.4f };  /* 0.3 + 0.4 + 0.3 = 1 */
-	static const float globalLBratio[] = { 0.20f, 0.08f, 0.02f, 0.30f,0.20f,0.20f };  /* 0.3 + 0.4 + 0.3 = 1 */
+	vector<int> curDeaths = leaderBoard->currentDeaths;
+	static const float lbratio[] = { 0.20f, 0.08f, 0.02f, 0.30f, 0.2f, 0.2f };  /* 0.3 + 0.4 + 0.3 = 1 */
+	static const float globalLBratio[] = { 0.20f, 0.08f, 0.02f, 0.30f, 0.20f, 0.20f };  /* 0.3 + 0.4 + 0.3 = 1 */
 	static const float btnRatio[] = { 0.97f, 0.03f };
 	// make parallel arrays 'kills' & 'ordered_usernames' having same index for players based on number of kills
 	for (int i = 0; i < GAME_SIZE; i++)
@@ -374,6 +376,7 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 		ordered_usernames.push_back(usernames[index]);
 		ordered_types.push_back(archetypes[index]);
 		kills.push_back(numKills);
+		deaths.push_back(curDeaths[index]);
 
 		*it = -1;		// reset current max to -1
 	}
@@ -385,13 +388,14 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 		nk_layout_row_dynamic(ctx, height*0.15, 1);
 		nk_label(ctx, "Round Summary", NK_TEXT_LEFT | NK_TEXT_ALIGN_CENTERED);
 		nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
-		nk_layout_row(ctx, NK_DYNAMIC, width*0.02, 5, lbratio);
+		nk_layout_row(ctx, NK_DYNAMIC, width*0.02, 6, lbratio);
 		nk_spacing(ctx, 1);
 		nk_label(ctx, "Rank", NK_TEXT_LEFT);
 		nk_spacing(ctx, 1);
 		// username & points
 		nk_label(ctx, "Name", NK_TEXT_LEFT);
 		nk_label(ctx, "Kills", NK_TEXT_LEFT);
+		nk_label(ctx, "Deaths", NK_TEXT_LEFT);
 		for (int i = 0; i < GAME_SIZE; i++) {
 
 			const char * player_id;
@@ -403,7 +407,7 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 			string point_s = std::to_string(kills[i]);
 			player_point = point_s.c_str();
 
-			nk_layout_row(ctx, NK_DYNAMIC, width*0.02, 5, lbratio);
+			nk_layout_row(ctx, NK_DYNAMIC, width*0.02, 6, lbratio);
 			nk_spacing(ctx, 1);
 			nk_text(ctx, player_id, strlen(player_id), NK_TEXT_LEFT);
 			switch (ordered_types[i])	// archetype icon on leaderboard
@@ -417,6 +421,9 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 			// username & points
 			nk_text(ctx, ordered_usernames[i].c_str(), strlen(ordered_usernames[i].c_str()), NK_TEXT_LEFT);
 			nk_text(ctx, player_point, strlen(player_point), NK_TEXT_LEFT);
+			string player_d = std::to_string(deaths[i]);
+			const char * player_death = player_d.c_str();
+			nk_text(ctx, player_death, strlen(player_death), NK_TEXT_LEFT);
 		}
 		nk_style_set_font(ctx, &(media->font_64->handle));
 		nk_layout_row_dynamic(ctx, height*0.2, 1);
