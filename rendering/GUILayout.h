@@ -589,7 +589,7 @@ static void ui_bets_shop(struct nk_context *ctx, struct media *media, int width,
 	static const char * characterTypeStrings[] = { "HUMAN", "MAGE", "ASSASSIN","WARRIOR","KING" };
 	char* prices[4] = { "Cost: 5", "Cost: 10", "Cost: 15", "Cost: 20" };
 	static const float bet_ratio[] = { 0.34f, 0.33f, 0.33f };
-	static int op = 1;
+	static int op = -1;
 	ArcheType type = player->modelType;
 	if (nk_group_begin(ctx, "bets_shop", NK_WINDOW_NO_SCROLLBAR)) {
 		nk_layout_row(ctx, NK_DYNAMIC, height*0.5f, 3, bet_ratio);
@@ -623,13 +623,38 @@ static void ui_bets_shop(struct nk_context *ctx, struct media *media, int width,
 		nk_spacing(ctx, 1);
 		nk_layout_row(ctx, NK_DYNAMIC, height*0.05f, 3, bet_ratio);
 		nk_spacing(ctx, 1);
-		if (nk_button_label(ctx, "Bet!")) {
+		if ( op>= 1 && nk_button_label(ctx, "Bet!")) {
 			//TODO: SEND BET
 		}
 		nk_spacing(ctx, 1);
 	
 		}
 		nk_group_end(ctx);
+}
+
+static void ui_cheat_shop(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player) {
+	if (nk_group_begin(ctx, "cheat", NK_WINDOW_NO_SCROLLBAR)) {
+		static const float cheatRatio[] = { 0.25f, 0.25f,  0.25f, 0.25f };
+		static const float middeRatio[] = { 0.33f, 0.33f, 0.34f };
+		nk_layout_row_static(ctx, 32, 0.3*width, 1);
+		nk_layout_row(ctx, NK_DYNAMIC, 0.16*width, 4, cheatRatio);
+		nk_spacing(ctx, 1);
+		nk_label(ctx, "1 Point", NK_TEXT_CENTERED);
+		nk_image(ctx, media->points);
+		nk_spacing(ctx, 1);
+		nk_layout_row(ctx, NK_DYNAMIC, height*0.03f, 3, middeRatio);
+		nk_spacing(ctx, 1);
+		nk_label(ctx, "Cost: 500 gold", NK_TEXT_CENTERED);
+		nk_spacing(ctx, 1);
+		nk_layout_row(ctx, NK_DYNAMIC, height*0.04f, 3, middeRatio);
+		nk_spacing(ctx, 1);
+		if (nk_button_label(ctx, "Cheat!")) {
+			//TODO: SEND CHEAT
+		}
+		nk_spacing(ctx, 1);
+
+	}
+	nk_group_end(ctx);
 }
 
 static void ui_shop(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, ClientGame * game, guiStatus & gStatuses) {
@@ -673,7 +698,7 @@ static void ui_shop(struct nk_context *ctx, struct media *media, int width, int 
 			ui_bets_shop(ctx, media, width, height, player, game, gStatuses);
 		}
 		else {
-			ui_skills_shop(ctx, media, width, height, player, game);
+			ui_cheat_shop(ctx, media, width, height, player);
 		}
 	}
 	nk_end(ctx);
