@@ -132,6 +132,17 @@ void ClientScene::resetPreKillPhase()
 	evadeDurationTimer = nanoseconds::zero();
 	sprintDurationTimer = nanoseconds::zero();
 	isCharging = false;
+
+	// interrupt death animation if necessary
+	for (auto & model : models) {
+		if (model.second.model->isAnimated) {
+			auto & modelPtr = model.second.model;
+			modelPtr->isPlayingActiveAnimation = false;
+			modelPtr->curr_mode = idle;
+			modelPtr->movementMode = idle;
+			modelPtr->animationMode = -1;
+		}
+	}
 }
 
 
@@ -375,6 +386,7 @@ void ClientScene::resize_callback(GLFWwindow* window, int width, int height)
 	else {
 		glfw.atlas.default_font = media.font_32;
 		nk_style_set_font(ctx, &(media.font_32->handle));
+
 	}
 }
 
