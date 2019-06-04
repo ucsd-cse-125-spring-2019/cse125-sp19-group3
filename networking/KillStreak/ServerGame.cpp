@@ -543,28 +543,51 @@ bool ServerGame::updatePreparePhase() {
 	// solution... make map check if already received from same client
 
 	// handle all incoming packets; drop non prep phase packets;
-	for (int i = 0; i < GAME_SIZE; i++) {
-		for (auto& packet : inputPackets[i]) {
+	for (int client_id = 0; client_id < GAME_SIZE; client_id++) {
+		for (auto& packet : inputPackets[client_id]) {
 
 			// drop non prep phase packets; otherwise deserialize data and inc. total number received
 			if (packet->inputType == END_PREP_PHASE)
 			{
 				total_end_prep_packets++;
 
-				// 1.)
-				// 	deserialize remaining gold for each player (update playerMetadata field gold)
-				//	 NOTE: Should we send updated gold in start kill phase packet? Or just wait for first server tick?
-				//	 probably wait for server tick...
+				char* data = packet->data;
+
+				// deserialize client gold
+				unordered_map<unsigned int, PlayerMetadata*>::iterator p_it = playerMetadatas->find(client_id);
+				PlayerMetadata* player_meta = p_it->second;
+				memcpy(&player_meta->gold, data, sizeof(int));
+				data += sizeof(int);
+
+				// TODO: Client side skills vector always empty?
+				 
+		/*
+				// deserialize number of skills
+				int total_skills = 0;
+				memcpy(&total_skills, data, sizeof(int));
+				data += sizeof(int);
+
+				// deserialize skill levels 
+				for (int skill_num = 0; skill_num < total_skills; skill_num++)
+				{
+					memcpy(&scene->scenePlayers[client_id].availableSkills[skill_num].level, data, sizeof(unsigned int));
+					data += sizeof(unsigned int);
+				}
+
+				// TODO: REMOVE ME **********************************
+				// test printing updated client skills
+				vector<Skill> curr_skills = scene->scenePlayers[client_id].availableSkills;
+				for (int i = 0; i < curr_skills.size(); i++)
+				{
+					logger()->debug("SKILL {}: LEVEL {}", i, curr_skills[i].level);
+				}
+				// TODO: REMOVE ME **********************************
+		*/
 
 
-				// 2.) deserialize skill levels for each player
+				// 4.) TODO: deserialize invest for each player 
 
-
-				// 3.) deserialize invest for each player 
-
-
-				// 4.) deserialize cheating for each player
-
+				// 5.) TODO: deserialize cheating for each player
 
 			}
 
@@ -739,13 +762,6 @@ ServerInputPacket ServerGame::createServerTickPacket() {
 	memcpy(bufPtr, &client_gold, sizeof(int));
 	bufPtr += sizeof(int);
 	sgSize += sizeof(int);
-
-	// TODO: REMOVE ME!
-	if (client_gold != 0)
-	{
-		logger()->debug("Create tick packet serialized gold {}", client_gold);
-	}
-
 
 	// serialize if user silenced; default init the first byte (silenced)
 	bool silenced = false;

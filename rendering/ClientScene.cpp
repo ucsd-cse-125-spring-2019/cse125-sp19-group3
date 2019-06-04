@@ -874,6 +874,22 @@ void ClientScene::setRoot(Transform * newRoot) {
 	root = newRoot;
 }
 
+/*
+	Get players gold.
+*/
+int ClientScene::getPlayerGold() 
+{ 
+	return player.gold;
+}
+
+/*
+	Get players skills.
+*/
+vector<Skill> ClientScene::getPlayerSkills() 
+{ 
+	return player.availableSkills;
+}
+
 bool ClientScene::checkInAnimation() {
 	auto transform = clientSceneGraphMap[player.root_id];
 	auto thisModel = models[*(transform->model_ids.begin())].model;

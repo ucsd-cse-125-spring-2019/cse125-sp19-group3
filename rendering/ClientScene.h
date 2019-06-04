@@ -64,6 +64,8 @@ public:
 	void renderLobbyPhase(GLFWwindow* window);
 	void initialize_UI(GLFWwindow* window);
 	void resetPreKillPhase();
+	int getPlayerGold();
+	vector<Skill> getPlayerSkills();
 	bool checkInAnimation();
 private:
 	Audio audio;
@@ -122,6 +124,8 @@ public:
 	static void handleInitScenePacket(char * data) { scene->handleInitScenePacket(data); };
 	static void handleServerTickPacket(char* data) { scene->handleServerTickPacket(data); };
 	static void resetPreKillPhase() { scene->resetPreKillPhase(); };
+	static int getPlayerGold() { scene->getPlayerGold(); };
+	static vector<Skill> getPlayerSkills() { scene->getPlayerSkills(); };
 };
 
 

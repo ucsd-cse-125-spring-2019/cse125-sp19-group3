@@ -346,35 +346,55 @@ void ClientGame::endPrepPhase()
 	char* headPtr = buf; // point to start of buffer
 	char* bufPtr = buf;	 // follow next open space of buffer 
 
-
 	/* TODO: Send packet to server with
-		a.) remaining gold
+		XXX remaining gold
 		b.) skill levels
 		c.) investment
 		d.) cheating
 	*/
 
-	// serialize gold (NOTE: ASSUMING GOLD UPDATED IN SCENE PLAYER OBJECT)
+	// serialize clients gold (from scenePlayer)
+	int curr_gold = Window_static::scene->getPlayerGold();
+	memcpy(bufPtr, &curr_gold, sizeof(int));
+	bufPtr += sizeof(int);
+	sgSize += sizeof(int);
+
+/*
+	// TODO: Why is the skills vector empty?!?!?!
+
+	// get skills for player 
+	// BUG: This vector has size 0? Why?!?!?!
+	vector<Skill> curr_skills = Window_static::scene->getPlayerSkills();
+	//logger()->debug("PLAYER SKILLS SIZE: {}", curr_skills.size());
+
+	// serialize number of skills
+	int skill_sz = curr_skills.size();
+	memcpy(bufPtr, &skill_sz, sizeof(int));
+	bufPtr += sizeof(int);
+	sgSize += sizeof(int);
+
+	// serialize all skill levels 
+	for (int i = 0; i < skill_sz; i++)
+	{
+		unsigned int cur_level = curr_skills[i].level;
+
+		// TODO: REMOVE ME ************
+		cur_level += 69 + i;
+		logger()->debug("SKILL {} LEVEL {} ", i, cur_level);
+		// TODO: REMOVE ME ************
+
+		memcpy(bufPtr, &cur_level, sizeof(unsigned int));
+		bufPtr += sizeof(unsigned int);
+		sgSize += sizeof(int);
+	}
 
 
-	// serialize skill levels
-	/* ScenePlayer has available_skills.. just loop through game size for each client...
-	loop through all skills and serialize level...
-	on server just iterate overgame size and update skill level on server side accordingly
-	--> get client 0's skill level vector... iterate over it deserializing skill level and updating 
-		the corresponding value
-	*/
 
+*/
 
+	// TODO: serialize investment
 
-	// serialize investment
-
-	// serialize cheating
-
-
-
-	// (DONE) send packet
-	// (DONE) block on recv() until server sends start_kill phase
+	// TODO: serialize cheating
 
 
 	// create packet; copy all serialized data into packet.data & send to server
@@ -406,6 +426,7 @@ void ClientGame::endPrepPhase()
 			{
 				end_prep_packet = curr_packet;
 				endPrepPhase = 1;
+
 			}
 			serverPackets->pop();	// remove from queue
 		}
@@ -413,7 +434,6 @@ void ClientGame::endPrepPhase()
 	}
 
 	// deserialzie leaderboard 
-	unsigned int sz = 0;
 	char* data = end_prep_packet->data;
 
 	// deserialize leaderboard
