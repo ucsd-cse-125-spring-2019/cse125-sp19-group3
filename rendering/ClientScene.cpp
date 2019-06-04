@@ -6,7 +6,7 @@
 #define MAX_VERTEX_BUFFER 512 * 1024
 #define MAX_ELEMENT_BUFFER 128 * 1024
 
-
+#define VULNERABLE -2
 #define UNEVADE -1
 #define EVADE_INDEX 0
 #define PROJ_INDEX 1
@@ -16,6 +16,7 @@
 #define VISIBILITY 14
 #define UNSPRINT 15
 #define RESPAWN_TIME 3
+#define INVINCIBILITY_TIME 1
 
 using json = nlohmann::json;
 struct nk_context * ctx;
@@ -131,6 +132,7 @@ void ClientScene::resetPreKillPhase()
 	skillDurationTimer = nanoseconds::zero();
 	evadeDurationTimer = nanoseconds::zero();
 	sprintDurationTimer = nanoseconds::zero();
+	invincibilityTimer = nanoseconds::zero();
 	isCharging = false;
 
 	// interrupt death animation if necessary
@@ -169,6 +171,7 @@ void ClientScene::initialize_skills(ArcheType selected_type) {
 	skillDurationTimer = nanoseconds::zero();
 	evadeDurationTimer = nanoseconds::zero();
 	sprintDurationTimer = nanoseconds::zero();
+	invincibilityTimer = nanoseconds::zero();
 	player.modelType = selected_type;
 }
 
@@ -359,6 +362,17 @@ void ClientScene::updateTimers(nanoseconds timePassed) {
 			sprintDurationTimer = nanoseconds::zero();
 		}
 	}
+
+	// update invincibility duration
+	if (invincibilityTimer > nanoseconds::zero()) {
+		invincibilityTimer -= timePassed;
+		if (invincibilityTimer <= nanoseconds::zero()) {
+			ClientInputPacket vulnerablePacket = game->createSkillPacket(NULL_POINT, VULNERABLE);
+			network->sendToServer(vulnerablePacket);
+			invincibilityTimer = nanoseconds::zero();
+		}
+	}
+
 }
 
 void ClientScene::resize_callback(GLFWwindow* window, int width, int height)
@@ -793,7 +807,7 @@ void ClientScene::handleServerTickPacket(char * data) {
 		player.isAlive = false;
 		std::chrono::seconds sec((int)RESPAWN_TIME);
 
-		respawn_timer = sec;
+		respawn_timer = nanoseconds(sec);
 		killTextDeterminant = rand() % KILLED_TEXT_NUM;
 
 		// reset cooldowns
@@ -803,6 +817,10 @@ void ClientScene::handleServerTickPacket(char * data) {
 	// server respawning player (they're alive); client still thinks they're dead
 	else if ( server_alive && !player.isAlive) {
 		player.isAlive = true;
+		// start the invincibility timer
+		std::chrono::seconds sec((int)INVINCIBILITY_TIME);
+		invincibilityTimer = nanoseconds(sec);
+
 	}
 
 	// deserialize client gold

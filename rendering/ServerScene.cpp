@@ -14,6 +14,7 @@ using json = nlohmann::json;
 #define LOSESTREAK_BONUS 2		// gold awarded for losestreak
 
 // skill_id's
+#define VULNERABLE         -2
 #define UNEVADE            -1
 #define EVADE				0
 #define PROJECTILE			1
@@ -401,7 +402,7 @@ void ServerScene::checkAndHandlePlayerCollision(unsigned int playerId) {
 	// player - projectile hit detection
 	for (auto& skill : skills) {
 		// don't do hit detection against your own bullets or if the player is evading
-		if (skill.ownerId == playerId || player.isEvading) {
+		if (skill.ownerId == playerId || player.isEvading || player.isInvincible) {
 			continue;
 		}
 
@@ -434,7 +435,7 @@ void ServerScene::checkAndHandlePlayerCollision(unsigned int playerId) {
 			unordered_map<unsigned int, PlayerMetadata*>::iterator s_it = playerMetadatas->find(otherPlayer.player_id);
 			PlayerMetadata* player_data = s_it->second;
 			if (!player_data->alive) continue;
-			if (otherPlayer.playerRoot->isCollided(forwardVector, model_radius, serverSceneGraphMap, player.playerRoot, model_boundingbox, false)) {
+			if (!otherPlayer.isInvincible && !otherPlayer.isEvading && otherPlayer.playerRoot->isCollided(forwardVector, model_radius, serverSceneGraphMap, player.playerRoot, model_boundingbox, false)) {
 				handlePlayerDeath(otherPlayer, player.player_id);
 			}	
 		}
@@ -579,6 +580,13 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 	if (skill_id == UNEVADE) {
 		logger()->debug("{} player stopped evading!", playerMetadata->username);
 		scenePlayers[player_id].isEvading = false; 
+		return;
+	}
+
+	if (skill_id == VULNERABLE) {
+		auto &player = scenePlayers[player_id];
+		player.isInvincible = false;
+		serverSceneGraphMap[player.root_id]->isInvincible = false;
 		return;
 	}
 
@@ -740,7 +748,14 @@ void ServerScene::handlePlayerRespawn(unsigned int client_id)
   player.playerRoot->translation = glm::translate(glm::mat4(1.0f), target);
   player.currentPos = target;
   player.setDestination(target);
+  // todo: no animation for spawn?
   player.animationMode = spawn;
+
+  player.isInvincible = true;
+  serverSceneGraphMap[player.root_id]->isInvincible = true;
+
+
+
 }
 
 
