@@ -79,11 +79,50 @@ static void ui_leaderboard(struct nk_context *ctx, struct media *media,
 	nk_end(ctx);
 }
 
-static void ui_killphase_header(struct nk_context *ctx, struct media *media, int width, int height, int roundnum, int gold, int victory_points) {
+static void ui_killphase_header(struct nk_context *ctx, struct media *media, int width, int height, int roundnum, ScenePlayer * player, LeaderBoard * leaderBoard, guiStatus gStatus) {
 	struct nk_style *s = &ctx->style;
 	nk_style_push_color(ctx, &s->window.background, nk_rgba(0, 0, 0, 0));
 	nk_style_push_style_item(ctx, &s->window.fixed_background, nk_style_item_color(nk_rgba(0, 0, 0, 0)));
-	if (nk_begin(ctx, "kill_header", nk_rect(width * 0.85, 10, width * 0.15, width * 0.09+65),
+	if (nk_begin(ctx, "kill_player_info", nk_rect(10, 310, width * 0.15, width * 0.09+65),
+		NK_WINDOW_NO_SCROLLBAR))
+	{
+		static const float kill_ratio[] = { 0.3f,0.3f, 0.4f };  /* 0.3 + 0.4 + 0.3 = 1 */
+		string roundStr = "ROUND: " + std::to_string(roundnum);
+		const char * round_char = roundStr.c_str();
+
+		string goldStr = std::to_string(player->gold);
+		string vicPtsStr = std::to_string(leaderBoard->currPoints[player->player_id]);
+		const char * gold_char = goldStr.c_str();
+		const char * vic_char = vicPtsStr.c_str();
+		nk_style_set_font(ctx, &(media->font_64->handle));
+		nk_layout_row_dynamic(ctx, 65, 1);
+		nk_label(ctx, round_char, NK_TEXT_RIGHT | NK_TEXT_ALIGN_CENTERED);
+		nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
+
+		nk_layout_row(ctx, NK_DYNAMIC, width * 0.07,3, kill_ratio);
+
+		nk_spacing(ctx, 1);
+		if (nk_group_begin(ctx, "icons", NK_WINDOW_NO_SCROLLBAR)) { // column 1
+			nk_layout_row_static(ctx, 48, 48, 1);
+			nk_image(ctx, media->gold);
+			nk_layout_row_static(ctx, 20, 1, 1);
+			nk_layout_row_static(ctx, 48, 48, 1);
+			nk_image(ctx, media->points);
+		}
+		nk_group_end(ctx);
+
+		if (nk_group_begin(ctx, "nums", NK_WINDOW_NO_SCROLLBAR)) { // column 1
+			nk_layout_row_static(ctx, 48, 48, 1);
+			nk_label(ctx, gold_char, NK_TEXT_RIGHT | NK_TEXT_ALIGN_CENTERED);
+			nk_layout_row_static(ctx, 20, 1, 1);
+			nk_layout_row_static(ctx, 48, 48, 1);
+			nk_text(ctx, vic_char, strlen(vic_char), NK_TEXT_RIGHT | NK_TEXT_ALIGN_CENTERED);
+		}
+		nk_group_end(ctx);
+	}
+	nk_end(ctx);
+
+	if (nk_begin(ctx, "kill_player_info", nk_rect(10, 310, width * 0.15, width * 0.09 + 65),
 		NK_WINDOW_NO_SCROLLBAR))
 	{
 		static const float kill_ratio[] = { 0.3f,0.3f, 0.4f };  /* 0.3 + 0.4 + 0.3 = 1 */
@@ -99,7 +138,7 @@ static void ui_killphase_header(struct nk_context *ctx, struct media *media, int
 		nk_label(ctx, round_char, NK_TEXT_RIGHT | NK_TEXT_ALIGN_CENTERED);
 		nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
 
-		nk_layout_row(ctx, NK_DYNAMIC, width * 0.07,3, kill_ratio);
+		nk_layout_row(ctx, NK_DYNAMIC, width * 0.07, 3, kill_ratio);
 
 		nk_spacing(ctx, 1);
 		if (nk_group_begin(ctx, "icons", NK_WINDOW_NO_SCROLLBAR)) { // column 1
@@ -361,8 +400,9 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 	vector<ArcheType> ordered_types;
 	vector<int> curKills = leaderBoard->currentKills;
 	vector<int> curDeaths = leaderBoard->currentDeaths;
-	static const float lbratio[] = { 0.20f, 0.08f, 0.02f, 0.30f, 0.2f, 0.2f };  /* 0.3 + 0.4 + 0.3 = 1 */
-	static const float globalLBratio[] = { 0.20f, 0.08f, 0.02f, 0.30f, 0.20f, 0.20f };  /* 0.3 + 0.4 + 0.3 = 1 */
+	static const float lbratio[] = { 0.30f, 0.08f, 0.02f, 0.10f, 0.1f, 0.4f };  /* 0.3 + 0.4 + 0.3 = 1 */
+	static const float globalLBratio[] = { 0.30f, 0.08f, 0.02f, 0.10f, 0.10f, 0.40f };  /* 0.3 + 0.4 + 0.3 = 1 */
+	static const float subTitleratio[] = { 0.30f, 0.70f };  /* 0.3 + 0.4 + 0.3 = 1 */
 	static const float btnRatio[] = { 0.97f, 0.03f };
 	// make parallel arrays 'kills' & 'ordered_usernames' having same index for players based on number of kills
 	for (int i = 0; i < GAME_SIZE; i++)
@@ -385,7 +425,8 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 	{
 		ui_prepare_title(ctx, media, width, height, "Summary", game);
 		nk_style_set_font(ctx, &(media->font_64->handle));
-		nk_layout_row_dynamic(ctx, height*0.15, 1);
+		nk_layout_row(ctx, NK_DYNAMIC, height*0.15, 2, subTitleratio);
+		nk_spacing(ctx, 1);
 		nk_label(ctx, "Round Summary", NK_TEXT_LEFT | NK_TEXT_ALIGN_CENTERED);
 		nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
 		nk_layout_row(ctx, NK_DYNAMIC, width*0.02, 6, lbratio);
@@ -426,7 +467,8 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 			nk_text(ctx, player_death, strlen(player_death), NK_TEXT_LEFT);
 		}
 		nk_style_set_font(ctx, &(media->font_64->handle));
-		nk_layout_row_dynamic(ctx, height*0.2, 1);
+		nk_layout_row(ctx, NK_DYNAMIC, height*0.2, 2, subTitleratio);
+		nk_spacing(ctx, 1);
 		nk_label(ctx, "Overall Summary", NK_TEXT_LEFT | NK_TEXT_ALIGN_CENTERED);
 		nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
 		nk_layout_row(ctx, NK_DYNAMIC, width*0.02, 6, globalLBratio);
@@ -534,7 +576,7 @@ ui_skill_group(struct nk_context *ctx, struct media *media, int width, int heigh
 				string p = "Cost: " + to_string(prices[i]);
 				const char * price = p.c_str();
 				if (nk_group_begin(ctx, skill_string, NK_WINDOW_NO_SCROLLBAR)) { // column 1
-					nk_layout_row_static(ctx, height*0.2, height*0.3, 1); // nested row
+					nk_layout_row_static(ctx, height*0.2, height*0.2, 1); // nested row
 					if (type == WARRIOR) {
 						nk_image(ctx, media->warrior_skills[i]);
 					}
@@ -729,6 +771,8 @@ static  void
 prepare_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, LeaderBoard* leaderBoard, vector<string> usernames, vector<ArcheType> archetypes, ClientGame * game, guiStatus & gStatuses) {
 	
 	set_style(ctx, THEME_BLACK);
+	ctx->style.text.color = nk_rgba(235, 255, 235, 255);
+	ctx->style.button.text_normal = nk_rgba(235, 255, 235, 255);
 	ctx->style.window.fixed_background = nk_style_item_image(media->prepare_background);
 	if (gStatuses.currPrepareLayout == 0) {
 		ui_round_results(ctx, media, leaderBoard, usernames, archetypes, width, height, game, gStatuses);

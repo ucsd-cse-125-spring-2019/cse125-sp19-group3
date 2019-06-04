@@ -186,7 +186,7 @@ void ClientScene::initialize_UI(GLFWwindow* window) {
 	media.points = icon_load("../icon/trophy.png");
 	media.gold = icon_load("../icon/gold.png");
 	media.lobby_background = icon_load("../icon/lobbybg.jpg");
-	media.prepare_background = icon_load("../icon/preparebg.png");
+	media.prepare_background = icon_load("../icon/preparebg.jpeg");
 	media.mage_skills[2] = icon_load("../icon/skills/evade.png");
 	media.mage_skills[3] = icon_load("../icon/skills/projectile.png");
 	media.mage_skills[1] = icon_load("../icon/skills/mage-aoe.png");
