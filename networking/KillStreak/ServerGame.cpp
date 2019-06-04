@@ -643,7 +643,6 @@ int ServerGame::updatePreparePhase() {
 
 				return KILL_PHASE;	// dont care about any other packets;  prep phase over start kill!
 			}
-
 		}
 	}
 

@@ -542,10 +542,6 @@ void ClientGame::run() {
 	Window_static::initialize_objects(this, network, leaderBoard);
 	Window_static::initialize_UI(window);
 
-	// TODO: REMOVE ME ****
-	int counter = 0;
-	// TODO: REMOVE ME ****
-
 	// Loop while GLFW window should stay open
 	while (!glfwWindowShouldClose(window))
 	{
@@ -576,10 +572,6 @@ void ClientGame::run() {
 			Window_static::display_callback(window);
 			// Idle callback. Updating objects, etc. can be done here.
 			Window_static::idle_callback();
-
-			// TODO: REMOVE ME ****
-			if (counter % 1000 == 0) logger()->debug("ROUND {}", round_number);
-			// TODO: REMOVE ME ****
 
 			// update all timers based on time elapsed
 			auto end = Clock::now();
