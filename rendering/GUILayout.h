@@ -521,7 +521,7 @@ static void ui_shop_header(struct nk_context *ctx, struct media *media, int widt
 static void 
 ui_skill_group(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, ClientGame * game) {
 	for (int i = 0; i < 4; i++) {
-		if (nk_group_begin(ctx, skill_string[i], NK_WINDOW_NO_SCROLLBAR)) { // column 1
+		/*if (nk_group_begin(ctx, skill_string[i], NK_WINDOW_NO_SCROLLBAR)) { // column 1
 			nk_layout_row_dynamic(ctx, width *0.05, 1); // nested row
 			if (type == WARRIOR) {
 				nk_image(ctx, media->warrior_skills[i]);
@@ -544,7 +544,7 @@ ui_skill_group(struct nk_context *ctx, struct media *media, int width, int heigh
 				//Buying
 			}
 		}
-		nk_group_end(ctx);
+		nk_group_end(ctx);*/
 	}
 }
 

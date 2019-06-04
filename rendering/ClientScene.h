@@ -85,7 +85,7 @@ private:
 	ClientGame * game;
 	ClientNetwork * network;
 	vector<Transform *> env_objs;
-	vector<Skill> personal_skills;
+	//vector<Skill> personal_skills;
 	vector<nanoseconds> skill_timers;
 	nanoseconds respawn_timer;		// when should client respawn from death
 	nanoseconds animation_timer;
