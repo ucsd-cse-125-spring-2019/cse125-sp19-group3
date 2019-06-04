@@ -519,68 +519,62 @@ static void ui_shop_header(struct nk_context *ctx, struct media *media, int widt
 }
 
 static void 
-ui_skill_group(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, ClientGame * game) {
-	for (int i = 0; i < 4; i++) {
-		/*if (nk_group_begin(ctx, skill_string[i], NK_WINDOW_NO_SCROLLBAR)) { // column 1
-			nk_layout_row_dynamic(ctx, width *0.05, 1); // nested row
-			if (type == WARRIOR) {
-				nk_image(ctx, media->warrior_skills[i]);
-			}
-			else if (type == MAGE) {
-				nk_image(ctx, media->mage_skills[i]);
-			}
-			else if (type == ASSASSIN) {
-				nk_image(ctx, media->assassin_skills[i]);
+ui_skill_group(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player,
+	vector<int> prices, int row, char * name) {
+	ArcheType type = player->modelType;
+	static const float skratio[] = { 0.35f, 0.3f, 0.35f };  /* 0.3 + 0.4 + 0.3 = 1 */
+	nk_layout_row_dynamic(ctx, height*0.4,1);
+	if (nk_group_begin(ctx, name, NK_WINDOW_NO_SCROLLBAR)) {
+		nk_layout_row(ctx, NK_DYNAMIC, height*0.4, 3, skratio);
+		for (int j = 0; j < 3; j++) {
+			int i = j / 2 + row*2;
+			if (j % 2 == 0) {
+				Skill & skill = player->availableSkills[i];
+				const char * skill_string = skill.skillName.c_str();
+				string p = "Cost: " + to_string(prices[i]);
+				const char * price = p.c_str();
+				if (nk_group_begin(ctx, skill_string, NK_WINDOW_NO_SCROLLBAR)) { // column 1
+					nk_layout_row_static(ctx, 250, 250, 1); // nested row
+					if (type == WARRIOR) {
+						nk_image(ctx, media->warrior_skills[i]);
+					}
+					else if (type == MAGE) {
+						nk_image(ctx, media->mage_skills[i]);
+					}
+					else if (type == ASSASSIN) {
+						nk_image(ctx, media->assassin_skills[i]);
+					}
+					else {
+						nk_image(ctx, media->king_skills[i]);
+					}
+					nk_layout_row_dynamic(ctx, 32, 1);
+					nk_label(ctx, skill_string, NK_TEXT_ALIGN_CENTERED);
+					nk_layout_row_dynamic(ctx, 32, 1);
+					nk_label(ctx, price, NK_TEXT_ALIGN_CENTERED);
+					nk_layout_row_dynamic(ctx, 32, 1);
+					if (nk_button_label(ctx, "upgrade")) {
+						//Buying
+					}
+				}
+				nk_group_end(ctx);
 			}
 			else {
-				nk_image(ctx, media->king_skills[i]);
+				nk_spacing(ctx, 1);
 			}
-			nk_layout_row_dynamic(ctx, 32, 1);
-			nk_label(ctx, skill_string[i], NK_TEXT_ALIGN_CENTERED);
-			nk_layout_row_dynamic(ctx, 32, 1);
-			nk_label(ctx, prices[i], NK_TEXT_ALIGN_CENTERED);
-			nk_layout_row_dynamic(ctx, 32, 1);
-			if (nk_button_label(ctx, "upgrade")) {
-				//Buying
-			}
+
 		}
-		nk_group_end(ctx);*/
 	}
+	nk_group_end(ctx);
 }
 
 static void ui_skills_shop(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, ClientGame * game) {
 	char* skill_string[4] = { "Cone AOE", "AOE", "Evade", "Projectile" };
-	char* prices[4] = { "Cost: 5", "Cost: 10", "Cost: 15", "Cost: 20" };
-	ArcheType type = player->modelType;
-	static const float skratio[] = { 0.25f, 0.25f, 0.25f,0.25f };  /* 0.3 + 0.4 + 0.3 = 1 */
-	if (nk_group_begin(ctx, "skillpurchase", NK_WINDOW_NO_SCROLLBAR)) {
-		nk_layout_row(ctx, NK_DYNAMIC, height*0.8, 4, skratio);
-		for (int i = 0; i < 4; i++) {
-			if (nk_group_begin(ctx, skill_string[i], NK_WINDOW_NO_SCROLLBAR)) { // column 1
-				nk_layout_row_dynamic(ctx, width *0.05, 1); // nested row
-				if (type == WARRIOR) {
-					nk_image(ctx, media->warrior_skills[i]);
-				}
-				else if (type == MAGE) {
-					nk_image(ctx, media->mage_skills[i]);
-				}
-				else if (type == ASSASSIN) {
-					nk_image(ctx, media->assassin_skills[i]);
-				}
-				else {
-					nk_image(ctx, media->king_skills[i]);
-				}
-				nk_layout_row_dynamic(ctx, 32, 1);
-				nk_label(ctx, skill_string[i], NK_TEXT_ALIGN_CENTERED);
-				nk_layout_row_dynamic(ctx, 32, 1);
-				nk_label(ctx, prices[i], NK_TEXT_ALIGN_CENTERED);
-				nk_layout_row_dynamic(ctx, 32, 1);
-				if (nk_button_label(ctx, "upgrade")) {
-					//Buying
-				}
-			}
-			nk_group_end(ctx);
-		}
+	//char* prices[4] = { "Cost: 5", "Cost: 10", "Cost: 15", "Cost: 20" };
+	vector<int> prices = { 5, 10, 15, 20 };
+	//ArcheType type = player->modelType;
+	if (nk_group_begin(ctx, "skill", NK_WINDOW_NO_SCROLLBAR)) {
+		ui_skill_group(ctx, media, width, height, player, prices, 0, "row 0");
+		ui_skill_group(ctx, media, width, height, player, prices, 1, "row 1");
 	}
 	nk_group_end(ctx);
 }
@@ -623,11 +617,13 @@ static void ui_shop(struct nk_context *ctx, struct media *media, int width, int 
 			ui_skills_shop(ctx, media, width, height, player, game);
 		}
 		else if (shop_category == 1) {
-			//ui_skills_shop(ctx, media, width, height, player, game);
+			ui_skills_shop(ctx, media, width, height, player, game);
 		}
 		else {
 			ui_skills_shop(ctx, media, width, height, player, game);
 		}
+
+
 	}
 	nk_end(ctx);
 
