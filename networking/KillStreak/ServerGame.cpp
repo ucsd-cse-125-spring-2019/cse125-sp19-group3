@@ -477,16 +477,18 @@ bool ServerGame::updateKillPhase() {
 		memcpy(&next_packet, &serverTickPacket, sizeof(serverTickPacket));
 
 		char * temp_data = next_packet.data;
+
 		// set first byte of data to players dead/alive state
 		memcpy(temp_data, &p_it->second->alive, sizeof(bool));
-
-		// set first byte of data to silenced
 		temp_data += sizeof(bool);
-		memcpy(temp_data, &p_it->second->silenced, sizeof(bool));
 
 		// set client gold after first byte
-		temp_data += sizeof(bool);
 		memcpy(temp_data, &p_it->second->gold, sizeof(int));
+		temp_data += sizeof(int);
+
+		// set first byte of data to silenced
+		memcpy(temp_data, &p_it->second->silenced, sizeof(bool));
+		temp_data += sizeof(bool);
 
 		network->sendToClient(client_id, next_packet);
 		p_it++;
@@ -509,7 +511,7 @@ bool ServerGame::updatePreparePhase() {
 		inputPackets.push_back(vector<ClientInputPacket*>());
 	}
 
-	// Drain all packets from all client inputs
+	// Drain all packets from all client boolinputs
 	for (auto client_data : client_data_list) {
 		int i = client_data->id;
 		ClientThreadQueue * q_ptr = client_data->q_ptr;
@@ -581,14 +583,13 @@ bool ServerGame::updatePreparePhase() {
 */
 void ServerGame::resetValuesPreKillPhase()
 {
-
 	// reset corresponding leaderboard data 
 	std::fill(leaderBoard->killStreaks.begin(),   leaderBoard->killStreaks.end(), 0);
 	std::fill(leaderBoard->currentKills.begin(),  leaderBoard->currentKills.end(), 0);
 	std::fill(leaderBoard->currentDeaths.begin(), leaderBoard->currentDeaths.end(), 0);
 
-	// TODO: What other values do we need to reset/update?
-
+	// reset scene data
+	scene->resetScene();
 }
 
 
@@ -651,8 +652,6 @@ ServerInputPacket ServerGame::createStartKillPhasePacket()
 	sgSize += leaderBoard_size;
 
 	// TODO: What else do we need to serialzie before next kill phase?
-
-
 
 	packet.packetType = START_KILL_PHASE;
 	packet.size = sgSize;
@@ -726,6 +725,13 @@ ServerInputPacket ServerGame::createServerTickPacket() {
 	memcpy(bufPtr, &client_gold, sizeof(int));
 	bufPtr += sizeof(int);
 	sgSize += sizeof(int);
+
+	// TODO: REMOVE ME!
+	if (client_gold != 0)
+	{
+		logger()->debug("Create tick packet serialized gold {}", client_gold);
+	}
+
 
 	// serialize if user silenced; default init the first byte (silenced)
 	bool silenced = false;

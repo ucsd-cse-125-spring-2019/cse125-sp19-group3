@@ -43,6 +43,7 @@ public:
 	bool isSilenced;
 	bool isAlive = true;
 	bool isEvading;
+	bool isInvincible = false;
 	bool warriorIsChargingServer = false;
 	int gold = 0;
 	vector<Skill> availableSkills;
