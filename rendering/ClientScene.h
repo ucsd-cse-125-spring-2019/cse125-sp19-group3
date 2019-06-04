@@ -63,6 +63,7 @@ public:
 	void renderKillPhase(GLFWwindow* window);
 	void renderLobbyPhase(GLFWwindow* window);
 	void initialize_UI(GLFWwindow* window);
+	void resetPreKillPhase();
 	bool checkInAnimation();
 private:
 	Audio audio;
@@ -119,6 +120,7 @@ public:
 	static void mouse_button_callback(GLFWwindow* win, int button, int action, int mods) { scene->mouse_button_callback(win, button, action, mods); };
 	static void handleInitScenePacket(char * data) { scene->handleInitScenePacket(data); };
 	static void handleServerTickPacket(char* data) { scene->handleServerTickPacket(data); };
+	static void resetPreKillPhase() { scene->resetPreKillPhase(); };
 };
 
 

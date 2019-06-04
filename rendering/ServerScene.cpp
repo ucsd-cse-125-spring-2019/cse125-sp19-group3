@@ -246,11 +246,9 @@ void ServerScene::resetScene()
 		serverSceneGraphMap[node_id]->enabled = true;
 
 		// clear remaining data
-		player.action_state = ACTION_MOVEMENT;
 		player.movementMode = idle;
 		player.animationMode = -1;
 		player.isEvading = false;
-		player.isPrepProjectile = false;
 
 		// clear projectiles
 		auto skillIter = skills.begin();
@@ -262,6 +260,7 @@ void ServerScene::resetScene()
 			skillIter = skills.erase(skillIter);
 		}
 	}
+	warriorIsCharging = false;
 }
 
 void ServerScene::update()

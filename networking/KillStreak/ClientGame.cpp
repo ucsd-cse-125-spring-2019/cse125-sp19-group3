@@ -357,7 +357,7 @@ void ClientGame::endPrepPhase()
 	// serialize gold (NOTE: ASSUMING GOLD UPDATED IN SCENE PLAYER OBJECT)
 
 
-	// serialzie skill levels
+	// serialize skill levels
 
 
 	// serialize investment 
@@ -406,11 +406,7 @@ void ClientGame::endPrepPhase()
 		q_lock->unlock();
 	}
 
-
-	// TODO: Deserialize data from end_prep_packet before starting kill phase
-
-
-	// deserialzie leaderboard & all player gold
+	// deserialzie leaderboard 
 	unsigned int sz = 0;
 	char* data = end_prep_packet->data;
 
@@ -419,7 +415,8 @@ void ClientGame::endPrepPhase()
 	leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
 	data += leaderBoard_size;
 
-
+	// reset scene 
+	Window_static::scene->resetPreKillPhase();
 
 	// server starting kill phase! 
 	currPhase = KILL;

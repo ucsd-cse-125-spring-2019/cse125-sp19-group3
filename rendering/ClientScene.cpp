@@ -112,6 +112,29 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network,
 		glm::scale(glm::mat4(1.0f), glm::vec3(5));
 }
 
+
+/*
+	Reset scene elements before kill phase.
+*/
+void ClientScene::resetPreKillPhase()
+{
+	// reset directional skill input
+	player.action_state = ACTION_MOVEMENT; 
+	player.isPrepProjectile = false;
+
+	// reset all timers
+	for (auto & timer : skill_timers) {
+		timer = nanoseconds::zero();
+	}
+	respawn_timer = nanoseconds::zero();
+	animation_timer = nanoseconds::zero();
+	skillDurationTimer = nanoseconds::zero();
+	evadeDurationTimer = nanoseconds::zero();
+	sprintDurationTimer = nanoseconds::zero();
+	isCharging = false;
+}
+
+
 void ClientScene::initialize_skills(ArcheType selected_type) {
 
 	unordered_map<unsigned int, Skill>* skill_map = new unordered_map<unsigned int, Skill>();
