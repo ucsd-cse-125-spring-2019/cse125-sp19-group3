@@ -273,6 +273,7 @@ int ClientGame::switchPhase() {
 			break;
 	}
 	setup_callbacks(currPhase);
+	Window_static::resetGUIStatus();
 	return 1;
 }
 

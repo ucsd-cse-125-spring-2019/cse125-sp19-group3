@@ -352,7 +352,7 @@ lobby_layout(struct nk_context *ctx, struct media *media, int width, int height,
 
 // order leaderboard by kills, most first
 static void ui_round_results(struct nk_context *ctx, struct media *media,
-	LeaderBoard* leaderBoard, vector<string> usernames, vector<ArcheType> archetypes, int width, int height, int & currPreparePage, ClientGame * game) {
+	LeaderBoard* leaderBoard, vector<string> usernames, vector<ArcheType> archetypes, int width, int height, ClientGame * game, guiStatus & guiS) {
 
 	// order kills, usernames, and archetypes by client with most kills first...
 	vector<int> kills;
@@ -472,7 +472,7 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 		NK_WINDOW_NO_SCROLLBAR| NK_WINDOW_BORDER)) {
 		nk_layout_row_static(ctx, height*0.1, height*0.1, 1);
 		if (nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_RIGHT)) {
-			currPreparePage = 1;
+			guiS.currPrepareLayout = 1;
 		}
 	}
 	nk_end(ctx);
@@ -484,7 +484,7 @@ static void ui_shop_header(struct nk_context *ctx, struct media *media, int widt
 	struct nk_style *s = &ctx->style;
 	nk_style_push_color(ctx, &s->window.background, nk_rgba(0, 0, 0, 0));
 	nk_style_push_style_item(ctx, &s->window.fixed_background, nk_style_item_color(nk_rgba(0, 0, 0, 0)));
-	if (nk_begin(ctx, "kill_header", nk_rect(10, 10, width * 0.15, width * 0.09 + 65),
+	if (nk_begin(ctx, "kill_header", nk_rect(10, height*0.15f, width * 0.15, width * 0.09 + 65),
 		NK_WINDOW_NO_SCROLLBAR))
 	{
 		static const float kill_ratio[] = { 0.3f,0.3f, 0.4f };  /* 0.3 + 0.4 + 0.3 = 1 */
@@ -492,7 +492,6 @@ static void ui_shop_header(struct nk_context *ctx, struct media *media, int widt
 		string vicPtsStr = std::to_string(leaderBoard->currPoints[player->player_id]);
 		const char * gold_char = goldStr.c_str();
 		const char * vic_char = vicPtsStr.c_str();
-
 		nk_layout_row(ctx, NK_DYNAMIC, width * 0.07, 3, kill_ratio);
 
 		nk_spacing(ctx, 1);
@@ -585,14 +584,60 @@ static void ui_skills_shop(struct nk_context *ctx, struct media *media, int widt
 	nk_group_end(ctx);
 }
 
-static void ui_shop(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, int & currPreparePage, ClientGame * game) {
+static void ui_bets_shop(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, ClientGame * game, guiStatus & guiS) {
+	char* skill_string[4] = { "Cone AOE", "AOE", "Evade", "Projectile" };
+	static const char * characterTypeStrings[] = { "HUMAN", "MAGE", "ASSASSIN","WARRIOR","KING" };
+	char* prices[4] = { "Cost: 5", "Cost: 10", "Cost: 15", "Cost: 20" };
+	static const float bet_ratio[] = { 0.34f, 0.33f, 0.33f };
+	static int op = 1;
+	ArcheType type = player->modelType;
+	if (nk_group_begin(ctx, "bets_shop", NK_WINDOW_NO_SCROLLBAR)) {
+		nk_layout_row(ctx, NK_DYNAMIC, height*0.5f, 3, bet_ratio);
+		for (int i = 1; i < 5; i++) {
+			if (i == type) continue;
+			if (nk_group_begin(ctx, characterTypeStrings[i], 0)) { // column 1
+				nk_layout_row_dynamic(ctx, width *0.20f, 1); // nested row
+
+				if (i == WARRIOR)
+					nk_image(ctx, media->warrior);
+				else if (i == MAGE)
+					nk_image(ctx, media->mage);
+				else if (i == ASSASSIN)
+					nk_image(ctx, media->assasin);
+				else
+					nk_image(ctx, media->king);
+				nk_layout_row_dynamic(ctx, 30, 1);
+				if (nk_option_label(ctx, characterTypeStrings[i], op == i)) op = static_cast<ArcheType>(i);
+
+			}
+			nk_group_end(ctx);
+		}
+		const char * player_id;
+		string s = "You are betting: " + std::to_string(guiS.betAmount) + " gold";
+		player_id = s.c_str();
+		nk_layout_row_static(ctx, 32, 0.6*width, 1);
+		nk_label(ctx, player_id, NK_TEXT_CENTERED);
+		nk_layout_row(ctx, NK_DYNAMIC, 65, 3, bet_ratio);
+		nk_spacing(ctx, 1);
+		nk_slider_int(ctx, 0, &guiS.betAmount, player->gold, 1);
+		nk_spacing(ctx, 1);
+		nk_layout_row(ctx, NK_DYNAMIC, height*0.05f, 3, bet_ratio);
+		nk_spacing(ctx, 1);
+		if (nk_button_label(ctx, "Bet!")) {
+			//TODO: SEND BET
+		}
+		nk_spacing(ctx, 1);
+	
+		}
+		nk_group_end(ctx);
+}
+
+static void ui_shop(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, ClientGame * game, guiStatus & gStatuses) {
 
 	if (nk_begin(ctx, "Shop_phase", nk_rect(0, 0, width, height),
 		NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BACKGROUND
 	))
 	{
-
-		static int shop_category = 0; // 0 for skills 1 for bet 2 for cheat
 		static const float ratio[] = { 0.35f, 0.3f, 0.35f };  /* 0.3 + 0.4 + 0.3 = 1 */
 
 
@@ -604,26 +649,28 @@ static void ui_shop(struct nk_context *ctx, struct media *media, int width, int 
 		nk_spacing(ctx, 1);
 		if (nk_group_begin(ctx, "shop_selections", NK_WINDOW_NO_SCROLLBAR)) { // column 1
 
-			nk_layout_row_dynamic(ctx, 20, 1);
+			nk_layout_row_dynamic(ctx, 40, 1);
 			if (nk_button_label(ctx, "Skills")) {
-				shop_category = 0;
+				gStatuses.shopCategory = 0;
 			}
-			nk_layout_row_dynamic(ctx, 20, 1);
+			nk_layout_row_static(ctx, 30, 1, 1);
+			nk_layout_row_dynamic(ctx, 40, 1);
 			if (nk_button_label(ctx, "Bet")) {
-				shop_category = 1;
+				gStatuses.shopCategory = 1;
 			}
-			nk_layout_row_dynamic(ctx, 20, 1);
+			nk_layout_row_static(ctx, 30, 1, 1);
+			nk_layout_row_dynamic(ctx, 40, 1);
 			if (nk_button_label(ctx, "Cheat!")) {
-				shop_category = 2;
+				gStatuses.shopCategory = 2;
 			}
 		}
 		nk_group_end(ctx);
 
-		if (shop_category == 0) {
+		if (gStatuses.shopCategory == 0) {
 			ui_skills_shop(ctx, media, width, height, player, game);
 		}
-		else if (shop_category == 1) {
-			ui_skills_shop(ctx, media, width, height, player, game);
+		else if (gStatuses.shopCategory == 1) {
+			ui_bets_shop(ctx, media, width, height, player, game, gStatuses);
 		}
 		else {
 			ui_skills_shop(ctx, media, width, height, player, game);
@@ -637,22 +684,22 @@ static void ui_shop(struct nk_context *ctx, struct media *media, int width, int 
 		NK_WINDOW_NO_SCROLLBAR| NK_WINDOW_BORDER)) {
 		nk_layout_row_static(ctx, height*0.1, height*0.1, 1);
 		if (nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_LEFT)) {
-			currPreparePage = 0;
+			gStatuses.currPrepareLayout = 0;
 		}
 	}
 	nk_end(ctx);
 }
 
 static  void
-prepare_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, LeaderBoard* leaderBoard, vector<string> usernames, vector<ArcheType> archetypes, ClientGame * game) {
-	static int curr = 0;// 0 for summary, 1 for shop
+prepare_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, LeaderBoard* leaderBoard, vector<string> usernames, vector<ArcheType> archetypes, ClientGame * game, guiStatus & gStatuses) {
+	
 	set_style(ctx, THEME_BLACK);
 	//ctx->style.window.fixed_background = nk_style_item_image(media->prepare_background);
-	if (curr == 0) {
-		ui_round_results(ctx, media, leaderBoard, usernames, archetypes, width, height, curr, game);
+	if (gStatuses.currPrepareLayout == 0) {
+		ui_round_results(ctx, media, leaderBoard, usernames, archetypes, width, height, game, gStatuses);
 	}
 	else {
 		ui_shop_header(ctx, media, width, height,  player, leaderBoard);
-		ui_shop(ctx, media, width, height, player, curr, game);
+		ui_shop(ctx, media, width, height, player, game, gStatuses);
 	}
 }
