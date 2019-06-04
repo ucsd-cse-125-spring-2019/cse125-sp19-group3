@@ -479,7 +479,8 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 }
 
 
-static void ui_shop_header(struct nk_context *ctx, struct media *media, int width, int height, int gold, int victory_points) {
+static void ui_shop_header(struct nk_context *ctx, struct media *media, int width, int height, 
+	ScenePlayer * player, LeaderBoard * leaderBoard) {
 	struct nk_style *s = &ctx->style;
 	nk_style_push_color(ctx, &s->window.background, nk_rgba(0, 0, 0, 0));
 	nk_style_push_style_item(ctx, &s->window.fixed_background, nk_style_item_color(nk_rgba(0, 0, 0, 0)));
@@ -487,8 +488,8 @@ static void ui_shop_header(struct nk_context *ctx, struct media *media, int widt
 		NK_WINDOW_NO_SCROLLBAR))
 	{
 		static const float kill_ratio[] = { 0.3f,0.3f, 0.4f };  /* 0.3 + 0.4 + 0.3 = 1 */
-		string goldStr = std::to_string(gold);
-		string vicPtsStr = std::to_string(victory_points);
+		string goldStr = std::to_string(player->gold);
+		string vicPtsStr = std::to_string(leaderBoard->currPoints[player->player_id]);
 		const char * gold_char = goldStr.c_str();
 		const char * vic_char = vicPtsStr.c_str();
 
@@ -522,7 +523,7 @@ static void
 ui_skill_group(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player,
 	vector<int> prices, int row, char * name) {
 	ArcheType type = player->modelType;
-	static const float skratio[] = { 0.35f, 0.3f, 0.35f };  /* 0.3 + 0.4 + 0.3 = 1 */
+	static const float skratio[] = { 0.38f, 0.24f, 0.38f };  /* 0.3 + 0.4 + 0.3 = 1 */
 	nk_layout_row_dynamic(ctx, height*0.4,1);
 	if (nk_group_begin(ctx, name, NK_WINDOW_NO_SCROLLBAR)) {
 		nk_layout_row(ctx, NK_DYNAMIC, height*0.4, 3, skratio);
@@ -534,7 +535,7 @@ ui_skill_group(struct nk_context *ctx, struct media *media, int width, int heigh
 				string p = "Cost: " + to_string(prices[i]);
 				const char * price = p.c_str();
 				if (nk_group_begin(ctx, skill_string, NK_WINDOW_NO_SCROLLBAR)) { // column 1
-					nk_layout_row_static(ctx, 250, 250, 1); // nested row
+					nk_layout_row_static(ctx, height*0.2, height*0.3, 1); // nested row
 					if (type == WARRIOR) {
 						nk_image(ctx, media->warrior_skills[i]);
 					}
@@ -548,9 +549,14 @@ ui_skill_group(struct nk_context *ctx, struct media *media, int width, int heigh
 						nk_image(ctx, media->king_skills[i]);
 					}
 					nk_layout_row_dynamic(ctx, 32, 1);
-					nk_label(ctx, skill_string, NK_TEXT_ALIGN_CENTERED);
+					nk_label(ctx, skill_string, NK_TEXT_ALIGN_LEFT);
 					nk_layout_row_dynamic(ctx, 32, 1);
-					nk_label(ctx, price, NK_TEXT_ALIGN_CENTERED);
+					nk_label(ctx, "description of the skill | description of the skill", NK_TEXT_ALIGN_LEFT);
+					nk_layout_row_dynamic(ctx, 32, 1);
+					nk_label(ctx, price, NK_TEXT_ALIGN_LEFT);
+					nk_layout_row_dynamic(ctx, 32, 1);
+					string level = "Current Level: " + to_string(skill.level);
+					nk_label(ctx, level.c_str(), NK_TEXT_ALIGN_LEFT);
 					nk_layout_row_dynamic(ctx, 32, 1);
 					if (nk_button_label(ctx, "upgrade")) {
 						//Buying
@@ -646,7 +652,7 @@ prepare_layout(struct nk_context *ctx, struct media *media, int width, int heigh
 		ui_round_results(ctx, media, leaderBoard, usernames, archetypes, width, height, curr, game);
 	}
 	else {
-		ui_shop_header(ctx, media, width, height,  10, 20);
+		ui_shop_header(ctx, media, width, height,  player, leaderBoard);
 		ui_shop(ctx, media, width, height, player, curr, game);
 	}
 }
