@@ -121,45 +121,6 @@ static void ui_killphase_header(struct nk_context *ctx, struct media *media, int
 		nk_group_end(ctx);
 	}
 	nk_end(ctx);
-
-	if (nk_begin(ctx, "kill_player_info", nk_rect(10, 310, width * 0.15, width * 0.09 + 65),
-		NK_WINDOW_NO_SCROLLBAR))
-	{
-		static const float kill_ratio[] = { 0.3f,0.3f, 0.4f };  /* 0.3 + 0.4 + 0.3 = 1 */
-		string roundStr = "ROUND: " + std::to_string(roundnum);
-		const char * round_char = roundStr.c_str();
-
-		string goldStr = std::to_string(player->gold);
-		string vicPtsStr = std::to_string(leaderBoard->currPoints[player->player_id]);
-		const char * gold_char = goldStr.c_str();
-		const char * vic_char = vicPtsStr.c_str();
-		nk_style_set_font(ctx, &(media->font_64->handle));
-		nk_layout_row_dynamic(ctx, 65, 1);
-		nk_label(ctx, round_char, NK_TEXT_RIGHT | NK_TEXT_ALIGN_CENTERED);
-		nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
-
-		nk_layout_row(ctx, NK_DYNAMIC, width * 0.07, 3, kill_ratio);
-
-		nk_spacing(ctx, 1);
-		if (nk_group_begin(ctx, "icons", NK_WINDOW_NO_SCROLLBAR)) { // column 1
-			nk_layout_row_static(ctx, 48, 48, 1);
-			nk_image(ctx, media->gold);
-			nk_layout_row_static(ctx, 20, 1, 1);
-			nk_layout_row_static(ctx, 48, 48, 1);
-			nk_image(ctx, media->points);
-		}
-		nk_group_end(ctx);
-
-		if (nk_group_begin(ctx, "nums", NK_WINDOW_NO_SCROLLBAR)) { // column 1
-			nk_layout_row_static(ctx, 48, 48, 1);
-			nk_label(ctx, gold_char, NK_TEXT_RIGHT | NK_TEXT_ALIGN_CENTERED);
-			nk_layout_row_static(ctx, 20, 1, 1);
-			nk_layout_row_static(ctx, 48, 48, 1);
-			nk_text(ctx, vic_char, strlen(vic_char), NK_TEXT_RIGHT | NK_TEXT_ALIGN_CENTERED);
-		}
-		nk_group_end(ctx);
-	}
-	nk_end(ctx);
 	nk_style_pop_color(ctx);
 	nk_style_pop_style_item(ctx);
 }
