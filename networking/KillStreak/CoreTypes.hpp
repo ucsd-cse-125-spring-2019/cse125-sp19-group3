@@ -8,14 +8,12 @@
 #define NULL_POINT				Point(0.0,0.0,0.0)
 
 #define SERVER_TICK_PACKET_SIZE 10000
-
 #define END_PHASE_PACKET_SIZE   512
 
-
-#define KILLPHASE_TIME			15			// duration of kill phase
-#define PREPHASE_TIME			10			// duration of prepare phase
+#define KILLPHASE_TIME			10			// duration of kill phase
+#define PREPHASE_TIME			15			// duration of prepare phase
 #define ENDGAME_TIME			5			// duration of end of game 
-#define TOTAL_ROUNDS			2			// total rounds to be played in game
+#define TOTAL_ROUNDS			3			// total rounds to be played in game
 
 
 
