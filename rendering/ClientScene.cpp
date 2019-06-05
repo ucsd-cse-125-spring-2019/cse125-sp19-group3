@@ -151,6 +151,9 @@ void ClientScene::resetPreKillPhase()
 	}
 	// reset evade
 	clientSceneGraphMap[player.root_id]->isEvading = false;
+
+	// reset invisibility
+	clientSceneGraphMap[player.root_id]->isInvisible = false;
 }
 
 
@@ -851,6 +854,7 @@ void ClientScene::handleServerTickPacket(char * data) {
 	memcpy(&isCharging, data, sizeof(bool));
 	sz += sizeof(bool);
 	data += sizeof(bool);
+	clientSceneGraphMap[player.root_id]->isCharging = isCharging;
 
 	//deserialize animation mode
     unordered_map<unsigned int, vector<int>> animationModes;

@@ -36,6 +36,10 @@ unsigned int Transform::serialize(char * data) {
 	currLoc += sizeof(bool);
 	size += sizeof(bool);
 
+	memcpy(currLoc, &isInvisible, sizeof(bool));
+	currLoc += sizeof(bool);
+	size += sizeof(bool);
+
 	//copying over the Transfromation Matrix
 	memcpy(currLoc, &(M[0][0]), sizeof(glm::mat4));
 	currLoc += sizeof(glm::mat4);
@@ -94,9 +98,14 @@ unsigned int Transform::deserializeAndUpdate(char * data, Shader* particleShader
 	size += sizeof(bool);
 	currLoc += sizeof(bool);
 
+	memcpy(&isInvisible, currLoc, sizeof(bool));
+	size += sizeof(bool);
+	currLoc += sizeof(bool);
+
 	memcpy(&(newMat[0][0]), currLoc, sizeof(glm::mat4));
 	size += sizeof(glm::mat4);
 	currLoc += sizeof(glm::mat4);
+
 	//memcopy model ids size
 	memcpy(&numModels, currLoc, sizeof(unsigned int));
 	size += sizeof(unsigned int);
@@ -159,10 +168,17 @@ void Transform::draw( std::unordered_map<unsigned int, ModelData> &models, const
 			models[model_id].shader->use();
 			models[model_id].shader->setInt("isEvading", isEvading ? 1 : 0);
 			models[model_id].shader->setInt("isInvincible", isInvincible ? 1 : 0);
+			models[model_id].shader->setInt("isCharging", isCharging ? 1 : 0);
+			models[model_id].shader->setInt("isInvisible", isInvisible ? 1 : 0);
 			models[model_id].shader->setInt("UseTex", 1);
+			if (isInvisible) {
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				glEnable(GL_BLEND);
+			}
 			glBindTexture(GL_TEXTURE_2D, models[model_id].texID);
 			models[model_id].model->draw(models[model_id].shader, childMtx, viewProjMtx);
 			glBindTexture(GL_TEXTURE_2D, 0);
+			glDisable(GL_BLEND);
 		}
 		//TODO: CHANGE THIS LATER
 		if (model_id == 200) {
