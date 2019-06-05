@@ -520,8 +520,8 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 
 			// TODO: SWITCH OUT WITH REAL SUMMARY PACKETS
 			nk_text(ctx, ordered_usernames[i].c_str(), strlen(ordered_usernames[i].c_str()), NK_TEXT_LEFT);
-			nk_text(ctx, player_point, strlen(player_point), NK_TEXT_LEFT); // points
 			nk_text(ctx, player_gold, strlen(player_gold), NK_TEXT_LEFT);   // gold
+			nk_text(ctx, player_point, strlen(player_point), NK_TEXT_LEFT); // points
 		}
 
 	}

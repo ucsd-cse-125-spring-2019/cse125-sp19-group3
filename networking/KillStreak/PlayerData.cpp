@@ -34,15 +34,44 @@ unordered_map<string, ArcheType> archetype_map = {
 */
 void LeaderBoard::awardRoundPoints(int round_number)
 {
+	vector<int> rankings(GAME_SIZE,0);		// indexed by player_id, holds ranking of last round 
 	vector<int> currKills = currentKills;	// make copy of rounds kill vector
-	for (int rank = 1; rank <= GAME_SIZE; rank++)
-	{
-		// get player id (index in vector) with most kills from remaining list
-		auto it = std::max_element(currKills.begin(), currKills.end());
-		int player_id = it - currKills.begin();
 
-		// award points based on rank
+	// get max kills from list
+	auto it = std::max_element(currKills.begin(), currKills.end());		
+	int max_kills = *it;				
+
+	// assign ranking to each player (insert into rankings vector)
+	int current_rank = 1;
+	int total_assigned = 0;
+	while (total_assigned < GAME_SIZE)
+	{
+		for (int i = 0; i < GAME_SIZE; i++)
+		{
+			if (currentKills[i] == max_kills)	// this player has the max kills
+			{
+				rankings[i] = current_rank;
+				total_assigned++;
+			}
+		}
+
+		// set all current max kills to -1
+		replace(currKills.begin(), currKills.end(), max_kills, -1);	
+
+		// get next max	& ranking
+		it = std::max_element(currKills.begin(), currKills.end());	
+		max_kills = *it;
+		current_rank++;	
+	}
+
+
+	// award points based on ranking
+	for (int client_id = 0; client_id < GAME_SIZE; client_id++)
+	{
 		int points = 0;
+		int rank = rankings[client_id];
+
+		// award initial points
 		switch (rank)
 		{
 			case FIRST : points = 6; break;
@@ -53,15 +82,10 @@ void LeaderBoard::awardRoundPoints(int round_number)
 		}
 
 		// multiply round points based on rank  
-		switch (round_number)
-		{
-			case ROUND_3 || ROUND_4: points *= 1.5; break;
-			case ROUND_5: points *= 2; break;
-			default: break;
-		}
-		
-		currPoints[player_id] = points; // add to points vector on leaderboard
-		*it = -1;						// reset current max to -1
+		if (round_number == ROUND_3 || round_number == ROUND_4) points *= 1.5;
+		else if (round_number == ROUND_5) points += 2;
+
+		currPoints[client_id] = currPoints[client_id] + points; // add to points vector on leaderboard
 	}
 }
 
