@@ -347,6 +347,7 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 	player_data->currLoseStreak += 1;
 	leaderBoard->resetKillStreak(dead_player_id);	// reset kill streak
 	leaderBoard->incDeath(dead_player_id);			// inc death count
+	leaderBoard->deaths_this_tick += 1;				// inc total deaths this tick
 
 	// award extra gold for large lose streak
 	if (player_data->currLoseStreak > GOLD_MULTIPLIER) player_data->gold += LOSESTREAK_BONUS;

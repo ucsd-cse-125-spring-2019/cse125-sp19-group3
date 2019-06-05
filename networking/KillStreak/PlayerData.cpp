@@ -75,6 +75,7 @@ void LeaderBoard::incDeath(unsigned int player_id)
 }
 
 
+/*
 vector<int>* LeaderBoard::roundSummary() {
 	// get the ranking result of this round
 	vector<int> temp(currentKills);
@@ -101,6 +102,7 @@ vector<int>* LeaderBoard::roundSummary() {
 
 	return rankings;
 }
+*/
 
 
 // Parse all archtypes from config and upload values to skill_map for each corresponding type.

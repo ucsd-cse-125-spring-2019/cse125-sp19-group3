@@ -108,8 +108,8 @@ unsigned int Serialization::serializeLeaderBoard(char* lb_data, LeaderBoard* lea
 		lb_data += sizeof(int);
 	}
 	
-	memcpy(lb_data, &leaderBoard->prizeChange, sizeof(float));
-	size += sizeof(float);
+	memcpy(lb_data, &leaderBoard->deaths_this_tick, sizeof(int));
+	size += sizeof(int);
 
 	return size;
 }
@@ -158,8 +158,16 @@ unsigned int Serialization::deserializeLeaderBoard(char* lb_data, LeaderBoard* l
 		sz += sizeof(int);
 	}
 
-	memcpy(&leaderBoard->prizeChange, lb_data, sizeof(float));
-	sz += sizeof(float);
+	memcpy(&leaderBoard->deaths_this_tick, lb_data, sizeof(int));
+	sz += sizeof(int);
+
+	// TODO: Serialize who killed who...
+	// make a vector of pairs? first index killer id second index dead player id
+	// serialize by putting id's --> 0120 (0 killed 1, 2 killed 0)
+	// ***died_this_tick should be used to know how many numbers to deserialize
+	// 1 died_this_tick means deserialzie two ints...
+	// 2 died_this_tick means deseralize four ints... etc..
+
 
 	return sz;
 }
