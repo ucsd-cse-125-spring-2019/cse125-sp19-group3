@@ -70,6 +70,7 @@ unsigned int Transform::serialize(char * data) {
 unsigned int Transform::deserializeAndUpdate(char * data, Shader* particleShader, GLuint particleTexture) {
 	unsigned int numModels, numChilds;
 	unsigned int size = 0;
+	glm::mat4 newMat(1.0f);
 	char * currLoc = data;
 	// clear all existing model_ids and children
 	model_ids.clear();
@@ -93,11 +94,9 @@ unsigned int Transform::deserializeAndUpdate(char * data, Shader* particleShader
 	size += sizeof(bool);
 	currLoc += sizeof(bool);
 
-	memcpy(&(M[0][0]), currLoc, sizeof(glm::mat4));
+	memcpy(&(newMat[0][0]), currLoc, sizeof(glm::mat4));
 	size += sizeof(glm::mat4);
 	currLoc += sizeof(glm::mat4);
-
-
 	//memcopy model ids size
 	memcpy(&numModels, currLoc, sizeof(unsigned int));
 	size += sizeof(unsigned int);
@@ -123,11 +122,10 @@ unsigned int Transform::deserializeAndUpdate(char * data, Shader* particleShader
 		children_ids.insert(childId);
 	}
 
+	setDestination(newMat);
 
 	if (!particle_effect)
 		particle_effect = new Particles( particleTexture, particleShader, { M[3][0], M[3][1], M[3][2] });
-	else
-		particle_effect->update({ M[3][0], M[3][1], M[3][2] });
 	return size;
 }
 
@@ -256,4 +254,30 @@ bool Transform::isCollided(glm::vec3 forwardVector, unordered_map<unsigned int,f
 
 void Transform::update() {
 	M = translation * rotation * scale;
+}
+
+void Transform::clientUpdate() {
+	glm::vec3 currTranslation = { M[3][0], M[3][1], M[3][2] };
+	if (glm::length(destination - currTranslation) > 0.2f) {
+		speed = glm::distance(destination, currTranslation) *0.89f;
+		currTranslation = currTranslation + speed * direction;
+	}
+	M = glm::translate(glm::mat4(1),currTranslation) * rotation * scale;
+	if(particle_effect)
+		particle_effect->update(currTranslation);
+}
+
+void Transform::setDestination(glm::mat4 & updatedM) {
+	glm::vec3 dest = { updatedM[3][0], updatedM[3][1], updatedM[3][2] };
+	glm::vec3 currTranslation = { M[3][0], M[3][1], M[3][2] };
+	glm::vec3 scaleVec = { glm::length(glm::vec3(updatedM[0])), glm::length(glm::vec3(updatedM[1])), glm::length(glm::vec3(updatedM[2])) };
+	rotation = { updatedM[0] / scaleVec[0], updatedM[1] / scaleVec[1], updatedM[2] / scaleVec[2], {0,0,0,1} };
+	scale = glm::scale(glm::mat4(1.0f), scaleVec);
+	if (glm::length(dest - currTranslation) > 0.2f) {
+		destination = dest;
+		float dist = glm::distance(destination, currTranslation);
+		speed = dist;
+		direction = glm::normalize(destination - currTranslation);
+	}
+	M = glm::translate(glm::mat4(1), currTranslation) * rotation * scale;
 }

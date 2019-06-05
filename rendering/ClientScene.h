@@ -35,7 +35,6 @@ public:
 	Camera * camera;
 	int width;
 	int height;
-	glm::vec3 initCamPos;
 	std::unordered_map<unsigned int, Transform *> clientSceneGraphMap;
 	vector<ArcheType> archetypes;	// list of all player archetypes
 	vector<string> usernames;		// list of all player usernames ordered by index of client id on server
