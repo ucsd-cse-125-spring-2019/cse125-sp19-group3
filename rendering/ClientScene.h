@@ -30,6 +30,8 @@
 #define CIRCLE_VERTEX_SHADER_PATH "../shaders/circleshader.vert"
 #define CIRCLE_FRAGMENT_SHADER_PATH "../shaders/circleshader.frag"
 
+#define MAX_KILL_UPDATES 3
+
 class ClientScene {
 public:
 	Camera * camera;

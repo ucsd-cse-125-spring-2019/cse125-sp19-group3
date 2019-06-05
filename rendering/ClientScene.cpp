@@ -54,6 +54,7 @@ void ClientScene::resetGUIStatus() {
 	guiStatuses.betAmount = 0;
 	guiStatuses.currPrepareLayout = 0;
 	guiStatuses.shopCategory = 0;
+	guiStatuses.killUpdates.clear();
 }
 
 void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network, LeaderBoard* leaderBoard)
@@ -888,6 +889,24 @@ void ClientScene::handleServerTickPacket(char * data) {
 	leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
 	data += leaderBoard_size;
 
+	while (!leaderBoard->kill_map.empty()) {
+		int killer_id = leaderBoard->kill_map.front();
+		leaderBoard->kill_map.pop_front();
+		int dead_id = leaderBoard->kill_map.front();
+		leaderBoard->kill_map.pop_front();
+
+		string killername = usernames[killer_id];
+		string deadname = usernames[dead_id];
+		string info = killername + " just crashed " + deadname + "!";
+		if (guiStatuses.killUpdates.size() < MAX_KILL_UPDATES) {
+			guiStatuses.killUpdates.push_front(info);
+		}
+		else {
+			guiStatuses.killUpdates.pop_back();
+			guiStatuses.killUpdates.push_front(info);
+		}
+	}
+	
 	if (isCharging && (leaderBoard->currentKills[player.player_id] > currKill)) 
 		skill_timers[DIR_SKILL_INDEX] = nanoseconds::zero();	// reset cooldown when kill someone using charge
    

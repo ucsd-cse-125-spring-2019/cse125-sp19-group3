@@ -251,13 +251,13 @@ static void ui_kill_info(struct nk_context *ctx, struct media *media, int width,
 	struct nk_style *s = &ctx->style;
 	nk_style_push_color(ctx, &s->window.background, nk_rgba(0, 0, 0, 0));
 	nk_style_push_style_item(ctx, &s->window.fixed_background, nk_style_item_color(nk_rgba(0, 0, 0, 0)));
-	if (nk_begin(ctx, "kill_info_updates", nk_rect(width * 0.85, 20, width * 0.15, height*0.3),
+	if (nk_begin(ctx, "kill_info_updates", nk_rect(width * 0.80, 20, width * 0.20, height*0.3),
 		NK_WINDOW_NO_SCROLLBAR))
 	{
 		std::deque<string>::iterator it = gStatus.killUpdates.begin();
 
 		while (it != gStatus.killUpdates.end()) {
-			nk_layout_row_static(ctx, 32, 32, 1);
+			nk_layout_row_static(ctx, 32, width * 0.20, 1);
 			const char * text = (*it++).c_str();
 			nk_label(ctx, text, NK_TEXT_LEFT);
 		}
@@ -266,6 +266,29 @@ static void ui_kill_info(struct nk_context *ctx, struct media *media, int width,
 	nk_style_pop_color(ctx);
 	nk_style_pop_style_item(ctx);
 }
+
+
+static void ui_kill_timer(struct nk_context *ctx, struct media *media, int width, int height, ClientGame * game) {
+	static const float ratio[] = { 0.3f, 0.4f , 0.3f};
+	nk_style_set_font(ctx, &(media->font_64->handle));
+	nk_layout_row(ctx, NK_DYNAMIC, 65, 2, ratio);
+	nk_spacing(ctx, 1);
+
+	if (game->prepareTimer > std::chrono::seconds::zero()) {
+		auto timeExpr = chrono::duration_cast<chrono::seconds>(game->prepareTimer);
+		string result_string = to_string(timeExpr.count());
+		char * result = new char[100];
+		strcpy(result, ("Time Left:  " + result_string).c_str());
+		//const char* result = ("Time Left:  " + result_string).c_str();
+		nk_text(ctx, result, strlen(result), NK_TEXT_CENTERED);
+	}
+	else {
+		game->switchPhase();
+	}
+	nk_spacing(ctx, 1);
+	nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
+}
+
 
 static void
 kill_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player,
@@ -277,7 +300,7 @@ kill_layout(struct nk_context *ctx, struct media *media, int width, int height, 
 	nk_style_push_style_item(ctx, &s->window.fixed_background, nk_style_item_color(nk_rgba(0, 0, 0, 0)));
 	if (nk_begin(ctx, "kill_title", nk_rect(0, 0, width, height),
 		NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BACKGROUND)) {
-		ui_prepare_title(ctx, media, width, height, "", game);
+		ui_kill_timer(ctx, media, width, height, game);
 	}
 	nk_end(ctx);
 	nk_style_pop_color(ctx);
@@ -349,6 +372,7 @@ lobby_layout(struct nk_context *ctx, struct media *media, int width, int height,
 		nk_layout_row(ctx, NK_DYNAMIC, 60, 3, ratio);
 		nk_spacing(ctx, 1);
 		if (nk_button_label(ctx, "Confirm")) {
+			buf[6] = '\0';
 			fprintf(stdout, "button pressed, curr selection: %s, curr buf: %s\n", characterTypeStrings[op], buf);
 			available = game->sendCharacterSelection(buf, op);
 			selected = true;
