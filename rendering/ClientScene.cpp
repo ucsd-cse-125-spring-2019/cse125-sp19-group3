@@ -458,6 +458,18 @@ void ClientScene::renderFinalPhase(GLFWwindow* window) {
 	glfwSwapBuffers(window);
 }
  
+ void renderSummaryPhase(GLFWwindow* window) {
+	 /* Input */
+	glfwPollEvents();
+	nk_glfw3_new_frame();
+	//prepare_layout(ctx, &media, ClientScene::width, ClientScene::height, &this->player, leaderBoard, usernames, archetypes, game, guiStatuses);
+
+
+	nk_glfw3_render(NK_ANTI_ALIASING_OFF, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+
+	// Swap buffers
+	glfwSwapBuffers(window);
+ }
 
 
 void ClientScene::renderLobbyPhase(GLFWwindow* window) {
