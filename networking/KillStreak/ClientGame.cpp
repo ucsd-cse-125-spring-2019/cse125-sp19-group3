@@ -378,7 +378,7 @@ void ClientGame::endPrepPhase()
 	*/
 
 	// serialize clients gold (from scenePlayer)
-	int curr_gold = Window_static::scene->getPlayerGold();
+	int curr_gold = Window_static::getPlayerGold();
 	memcpy(bufPtr, &curr_gold, sizeof(int));
 	bufPtr += sizeof(int);
 	sgSize += sizeof(int);
@@ -388,7 +388,7 @@ void ClientGame::endPrepPhase()
 
 	// get skills for player 
 	// BUG: This vector has size 0? Why?!?!?!
-	vector<Skill> curr_skills = Window_static::scene->getPlayerSkills();
+	vector<Skill> curr_skills = Window_static::getPlayerSkills();
 	//logger()->debug("PLAYER SKILLS SIZE: {}", curr_skills.size());
 
 	// serialize number of skills

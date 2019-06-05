@@ -129,8 +129,8 @@ static void ui_killphase_header(struct nk_context *ctx, struct media *media, int
 		string roundStr = "ROUND: " + std::to_string(roundnum);
 		const char * round_char = roundStr.c_str();
 
-		string goldStr = std::to_string(gold);
-		string vicPtsStr = std::to_string(victory_points);
+		string goldStr = std::to_string(player->gold);
+		string vicPtsStr = std::to_string(leaderBoard->currPoints[player->player_id]);
 		const char * gold_char = goldStr.c_str();
 		const char * vic_char = vicPtsStr.c_str();
 		nk_style_set_font(ctx, &(media->font_64->handle));
@@ -288,7 +288,7 @@ static void ui_prepare_title(struct nk_context *ctx, struct media *media, int wi
 static void
 kill_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player,
 	vector<nanoseconds> skill_timers, LeaderBoard* leaderBoard, vector<string> usernames, vector<ArcheType> archetypes,
-	int killTextDeterminant, ClientGame* game) {
+	int killTextDeterminant, ClientGame* game, guiStatus & gStatus) {
 	
 
 	if (game->prepareTimer > std::chrono::seconds::zero()) {
@@ -299,7 +299,7 @@ kill_layout(struct nk_context *ctx, struct media *media, int width, int height, 
 		ui_leaderboard(ctx, media, leaderBoard, usernames, archetypes);
 
 		ui_skills(ctx, media, width, height, player, skill_timers);
-		ui_killphase_header(ctx, media, width, height, 1, player->gold, 2);
+		ui_killphase_header(ctx, media, width, height, 1, player, leaderBoard, gStatus);
 	}
 	else {
 		game->switchPhase();

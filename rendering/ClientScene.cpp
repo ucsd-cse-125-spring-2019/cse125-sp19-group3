@@ -499,7 +499,7 @@ void ClientScene::renderKillPhase(GLFWwindow* window) {
 	/* GUI */
 
 
-	kill_layout(ctx, &media, width, height, & this->player, skill_timers, leaderBoard, usernames, archetypes, killTextDeterminant, game);
+	kill_layout(ctx, &media, width, height, & this->player, skill_timers, leaderBoard, usernames, archetypes, killTextDeterminant, game, guiStatuses);
 
 	/* ----------------------------------------- */
 
