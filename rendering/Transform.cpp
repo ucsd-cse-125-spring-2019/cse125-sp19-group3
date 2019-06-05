@@ -257,8 +257,8 @@ void Transform::clientUpdate() {
 void Transform::setDestination(glm::mat4 & updatedM) {
 	glm::vec3 dest = { updatedM[3][0], updatedM[3][1], updatedM[3][2] };
 	glm::vec3 currTranslation = { M[3][0], M[3][1], M[3][2] };
-	glm::vec3 scaleVec = { glm::length(glm::vec3(M[0])), glm::length(glm::vec3(M[1])), glm::length(glm::vec3(M[2])) };
-	rotation = { M[0] / scaleVec[0], M[1] / scaleVec[1], M[2] / scaleVec[2], {0,0,0,1} };
+	glm::vec3 scaleVec = { glm::length(glm::vec3(updatedM[0])), glm::length(glm::vec3(updatedM[1])), glm::length(glm::vec3(updatedM[2])) };
+	rotation = { updatedM[0] / scaleVec[0], updatedM[1] / scaleVec[1], updatedM[2] / scaleVec[2], {0,0,0,1} };
 	scale = glm::scale(glm::mat4(1.0f), scaleVec);
 	if (glm::length(dest - currTranslation) > 0.2f) {
 		destination = dest;
