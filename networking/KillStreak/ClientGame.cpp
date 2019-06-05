@@ -298,7 +298,7 @@ void ClientGame::endKillPhase()
 		// start prep phase; deserialzie data & start prep phase timer
 		if ( startPrepPhase )
 		{
-			logger()->debug("Received start_prep_phase from server!");
+			//logger()->debug("Received start_prep_phase from server!");
 
 			// deserialzie leaderboard & all player gold
 			char* data = start_prep_packet->data;
@@ -369,13 +369,6 @@ void ClientGame::endPrepPhase()
 
 	char* headPtr = buf; // point to start of buffer
 	char* bufPtr = buf;	 // follow next open space of buffer 
-
-	/* TODO: Send packet to server with
-		XXX remaining gold
-		XXX skill levels
-		c.) investment
-		d.) cheating
-	*/
 
 	// serialize clients gold (from scenePlayer)
 	int curr_gold = Window_static::getPlayerGold();
@@ -647,6 +640,13 @@ int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
 	//		next loop
 
 	// input character & username selection; send request to server; repeat if unavailable
+	/* TODO: Send packet to server with
+		XXX remaining gold
+		XXX skill levels
+		c.) investment
+		d.) cheating
+	*/
+
 
 
 	// TODO: REMOVE ME*********

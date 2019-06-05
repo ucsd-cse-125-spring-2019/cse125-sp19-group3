@@ -314,7 +314,7 @@ void ClientScene::updateTimers(nanoseconds timePassed) {
 			skill_timers[i] -= timePassed;
 			if (skill_timers[i] < nanoseconds::zero()) {
 				skill_timers[i] = nanoseconds::zero();
-				logger()->debug("skill {} is ready to fire!", i);
+				//logger()->debug("skill {} is ready to fire!", i);
 			}
 		}
 	}
@@ -683,7 +683,7 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 			glfwGetCursorPos(window, &xpos, &ypos);
 			//printf("Cursor Position at %f: %f \n", xpos, ypos);
 			glm::vec3 new_dest = viewToWorldCoordTransform(xpos, ypos);
-			printf("Player's next Pos will be: %f, %f, %f \n", new_dest.x, new_dest.y, new_dest.z);
+			//printf("Player's next Pos will be: %f, %f, %f \n", new_dest.x, new_dest.y, new_dest.z);
 			ClientInputPacket movementPacket = game->createMovementPacket(new_dest);
 			network->sendToServer(movementPacket);
 		// player shooting projectile
@@ -725,7 +725,7 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 			if (player.modelType == WARRIOR) isCharging = true;
 			// create skill packet and send to server
 			ClientInputPacket skillPacket = game->createSkillPacket(new_dest, adjustedSkill.skill_id);
-			logger()->debug("sending server skill packet w id of {}", adjustedSkill.skill_id);
+			//logger()->debug("sending server skill packet w id of {}", adjustedSkill.skill_id);
 			network->sendToServer(skillPacket);
 			player.action_state = ACTION_MOVEMENT;
 		}
@@ -873,12 +873,6 @@ void ClientScene::handleServerTickPacket(char * data) {
 	leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
 	data += leaderBoard_size;
 
-	// TODO: REMOVE ME ****************
-	if (leaderBoard->deaths_this_tick != 0) {
-		logger()->debug("DEATHS THIS TICK {}", leaderBoard->deaths_this_tick);
-	}
-	// TODO: REMOVE ME ****************
-
 	if (isCharging && (leaderBoard->currentKills[player.player_id] > currKill)) 
 		skill_timers[DIR_SKILL_INDEX] = nanoseconds::zero();	// reset cooldown when kill someone using charge
    
@@ -915,6 +909,14 @@ int ClientScene::getPlayerGold()
 vector<Skill> ClientScene::getPlayerSkills() 
 { 
 	return player.availableSkills;
+}
+
+/*
+	Get players usernames.
+*/
+vector<string> ClientScene::getUsernames() 
+{ 
+	return usernames;
 }
 
 bool ClientScene::checkInAnimation() {

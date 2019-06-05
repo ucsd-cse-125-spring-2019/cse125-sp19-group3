@@ -101,17 +101,34 @@ unsigned int Serialization::serializeLeaderBoard(char* lb_data, LeaderBoard* lea
 	}
 	
 	memcpy(lb_data, &leaderBoard->deaths_this_tick, sizeof(int));
-	size += sizeof(int);
+	size    += sizeof(int);
+	lb_data += sizeof(int);
+
+	// serialize who killed who (first int killers id, second int dead players id)
+	// for every death this tick you should pop two elements off the front of the list (killer, dead_player)
+	for (int i = 0; i < leaderBoard->deaths_this_tick; i++)
+	{
+		// get killer id
+		int killer_id = leaderBoard->kill_map.front();
+		leaderBoard->kill_map.pop_front();
+
+		// get dead players id
+		int dead_id = leaderBoard->kill_map.front();
+		leaderBoard->kill_map.pop_front();
+
+		// serialize killers id first
+		memcpy(lb_data, &killer_id, sizeof(int));
+		size	+= sizeof(int);
+		lb_data += sizeof(int);
+
+		// serialize dead players id second
+		memcpy(lb_data, &dead_id, sizeof(int));
+		size	+= sizeof(int);
+		lb_data += sizeof(int);
+	}
 
 	leaderBoard->deaths_this_tick = 0;	// reset deaths this tick
-
-
-	// TODO: serialize who killed who...
-	// make a vector of pairs? first index killer id second index dead player id
-	// serialize by putting id's --> 0120 (0 killed 1, 2 killed 0)
-	// ***died_this_tick should be used to know how many numbers to deserialize
-	// 1 died_this_tick means deserialzie two ints...
-	// 2 died_this_tick means deseralize four ints... etc..
+	//leaderBoard->kill_map.clear();		// clear list of kills (just in case should be empty)
 
 	return size;
 }
@@ -153,15 +170,34 @@ unsigned int Serialization::deserializeLeaderBoard(char* lb_data, LeaderBoard* l
 	}
 
 	memcpy(&leaderBoard->deaths_this_tick, lb_data, sizeof(int));
-	sz += sizeof(int);
+	lb_data += sizeof(int);
+	sz		+= sizeof(int);
 
-	// TODO: deserailze who killed who...
-	// make a vector of pairs? first index killer id second index dead player id
-	// serialize by putting id's --> 0120 (0 killed 1, 2 killed 0)
-	// ***died_this_tick should be used to know how many numbers to deserialize
-	// 1 died_this_tick means deserialzie two ints...
-	// 2 died_this_tick means deseralize four ints... etc..
 
+	// reset kill_map before adding this ticks kills
+	//leaderBoard->kill_map.clear();
+
+	// deserialize who killed who (first int killers id, second int dead players id)
+	// for every death this tick you should pop two elements off the front of the list (killer, dead_player)
+	for (int i = 0; i < leaderBoard->deaths_this_tick; i++)
+	{
+
+		// get killer id & dead player ID's
+		int killer_id = -1;
+		memcpy(&killer_id, lb_data, sizeof(int));
+		lb_data += sizeof(int);
+		sz		+= sizeof(int);
+
+		int dead_id = -1;
+		memcpy(&dead_id, lb_data, sizeof(int));
+		lb_data += sizeof(int);
+		sz		+= sizeof(int);
+
+		// add both to kill map (killer id then dead player id)
+		leaderBoard->kill_map.push_back(killer_id);
+		leaderBoard->kill_map.push_back(dead_id);
+
+	}
 
 	return sz;
 }

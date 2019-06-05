@@ -5,6 +5,7 @@
 #include <string>
 #include <algorithm>    // std::sort
 #include <vector>
+#include <list>
 #include "INIReader.h"
 
 using namespace std;
@@ -45,6 +46,7 @@ public:
 	vector<int> currGold;		// accumulative gold of each player
 
 	vector<int> prizes;			// points added to player each round based on ranking
+	list<int> kill_map;			// map of who killed who on every server tick
 	int deaths_this_tick;		// total deaths that occured this tick
 };
 

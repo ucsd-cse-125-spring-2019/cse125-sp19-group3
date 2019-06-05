@@ -64,6 +64,7 @@ public:
 	void resetPreKillPhase();
 	int getPlayerGold();
 	vector<Skill> getPlayerSkills();
+	vector<string> getUsernames();
 	bool checkInAnimation();
 	void resetGUIStatus();
 private:
@@ -127,6 +128,7 @@ public:
 	static void resetPreKillPhase() { scene->resetPreKillPhase(); };
 	static int getPlayerGold() { return scene->getPlayerGold(); };
 	static vector<Skill> getPlayerSkills() { return scene->getPlayerSkills(); };
+	static vector<string> getUsernames() { return scene->getUsernames(); };
 };
 
 
