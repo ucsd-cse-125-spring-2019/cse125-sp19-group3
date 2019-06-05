@@ -28,6 +28,7 @@ public:
 	int switchPhase();
 	void endKillPhase();
 	void endPrepPhase();
+	void gameInfoScene();
 
 	// initialize packet 
 	ClientInputPacket createClientInputPacket(InputType type, Point finalLocation, int skill_id);
@@ -35,6 +36,7 @@ public:
 	ClientInputPacket createSkillPacket(Point destLocation, int skill_id);
 	ClientInputPacket createRespawnPacket();
 	ClientInputPacket createInitPacket();
+	ClientInputPacket createGameInfoPacket();
 	ClientInputPacket createEndKillPhasePacket();
 	ClientSelectionPacket createCharacterSelectedPacket(std::string username, ArcheType type);
 
