@@ -37,7 +37,6 @@ public:
 	int height;
 	glm::vec3 initCamPos;
 	std::unordered_map<unsigned int, Transform *> clientSceneGraphMap;
-
 	vector<ArcheType> archetypes;	// list of all player archetypes
 	vector<string> usernames;		// list of all player usernames ordered by index of client id on server
 
@@ -64,7 +63,10 @@ public:
 	void renderLobbyPhase(GLFWwindow* window);
 	void initialize_UI(GLFWwindow* window);
 	void resetPreKillPhase();
+	int getPlayerGold();
+	vector<Skill> getPlayerSkills();
 	bool checkInAnimation();
+	void resetGUIStatus();
 private:
 	Audio audio;
 	float min_scroll = 20.0f;
@@ -86,7 +88,7 @@ private:
 	ClientGame * game;
 	ClientNetwork * network;
 	vector<Transform *> env_objs;
-	vector<Skill> personal_skills;
+	//vector<Skill> personal_skills;
 	vector<nanoseconds> skill_timers;
 	nanoseconds respawn_timer;		// when should client respawn from death
 	nanoseconds animation_timer;
@@ -121,7 +123,11 @@ public:
 	static void mouse_button_callback(GLFWwindow* win, int button, int action, int mods) { scene->mouse_button_callback(win, button, action, mods); };
 	static void handleInitScenePacket(char * data) { scene->handleInitScenePacket(data); };
 	static void handleServerTickPacket(char* data) { scene->handleServerTickPacket(data); };
+	static void resetGUIStatus() { scene->resetGUIStatus(); };
+
 	static void resetPreKillPhase() { scene->resetPreKillPhase(); };
+	static int getPlayerGold() { return scene->getPlayerGold(); };
+	static vector<Skill> getPlayerSkills() { return scene->getPlayerSkills(); };
 };
 
 

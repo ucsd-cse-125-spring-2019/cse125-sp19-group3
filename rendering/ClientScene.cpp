@@ -23,7 +23,7 @@ struct nk_context * ctx;
 struct nk_colorf bg = { 0.1f,0.1f,0.1f,1.0f };
 ClientScene * Window_static::scene = new ClientScene();
 struct media media;
-
+struct guiStatus guiStatuses;
 GLuint loadTexture(const char * imagepath) {
 	int width, height, n;
 	// Actual RGB data
@@ -50,6 +50,11 @@ GLuint loadTexture(const char * imagepath) {
 	return textureID;
 }
 
+void ClientScene::resetGUIStatus() {
+	guiStatuses.betAmount = 0;
+	guiStatuses.currPrepareLayout = 0;
+	guiStatuses.shopCategory = 0;
+}
 
 void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network, LeaderBoard* leaderBoard)
 {
@@ -162,10 +167,10 @@ void ClientScene::initialize_skills(ArcheType selected_type) {
 	// push each skill into personal skills
 	for (auto skill_id : vec) {
 		unordered_map<unsigned int, Skill>::iterator s_it = skill_map->find(skill_id);
-		personal_skills.push_back(s_it->second);
+		player.availableSkills.push_back(s_it->second);
 	}
 
-	skill_timers = vector<nanoseconds>(personal_skills.size(), nanoseconds::zero());
+	skill_timers = vector<nanoseconds>(player.availableSkills.size(), nanoseconds::zero());
 	animation_timer = nanoseconds::zero();
 	respawn_timer = nanoseconds::zero();
 	skillDurationTimer = nanoseconds::zero();
@@ -218,7 +223,7 @@ void ClientScene::initialize_UI(GLFWwindow* window) {
 	media.points = icon_load("../icon/trophy.png");
 	media.gold = icon_load("../icon/gold.png");
 	media.lobby_background = icon_load("../icon/lobbybg.jpg");
-	media.prepare_background = icon_load("../icon/preparebg.jpg");
+	media.prepare_background = icon_load("../icon/preparebg.jpeg");
 	media.mage_skills[2] = icon_load("../icon/skills/evade.png");
 	media.mage_skills[3] = icon_load("../icon/skills/projectile.png");
 	media.mage_skills[1] = icon_load("../icon/skills/mage-aoe.png");
@@ -243,6 +248,10 @@ void ClientScene::initialize_UI(GLFWwindow* window) {
 	media.king_skills[0] = icon_load("../icon/skills/king-silence.png");
 	media.king_silenced[1] = icon_load("../icon/skills/king-aoe.png");
 	media.king_silenced[0] = icon_load("../icon/skills/king-silence.png");
+
+	guiStatuses.betAmount = 0;
+	guiStatuses.currPrepareLayout = 0;
+	guiStatuses.shopCategory = 0;
 }
 
 void  ClientScene::text_input(GLFWwindow *win, unsigned int codepoint)
@@ -427,7 +436,7 @@ void ClientScene::renderPreparePhase(GLFWwindow* window) {
 	/* Input */
 	glfwPollEvents();
 	nk_glfw3_new_frame();
-	prepare_layout(ctx, &media, ClientScene::width, ClientScene::height, &this->player, leaderBoard,usernames, archetypes,game);
+	prepare_layout(ctx, &media, ClientScene::width, ClientScene::height, &this->player, leaderBoard,usernames, archetypes,game, guiStatuses);
 
 
 	nk_glfw3_render(NK_ANTI_ALIASING_OFF, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
@@ -490,7 +499,7 @@ void ClientScene::renderKillPhase(GLFWwindow* window) {
 	/* GUI */
 
 
-	kill_layout(ctx, &media, width, height, & this->player, skill_timers, leaderBoard, usernames, archetypes, killTextDeterminant, game);
+	kill_layout(ctx, &media, width, height, & this->player, skill_timers, leaderBoard, usernames, archetypes, killTextDeterminant, game, guiStatuses);
 
 	/* ----------------------------------------- */
 
@@ -554,7 +563,7 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 
 			// EXCEPTIONS: KING AND ASSASSIN
 			if (player.modelType == KING || player.modelType == ASSASSIN) {
-				Skill skill = personal_skills[DIR_SKILL_INDEX];
+				Skill skill = player.availableSkills[DIR_SKILL_INDEX];
 				Skill adjustedSkill = Skill::
 					calculateSkillBasedOnLevel(skill, skill.level);
 
@@ -602,7 +611,7 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 			player.action_state = ACTION_MOVEMENT;
 
 			// get skill and adjust
-			Skill omniSkill = personal_skills[OMNI_SKILL_INDEX];
+			Skill omniSkill = player.availableSkills[OMNI_SKILL_INDEX];
 			Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(omniSkill, omniSkill.level);
 			
 			// set cooldown
@@ -631,7 +640,7 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 			player.action_state = ACTION_MOVEMENT;
 
 			// get skill and adjust
-			Skill evadeSkill = personal_skills[EVADE_INDEX];
+			Skill evadeSkill = player.availableSkills[EVADE_INDEX];
 			Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(evadeSkill, evadeSkill.level);
 
 			// set cooldown
@@ -679,7 +688,7 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 	{
 		if (player.action_state == ACTION_DIRECTIONAL_SKILL) {
 			// get the right skill based on what skill was prepped (projectile vs directional skill)
-			Skill skill = player.isPrepProjectile ? personal_skills[PROJ_INDEX] : personal_skills[DIR_SKILL_INDEX];
+			Skill skill = player.isPrepProjectile ? player.availableSkills[PROJ_INDEX] : player.availableSkills[DIR_SKILL_INDEX];
 			Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(skill, skill.level);
 			
 			// set cooldown
@@ -872,6 +881,22 @@ void ClientScene::handleServerTickPacket(char * data) {
 
 void ClientScene::setRoot(Transform * newRoot) {
 	root = newRoot;
+}
+
+/*
+	Get players gold.
+*/
+int ClientScene::getPlayerGold() 
+{ 
+	return player.gold;
+}
+
+/*
+	Get players skills.
+*/
+vector<Skill> ClientScene::getPlayerSkills() 
+{ 
+	return player.availableSkills;
 }
 
 bool ClientScene::checkInAnimation() {

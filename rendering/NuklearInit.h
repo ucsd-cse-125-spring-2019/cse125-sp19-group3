@@ -59,6 +59,13 @@ struct media {
 	struct nk_image king_silenced[2];
 };
 
+struct guiStatus {
+	int currPrepareLayout;
+	int betAmount;
+	int shopCategory;// 0 for skills 1 for bet 2 for cheat
+	vector<string> killUpdates;
+};
+
 enum nk_glfw_init_state{
     NK_GLFW3_DEFAULT=0,
     NK_GLFW3_INSTALL_CALLBACKS
