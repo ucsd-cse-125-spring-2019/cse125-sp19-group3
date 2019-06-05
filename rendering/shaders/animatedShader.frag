@@ -13,7 +13,7 @@ uniform int isInvincible = 0;
 
 uniform vec3 ambientColor = vec3(0.21, 0.22, 0.28);
 uniform vec3 lightDirection = normalize(vec3(5, 15, 10));
-uniform vec3 lightColor = vec3(0.953, 0.91, 0.73);
+uniform vec3 lightColor = vec3(0.63, 0.68, 0.84);
 
 uniform vec4 color = vec4(1);
 
@@ -41,7 +41,7 @@ void main() {
 		if (isEvading == 1) {
 			finalColor = vec4(lightFactor * (ambientColor + diffuseColor) * (vec3(texture(Texture, texCoord)) + vec3(0.8, 0.8, 0.8)), 1.0);
 		} else if (isInvincible == 1) {
-			finalColor = vec4(lightFactor * (ambientColor + diffuseColor) * (vec3(0.97656, 0.847656, 0.30078)), 1.0);
+			finalColor = vec4(lightFactor * (ambientColor + diffuseColor) * (vec3(0.988, 0.832, 0.2617)), 1.0);
 		} else {
 		    finalColor = vec4(lightFactor * (ambientColor + diffuseColor) * (vec3(texture(Texture, texCoord)) + vec3(0.1, 0.1, 0.1)), 1.0);
 		}
