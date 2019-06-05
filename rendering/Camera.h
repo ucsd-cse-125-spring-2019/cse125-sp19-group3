@@ -31,7 +31,7 @@ public:
 	float GetAzimuth()						{return Azimuth;}
 	float GetIncline()						{return Incline;}
 	float GetDepth();
-
+	void setDestination(glm::vec3 dest);
 
 	const glm::mat4 &GetViewMtx() { return  glm::lookAt(cam_pos, cam_look_at, cam_up); }
 	const glm::mat4 &GetViewProjectMtx()	{return ViewProjectMtx;}
@@ -53,6 +53,9 @@ private:
 	float Azimuth;		// Rotation of the camera eye position around the Y axis (degrees)
 	float Incline;		// Angle of the camera eye position over the XZ plane (degrees)
 
+	float speed;
+	glm::vec3 direction;
+	glm::vec3 destination;
 	// Computed data
 	glm::mat4 ViewProjectMtx;
 };

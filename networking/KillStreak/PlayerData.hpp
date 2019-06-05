@@ -104,7 +104,6 @@ public:
 		}
 
 		alive = true;
-
 		silenced = false;
 		gold = 0;
 		currKillStreak = 0;

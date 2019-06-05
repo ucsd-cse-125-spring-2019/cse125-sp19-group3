@@ -250,6 +250,7 @@ void ServerScene::resetScene()
 		player.movementMode = idle;
 		player.animationMode = -1;
 		player.isEvading = false;
+		serverSceneGraphMap[node_id]->isEvading = false;
 
 		// clear projectiles
 		auto skillIter = skills.begin();
@@ -579,7 +580,9 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 	// special case of unevade
 	if (skill_id == UNEVADE) {
 		logger()->debug("{} player stopped evading!", playerMetadata->username);
-		scenePlayers[player_id].isEvading = false; 
+		auto &player = scenePlayers[player_id];
+		player.isEvading = false;
+		serverSceneGraphMap[player.root_id]->isEvading = false;
 		return;
 	}
 
@@ -609,7 +612,9 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 		case EVADE: 
 		{
 			logger()->debug("{} player is evading!", playerMetadata->username);
-			scenePlayers[player_id].isEvading = true;
+			auto &player = scenePlayers[player_id];
+			player.isEvading = true;
+			serverSceneGraphMap[player.root_id]->isEvading = true;
 			break;
 		}
 		case PROJECTILE:

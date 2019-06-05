@@ -18,26 +18,24 @@
 #include "../networking/KillStreak/CoreTypes.hpp"
 #include "../rendering/Serialization.h"
 // On some systems you need to change this to the absolute path
-#define VERTEX_SHADER_PATH "../animatedShader.vert"
-#define FRAGMENT_SHADER_PATH "../animatedShader.frag"
+#define VERTEX_SHADER_PATH "../shaders/animatedShader.vert"
+#define FRAGMENT_SHADER_PATH "../shaders/animatedShader.frag"
 
-#define TOON_VERTEX_SHADER_PATH "../toonshader.vert"
-#define TOON_FRAGMENT_SHADER_PATH "../toonshader.frag"
+#define TOON_VERTEX_SHADER_PATH "../shaders/toonshader.vert"
+#define TOON_FRAGMENT_SHADER_PATH "../shaders/toonshader.frag"
 
-#define PARTICLE_VERTEX_SHADER_PATH "../particleShader.vert"
-#define PARTICLE_FRAGMENT_SHADER_PATH "../particleShader.frag"
+#define PARTICLE_VERTEX_SHADER_PATH "../shaders/particleShader.vert"
+#define PARTICLE_FRAGMENT_SHADER_PATH "../shaders/particleShader.frag"
 
-#define CIRCLE_VERTEX_SHADER_PATH "../circleshader.vert"
-#define CIRCLE_FRAGMENT_SHADER_PATH "../circleshader.frag"
+#define CIRCLE_VERTEX_SHADER_PATH "../shaders/circleshader.vert"
+#define CIRCLE_FRAGMENT_SHADER_PATH "../shaders/circleshader.frag"
 
 class ClientScene {
 public:
 	Camera * camera;
 	int width;
 	int height;
-	glm::vec3 initCamPos;
 	std::unordered_map<unsigned int, Transform *> clientSceneGraphMap;
-
 	vector<ArcheType> archetypes;	// list of all player archetypes
 	vector<string> usernames;		// list of all player usernames ordered by index of client id on server
 
@@ -66,7 +64,10 @@ public:
 	void renderLobbyPhase(GLFWwindow* window);
 	void initialize_UI(GLFWwindow* window);
 	void resetPreKillPhase();
+	int getPlayerGold();
+	vector<Skill> getPlayerSkills();
 	bool checkInAnimation();
+	void resetGUIStatus();
 private:
 	Audio audio;
 	float min_scroll = 20.0f;
@@ -88,7 +89,7 @@ private:
 	ClientGame * game;
 	ClientNetwork * network;
 	vector<Transform *> env_objs;
-	vector<Skill> personal_skills;
+	//vector<Skill> personal_skills;
 	vector<nanoseconds> skill_timers;
 	nanoseconds respawn_timer;		// when should client respawn from death
 	nanoseconds animation_timer;
@@ -123,9 +124,14 @@ public:
 	static void mouse_button_callback(GLFWwindow* win, int button, int action, int mods) { scene->mouse_button_callback(win, button, action, mods); };
 	static void handleInitScenePacket(char * data) { scene->handleInitScenePacket(data); };
 	static void handleServerTickPacket(char* data) { scene->handleServerTickPacket(data); };
+	static void resetGUIStatus() { scene->resetGUIStatus(); };
+
 	static void resetPreKillPhase() { scene->resetPreKillPhase(); };
 	static void playPreparePhaseBGM() { scene->playPreparePhaseBGM(); };
 	static void playKillPhaseBGM() { scene->playKillPhaseBGM(); };
+	static int getPlayerGold() { return scene->getPlayerGold(); };
+	static vector<Skill> getPlayerSkills() { return scene->getPlayerSkills(); };
+
 };
 
 

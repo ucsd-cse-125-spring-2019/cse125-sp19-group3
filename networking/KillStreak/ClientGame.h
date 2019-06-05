@@ -17,6 +17,7 @@ public:
 	ClientNetwork * network;
 	nanoseconds prepareTimer;
 	LeaderBoard* leaderBoard;
+	int round_number;
 
 	void run();
 	int join_game();
