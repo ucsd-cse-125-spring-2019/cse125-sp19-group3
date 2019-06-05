@@ -103,7 +103,7 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network,
 	this->leaderBoard = leaderBoard;
 
 	// Floor
-	floor = new Model("../models/quad.obj", "../textures/floor_grey.tga", false);
+	floor = new Model("../models/quad.obj", "../textures/floor.png", false);
 	floor->localMtx = glm::translate(glm::mat4(1.0f), glm::vec3(100.0f, 0.0f, 120.0f)) *
 		glm::rotate(glm::mat4(1.0f), -90.0f / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)) *
 		glm::scale(glm::mat4(1.0f), glm::vec3(200));
@@ -115,6 +115,10 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network,
 	arrow->localMtx = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.0f, 10.0f)) *
 		glm::rotate(glm::mat4(1.0f), -90.0f / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)) *
 		glm::scale(glm::mat4(1.0f), glm::vec3(5));
+	cross = new Model("../models/quad.obj", "../textures/cross.png", false);
+	cross->localMtx = glm::translate(glm::mat4(1.0f), glm::vec3(0.1f, 2.0f, 4.3f)) *
+		glm::rotate(glm::mat4(1.0f), -90.0f / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)) *
+		glm::scale(glm::mat4(1.0f), glm::vec3(3));
 }
 
 
@@ -191,6 +195,7 @@ void ClientScene::clean_up()
 	delete(floor);
 	delete(range);
 	delete(arrow);
+	delete(cross);
 	delete(staticShader);
 	delete(animationShader);
 	delete(particleShader);
@@ -486,15 +491,24 @@ void ClientScene::renderKillPhase(GLFWwindow* window) {
 		glm::vec3 playerPos = glm::vec3(clientSceneGraphMap[player.root_id]->M[3][0], clientSceneGraphMap[player.root_id]->M[3][1], clientSceneGraphMap[player.root_id]->M[3][2]);
 		double xpos, ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
-		glm::vec3 direction = glm::normalize(viewToWorldCoordTransform(xpos, ypos) - playerPos);
-		float angle = glm::acos(glm::dot(direction, glm::vec3(0, 0, 1)));
-		glm::vec3 axis = glm::cross(direction, glm::vec3(0, 0, -1));
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glEnable(GL_BLEND);
-		range->draw(circleShader, glm::translate(glm::mat4(1.0f), playerPos), vpMatrix);
-		arrow->draw(staticShader, glm::translate(glm::mat4(1.0f), playerPos) * glm::rotate(glm::mat4(1.0f), angle, axis), vpMatrix);
-		glDisable(GL_BLEND);
-
+		glm::vec3 convertedPos = viewToWorldCoordTransform(xpos, ypos);
+		if (player.modelType == MAGE && !player.isPrepProjectile) {
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			glEnable(GL_BLEND);
+			range->draw(circleShader, glm::translate(glm::mat4(1.0f), playerPos), vpMatrix);
+			cross->draw(staticShader, glm::translate(glm::mat4(1.0f), playerPos) * glm::translate(glm::mat4(1.0f), convertedPos - playerPos), vpMatrix);
+			glDisable(GL_BLEND);
+		}
+		else {
+			glm::vec3 direction = glm::normalize(convertedPos - playerPos);
+			float angle = glm::acos(glm::dot(direction, glm::vec3(0, 0, 1)));
+			glm::vec3 axis = glm::cross(direction, glm::vec3(0, 0, -1));
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			glEnable(GL_BLEND);
+			range->draw(circleShader, glm::translate(glm::mat4(1.0f), playerPos), vpMatrix);
+			arrow->draw(staticShader, glm::translate(glm::mat4(1.0f), playerPos) * glm::rotate(glm::mat4(1.0f), angle, axis), vpMatrix);
+			glDisable(GL_BLEND);
+		}
 	}
 
 	 /* Input */
