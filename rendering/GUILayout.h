@@ -276,7 +276,7 @@ kill_layout(struct nk_context *ctx, struct media *media, int width, int height, 
 	nk_style_push_color(ctx, &s->window.background, nk_rgba(0, 0, 0, 0));
 	nk_style_push_style_item(ctx, &s->window.fixed_background, nk_style_item_color(nk_rgba(0, 0, 0, 0)));
 	if (nk_begin(ctx, "kill_title", nk_rect(0, 0, width, height),
-		NK_WINDOW_NO_SCROLLBAR)) {
+		NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BACKGROUND)) {
 		ui_prepare_title(ctx, media, width, height, "", game);
 	}
 	nk_end(ctx);
