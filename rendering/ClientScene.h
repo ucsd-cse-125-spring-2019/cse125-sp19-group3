@@ -75,6 +75,7 @@ private:
 	Shader * animationShader, * staticShader, * particleShader, * circleShader;
 	Model * floor;
 	Model * arrow;
+	Model * cross;
 	Circle * range;
 	ScenePlayer player;
 	Transform * root;
