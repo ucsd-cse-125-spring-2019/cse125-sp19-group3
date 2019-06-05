@@ -385,6 +385,11 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 		serverSceneGraphMap[node_id]->enabled = true;
 	}
 
+	// inc total deathst his tick; update kill map with killer & dead player id
+	leaderBoard->deaths_this_tick += 1;				
+	leaderBoard->kill_map.push_back(killer_id);
+	leaderBoard->kill_map.push_back(dead_player_id);
+
 }
 
 

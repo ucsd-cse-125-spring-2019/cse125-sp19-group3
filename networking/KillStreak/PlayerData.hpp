@@ -5,6 +5,7 @@
 #include <string>
 #include <algorithm>    // std::sort
 #include <vector>
+#include <list>
 #include "INIReader.h"
 
 using namespace std;
@@ -12,28 +13,21 @@ using namespace std;
 class LeaderBoard {
 public:
 
-	LeaderBoard(vector<int> initial_prize, int change) : prizeChange(change) 
-	{ 
-		prizes = initial_prize;
-	}
-
 	// default constructor
 	LeaderBoard() : currentKills(vector<int>(GAME_SIZE, 0)), currentDeaths(vector<int>(GAME_SIZE,0)),
 					killStreaks(vector<int>(GAME_SIZE, 0)), globalKills(vector<int>(GAME_SIZE,0)),
 					currPoints(vector<int>(GAME_SIZE, 0)), currGold(vector<int>(GAME_SIZE,0)),
-					prizes(vector<int>(GAME_SIZE, 0)), prizeChange(0) {}
+					prizes(vector<int>(GAME_SIZE, 0)), deaths_this_tick(0) {}
 
 	~LeaderBoard() {}
 
-	vector<int>* roundSummary ();						// Update vectors for the round and return the ranking of each player
+	//vector<int>* roundSummary ();						// Update vectors for the round and return the ranking of each player
 	void awardKillRound(unsigned int player_id);		// award point to player_id on rounds leaderboard
 	void awardKillGlobal(unsigned int player_id);		// award point to player_id on global leaderboard
 	void resetKillStreak(unsigned int player_id);		// reset players kill streak
 	void incKillStreak(unsigned int player_id);			// increment players killstreak
 	void incDeath(unsigned int player_id);				// increment players death count
 	void awardPoint(unsigned int player_id);			// award point to player_id
-
-	float getPrizeChanges()		{return prizeChange;}
 
 	// for testing
 	void printCurrentKillStreaks();	
@@ -52,7 +46,8 @@ public:
 	vector<int> currGold;		// accumulative gold of each player
 
 	vector<int> prizes;			// points added to player each round based on ranking
-	float prizeChange;			// prizes increases per round (1.2)
+	list<int> kill_map;			// map of who killed who on every server tick
+	int deaths_this_tick;		// total deaths that occured this tick
 };
 
 class Skill {
