@@ -4,7 +4,7 @@
 #include <queue>
 #include <string>
 
-#define GAME_SIZE				2			// total players required to start game
+#define GAME_SIZE				1			// total players required to start game
 #define NULL_POINT				Point(0.0,0.0,0.0)
 
 #define SERVER_TICK_PACKET_SIZE 10000
