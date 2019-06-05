@@ -151,6 +151,9 @@ void ClientScene::resetPreKillPhase()
 	}
 	// reset evade
 	clientSceneGraphMap[player.root_id]->isEvading = false;
+
+	// reset invisibility
+	clientSceneGraphMap[player.root_id]->isInvisible = false;
 }
 
 
