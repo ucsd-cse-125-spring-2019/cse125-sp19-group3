@@ -145,6 +145,8 @@ void ClientScene::resetPreKillPhase()
 			modelPtr->animationMode = -1;
 		}
 	}
+	// reset evade
+	clientSceneGraphMap[player.root_id]->isEvading = false;
 }
 
 

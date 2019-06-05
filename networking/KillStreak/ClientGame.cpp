@@ -383,13 +383,9 @@ void ClientGame::endPrepPhase()
 	bufPtr += sizeof(int);
 	sgSize += sizeof(int);
 
-/*
-	// TODO: Why is the skills vector empty?!?!?!
-
 	// get skills for player 
-	// BUG: This vector has size 0? Why?!?!?!
 	vector<Skill> curr_skills = Window_static::scene->getPlayerSkills();
-	//logger()->debug("PLAYER SKILLS SIZE: {}", curr_skills.size());
+	logger()->debug("PLAYER SKILLS SIZE: {}", curr_skills.size());
 
 	// serialize number of skills
 	int skill_sz = curr_skills.size();
@@ -412,9 +408,6 @@ void ClientGame::endPrepPhase()
 		sgSize += sizeof(int);
 	}
 
-
-
-*/
 
 	// TODO: serialize investment
 
