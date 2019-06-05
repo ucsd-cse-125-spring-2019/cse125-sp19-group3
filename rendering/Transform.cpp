@@ -97,7 +97,6 @@ unsigned int Transform::deserializeAndUpdate(char * data, Shader* particleShader
 	size += sizeof(glm::mat4);
 	currLoc += sizeof(glm::mat4);
 
-
 	//memcopy model ids size
 	memcpy(&numModels, currLoc, sizeof(unsigned int));
 	size += sizeof(unsigned int);
@@ -161,6 +160,7 @@ void Transform::draw( std::unordered_map<unsigned int, ModelData> &models, const
 			models[model_id].shader->use();
 			models[model_id].shader->setInt("isEvading", isEvading ? 1 : 0);
 			models[model_id].shader->setInt("isInvincible", isInvincible ? 1 : 0);
+			models[model_id].shader->setInt("isCharging", isCharging ? 1 : 0);
 			models[model_id].shader->setInt("UseTex", 1);
 			glBindTexture(GL_TEXTURE_2D, models[model_id].texID);
 			models[model_id].model->draw(models[model_id].shader, childMtx, viewProjMtx);

@@ -77,7 +77,7 @@
       "initial_level": 1,
       "skill_name": "CHARGE",
       "cooldown": 5.0,
-      "range": 5.0,
+      "range": 25.0,
       "speed": 5.0,
       "duration": 0.0
     },
