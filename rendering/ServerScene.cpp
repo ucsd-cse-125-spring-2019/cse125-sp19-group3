@@ -245,11 +245,13 @@ void ServerScene::resetScene()
 		// invisibility
 		int node_id = player.root_id;
 		serverSceneGraphMap[node_id]->enabled = true;
+		serverSceneGraphMap[node_id]->isInvisible = false;
 
 		// clear remaining data
 		player.movementMode = idle;
 		player.animationMode = -1;
 		player.isEvading = false;
+		serverSceneGraphMap[node_id]->isEvading = false;
 
 		// clear projectiles
 		auto skillIter = skills.begin();
@@ -566,6 +568,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 		logger()->debug("undo invisibility");
 		int node_id = scenePlayers[player_id].root_id;
 		serverSceneGraphMap[node_id]->enabled = true;
+		serverSceneGraphMap[node_id]->isInvisible = false;
 		return;
 	}
 
@@ -656,6 +659,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			// client must send another skill packet after duration is over.
 			int node_id = scenePlayers[player_id].root_id;
 			serverSceneGraphMap[node_id]->enabled = false;
+			serverSceneGraphMap[node_id]->isInvisible = true;
 			break;
 		}
 		case SPRINT: 

@@ -70,7 +70,7 @@ void setup_callbacks(ClientStatus status)
 	// Set the mouse callback
 	glfwSetMouseButtonCallback(window, Window_static::mouse_button_callback);
 	// Set the scroll callback
-	glfwSetScrollCallback(window, Window_static::scroll_callback);
+	//glfwSetScrollCallback(window, Window_static::scroll_callback);
 	// Set the window resize callback
 	glfwSetFramebufferSizeCallback(window, Window_static::resize_callback);
 }
@@ -372,7 +372,7 @@ void ClientGame::endPrepPhase()
 
 	/* TODO: Send packet to server with
 		XXX remaining gold
-		b.) skill levels
+		XXX skill levels
 		c.) investment
 		d.) cheating
 	*/
@@ -383,13 +383,8 @@ void ClientGame::endPrepPhase()
 	bufPtr += sizeof(int);
 	sgSize += sizeof(int);
 
-/*
-	// TODO: Why is the skills vector empty?!?!?!
-
 	// get skills for player 
-	// BUG: This vector has size 0? Why?!?!?!
 	vector<Skill> curr_skills = Window_static::getPlayerSkills();
-	//logger()->debug("PLAYER SKILLS SIZE: {}", curr_skills.size());
 
 	// serialize number of skills
 	int skill_sz = curr_skills.size();
@@ -401,20 +396,11 @@ void ClientGame::endPrepPhase()
 	for (int i = 0; i < skill_sz; i++)
 	{
 		unsigned int cur_level = curr_skills[i].level;
-
-		// TODO: REMOVE ME ************
-		cur_level += 69 + i;
-		logger()->debug("SKILL {} LEVEL {} ", i, cur_level);
-		// TODO: REMOVE ME ************
-
 		memcpy(bufPtr, &cur_level, sizeof(unsigned int));
 		bufPtr += sizeof(unsigned int);
 		sgSize += sizeof(int);
 	}
 
-
-
-*/
 
 	// TODO: serialize investment
 

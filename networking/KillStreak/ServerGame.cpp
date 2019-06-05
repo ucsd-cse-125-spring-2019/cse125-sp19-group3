@@ -14,7 +14,6 @@
 #define LOBBY_START_TIME	 500		// wait this long (ms) after all players connect
 #define START_CHAR_SELECTION 1			// start value of char selection phase
 #define END_CHAR_SELECTION   2			// end value of char selection phase
-#define TOTAL_ROUNDS		 2			// total rounds to be played in game
 
 #define KILL_PHASE			 0 
 #define PREP_PHASE			 1
@@ -595,9 +594,6 @@ int ServerGame::updatePreparePhase() {
 				memcpy(&player_meta->gold, data, sizeof(int));
 				data += sizeof(int);
 
-				// TODO: Client side skills vector always empty?
-				 
-		/*
 				// deserialize number of skills
 				int total_skills = 0;
 				memcpy(&total_skills, data, sizeof(int));
@@ -609,16 +605,6 @@ int ServerGame::updatePreparePhase() {
 					memcpy(&scene->scenePlayers[client_id].availableSkills[skill_num].level, data, sizeof(unsigned int));
 					data += sizeof(unsigned int);
 				}
-
-				// TODO: REMOVE ME **********************************
-				// test printing updated client skills
-				vector<Skill> curr_skills = scene->scenePlayers[client_id].availableSkills;
-				for (int i = 0; i < curr_skills.size(); i++)
-				{
-					logger()->debug("SKILL {}: LEVEL {}", i, curr_skills[i].level);
-				}
-				// TODO: REMOVE ME **********************************
-		*/
 
 
 				// 4.) TODO: deserialize invest for each player 

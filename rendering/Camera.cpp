@@ -20,15 +20,30 @@ void Camera::Update() {
 
 	// Compute view matrix (inverse of world matrix)
 	//glm::mat4 view = glm::inverse(world);
+	if (glm::length(destination - cam_look_at) > 0.2f) {
+		speed = glm::distance(destination, cam_look_at) *0.89f;
+		cam_look_at = cam_look_at + speed * direction;
+		cam_pos = cam_pos + speed * direction;
+	}
+
 	glm::mat4 view = glm::lookAt(cam_pos, cam_look_at, cam_up);
 
 	// Compute perspective projection matrix
-	glm::mat4 project = glm::perspective(glm::radians(FOV),Aspect,NearClip,FarClip);
+	glm::mat4 project = glm::perspective(glm::radians(FOV), Aspect, NearClip, FarClip);
 
 	// Compute final view-projection matrix
-	ViewProjectMtx=project * view;
+	ViewProjectMtx = project * view;
 }
 
+
+void Camera::setDestination(glm::vec3 dest) {
+	if (glm::length(dest - cam_look_at) > 0.2f) {
+		destination = dest;
+		float dist = glm::distance(destination, cam_look_at);
+		speed = dist;
+		direction = glm::normalize(destination - cam_look_at);
+	}
+}
 ////////////////////////////////////////////////////////////////////////////////
 
 void Camera::Reset() {
@@ -41,8 +56,12 @@ void Camera::Reset() {
 	Azimuth=0.0f;
 	Incline=20.0f;
 
-	cam_pos = glm::vec3(0.0f, 40.0f, 30.0f);
+
+	cam_pos = glm::vec3(0.0f, 60.0f, 40.0f);
 	cam_look_at = glm::vec3(0.0f, 0.0f, 0.0f);
+	destination = glm::vec3(0.0f, 0.0f, 0.0f);
+	direction = glm::vec3(0.0f, 0.0f, 0.0f);
+	speed = 0.0f;
 	cam_up = glm::vec3(0.0f, 1.0f, 0.0f);
 }
 
