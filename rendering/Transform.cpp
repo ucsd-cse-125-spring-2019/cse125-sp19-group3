@@ -26,6 +26,11 @@ unsigned int Transform::serialize(char * data) {
 	currLoc += sizeof(bool);
 	size += sizeof(bool);
 
+	// copy over the invincible state
+	memcpy(currLoc, &isInvincible, sizeof(bool));
+	currLoc += sizeof(bool);
+	size += sizeof(bool);
+
 	//copying over the Transfromation Matrix
 	memcpy(currLoc, &(M[0][0]), sizeof(glm::mat4));
 	currLoc += sizeof(glm::mat4);
@@ -72,6 +77,10 @@ unsigned int Transform::deserializeAndUpdate(char * data, Shader* particleShader
 	currLoc += sizeof(unsigned int);
 
 	memcpy(&enabled, currLoc, sizeof(bool));
+	size += sizeof(bool);
+	currLoc += sizeof(bool);
+
+	memcpy(&isInvincible, currLoc, sizeof(bool));
 	size += sizeof(bool);
 	currLoc += sizeof(bool);
 

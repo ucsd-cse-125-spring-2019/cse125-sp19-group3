@@ -62,6 +62,9 @@ public:
 	void renderKillPhase(GLFWwindow* window);
 	void renderLobbyPhase(GLFWwindow* window);
 	void initialize_UI(GLFWwindow* window);
+	void resetPreKillPhase();
+	int getPlayerGold();
+	vector<Skill> getPlayerSkills();
 	bool checkInAnimation();
 	void resetGUIStatus();
 private:
@@ -92,6 +95,7 @@ private:
 	nanoseconds skillDurationTimer; // used for invisibility, silence
 	nanoseconds evadeDurationTimer; // used for evade
 	nanoseconds sprintDurationTimer; // used for sprint
+	nanoseconds invincibilityTimer;
 	bool isCharging = false;
 
 	// void removeTransform(Transform * parent, const unsigned int node_id);
@@ -120,6 +124,10 @@ public:
 	static void handleInitScenePacket(char * data) { scene->handleInitScenePacket(data); };
 	static void handleServerTickPacket(char* data) { scene->handleServerTickPacket(data); };
 	static void resetGUIStatus() { scene->resetGUIStatus(); };
+
+	static void resetPreKillPhase() { scene->resetPreKillPhase(); };
+	static int getPlayerGold() { return scene->getPlayerGold(); };
+	static vector<Skill> getPlayerSkills() { return scene->getPlayerSkills(); };
 };
 
 

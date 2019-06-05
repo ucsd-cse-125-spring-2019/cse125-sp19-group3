@@ -38,6 +38,8 @@ ClientGame::ClientGame(string host, string port, int char_select_time)
 	leaderBoard   = new LeaderBoard();
 	serverPackets = new ServerInputQueue();
 	network		  = new ClientNetwork(this->host, this->serverPort);
+
+	round_number  = 1;
 }
 
 
@@ -247,35 +249,270 @@ int ClientGame::waitingInitScene() {
 	return 1;
 }
 
+
+/*
+	Switch from kill phase to prepare phase...
+*/
+void ClientGame::endKillPhase()
+{
+	logger()->debug("Sending kill phase over request to server!");
+
+	// send empty packet to server telling them clients kill phase is over (time up)
+	ClientInputPacket endKillPacket = createEndKillPhasePacket();
+	int iResult = network->sendToServer(endKillPacket);
+	if (!iResult)
+	{
+		logger()->error("Error sending to server; closing connection");
+		closesocket(network->ConnectSocket);
+		return;
+	}
+
+	// wait for confirmation from server to start prep phase
+	int startPrepPhase = 0;
+	int startEndGamePhase = 0;
+	while (!startPrepPhase && !startEndGamePhase)		// end if either true
+	{
+		ServerInputPacket* start_prep_packet = NULL;
+		ServerInputPacket* start_end_game_packet = NULL;
+
+		// empty packets queue; drop all non start_prep_phase packets; 
+		q_lock->lock();
+		while (!(serverPackets->empty()))
+		{
+			ServerInputPacket* curr_packet = serverPackets->front();
+			if (curr_packet->packetType == START_PREP_PHASE)		  // server saying start prep phase
+			{
+				start_prep_packet = curr_packet;
+				startPrepPhase = 1;
+			}
+			else if (curr_packet->packetType == START_END_GAME_PHASE) // server saying start end game phase!
+			{
+				start_end_game_packet = curr_packet;
+				startEndGamePhase = 1;
+			}
+
+			serverPackets->pop();	// remove from queue
+		}
+		q_lock->unlock();
+
+		// start prep phase; deserialzie data & start prep phase timer
+		if ( startPrepPhase )
+		{
+			logger()->debug("Received start_prep_phase from server!");
+
+			// deserialzie leaderboard & all player gold
+			char* data = start_prep_packet->data;
+
+			// deserialize round number
+			memcpy(&round_number, data, sizeof(int));
+			data += sizeof(int);
+
+			// deserialize leaderboard
+			unsigned int leaderBoard_size = 0;
+			leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
+			data += leaderBoard_size;
+
+			// deserialize gold of all clients
+			for (int client_id = 0; client_id < GAME_SIZE; client_id++)
+			{
+				int gold = 0;
+				memcpy(&gold, data, sizeof(int));
+				leaderBoard->currGold.push_back(gold);
+				data += sizeof(int);
+			}
+
+			// continue to enter prepare
+			std::chrono::seconds secPre(PREPHASE_TIME);
+			prepareTimer = nanoseconds(secPre);
+			currPhase = PREPARE;
+			startPrepPhase = 1;
+			break;
+		}
+		// start end game phase; deserialzie data & start end game phase timer
+		else if (startEndGamePhase)
+		{
+
+			logger()->debug("Received end game from server!");
+
+			char* data = start_end_game_packet->data;
+
+			// deserialize leaderboard
+			unsigned int leaderBoard_size = 0;
+			leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
+			data += leaderBoard_size;
+
+			// TODO: Deserialize any more data? 
+
+
+			// TODO: FINISH ME!!!
+			//std::chrono::seconds secPre(ENDGAME_TIME);
+			//prepareTimer = nanoseconds(secPre);
+			currPhase = FINAL;
+			startEndGamePhase = 1;
+			break;
+		}
+	}
+}
+
+
+/*
+	Switch from prep phase to kill phase...
+*/
+void ClientGame::endPrepPhase()
+{
+
+	logger()->debug("Sending prep phase over request to server!");
+
+	ClientInputPacket endPrepPacket;		
+	unsigned int sgSize = 0;
+	char buf[END_PHASE_PACKET_SIZE] = { 0 };
+
+	char* headPtr = buf; // point to start of buffer
+	char* bufPtr = buf;	 // follow next open space of buffer 
+
+	/* TODO: Send packet to server with
+		XXX remaining gold
+		b.) skill levels
+		c.) investment
+		d.) cheating
+	*/
+
+	// serialize clients gold (from scenePlayer)
+	int curr_gold = Window_static::scene->getPlayerGold();
+	memcpy(bufPtr, &curr_gold, sizeof(int));
+	bufPtr += sizeof(int);
+	sgSize += sizeof(int);
+
+/*
+	// TODO: Why is the skills vector empty?!?!?!
+
+	// get skills for player 
+	// BUG: This vector has size 0? Why?!?!?!
+	vector<Skill> curr_skills = Window_static::scene->getPlayerSkills();
+	//logger()->debug("PLAYER SKILLS SIZE: {}", curr_skills.size());
+
+	// serialize number of skills
+	int skill_sz = curr_skills.size();
+	memcpy(bufPtr, &skill_sz, sizeof(int));
+	bufPtr += sizeof(int);
+	sgSize += sizeof(int);
+
+	// serialize all skill levels 
+	for (int i = 0; i < skill_sz; i++)
+	{
+		unsigned int cur_level = curr_skills[i].level;
+
+		// TODO: REMOVE ME ************
+		cur_level += 69 + i;
+		logger()->debug("SKILL {} LEVEL {} ", i, cur_level);
+		// TODO: REMOVE ME ************
+
+		memcpy(bufPtr, &cur_level, sizeof(unsigned int));
+		bufPtr += sizeof(unsigned int);
+		sgSize += sizeof(int);
+	}
+
+
+
+*/
+
+	// TODO: serialize investment
+
+	// TODO: serialize cheating
+
+
+	// create packet; copy all serialized data into packet.data & send to server
+	endPrepPacket.inputType = END_PREP_PHASE;
+	endPrepPacket.size = sgSize;
+	endPrepPacket.skill_id = 0;
+	endPrepPacket.finalLocation = NULL_POINT;
+	memcpy(endPrepPacket.data, headPtr, sgSize); 
+
+	int iResult = network->sendToServer(endPrepPacket);
+	if (!iResult)
+	{
+		logger()->error("Error sending to server; closing connection");
+		closesocket(network->ConnectSocket);
+		return;
+	}
+	
+	// block on recv() until confirmation to start kill phase from server
+	int endPrepPhase = 0;
+	ServerInputPacket* end_prep_packet = NULL;
+	while (!endPrepPhase)
+	{
+		// empty packets queue; drop all non start_kill_phase packets; 
+		q_lock->lock();
+		while (!(serverPackets->empty()))
+		{
+			ServerInputPacket* curr_packet = serverPackets->front();
+			if (curr_packet->packetType == START_KILL_PHASE)
+			{
+				end_prep_packet = curr_packet;
+				endPrepPhase = 1;
+
+			}
+			serverPackets->pop();	// remove from queue
+		}
+		q_lock->unlock();
+	}
+
+	// deserialzie leaderboard 
+	char* data = end_prep_packet->data;
+
+	// deserialize leaderboard
+	unsigned int leaderBoard_size = 0;
+	leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
+	data += leaderBoard_size;
+
+	// reset scene 
+	Window_static::scene->resetPreKillPhase();
+
+	// server starting kill phase! 
+	currPhase = KILL;
+	std::chrono::seconds secKill(KILLPHASE_TIME);
+	prepareTimer = nanoseconds(secKill);
+
+}
+
+
+/*
+	Called to switch from Lobby -> kill -> prep -> etc..
+*/
 int ClientGame::switchPhase() {
 	auto log = logger();
-	switch (currPhase) {
-		case LOBBY:
+	switch (currPhase)
+	{
+		case LOBBY: 
 			if (waitingInitScene() == 0)
 				return 0;
+
 			currPhase = KILL;
 			std::chrono::seconds secKill0(KILLPHASE_TIME);
 			prepareTimer = nanoseconds(secKill0);
 			break;
-		case KILL:
-			// TODO: waitingPreparePacket() -- need to direct to FINAL phase as well
-			std::chrono::seconds secPre(PREPHASE_TIME);
-			prepareTimer = nanoseconds(secPre);
-			currPhase = PREPARE;
+
+		// kill phase over --> request to start prep phase
+		case KILL: endKillPhase(); break;
+
+		// prepare phase over --> request to start kill phase
+		case PREPARE: endPrepPhase(); break;
+
+		// TODO: End game scene
+		case FINAL: 
+			logger()->debug("GAME OVER!!!!");
+			while (1) {};
 			break;
-		case PREPARE:
-			 //TODO: waitingServerTickPacket()
-			currPhase = KILL;
-			std::chrono::seconds secKill(KILLPHASE_TIME);
-			prepareTimer = nanoseconds(secKill);
-			break;
-		default:
-			break;
+
+		// should never occur
+		default: logger()->error("INVALID PHASE!"); break;
 	}
+
 	setup_callbacks(currPhase);
 	Window_static::resetGUIStatus();
 	return 1;
 }
+
 
 void ClientGame::run() {
 	auto log = logger();
@@ -352,7 +589,6 @@ void ClientGame::run() {
 			
 		}
 
-		
 	}
 
 	Window_static::clean_up();
@@ -520,6 +756,11 @@ ClientInputPacket ClientGame::createClientInputPacket(InputType type, Point fina
 	packet.finalLocation = finalLocation;
 	packet.skill_id = skill_id;
 
+	// used for end prep phase (default init them to 0)
+	packet.size = 0;
+	char buff[END_PHASE_PACKET_SIZE] = { 0 };
+	memcpy(&packet.data, buff, END_PHASE_PACKET_SIZE);
+
 	return packet;
 }
 
@@ -534,6 +775,11 @@ ClientInputPacket ClientGame::createSkillPacket(Point destLocation, int skill_id
 ClientInputPacket ClientGame::createRespawnPacket()
 {
 	return createClientInputPacket(RESPAWN, NULL_POINT, -1);
+}
+
+ClientInputPacket ClientGame::createEndKillPhasePacket()
+{
+	return createClientInputPacket(END_KILL_PHASE, NULL_POINT, -1);
 }
 
 ClientInputPacket ClientGame::createInitPacket() {

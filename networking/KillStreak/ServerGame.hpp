@@ -49,13 +49,18 @@ public:
 
 	void game_match();
 
-	void updateKillPhase();
+	int updateKillPhase();
 
-	void updatePreparePhase();
+	int updatePreparePhase();
 
 	void launch_client_threads();
 
 	const int NUM_THREADS = 8;
+
+	int end_kill_phase = 0;			// true if any client initiated end_kill_phase
+	int total_end_kill_packets = 0; // number of end_kill_phase packets received from clients 
+	int total_end_prep_packets = 0; // number of end_prep_phase packets received from clients
+	int round_number = 1;			// curent round number
 
 protected:
 	PCSTR host;
@@ -80,16 +85,20 @@ protected:
 	ServerNetwork* network;					// ptr to servers network
 	mutex* char_select_lock;				// lock for character selection
 
+	void resetValuesPreKillPhase();			// reset values before next kill phase
 	void readMetaDataForSkills();
 
 	// create packet for server to send to client
 	ServerInputPacket createServerPacket(ServerPacketType type, int temp, char* data);
 	ServerInputPacket createInitScenePacket(unsigned int playerId, unsigned int playerRootid);
+	ServerInputPacket createStartEndPhasePacket();
+	ServerInputPacket createStartPrepPhasePacket();
+	ServerInputPacket createStartKillPhasePacket();
 	ServerInputPacket createServerTickPacket();
 	ServerInputPacket createWelcomePacket();
 	ServerInputPacket createCharSelectPacket(char* data, int size);
 	
-	void handleClientInputPacket(ClientInputPacket* packet, int client_id);
+	int handleClientInputPacket(ClientInputPacket* packet, int client_id);
 
 	friend class ScenePlayer;
 };
