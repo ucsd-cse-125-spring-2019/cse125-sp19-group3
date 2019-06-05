@@ -606,15 +606,6 @@ int ServerGame::updatePreparePhase() {
 					data += sizeof(unsigned int);
 				}
 
-				// TODO: REMOVE ME **********************************
-				// test printing updated client skills
-				vector<Skill> curr_skills = scene->scenePlayers[client_id].availableSkills;
-				for (int i = 0; i < curr_skills.size(); i++)
-				{
-					logger()->debug("SKILL {}: LEVEL {}", i, curr_skills[i].level);
-				}
-				// TODO: REMOVE ME **********************************
-
 
 				// 4.) TODO: deserialize invest for each player 
 

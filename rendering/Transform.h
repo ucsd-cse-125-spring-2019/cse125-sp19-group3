@@ -46,20 +46,22 @@ public:
 	glm::mat4 scale;
 	std::unordered_set<unsigned int> children_ids;
 	std::unordered_set<unsigned int> model_ids;
-
+	glm::vec3 destination;
+	float speed;
+	glm::vec3 direction;
 	Particles * particle_effect;
 	Transform();
 	
 	Transform(unsigned int nodeId, glm::mat4 M);
 	Transform(unsigned int nodeId, glm::mat4 translation, glm::mat4 rotation, glm::mat4 scale);
-
+	void Transform::setDestination(glm::mat4 & updatedM);
 	void addChild(const unsigned int id);
 	void removeChild(unsigned int id);
 	unsigned int serialize(char * data);
 	unsigned deserializeAndUpdate(char * data, Shader* particleShader, GLuint particleTexture);
 	void draw(std::unordered_map<unsigned int, ModelData> &models, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx, unordered_map<unsigned int, Transform *> &sceneGraphMap);
 	void update();
-
+	void clientUpdate();
 	bool isCollided(glm::vec3 forwardVector, unordered_map<unsigned int, float> &modelRadius, unordered_map<unsigned int, Transform *> &sceneGraphMap, Transform * otherNode, unordered_map<unsigned int, glm::vec3> &modelBoundingBoxes, bool toEnv);
 };
 
