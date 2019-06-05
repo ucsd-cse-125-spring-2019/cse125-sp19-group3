@@ -160,6 +160,7 @@ void Transform::draw( std::unordered_map<unsigned int, ModelData> &models, const
 		else if (models[model_id].renderMode == TEXTURE) {
 			models[model_id].shader->use();
 			models[model_id].shader->setInt("isEvading", isEvading ? 1 : 0);
+			models[model_id].shader->setInt("isInvincible", isInvincible ? 1 : 0);
 			models[model_id].shader->setInt("UseTex", 1);
 			glBindTexture(GL_TEXTURE_2D, models[model_id].texID);
 			models[model_id].model->draw(models[model_id].shader, childMtx, viewProjMtx);
