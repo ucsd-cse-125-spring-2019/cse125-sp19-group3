@@ -14,6 +14,12 @@
 #define LOBBY_START_TIME	 500		// wait this long (ms) after all players connect
 #define START_CHAR_SELECTION 1			// start value of char selection phase
 #define END_CHAR_SELECTION   2			// end value of char selection phase
+#define TOTAL_ROUNDS		 2			// total rounds to be played in game
+
+#define KILL_PHASE			 0 
+#define PREP_PHASE			 1
+#define END_GAME_PHASE		 2
+
 
 static int game_start			  = 0;	// game ready to begin?
 static int character_select_start = 0;	// character selection ready to begin?
@@ -354,7 +360,7 @@ void ServerGame::launch() {
 	bool running = true; // not sure if needed;
 	auto lastTime = Clock::now();
 	
-	bool isKillPhase = true;
+	int current_phase = KILL_PHASE;
 
 	log->info("Server is about to enter game loop!");
 	// GAME LOOP
@@ -373,15 +379,22 @@ void ServerGame::launch() {
 
 			if (scheduledEvent.ticksLeft <= 0) {
 				// initNewPhase(isKillPhase);
-				isKillPhase = !isKillPhase;
+				//isKillPhase = !isKillPhase;
 				// pop off / get rid of event alarm here?
+
+				current_phase = (current_phase == KILL_PHASE) ? PREP_PHASE : KILL_PHASE;
 			}
 
-			if (isKillPhase) {
-				isKillPhase = updateKillPhase();
+			if (current_phase == KILL_PHASE) {
+				current_phase = updateKillPhase();
 			}
-			else {
-				isKillPhase = updatePreparePhase();
+			else if ( current_phase == PREP_PHASE) {
+				current_phase = updatePreparePhase();
+			}else
+			{ 
+				// TODO: Fill me in!!!
+				logger()->debug("GAME OVER!!!");
+				while (1) {};
 			}
 		}
 	}
@@ -391,8 +404,9 @@ void ServerGame::launch() {
 /*
 	Runs on every server tick. Empties all client_thread queues, updates the game state, and 
 	broadcasts updated state back to all clients.
+	-- Return next phase next server tick should be on
 */
-bool ServerGame::updateKillPhase() {
+int ServerGame::updateKillPhase() {
 	auto log = logger();
 	// log->info("MT: Game server kill phase update...");
 
@@ -438,20 +452,29 @@ bool ServerGame::updateKillPhase() {
 					{
 						end_kill_phase = 0;
 						total_end_kill_packets = 0;
+						round_number++;
 
-						// serialize leaderboard and gold of all players then broadcast to all clients
-						ServerInputPacket start_prep_phase_packet = createStartPrepPhasePacket();
-						network->broadcastSend(start_prep_phase_packet);
-						logger()->debug("BROADCAST START PREP PHASE PACKET");
-
-						return false;	// dont care about any other packets; kill phase over start prep!
+						if (round_number <= TOTAL_ROUNDS)
+						{
+							// serialize leaderboard and gold of all players then broadcast to all clients
+							ServerInputPacket start_prep_phase_packet = createStartPrepPhasePacket();
+							network->broadcastSend(start_prep_phase_packet);
+							logger()->debug("Prep Phase: Broadcasting start prep phase packet");
+							return PREP_PHASE;
+						}
+						else	// GAME OVER! Send end game phase packet!
+						{	
+							ServerInputPacket start_end_phase_packet = createStartEndPhasePacket();
+							network->broadcastSend(start_end_phase_packet);
+							logger()->debug("GAME OVER: Broadcasting start end phase packet");
+							return END_GAME_PHASE;
+						}
 					}
 				}
 			}
 			// end kill phase has been initiated
 			else		
 			{
-				logger()->debug("END KILL PHASE INITIATED BY CLIENT(S)");
 				// inc. total end kill phase packets if matches type; otherwise drop packet
 				if (packet->inputType == END_KILL_PHASE) total_end_kill_packets++;
 
@@ -460,19 +483,32 @@ bool ServerGame::updateKillPhase() {
 				{
 					end_kill_phase = 0;
 					total_end_kill_packets = 0;
+					round_number++;
 
-					// serialize leaderboard and gold of all players then broadcast to all clients
-					ServerInputPacket start_prep_phase_packet = createStartPrepPhasePacket();
-					network->broadcastSend(start_prep_phase_packet);
-					logger()->debug("BROADCAST START PREP PHASE PACKET");
+					// game not over --> enter prepare phase
+					if (round_number <= TOTAL_ROUNDS)
+					{
+						// serialize leaderboard and gold of all players then broadcast to all clients
+						ServerInputPacket start_prep_phase_packet = createStartPrepPhasePacket();
+						network->broadcastSend(start_prep_phase_packet);
+						logger()->debug("Prep Phase: Broadcasting start prep phase packet");
+						return PREP_PHASE;
 
-					return false;	// dont care about any other packets; kill phase over start prep!
+					}
+					else	// GAME OVER! Send end game phase packet!
+					{	
+						ServerInputPacket start_end_phase_packet = createStartEndPhasePacket();
+						network->broadcastSend(start_end_phase_packet);
+						logger()->debug("GAME OVER: Broadcasting start end phase packet");
+						return END_GAME_PHASE;
+					}
+
 				}
 			}
 		}
 	}
 
-	if (end_kill_phase) return true;	// don't update; return treu b/c kill phase not over just yet!
+	if (end_kill_phase) return KILL_PHASE;	// don't update; return treu b/c kill phase not over just yet!
 
 	scene->update();	// update scene graph
 
@@ -508,14 +544,14 @@ bool ServerGame::updateKillPhase() {
 		p_it++;
 	}
 
-	return true;	// kill phase not over
+	return KILL_PHASE;	// kill phase not over
 }
 
 
 /*
-	-- Return false while it's still prep phase; true when its kill phase
+	-- Return next phase next server tick should be on.
 */
-bool ServerGame::updatePreparePhase() {
+int ServerGame::updatePreparePhase() {
 	auto log = logger();
 	//log->info("MT: Game server update prepare phase...");
 
@@ -543,28 +579,51 @@ bool ServerGame::updatePreparePhase() {
 	// solution... make map check if already received from same client
 
 	// handle all incoming packets; drop non prep phase packets;
-	for (int i = 0; i < GAME_SIZE; i++) {
-		for (auto& packet : inputPackets[i]) {
+	for (int client_id = 0; client_id < GAME_SIZE; client_id++) {
+		for (auto& packet : inputPackets[client_id]) {
 
 			// drop non prep phase packets; otherwise deserialize data and inc. total number received
 			if (packet->inputType == END_PREP_PHASE)
 			{
 				total_end_prep_packets++;
 
-				// 1.)
-				// 	deserialize remaining gold for each player (update playerMetadata field gold)
-				//	 NOTE: Should we send updated gold in start kill phase packet? Or just wait for first server tick?
-				//	 probably wait for server tick...
+				char* data = packet->data;
+
+				// deserialize client gold
+				unordered_map<unsigned int, PlayerMetadata*>::iterator p_it = playerMetadatas->find(client_id);
+				PlayerMetadata* player_meta = p_it->second;
+				memcpy(&player_meta->gold, data, sizeof(int));
+				data += sizeof(int);
+
+				// TODO: Client side skills vector always empty?
+				 
+		/*
+				// deserialize number of skills
+				int total_skills = 0;
+				memcpy(&total_skills, data, sizeof(int));
+				data += sizeof(int);
+
+				// deserialize skill levels 
+				for (int skill_num = 0; skill_num < total_skills; skill_num++)
+				{
+					memcpy(&scene->scenePlayers[client_id].availableSkills[skill_num].level, data, sizeof(unsigned int));
+					data += sizeof(unsigned int);
+				}
+
+				// TODO: REMOVE ME **********************************
+				// test printing updated client skills
+				vector<Skill> curr_skills = scene->scenePlayers[client_id].availableSkills;
+				for (int i = 0; i < curr_skills.size(); i++)
+				{
+					logger()->debug("SKILL {}: LEVEL {}", i, curr_skills[i].level);
+				}
+				// TODO: REMOVE ME **********************************
+		*/
 
 
-				// 2.) deserialize skill levels for each player
+				// 4.) TODO: deserialize invest for each player 
 
-
-				// 3.) deserialize invest for each player 
-
-
-				// 4.) deserialize cheating for each player
-
+				// 5.) TODO: deserialize cheating for each player
 
 			}
 
@@ -582,13 +641,12 @@ bool ServerGame::updatePreparePhase() {
 				network->broadcastSend(start_kill_phase_packet);
 				logger()->debug("BROADCAST START KILL PHASE PACKET");
 
-				return true;	// dont care about any other packets;  prep phase over start kill!
+				return KILL_PHASE;	// dont care about any other packets;  prep phase over start kill!
 			}
-
 		}
 	}
 
-	return false;	// prep phase not over
+	return PREP_PHASE;	// prep phase not over
 }
 
 
@@ -676,6 +734,31 @@ ServerInputPacket ServerGame::createStartKillPhasePacket()
 
 
 /*
+	Create end game packet with serialized leaderboard.
+*/
+ServerInputPacket ServerGame::createStartEndPhasePacket()
+{
+	ServerInputPacket packet;		
+	unsigned int sgSize = 0;
+	char buf[SERVER_TICK_PACKET_SIZE] = { 0 };
+	char* headPtr = buf;
+	char* bufPtr = buf;
+
+	// serealize leaderboard
+	unsigned int leaderBoard_size = 0;
+	leaderBoard_size = Serialization::serializeLeaderBoard(bufPtr, leaderBoard);
+	bufPtr += leaderBoard_size;
+	sgSize += leaderBoard_size;
+
+	packet.packetType = START_END_GAME_PHASE;
+	packet.size = sgSize;
+	memcpy(packet.data, headPtr, sgSize); 
+
+	return packet;
+}
+
+
+/*
 	Create start prep phase packet with serialized leaderboard and gold of all players.
 */
 ServerInputPacket ServerGame::createStartPrepPhasePacket()
@@ -686,6 +769,11 @@ ServerInputPacket ServerGame::createStartPrepPhasePacket()
 	char buf[SERVER_TICK_PACKET_SIZE] = { 0 };
 	char* headPtr = buf;
 	char* bufPtr = buf;
+
+	// serialize round number
+	memcpy(bufPtr, &round_number, sizeof(int));
+	bufPtr += sizeof(int);
+	sgSize += sizeof(int);
 
 	// serealize leaderboard
 	unsigned int leaderBoard_size = 0;
@@ -739,13 +827,6 @@ ServerInputPacket ServerGame::createServerTickPacket() {
 	memcpy(bufPtr, &client_gold, sizeof(int));
 	bufPtr += sizeof(int);
 	sgSize += sizeof(int);
-
-	// TODO: REMOVE ME!
-	if (client_gold != 0)
-	{
-		logger()->debug("Create tick packet serialized gold {}", client_gold);
-	}
-
 
 	// serialize if user silenced; default init the first byte (silenced)
 	bool silenced = false;
