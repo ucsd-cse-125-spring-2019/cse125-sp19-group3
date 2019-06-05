@@ -482,6 +482,9 @@ int ServerGame::updateKillPhase() {
 				{
 					end_kill_phase = 0;
 					total_end_kill_packets = 0;
+
+					// TODO: Calculate points based on rank & update leaderboard
+					//leaderBoard->awardRoundPoints(round_number);
 					round_number++;
 
 					// game not over --> enter prepare phase

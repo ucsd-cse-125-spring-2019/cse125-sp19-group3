@@ -9,6 +9,13 @@
 
 #define META_CONF "../../networking/KillStreak/meta_data.json"
 #define KILL_POINTS 3		// points awarded per kill
+#define FIRST  1
+#define SECOND 2
+#define THIRD  3
+#define FOURTH 4
+#define ROUND_3 3
+#define ROUND_4 4
+#define ROUND_5 5
 
 using json = nlohmann::json;
 using namespace std;
@@ -20,6 +27,43 @@ unordered_map<string, ArcheType> archetype_map = {
 	{"WARRIOR", WARRIOR},
 	{"KING", KING},
 };	
+
+
+/*
+	End of round... award points to all players based on rank.
+*/
+void LeaderBoard::awardRoundPoints(int round_number)
+{
+	vector<int> currKills = currentKills;	// make copy of rounds kill vector
+	for (int rank = 1; rank <= GAME_SIZE; rank++)
+	{
+		// get player id (index in vector) with most kills from remaining list
+		auto it = std::max_element(currKills.begin(), currKills.end());
+		int player_id = it - currKills.begin();
+
+		// award points based on rank
+		int points = 0;
+		switch (rank)
+		{
+			case FIRST : points = 6; break;
+			case SECOND: points = 4; break;
+			case THIRD : points = 2; break;
+			case FOURTH: points = 1; break;
+			default	   : points = 0; break;
+		}
+
+		// multiply round points based on rank  
+		switch (round_number)
+		{
+			case ROUND_3 || ROUND_4: points *= 1.5; break;
+			case ROUND_5: points *= 2; break;
+			default: break;
+		}
+		
+		currPoints[player_id] = points; // add to points vector on leaderboard
+		*it = -1;						// reset current max to -1
+	}
+}
 
 
 // reset players kill streak in vector sent to all clients
