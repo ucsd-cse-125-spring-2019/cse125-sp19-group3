@@ -250,6 +250,7 @@ void ServerScene::resetScene()
 		player.movementMode = idle;
 		player.animationMode = -1;
 		player.isEvading = false;
+		serverSceneGraphMap[node_id]->isEvading = false;
 
 		// clear projectiles
 		auto skillIter = skills.begin();
