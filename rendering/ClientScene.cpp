@@ -444,6 +444,19 @@ void ClientScene::renderPreparePhase(GLFWwindow* window) {
 	// Swap buffers
 	glfwSwapBuffers(window);
 }
+
+void ClientScene::renderFinalPhase(GLFWwindow* window) {
+	/* Input */
+	glfwPollEvents();
+	nk_glfw3_new_frame();
+	//prepare_layout(ctx, &media, ClientScene::width, ClientScene::height, &this->player, leaderBoard, usernames, archetypes, game, guiStatuses);
+
+
+	nk_glfw3_render(NK_ANTI_ALIASING_OFF, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+
+	// Swap buffers
+	glfwSwapBuffers(window);
+}
  
 
 
@@ -521,7 +534,9 @@ void ClientScene::display_callback(GLFWwindow* window)
 
 	if (game->currPhase == ClientStatus::LOBBY) renderLobbyPhase(window);
 	else if (game->currPhase == ClientStatus::KILL) renderKillPhase(window);
-	else renderPreparePhase(window);
+	else if (game->currPhase == ClientStatus::PREPARE) renderPreparePhase(window);
+	else if (game->currPhase == ClientStatus::FINAL) renderFinalPhase(window);
+	else renderSummaryPhase(window);
 }
 
 void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)

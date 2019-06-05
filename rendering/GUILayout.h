@@ -247,6 +247,27 @@ static void ui_prepare_title(struct nk_context *ctx, struct media *media, int wi
 }
 
 static void
+winner_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player,
+	vector<nanoseconds> skill_timers, LeaderBoard* leaderBoard, vector<string> usernames, vector<ArcheType> archetypes,
+	int killTextDeterminant, ClientGame* game, guiStatus & gStatus) {
+
+
+	if (game->prepareTimer > std::chrono::seconds::zero()) {
+		set_style(ctx, THEME_BLACK);
+		if (!player->isAlive) {
+			ui_deadscreen(ctx, media, width, height, killTextDeterminant);
+		}
+		ui_leaderboard(ctx, media, leaderBoard, usernames, archetypes);
+
+		ui_skills(ctx, media, width, height, player, skill_timers);
+		ui_killphase_header(ctx, media, width, height, 1, player, leaderBoard, gStatus);
+	}
+	else {
+		game->switchPhase();
+	}
+}
+
+static void
 kill_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player,
 	vector<nanoseconds> skill_timers, LeaderBoard* leaderBoard, vector<string> usernames, vector<ArcheType> archetypes,
 	int killTextDeterminant, ClientGame* game, guiStatus & gStatus) {
