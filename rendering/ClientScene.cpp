@@ -873,6 +873,12 @@ void ClientScene::handleServerTickPacket(char * data) {
 	leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
 	data += leaderBoard_size;
 
+	// TODO: REMOVE ME ****************
+	if (leaderBoard->deaths_this_tick != 0) {
+		logger()->debug("DEATHS THIS TICK {}", leaderBoard->deaths_this_tick);
+	}
+	// TODO: REMOVE ME ****************
+
 	if (isCharging && (leaderBoard->currentKills[player.player_id] > currKill)) 
 		skill_timers[DIR_SKILL_INDEX] = nanoseconds::zero();	// reset cooldown when kill someone using charge
    

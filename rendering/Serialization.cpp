@@ -80,14 +80,6 @@ unsigned int Serialization::serializeLeaderBoard(char* lb_data, LeaderBoard* lea
 		size += sizeof(int);
 		lb_data += sizeof(int);
 	}
-	/*
-	for (int i = 0; i < GAME_SIZE; i++)			// prizes
-	{
-		memcpy(lb_data, &leaderBoard->prizes[i], sizeof(int));
-		size += sizeof(int);
-		lb_data += sizeof(int);
-	}
-	*/
 	for (int i = 0; i < GAME_SIZE; i++)			// killstreak
 	{
 		memcpy(lb_data, &leaderBoard->killStreaks[i], sizeof(int));
@@ -111,6 +103,16 @@ unsigned int Serialization::serializeLeaderBoard(char* lb_data, LeaderBoard* lea
 	memcpy(lb_data, &leaderBoard->deaths_this_tick, sizeof(int));
 	size += sizeof(int);
 
+	leaderBoard->deaths_this_tick = 0;	// reset deaths this tick
+
+
+	// TODO: serialize who killed who...
+	// make a vector of pairs? first index killer id second index dead player id
+	// serialize by putting id's --> 0120 (0 killed 1, 2 killed 0)
+	// ***died_this_tick should be used to know how many numbers to deserialize
+	// 1 died_this_tick means deserialzie two ints...
+	// 2 died_this_tick means deseralize four ints... etc..
+
 	return size;
 }
 
@@ -131,14 +133,6 @@ unsigned int Serialization::deserializeLeaderBoard(char* lb_data, LeaderBoard* l
 		lb_data += sizeof(int);
 		sz += sizeof(int);
 	}
-	/*
-	for (int i = 0; i < GAME_SIZE; i++)		// prizes
-	{
-		memcpy(&leaderBoard->prizes[i], lb_data, sizeof(int));
-		lb_data += sizeof(int);
-		sz += sizeof(int);
-	}
-	*/
 	for (int i = 0; i < GAME_SIZE; i++)		// killstreak
 	{
 		memcpy(&leaderBoard->killStreaks[i], lb_data, sizeof(int));
@@ -161,7 +155,7 @@ unsigned int Serialization::deserializeLeaderBoard(char* lb_data, LeaderBoard* l
 	memcpy(&leaderBoard->deaths_this_tick, lb_data, sizeof(int));
 	sz += sizeof(int);
 
-	// TODO: Serialize who killed who...
+	// TODO: deserailze who killed who...
 	// make a vector of pairs? first index killer id second index dead player id
 	// serialize by putting id's --> 0120 (0 killed 1, 2 killed 0)
 	// ***died_this_tick should be used to know how many numbers to deserialize

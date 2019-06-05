@@ -543,8 +543,6 @@ int ServerGame::updateKillPhase() {
 		p_it++;
 	}
 
-	leaderBoard->deaths_this_tick = 0;	// reset deaths this tick
-
 	return KILL_PHASE;	// kill phase not over
 }
 

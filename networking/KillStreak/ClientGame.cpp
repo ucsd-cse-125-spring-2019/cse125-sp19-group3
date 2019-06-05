@@ -560,10 +560,6 @@ void ClientGame::run() {
 			// Idle callback. Updating objects, etc. can be done here.
 			Window_static::idle_callback();
 
-			if (leaderBoard->deaths_this_tick != 0) {
-				logger()->debug("DEATHS THIS TICK {}", leaderBoard->deaths_this_tick);
-			}
-
 			// update all timers based on time elapsed
 			auto end = Clock::now();
 			nanoseconds elapsed = chrono::duration_cast<nanoseconds>(end - start);
