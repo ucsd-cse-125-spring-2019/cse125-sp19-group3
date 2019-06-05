@@ -260,7 +260,7 @@ kill_layout(struct nk_context *ctx, struct media *media, int width, int height, 
 		ui_leaderboard(ctx, media, leaderBoard, usernames, archetypes);
 
 		ui_skills(ctx, media, width, height, player, skill_timers);
-		ui_killphase_header(ctx, media, width, height, 1, player, leaderBoard, gStatus);
+		ui_killphase_header(ctx, media, width, height, game->round_number, player, leaderBoard, gStatus);
 	}
 	else {
 		game->switchPhase();
