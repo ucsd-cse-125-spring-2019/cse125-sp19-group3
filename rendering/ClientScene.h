@@ -44,6 +44,10 @@ public:
 	void initialize_skills(ArcheType selected_type);
 	void playPreparePhaseBGM();
 	void playKillPhaseBGM();
+	void playCountdown();
+	void playButtonPress();
+	void playChaching();
+	void playInvest();
 	//void playerInit(const ScenePlayer &player);
 	void clean_up();
 	GLFWwindow * create_window(int width, int height);
@@ -129,6 +133,10 @@ public:
 	static void resetPreKillPhase() { scene->resetPreKillPhase(); };
 	static void playPreparePhaseBGM() { scene->playPreparePhaseBGM(); };
 	static void playKillPhaseBGM() { scene->playKillPhaseBGM(); };
+	static void playCountdown() { scene->playCountdown(); };
+	static void playButtonPress() { scene->playButtonPress(); };
+	static void playChaching() { scene->playChaching(); };
+	static void playInvest() { scene->playInvest(); };
 	static int getPlayerGold() { return scene->getPlayerGold(); };
 	static vector<Skill> getPlayerSkills() { return scene->getPlayerSkills(); };
 

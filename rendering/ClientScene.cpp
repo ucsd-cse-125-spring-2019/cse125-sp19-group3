@@ -314,7 +314,7 @@ void ClientScene::updateTimers(nanoseconds timePassed) {
 			skill_timers[i] -= timePassed;
 			if (skill_timers[i] < nanoseconds::zero()) {
 				skill_timers[i] = nanoseconds::zero();
-				logger()->debug("skill {} is ready to fire!", i);
+				audio.play(glm::vec3(0), COOLDOWN_RESET_AUDIO);
 			}
 		}
 	}
@@ -681,6 +681,22 @@ void ClientScene::playPreparePhaseBGM() {
 
 void ClientScene::playKillPhaseBGM() {
 	audio.play(glm::vec3(0), KILL_PHASE_MUSIC);
+}
+
+void ClientScene::playCountdown() {
+	audio.play(glm::vec3(0), TIMER_AUDIO);
+}
+
+void ClientScene::playButtonPress() {
+	audio.play(glm::vec3(0), BUTTON_PRESS_AUDIO);
+}
+
+void ClientScene::playChaching() {
+	audio.play(glm::vec3(0), BUY_ITEM_1_AUDIO);
+}
+
+void ClientScene::playInvest() {
+	audio.play(glm::vec3(0), BUY_ITEM_2_AUDIO);
 }
 
 void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)

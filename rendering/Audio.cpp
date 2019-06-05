@@ -20,6 +20,7 @@ Audio::Audio() {
 	skeleton_death_2.setBuffer(skeleton_death_2_Buffer);
 	skeleton_evade.setBuffer(skeleton_evade_Buffer);
 	skeleton_evade_2.setBuffer(skeleton_evade_2_Buffer);
+	cooldown_sound.setBuffer(cooldown_Buffer);
 	buyItem_1.setBuffer(buyItem_1_Buffer);
 	buyItem_2.setBuffer(buyItem_2_Buffer);
 	equipItem_1.setBuffer(equipItem_1_Buffer);
@@ -76,10 +77,19 @@ void Audio::loadWAVFiles() {
 		cout << "unable to load wav file " << "equipItem_1.wav" << endl;
 	if (!equipItem_2_Buffer.loadFromFile("../audio/store/equipItem_2.wav"))
 		cout << "unable to load wav file " << "equipItem_2.wav" << endl;
+	if (!equipItem_2_Buffer.loadFromFile("../audio/store/equipItem_2.wav"))
+		cout << "unable to load wav file " << "equipItem_2.wav" << endl;
+	if (!cooldown_Buffer.loadFromFile("../audio/model/cooldown_reset.wav"))
+		cout << "unable to load wav file " << "cooldown_reset.wav" << endl;
 	if (!prepare_phase_music.openFromFile("../audio/phases/prepare_phase.wav"))
 		cout << "unable to load wav file " << "prepare_phase.wav" << endl;
 	if (!kill_phase_music.openFromFile("../audio/phases/kill_phase.wav"))
 		cout << "unable to load wav file " << "kill_phase.wav" << endl;
+	if (!timer.openFromFile("../audio/phases/timer_tick.wav"))
+		cout << "unable to load wav file " << "timer_tick.wav" << endl;
+	if (!button_press.openFromFile("../audio/store/button_click.wav"))
+		cout << "unable to load wav file " << "timer_tick.wav" << endl;
+
 }
 
 void Audio::play(glm::vec3 pos, unsigned int audio_id) {
@@ -150,7 +160,20 @@ void Audio::play(glm::vec3 pos, unsigned int audio_id) {
 	case KILL_PHASE_MUSIC:
 		kill_phase_music.play();
 		break;
+	case COOLDOWN_RESET_AUDIO:
+		cooldown_sound.play();
+		break;
+	case TIMER_AUDIO:
+		timer.play();
+		break;
+	case GAME_OVER_AUDIO:
+		game_over.play();
+		break;
+	case BUTTON_PRESS_AUDIO:
+		button_press.play();
+		break;
 	}
+	
 }
 
 void Audio::initListener(glm::vec3 pos) {

@@ -566,7 +566,12 @@ void ClientGame::run() {
 			auto end = Clock::now();
 			nanoseconds elapsed = chrono::duration_cast<nanoseconds>(end - start);
 			Window_static::updateTimers(elapsed);
+			auto previousTime = prepareTimer;
 			prepareTimer -= elapsed;
+			auto timetoPlayCountdown = nanoseconds(std::chrono::seconds((int)TIMER_COUNTDOWN));
+			if (previousTime > timetoPlayCountdown && prepareTimer <= timetoPlayCountdown) {
+				Window_static::playCountdown();
+			}
 		}
 		else {
 			// Prepare Phase

@@ -9,7 +9,7 @@ enum AUDIO_TYPE { ASSASSIN_PROJECTILE_AUDIO, ASSASSIN_STEALTH_AUDIO, ASSASSIN_TE
 	KING_SILENCE_AUDIO, FIRE_AOE_AUDIO, FIRE_CONE_AOE_AUDIO, FIRE_BALL_1_AUDIO, FIREBALL_2_AUDIO, FIRE_BALL_3_AUDIO,
 	WARRIOR_CHARGE_AUDIO, WARRIOR_PROJECTILE_AUDIO, WARRIOR_SLAM_AOE_AUDIO, SKELETON_DEATH_1_AUDIO, SKELETON_DEATH_2_AUDIO, 
 	SKELETON_EVADE_AUDIO, SKELETON_EVADE_2_AUDIO, BUY_ITEM_1_AUDIO, BUY_ITEM_2_AUDIO, EQUIP_ITEM_1_AUDIO, EQUIP_ITEM_2_AUDIO,
-	PREPARE_PHASE_MUSIC, KILL_PHASE_MUSIC};
+	PREPARE_PHASE_MUSIC, KILL_PHASE_MUSIC, COOLDOWN_RESET_AUDIO, TIMER_AUDIO, GAME_OVER_AUDIO, BUTTON_PRESS_AUDIO };
 
 class Audio {
 public:
@@ -58,10 +58,12 @@ private:
 	sf::SoundBuffer skeleton_death_2_Buffer;
 	sf::SoundBuffer skeleton_evade_Buffer;
 	sf::SoundBuffer skeleton_evade_2_Buffer;
+	sf::SoundBuffer cooldown_Buffer;
 	sf::Sound skeleton_death_1;
 	sf::Sound skeleton_death_2;
 	sf::Sound skeleton_evade;
 	sf::Sound skeleton_evade_2;
+	sf::Sound cooldown_sound;
 
 	//**STORE SOUNDS**//
 	sf::SoundBuffer buyItem_1_Buffer;
@@ -76,5 +78,8 @@ private:
 	//**BGM**//
 	sf::Music prepare_phase_music;
 	sf::Music kill_phase_music;
+	sf::Music timer;
+	sf::Music game_over;
+	sf::Music button_press;
 	void loadWAVFiles();
 };
