@@ -76,16 +76,16 @@
     <None Include="..\..\networking\KillStreak\config.ini" />
     <None Include="..\..\networking\KillStreak\meta_data.json" />
     <None Include="..\..\networking\KillStreak\server_config.json" />
-    <None Include="..\circleshader.frag" />
-    <None Include="..\circleshader.vert" />
     <None Include="..\env_model_locations.json" />
     <None Include="..\model_paths.json" />
-    <None Include="..\animatedShader.frag" />
-    <None Include="..\animatedShader.vert" />
-    <None Include="..\particleShader.frag" />
-    <None Include="..\particleShader.vert" />
-    <None Include="..\toonshader.frag" />
-    <None Include="..\toonshader.vert" />
+    <None Include="..\shaders\animatedShader.frag" />
+    <None Include="..\shaders\animatedShader.vert" />
+    <None Include="..\shaders\circleshader.frag" />
+    <None Include="..\shaders\circleshader.vert" />
+    <None Include="..\shaders\particleShader.frag" />
+    <None Include="..\shaders\particleShader.vert" />
+    <None Include="..\shaders\toonshader.frag" />
+    <None Include="..\shaders\toonshader.vert" />
     <None Include="ClassDiagram.cd" />
     <None Include="packages.config" />
   </ItemGroup>

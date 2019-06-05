@@ -71,7 +71,7 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network,
 				new Model(obj["path"], obj["texture_path"], true), 
 				glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), 
 				animationShader, 
-				COLOR, 
+				TEXTURE, 
 				0 
 			};
 			for (unsigned int i = 0; i < 8; i++) {
@@ -79,7 +79,7 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network,
 			}
 		}
 		else {
-			models[(unsigned int)obj["model_id"]] = ModelData{ new Model(obj["path"], obj["texture_path"], false), glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), staticShader, COLOR, 0 };
+			models[(unsigned int)obj["model_id"]] = ModelData{ new Model(obj["path"], obj["texture_path"], false), glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), staticShader, TEXTURE, 0 };
 		}
 	}
 
@@ -99,7 +99,7 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network,
 	this->leaderBoard = leaderBoard;
 
 	// Floor
-	floor = new Model("../models/quad.obj", "../textures/floor.png", false);
+	floor = new Model("../models/quad.obj", "../textures/floor_grey.tga", false);
 	floor->localMtx = glm::translate(glm::mat4(1.0f), glm::vec3(100.0f, 0.0f, 120.0f)) *
 		glm::rotate(glm::mat4(1.0f), -90.0f / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)) *
 		glm::scale(glm::mat4(1.0f), glm::vec3(200));

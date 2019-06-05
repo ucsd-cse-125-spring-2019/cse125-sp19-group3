@@ -37,6 +37,7 @@ class Transform
 public:
 	unsigned int node_id;
 	bool enabled = true;
+	bool isEvading = false;
 	bool isInvincible = false;
 	float initialRotation;
 	glm::mat4 M;
