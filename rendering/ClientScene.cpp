@@ -449,7 +449,7 @@ void ClientScene::renderFinalPhase(GLFWwindow* window) {
 	/* Input */
 	glfwPollEvents();
 	nk_glfw3_new_frame();
-	//prepare_layout(ctx, &media, ClientScene::width, ClientScene::height, &this->player, leaderBoard, usernames, archetypes, game, guiStatuses);
+	winner_layout(ctx, &media, ClientScene::width, ClientScene::height, leaderBoard, usernames, archetypes, game);
 
 
 	nk_glfw3_render(NK_ANTI_ALIASING_OFF, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
@@ -458,11 +458,11 @@ void ClientScene::renderFinalPhase(GLFWwindow* window) {
 	glfwSwapBuffers(window);
 }
  
- void renderSummaryPhase(GLFWwindow* window) {
+ void ClientScene::renderSummaryPhase(GLFWwindow* window) {
 	 /* Input */
 	glfwPollEvents();
 	nk_glfw3_new_frame();
-	//prepare_layout(ctx, &media, ClientScene::width, ClientScene::height, &this->player, leaderBoard, usernames, archetypes, game, guiStatuses);
+	summary_layout(ctx, &media, ClientScene::width, ClientScene::height, leaderBoard, usernames, archetypes, game);
 
 
 	nk_glfw3_render(NK_ANTI_ALIASING_OFF, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);

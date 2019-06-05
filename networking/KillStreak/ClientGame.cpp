@@ -345,8 +345,8 @@ void ClientGame::endKillPhase()
 
 
 			// TODO: FINISH ME!!!
-			//std::chrono::seconds secPre(ENDGAME_TIME);
-			//prepareTimer = nanoseconds(secPre);
+			std::chrono::seconds sec(ENDGAME_TIME);
+			prepareTimer = nanoseconds(sec);
 			currPhase = FINAL;
 			startEndGamePhase = 1;
 			break;
@@ -501,7 +501,7 @@ int ClientGame::switchPhase() {
 		// TODO: End game scene
 		case FINAL: 
 			logger()->debug("GAME OVER!!!!");
-			while (1) {};
+			currPhase = SUMMARY;
 			break;
 
 		// should never occur

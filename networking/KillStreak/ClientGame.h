@@ -27,6 +27,7 @@ public:
 	int waitingInitScene();
 	int switchPhase();
 	void endKillPhase();
+	void endPrepPhase();
 
 	// initialize packet 
 	ClientInputPacket createClientInputPacket(InputType type, Point finalLocation, int skill_id);

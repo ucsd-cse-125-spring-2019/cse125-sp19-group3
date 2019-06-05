@@ -252,10 +252,11 @@ winner_layout(struct nk_context *ctx, struct media *media, int width, int height
 	if (game->prepareTimer > std::chrono::seconds::zero()) {
 		set_style(ctx, THEME_BLACK);
 		//TODO
-		ui_leaderboard(ctx, media, leaderBoard, usernames, archetypes);
+		//ui_leaderboard(ctx, media, leaderBoard, usernames, archetypes);
+		//nk_text(ctx, "winner", strlen("winner"), NK_TEXT_CENTERED);
 	}
 	else {
-		game->currPhase = SUMMARY;
+		game->switchPhase();
 	}
 }
 
