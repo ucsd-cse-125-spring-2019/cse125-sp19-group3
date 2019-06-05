@@ -8,8 +8,8 @@
 #define NULL_POINT				Point(0.0,0.0,0.0)
 #define SERVER_TICK_PACKET_SIZE 10000
 #define END_PHASE_PACKET_SIZE   512
-#define KILLPHASE_TIME			5
-#define PREPHASE_TIME			3
+#define KILLPHASE_TIME			15
+#define PREPHASE_TIME			5
 
 typedef glm::vec3 Point;
 

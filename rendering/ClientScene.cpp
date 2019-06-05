@@ -54,7 +54,6 @@ GLuint loadTexture(const char * imagepath) {
 void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network, LeaderBoard* leaderBoard)
 {
 	camera = new Camera();
-	initCamPos = camera->cam_pos;
 	camera->SetAspect(width / height);
 	camera->Reset();
 
@@ -409,15 +408,16 @@ void ClientScene::idle_callback()
 	// Call the update function the cube
 	//cube->update();
 	
-	glm::mat4 playerNode = clientSceneGraphMap[player.root_id]->M;
-	camera->cam_look_at = { playerNode[3][0],playerNode[3][1],playerNode[3][2] };
-	camera->cam_pos = initCamPos + glm::vec3({ playerNode[3][0],playerNode[3][1],playerNode[3][2] });
 	camera->Update();
 	for (auto &model : models) {
 		if (model.second.model->isAnimated) {
 			float timeToIncrement = model.first == 4 ? 2.0f / 60.0f * 33.0f : 2.0f / 60.0f;
 			model.second.model->BoneTransform(timeToIncrement);
 		}
+	}
+
+	for (auto &node : clientSceneGraphMap) {
+		node.second->clientUpdate();
 	}
 }
 
@@ -652,7 +652,7 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 void ClientScene::scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
 	glm::vec3 z_dir = camera->cam_look_at - camera->cam_pos;
 	if (!((camera->cam_pos.y < min_scroll && yoffset > 0) || (camera->cam_pos.y > max_scroll && yoffset < 0)))
-		initCamPos -= ((float)-yoffset * glm::normalize(z_dir));
+		camera->cam_look_at -= ((float)-yoffset * glm::normalize(z_dir));
 }
 
 void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
@@ -867,6 +867,12 @@ void ClientScene::handleServerTickPacket(char * data) {
 	if (player.modelType == ASSASSIN) {
 		clientSceneGraphMap[player.root_id]->enabled = true;
 	}
+
+	glm::mat4 playerNode = clientSceneGraphMap[player.root_id]->M;
+	//camera->cam_look_at = { playerNode[3][0],playerNode[3][1],playerNode[3][2] };
+	//camera->cam_pos = initCamPos + glm::vec3({ playerNode[3][0],playerNode[3][1],playerNode[3][2] });
+	glm::vec3 dest = { playerNode[3][0], playerNode[3][1], playerNode[3][2] };
+	camera->setDestination(dest);
 }
 
 
