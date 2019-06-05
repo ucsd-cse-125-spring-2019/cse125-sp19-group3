@@ -33,6 +33,6 @@ void main() {
 		finalColor = vec4(lightFactor * (ambientColor + diffuseColor) * vec3(color), color[3]);
 	}
 	else {
-		finalColor = vec4(lightFactor * (ambientColor + diffuseColor) * vec3(texture(Texture, texCoord)), 1.0);
+		finalColor = vec4(lightFactor * (ambientColor + diffuseColor) * vec3(texture(Texture, texCoord)), texture(Texture, texCoord)[3]);
 	}
 }
