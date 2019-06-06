@@ -187,10 +187,10 @@ void Skill::load_archtype_data(unordered_map<unsigned int, Skill> *skill_map,
 		unsigned int skill_id       = skill["skill_id"];
 		unsigned int initial_level  = skill["initial_level"];
 		string skill_name			= skill["skill_name"];
-		float cooldown              = skill["cooldown"];
+		int cooldown              = skill["cooldown"]; // in milliseconds
 		float range                 = skill["range"];
 		float speed                 = skill["speed"];
-		float duration              = skill["duration"];
+		int duration              = skill["duration"]; // in milliseconds
 
 		Skill curr_skill = Skill(skill_id, initial_level, skill_name, range, cooldown, duration, speed);
 		skill_map->insert({ skill_id, curr_skill });
@@ -210,9 +210,9 @@ void Skill::load_archtype_data(unordered_map<unsigned int, Skill> *skill_map,
 
 Skill Skill::calculateSkillBasedOnLevel(Skill &baseSkill, unsigned int level) {
 	auto range = baseSkill.range * pow(1.2, level);
-	auto cooldown = baseSkill.cooldown * pow(0.7, level);
-	auto duration = baseSkill.duration;
-	auto speed = baseSkill.speed * pow(1.1, level);
+	auto cooldown = (int)(baseSkill.cooldown * pow(0.8, level));
+	auto duration = (int)(baseSkill.duration * pow(1.2, level));
+	auto speed = baseSkill.speed * pow(1.2, level);
 	return Skill(baseSkill.skill_id,
 		level,
 		baseSkill.skillName,
