@@ -128,51 +128,63 @@ unsigned int Serialization::serializeLeaderBoard(char* lb_data, LeaderBoard* lea
 		lb_data += sizeof(int);
 	}
 
-	// find which players are on killstreak; 
-	// for each killstreak add two elements --> player_id : number kills 
-	int num_killstreaks = 0;
-	list<int> kill_streak_data;
-	unordered_map<unsigned int, PlayerMetadata*>::iterator p_it = playerMetadatas->begin();
-	while (p_it != playerMetadatas->end())
-	{
-		int client_id = p_it->first;
-		PlayerMetadata* player_meta = p_it->second;
-
-		// player on killstreak!
-		if (player_meta->currKillStreak > 0 && player_meta->currKillStreak % 3 == 0)
-		{
-			num_killstreaks++;
-			kill_streak_data.push_back(client_id);						// player id
-			kill_streak_data.push_back(player_meta->currKillStreak);	// killstreak
-		}
-
-		p_it++;
-	}
-
 	// serialize total kill streaks
-	memcpy(lb_data, &num_killstreaks, sizeof(int));
+	memcpy(lb_data, &leaderBoard->total_killstreaks, sizeof(int));
 	size += sizeof(int);
 	lb_data += sizeof(int);
 
 	// for each killstreak... serialize client ID followed by running number of kills
-	for (int i = 0; i < num_killstreaks; i++)
+	for (int i = 0; i < leaderBoard->total_killstreaks; i++)
 	{
+
+		// TODO: REMOVE ME
+		//int curr_client = leaderBoard->curr_killstreaks.front();
+
 		// player id
-		memcpy(lb_data, &kill_streak_data.front(), sizeof(int));
-		kill_streak_data.pop_front();
+		memcpy(lb_data, &leaderBoard->curr_killstreaks.front(), sizeof(int));
+		leaderBoard->curr_killstreaks.pop_front();
 		size += sizeof(int);
 		lb_data += sizeof(int);
 
+		// TODO: REMOVE ME
+		//int ks = leaderBoard->curr_killstreaks.front();
+
 		// num running kills
-		memcpy(lb_data, &kill_streak_data.front(), sizeof(int));
-		kill_streak_data.pop_front();
+		memcpy(lb_data, &leaderBoard->curr_killstreaks.front(), sizeof(int));
+		leaderBoard->curr_killstreaks.pop_front();
+		size += sizeof(int);
+		lb_data += sizeof(int);
+
+		// TODO : REMOVE ME
+		//logger()->debug("CLIENT {} KILLSTREAK {}", curr_client, ks);
+	}
+
+	// serialzie total shutdowns
+	memcpy(lb_data, &leaderBoard->total_shutdowns, sizeof(int));
+	size += sizeof(int);
+	lb_data += sizeof(int);
+
+	// for each shutdown... serialize killer id followed by dead player id
+	for (int i = 0; i < leaderBoard->total_shutdowns; i++)
+	{
+		// killer id
+		memcpy(lb_data, &leaderBoard->curr_shutdowns.front(), sizeof(int));
+		leaderBoard->curr_shutdowns.pop_front();
+		size += sizeof(int);
+		lb_data += sizeof(int);
+
+		// dead player id
+		memcpy(lb_data, &leaderBoard->curr_shutdowns.front(), sizeof(int));
+		leaderBoard->curr_shutdowns.pop_front();
 		size += sizeof(int);
 		lb_data += sizeof(int);
 	}
 
-	// TODO: SHUTDOWN!
 
-	leaderBoard->deaths_this_tick = 0;	// reset deaths this tick
+	// reset values based per server tick
+	leaderBoard->total_shutdowns = 0;
+	leaderBoard->deaths_this_tick = 0;	
+	leaderBoard->total_killstreaks = 0;
 
 	return size;
 }
@@ -260,29 +272,33 @@ unsigned int Serialization::deserializeLeaderBoard(char* lb_data, LeaderBoard* l
 		lb_data += sizeof(int);
 		sz		+= sizeof(int);
 
-		killstreak_data->push_back(curr_client_id);
-		killstreak_data->push_back(curr_kills);
+		leaderBoard->curr_killstreaks.push_back(curr_client_id);
+		leaderBoard->curr_killstreaks.push_back(curr_kills);
 	}
 
-	/*
+	// deserialize total shutdowns
+	int total_shutdowns = 0;
+	memcpy(&total_shutdowns, lb_data, sizeof(int));
+	lb_data += sizeof(int);
+	sz += sizeof(int);
 
-	// for each killstreak... serialize client ID followed by running number of kills
-	for (int i = 0; i < num_killstreaks; i++)
+	// deserialize killer id then dead player id
+	for (int i = 0; i < total_shutdowns; i++)
 	{
-		// player id
-		memcpy(lb_data, &kill_streak_data.front(), sizeof(int));
-		kill_streak_data.pop_front();
-		size += sizeof(int);
-		lb_data += sizeof(int);
+		int killer_id = -1;
+		int dead_id = -1;
 
-		// num running kills
-		memcpy(lb_data, &kill_streak_data.front(), sizeof(int));
-		kill_streak_data.pop_front();
-		size += sizeof(int);
+		memcpy(&killer_id, lb_data, sizeof(int));
 		lb_data += sizeof(int);
+		sz += sizeof(int);
+
+		memcpy(&dead_id, lb_data, sizeof(int));
+		lb_data += sizeof(int);
+		sz += sizeof(int);
+
+		leaderBoard->curr_shutdowns.push_back(killer_id);
+		leaderBoard->curr_shutdowns.push_back(dead_id);
 	}
-*/
-
 
 	return sz;
 }

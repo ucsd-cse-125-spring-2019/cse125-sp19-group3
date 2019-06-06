@@ -574,16 +574,34 @@ void ClientGame::run() {
 			Window_static::idle_callback();
 
 			// TODO: REMOVE ******
-			while (!killstreak_data->empty())
+
+			// any killstreaks?
+			while (!leaderBoard->curr_killstreaks.empty())
 			{
-				int curr_id = killstreak_data->front();
-				killstreak_data->pop_front();
-				int curr_kills = killstreak_data->front();
-				killstreak_data->pop_front();
+				int curr_id = leaderBoard->curr_killstreaks.front();
+				leaderBoard->curr_killstreaks.pop_front();
+				int curr_kills = leaderBoard->curr_killstreaks.front();
+				leaderBoard->curr_killstreaks.pop_front();
 
 				string curr_name = Window_static::getUsernames()[curr_id];
-				logger()->debug("{} has a killstreak of {}!", curr_name, curr_kills);
+				logger()->debug("{} has a KILLSTREAK of {}!", curr_name, curr_kills);
 			}
+
+			// any shutdowns?
+			while (!leaderBoard->curr_shutdowns.empty())
+			{
+				int killer_id = leaderBoard->curr_shutdowns.front();
+				leaderBoard->curr_shutdowns.pop_front();
+				int dead_id = leaderBoard->curr_shutdowns.front();
+				leaderBoard->curr_shutdowns.pop_front();
+
+				string killer_name = Window_static::getUsernames()[killer_id];
+				string dead_name = Window_static::getUsernames()[dead_id];
+				logger()->debug("{} SHUTDOWN {}!", killer_name, dead_name);
+			}
+
+
+
 			// TODO: REMOVE ******
 
 			// update all timers based on time elapsed
