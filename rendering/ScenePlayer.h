@@ -47,6 +47,8 @@ public:
 	bool isInvincible = false;
 	bool warriorIsChargingServer = false;
 	int gold = 0;
+	int amount_invested = 0;
+	int player_invested_in = -1;
 	vector<Skill> availableSkills;
 
 };
