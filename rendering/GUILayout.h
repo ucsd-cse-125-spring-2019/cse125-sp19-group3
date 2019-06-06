@@ -256,9 +256,37 @@ static void ui_prepare_title(struct nk_context *ctx, struct media *media, int wi
 static void
 winner_layout(struct nk_context *ctx, struct media *media, int width, int height,
 	LeaderBoard* leaderBoard, vector<string> usernames, vector<ArcheType> archetypes, ClientGame* game) {
+
+	// ordered usernames, types, and points for global points leader board
+	vector<string> ordered_usernames_global;
+	vector<int> points_copy = leaderBoard->currPoints;
+
+	// order global points leaderboard in order of highest points 
+	for (int i = 0; i < GAME_SIZE; i++)
+	{
+		// find max element in list; get total points for that player
+		auto it = std::max_element(points_copy.begin(), points_copy.end());
+		int index = it - points_copy.begin();
+		int numPoints = *it;
+
+		ordered_usernames_global.push_back(usernames[index]);					// add username to ordered index
+
+		*it = -1;		// reset current max to -1
+	}
 	if (game->prepareTimer > std::chrono::seconds::zero()) {
 		set_style(ctx, THEME_BLACK);
-		//TODO
+		if (nk_begin(ctx, "final_victory", nk_rect(0,0, width , height),
+			NK_WINDOW_NO_SCROLLBAR)) {
+			nk_layout_row_static(ctx, 0.3*height, 1, 1);
+			nk_style_set_font(ctx, &(media->font_64->handle));
+			nk_layout_row_dynamic(ctx, 80, 1);
+			nk_label(ctx, "WINNER", NK_TEXT_CENTERED);
+			nk_layout_row_dynamic(ctx, 80, 1);
+			nk_label(ctx, ordered_usernames_global[0].c_str(), NK_TEXT_CENTERED);
+			nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
+		}
+		nk_end(ctx);
+		
 	}
 	else {
 		game->switchPhase();
@@ -268,8 +296,68 @@ winner_layout(struct nk_context *ctx, struct media *media, int width, int height
 static void
 summary_layout(struct nk_context *ctx, struct media *media, int width, int height,
 	LeaderBoard* leaderBoard, vector<string> usernames, vector<ArcheType> archetypes, ClientGame* game) {
-		set_style(ctx, THEME_BLACK);
-		//TODO
+	// ordered usernames, types, and points for global points leader board
+	vector<string> ordered_usernames_global;
+	vector<ArcheType> ordered_types_global;
+	vector<int> ordered_points_global;
+	vector<int> ordered_kill_global;
+	vector<int> points_copy = leaderBoard->currPoints;
+	vector<string> placements = { "1st", "2nd", "3rd", "4th" };
+	// order global points leaderboard in order of highest points 
+	for (int i = 0; i < GAME_SIZE; i++)
+	{
+		// find max element in list; get total points for that player
+		auto it = std::max_element(points_copy.begin(), points_copy.end());
+		int index = it - points_copy.begin();
+		int numPoints = *it;
+
+		ordered_usernames_global.push_back(usernames[index]);					// add username to ordered index
+		ordered_types_global.push_back(archetypes[index]);						// add type to ordered index
+		ordered_points_global.push_back(leaderBoard->currPoints[index]);		// add points to ordered index
+		ordered_kill_global.push_back(leaderBoard->globalKills[index]);			// add gold to ordered index
+
+		*it = -1;		// reset current max to -1
+	}
+	set_style(ctx, THEME_BLACK);
+	const static float finalRatio[] = { 0.25f, 0.25f, 0.25f, 0.25f };
+	if (nk_begin(ctx, "final_summary", nk_rect(0, 0, width, height),
+		NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BORDER)) {
+		nk_layout_row(ctx, NK_DYNAMIC, height*0.95, 4, finalRatio);
+		for (int i = 0; i < GAME_SIZE; i++) {
+			if(nk_group_begin(ctx, ordered_usernames_global[i].c_str(), NK_WINDOW_NO_SCROLLBAR)) {
+				nk_style_set_font(ctx, &(media->font_64->handle));
+				nk_layout_row_static(ctx, 64, 64, 1);
+				nk_layout_row_dynamic(ctx, 64, 1);
+				nk_label(ctx, placements[i].c_str(), NK_TEXT_LEFT);
+				nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
+				nk_layout_row_static(ctx, 64, 64, 1);
+				nk_layout_row_static(ctx, 0.12*width, 0.12*width, 1);
+				if (ordered_types_global[i] == MAGE)
+					nk_image(ctx, media->mage);
+				else if (ordered_types_global[i] == WARRIOR)
+					nk_image(ctx, media->warrior);
+				else if (ordered_types_global[i] == ASSASSIN)
+					nk_image(ctx, media->assasin);
+				else
+					nk_image(ctx, media->king);
+				nk_layout_row_dynamic(ctx, 64, 2);
+				nk_label(ctx, "ID: ", NK_TEXT_LEFT);
+				nk_label(ctx, ordered_usernames_global[i].c_str(), NK_TEXT_LEFT);
+				nk_layout_row_static(ctx, 64, 64, 1);
+
+				nk_layout_row_dynamic(ctx, 64, 2);
+				nk_label(ctx, "Points: ", NK_TEXT_LEFT);
+				nk_label(ctx, to_string(ordered_points_global[i]).c_str(), NK_TEXT_LEFT);
+				nk_layout_row_static(ctx, 64, 64, 1);
+				nk_layout_row_dynamic(ctx, 64, 2);
+				nk_label(ctx, "Total Kills: ", NK_TEXT_LEFT);
+				nk_label(ctx, to_string(ordered_kill_global[i]).c_str(), NK_TEXT_LEFT);
+			}
+			nk_group_end(ctx);
+		}
+	}
+	nk_end(ctx);
+
 }
 
 
