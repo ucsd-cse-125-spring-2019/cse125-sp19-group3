@@ -134,7 +134,7 @@ unsigned int Transform::deserializeAndUpdate(char * data, Shader* particleShader
 	setDestination(newMat);
 
 	if (!particle_effect)
-		particle_effect = new Particles( particleTexture, particleShader, { M[3][0], M[3][1], M[3][2] });
+		particle_effect = new Particles( particleTexture, particleShader, { newMat[3][0], newMat[3][1], newMat[3][2] });
 	return size;
 }
 

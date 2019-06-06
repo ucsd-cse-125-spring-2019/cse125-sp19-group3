@@ -46,7 +46,7 @@ public:
 	void initialize_skills(ArcheType selected_type);
 	//void playerInit(const ScenePlayer &player);
 	void clean_up();
-	GLFWwindow * create_window(int width, int height);
+	GLFWwindow * create_window();
 	void resize_callback(GLFWwindow* window, int width, int height);
 	void idle_callback();
 	void text_input(GLFWwindow *win, unsigned int codepoint);
@@ -120,7 +120,7 @@ public:
 	static void updateTimers(nanoseconds timePassed) { scene->updateTimers(timePassed); };
 	static void initialize_UI(GLFWwindow* window) { scene->initialize_UI(window); };
 	static void clean_up() { scene->clean_up(); };
-	static GLFWwindow * create_window(int width, int height) { return scene->create_window(width, height); };
+	static GLFWwindow * create_window() { return scene->create_window(); };
 	static void resize_callback(GLFWwindow* win, int width, int height) {
 		scene->resize_callback(win, width, height);
 	};
