@@ -28,7 +28,7 @@ Audio::Audio() {
 	button_press.setBuffer(button_press_Buffer);
 	prepare_phase_music.setBuffer(prepare_phase_music_Buffer);
 	kill_phase_music.setBuffer(kill_phase_music_Buffer);
-	final_round_music.setBuffer(final_round_Buffer);
+	final_round_music.setBuffer(final_round_music_Buffer);
 	timer.setBuffer(timer_Buffer);
 	//**BGM**
 	//if (!music.openFromFile("./audio/music.wav"))

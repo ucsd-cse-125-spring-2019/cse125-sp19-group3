@@ -1007,7 +1007,7 @@ void ClientScene::handleServerTickPacket(char * data) {
 		}
 	}
 	
->>>>>>> b25f1ee454f45ccf07867875fa231e682ef3718a
+
 	if (isCharging && (leaderBoard->currentKills[player.player_id] > currKill)) 
 		skill_timers[DIR_SKILL_INDEX] = nanoseconds::zero();	// reset cooldown when kill someone using charge
    
