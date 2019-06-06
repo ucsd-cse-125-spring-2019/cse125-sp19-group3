@@ -95,7 +95,7 @@
       "initial_level": 1,
       "skill_name": "SUBJUGATION",
       "cooldown": 12500,
-      "range": 15.0,
+      "range": 30.0,
       "speed": 5.0,
       "duration": 4167
     }
