@@ -1000,13 +1000,12 @@ void ClientScene::handleServerTickPacket(char * data) {
 
 		string killername = usernames[killer_id];
 		string deadname = usernames[dead_id];
-		string info = killername + " --> " + deadname;
 		if (guiStatuses.killUpdates.size() < MAX_KILL_UPDATES) {
-			guiStatuses.killUpdates.push_front(info);
+			guiStatuses.killUpdates.push_front(std::make_pair(killername, deadname));
 		}
 		else {
 			guiStatuses.killUpdates.pop_back();
-			guiStatuses.killUpdates.push_front(info);
+			guiStatuses.killUpdates.push_front(std::make_pair(killername, deadname));
 		}
 	}
 	

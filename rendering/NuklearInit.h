@@ -63,7 +63,7 @@ struct guiStatus {
 	int currPrepareLayout;
 	int betAmount;
 	int shopCategory;// 0 for skills 1 for bet 2 for cheat
-	deque<string> killUpdates;
+	deque<pair<string,string>> killUpdates;
 };
 
 enum nk_glfw_init_state{
