@@ -262,8 +262,17 @@ void ServerScene::resetScene()
 			delete(skill.node);
 			skillIter = skills.erase(skillIter);
 		}
+
+		// reset speed
+		player.speed = player.default_speed; 
+		
+		// Invinciblity
+		player.isInvincible = false;
+		serverSceneGraphMap[node_id]->isInvincible = false;
 	}
+
 	warriorIsCharging = false;
+
 }
 
 void ServerScene::update()
@@ -315,6 +324,7 @@ void ServerScene::update()
 			if (character.warriorIsChargingServer && character.currentPos == character.destination) {
 				warriorIsCharging = false;
 				character.warriorIsChargingServer = false;
+				character.speed = 0.3f;
 			}
 		}
 	}
@@ -376,6 +386,7 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 	if (warriorIsCharging && dead_player.modelType == WARRIOR) {
 		warriorIsCharging = false;
 		dead_player.warriorIsChargingServer = false;
+		dead_player.speed = 0.3f;
 	}
 
 	// show animation for assassin if they die while invisible
@@ -670,7 +681,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 		case SPRINT: 
 		{
 			auto &assassin = scenePlayers[player_id];
-			assassin.speed *= 1.5; // twice as fast, tweak values later
+			assassin.speed *= pow(1.5, adjustedSkill.level); // twice as fast, tweak values later
 			break;
 		}
 		case SUBJUGATION:

@@ -38,6 +38,7 @@ public:
 	glm::vec3 currentPos = glm::vec3(0.0f);
 	glm::vec3 currentOri = glm::vec3(0.0f, 0.0f, 1.0f);
 	float speed = 0.3f;
+	float default_speed = 0.3f;
 	ACTION_STATE action_state;
 	bool isPrepProjectile;
 	bool isSilenced;
@@ -46,6 +47,8 @@ public:
 	bool isInvincible = false;
 	bool warriorIsChargingServer = false;
 	int gold = 0;
+	int amount_invested = 0;
+	int player_invested_in = -1;
 	vector<Skill> availableSkills;
 
 };

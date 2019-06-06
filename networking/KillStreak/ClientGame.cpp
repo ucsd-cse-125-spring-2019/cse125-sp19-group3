@@ -317,7 +317,7 @@ void ClientGame::endKillPhase()
 			{
 				int gold = 0;
 				memcpy(&gold, data, sizeof(int));
-				leaderBoard->currGold.push_back(gold);
+				leaderBoard->currGold[client_id] = gold;
 				data += sizeof(int);
 			}
 

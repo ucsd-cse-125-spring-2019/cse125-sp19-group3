@@ -451,6 +451,9 @@ int ServerGame::updateKillPhase() {
 					{
 						end_kill_phase = 0;
 						total_end_kill_packets = 0;
+
+						// calculate points based on round rankings; move to next round
+						leaderBoard->awardRoundPoints(round_number);
 						round_number++;
 
 						if (round_number <= TOTAL_ROUNDS)
@@ -482,6 +485,9 @@ int ServerGame::updateKillPhase() {
 				{
 					end_kill_phase = 0;
 					total_end_kill_packets = 0;
+
+					// calculate points based on round rankings; move to next round
+					leaderBoard->awardRoundPoints(round_number);
 					round_number++;
 
 					// game not over --> enter prepare phase
