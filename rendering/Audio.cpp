@@ -28,6 +28,7 @@ Audio::Audio() {
 	button_press.setBuffer(button_press_Buffer);
 	prepare_phase_music.setBuffer(prepare_phase_music_Buffer);
 	kill_phase_music.setBuffer(kill_phase_music_Buffer);
+	final_round_music.setBuffer(final_round_Buffer);
 	timer.setBuffer(timer_Buffer);
 	//**BGM**
 	//if (!music.openFromFile("./audio/music.wav"))
@@ -91,6 +92,8 @@ void Audio::loadWAVFiles() {
 		cout << "unable to load wav file " << "prepare_phase.wav" << endl;
 	if (!kill_phase_music_Buffer.loadFromFile("../audio/phases/kill_phase.wav"))
 		cout << "unable to load wav file " << "kill_phase.wav" << endl;
+	if (!final_round_music_Buffer.loadFromFile("../audio/phases/final_round.wav"))
+		cout << "unable to load wav file " << "final_round.wav" << endl;
 	if (!timer_Buffer.loadFromFile("../audio/phases/timer_tick.wav"))
 		cout << "unable to load wav file " << "timer_tick.wav" << endl;
 	
@@ -164,6 +167,9 @@ void Audio::play(glm::vec3 pos, unsigned int audio_id) {
 		break;
 	case KILL_PHASE_MUSIC:
 		kill_phase_music.play();
+		break;
+	case FINAL_ROUND_MUSIC:
+		final_round_music.play();
 		break;
 	case COOLDOWN_RESET_AUDIO:
 		cooldown_sound.play();
