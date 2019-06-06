@@ -63,7 +63,7 @@ struct guiStatus {
 	int currPrepareLayout;
 	int betAmount;
 	int shopCategory;// 0 for skills 1 for bet 2 for cheat
-	vector<string> killUpdates;
+	deque<string> killUpdates;
 };
 
 enum nk_glfw_init_state{
@@ -274,25 +274,27 @@ grid_demo(struct nk_context *ctx, struct media *media)
 static void
 ui_header(struct nk_context *ctx, struct media *media, const char *title)
 {
-	nk_style_set_font(ctx, &media->font_18->handle);
+	nk_style_set_font(ctx, &media->font_32->handle);
 	nk_layout_row_dynamic(ctx, 20, 1);
 	nk_label(ctx, title, NK_TEXT_LEFT);
+	
 }
 
 static void
 ui_widget(struct nk_context *ctx, struct media *media, float height)
 {
 	static const float ratio[] = { 0.15f, 0.85f };
-	nk_style_set_font(ctx, &media->font_22->handle);
+	nk_style_set_font(ctx, &media->font_32->handle);
 	nk_layout_row(ctx, NK_DYNAMIC, height, 2, ratio);
 	nk_spacing(ctx, 1);
+
 }
 
 static void
 ui_widget_centered(struct nk_context *ctx, struct media *media, float height)
 {
-	static const float ratio[] = { 0.15f, 0.50f, 0.35f };
-	nk_style_set_font(ctx, &media->font_22->handle);
+	static const float ratio[] = { 0.15f, 0.70f, 0.15f };
+	nk_style_set_font(ctx, &media->font_32->handle);
 	nk_layout_row(ctx, NK_DYNAMIC, height, 3, ratio);
 	nk_spacing(ctx, 1);
 }

@@ -10,6 +10,7 @@ uniform sampler2D Texture;
 
 uniform int isEvading = 0;
 uniform int isInvincible = 0;
+uniform int isCharging = 0;
 uniform int isInvisible = 0;
 
 uniform vec3 ambientColor = vec3(0.21, 0.22, 0.28);
@@ -39,12 +40,14 @@ void main() {
 		finalColor = vec4(lightFactor * (ambientColor + diffuseColor) * vec3(color), color[3]);
 	}
 	else {
-		if (isEvading == 1) {
+		if (isCharging == 1) {
+			finalColor = vec4(lightFactor * (ambientColor + diffuseColor) * (0.5 * vec3(texture(Texture, texCoord)) + 0.5 * vec3(1, 0, 0)), 1.0);
+		} else if (isEvading == 1) {
 			finalColor = vec4(lightFactor * (ambientColor + diffuseColor) * (vec3(texture(Texture, texCoord)) + vec3(0.8, 0.8, 0.8)), 1.0);
-		} else if (isInvincible == 1) {
-			finalColor = vec4(lightFactor * (ambientColor + diffuseColor) * (vec3(0.988, 0.832, 0.2617)), 1.0);
 		} else if (isInvisible == 1) {
 			finalColor = vec4(lightFactor * (ambientColor + diffuseColor) * (vec3(texture(Texture, texCoord)) + vec3(0.1, 0.1, 0.1)), 0.5);
+		} else if (isInvincible == 1) {
+			finalColor = vec4(lightFactor * (ambientColor + diffuseColor) * (vec3(0.988, 0.832, 0.2617)), 1.0);
 		} else {
 		    finalColor = vec4(lightFactor * (ambientColor + diffuseColor) * (vec3(texture(Texture, texCoord)) + vec3(0.1, 0.1, 0.1)), 1.0);
 		}

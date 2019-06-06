@@ -39,6 +39,7 @@ public:
 	bool enabled = true;
 	bool isEvading = false;
 	bool isInvincible = false;
+	bool isCharging = false;
 	bool isInvisible = false;
 	float initialRotation;
 	glm::mat4 M;

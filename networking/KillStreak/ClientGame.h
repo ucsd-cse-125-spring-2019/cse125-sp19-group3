@@ -8,7 +8,7 @@
 #include "PlayerData.hpp"
 #include <queue>
 
-typedef enum { LOBBY, KILL, PREPARE, FINAL } ClientStatus;
+typedef enum { LOBBY, KILL, PREPARE, FINAL, SUMMARY } ClientStatus;
 class ClientGame {
 public:
 	ClientGame(string host, string port, int char_select_time);
@@ -18,6 +18,8 @@ public:
 	nanoseconds prepareTimer;
 	LeaderBoard* leaderBoard;
 	int round_number;
+	int client_id;
+	unsigned int cheatingPoints;
 
 	void run();
 	int join_game();

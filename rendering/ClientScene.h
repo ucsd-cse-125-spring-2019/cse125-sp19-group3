@@ -30,6 +30,8 @@
 #define CIRCLE_VERTEX_SHADER_PATH "../shaders/circleshader.vert"
 #define CIRCLE_FRAGMENT_SHADER_PATH "../shaders/circleshader.frag"
 
+#define MAX_KILL_UPDATES 3
+
 class ClientScene {
 public:
 	Camera * camera;
@@ -50,7 +52,7 @@ public:
 	void playInvest();
 	//void playerInit(const ScenePlayer &player);
 	void clean_up();
-	GLFWwindow * create_window(int width, int height);
+	GLFWwindow * create_window();
 	void resize_callback(GLFWwindow* window, int width, int height);
 	void idle_callback();
 	void text_input(GLFWwindow *win, unsigned int codepoint);
@@ -59,19 +61,26 @@ public:
 	void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 	void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 	glm::vec3 viewToWorldCoordTransform(int mouse_x, int mouse_y);
-	void handleInitScenePacket(char * data);
+	int handleInitScenePacket(char * data);
 	void handleServerTickPacket(char* data);
 	void setRoot(Transform * newRoot);
 	void updateTimers(nanoseconds timePassed);
 	void renderPreparePhase(GLFWwindow* window);
 	void renderKillPhase(GLFWwindow* window);
 	void renderLobbyPhase(GLFWwindow* window);
+	void renderFinalPhase(GLFWwindow* window);
+	void renderSummaryPhase(GLFWwindow* window);
 	void initialize_UI(GLFWwindow* window);
 	void resetPreKillPhase();
 	int getPlayerGold();
+	void updatePlayerGold(int curr_gold);
 	vector<Skill> getPlayerSkills();
+	vector<string> getUsernames();
 	bool checkInAnimation();
 	void resetGUIStatus();
+	vector<int> getInvestmentInfo();
+	void clearInvestmentInfo();
+
 private:
 	Audio audio;
 	float min_scroll = 20.0f;
@@ -80,6 +89,7 @@ private:
 	Shader * animationShader, * staticShader, * particleShader, * circleShader;
 	Model * floor;
 	Model * arrow;
+	Model * cross;
 	Circle * range;
 	ScenePlayer player;
 	Transform * root;
@@ -116,7 +126,7 @@ public:
 	static void updateTimers(nanoseconds timePassed) { scene->updateTimers(timePassed); };
 	static void initialize_UI(GLFWwindow* window) { scene->initialize_UI(window); };
 	static void clean_up() { scene->clean_up(); };
-	static GLFWwindow * create_window(int width, int height) { return scene->create_window(width, height); };
+	static GLFWwindow * create_window() { return scene->create_window(); };
 	static void resize_callback(GLFWwindow* win, int width, int height) {
 		scene->resize_callback(win, width, height);
 	};
@@ -126,7 +136,7 @@ public:
 	static void key_callback(GLFWwindow* win, int key, int scancode, int action, int mods) { scene->key_callback(win, key, scancode, action, mods); };
 	static void scroll_callback(GLFWwindow* win, double xoffset, double yoffset) { scene->scroll_callback(win, xoffset, yoffset); };
 	static void mouse_button_callback(GLFWwindow* win, int button, int action, int mods) { scene->mouse_button_callback(win, button, action, mods); };
-	static void handleInitScenePacket(char * data) { scene->handleInitScenePacket(data); };
+	static int handleInitScenePacket(char * data) { scene->handleInitScenePacket(data); };
 	static void handleServerTickPacket(char* data) { scene->handleServerTickPacket(data); };
 	static void resetGUIStatus() { scene->resetGUIStatus(); };
 
@@ -139,7 +149,10 @@ public:
 	static void playInvest() { scene->playInvest(); };
 	static int getPlayerGold() { return scene->getPlayerGold(); };
 	static vector<Skill> getPlayerSkills() { return scene->getPlayerSkills(); };
-
+	static vector<string> getUsernames() { return scene->getUsernames(); };
+	static vector<int> getInvestmentInfo() { return scene->getInvestmentInfo(); };
+	static void clearInvestmentInfo() { return scene->clearInvestmentInfo(); };
+	static void updatePlayerGold(int curr_gold) { return scene->updatePlayerGold(curr_gold); };
 };
 
 

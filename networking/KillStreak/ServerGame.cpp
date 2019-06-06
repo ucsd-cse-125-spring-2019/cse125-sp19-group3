@@ -377,10 +377,6 @@ void ServerGame::launch() {
 			scheduledEvent.ticksLeft--;
 
 			if (scheduledEvent.ticksLeft <= 0) {
-				// initNewPhase(isKillPhase);
-				//isKillPhase = !isKillPhase;
-				// pop off / get rid of event alarm here?
-
 				current_phase = (current_phase == KILL_PHASE) ? PREP_PHASE : KILL_PHASE;
 			}
 
@@ -440,7 +436,7 @@ int ServerGame::updateKillPhase() {
 		for (auto &packet : inputPackets[i]) {
 
 			// end of kill phase not initiated by any clients
-			if (!end_kill_phase)		
+			if (!end_kill_phase)
 			{
 				// handle packet; check if client initiated end kill phase
 				int endKillPacket = handleClientInputPacket(packet, i);
@@ -448,30 +444,6 @@ int ServerGame::updateKillPhase() {
 				{
 					end_kill_phase = 1;				// set end_kill_phase as initiated
 					total_end_kill_packets++;		// inc total end kill phase packets received
-
-					// For testing with single player... 
-					if (total_end_kill_packets >= GAME_SIZE)
-					{
-						end_kill_phase = 0;
-						total_end_kill_packets = 0;
-						round_number++;
-
-						if (round_number <= TOTAL_ROUNDS)
-						{
-							// serialize leaderboard and gold of all players then broadcast to all clients
-							ServerInputPacket start_prep_phase_packet = createStartPrepPhasePacket();
-							network->broadcastSend(start_prep_phase_packet);
-							logger()->debug("Prep Phase: Broadcasting start prep phase packet");
-							return PREP_PHASE;
-						}
-						else	// GAME OVER! Send end game phase packet!
-						{	
-							ServerInputPacket start_end_phase_packet = createStartEndPhasePacket();
-							network->broadcastSend(start_end_phase_packet);
-							logger()->debug("GAME OVER: Broadcasting start end phase packet");
-							return END_GAME_PHASE;
-						}
-					}
 				}
 			}
 			// end kill phase has been initiated
@@ -480,31 +452,41 @@ int ServerGame::updateKillPhase() {
 				// inc. total end kill phase packets if matches type; otherwise drop packet
 				if (packet->inputType == END_KILL_PHASE) total_end_kill_packets++;
 
-				// all clients ended kill phase -> reset values & broadcast start prep phase packet
-				if (total_end_kill_packets >= GAME_SIZE)
+			}
+			// all end game phase packets received?
+			if (total_end_kill_packets >= GAME_SIZE)
+			{
+				end_kill_phase = 0;
+				total_end_kill_packets = 0;
+
+				// calculate bets after first round
+				if (round_number > 1)
 				{
-					end_kill_phase = 0;
-					total_end_kill_packets = 0;
-					round_number++;
+					// get winners of round 
+					vector<ArcheType> round_winners = leaderBoard->getRoundWinner(selected_characters);
 
-					// game not over --> enter prepare phase
-					if (round_number <= TOTAL_ROUNDS)
-					{
-						// serialize leaderboard and gold of all players then broadcast to all clients
-						ServerInputPacket start_prep_phase_packet = createStartPrepPhasePacket();
-						network->broadcastSend(start_prep_phase_packet);
-						logger()->debug("Prep Phase: Broadcasting start prep phase packet");
-						return PREP_PHASE;
+					// calculate investment 
+					calculateRoundInvestment(round_winners);
+				}
 
-					}
-					else	// GAME OVER! Send end game phase packet!
-					{	
-						ServerInputPacket start_end_phase_packet = createStartEndPhasePacket();
-						network->broadcastSend(start_end_phase_packet);
-						logger()->debug("GAME OVER: Broadcasting start end phase packet");
-						return END_GAME_PHASE;
-					}
+				// calculate points based on round rankings; move to next round
+				leaderBoard->awardRoundPoints(round_number);
+				round_number++;
 
+				if (round_number <= TOTAL_ROUNDS)
+				{
+					// serialize leaderboard and gold of all players then broadcast to all clients
+					ServerInputPacket start_prep_phase_packet = createStartPrepPhasePacket();
+					network->broadcastSend(start_prep_phase_packet);
+					logger()->debug("Prep Phase: Broadcasting start prep phase packet");
+					return PREP_PHASE;
+				}
+				else	// GAME OVER! Send end game phase packet!
+				{
+					ServerInputPacket start_end_phase_packet = createStartEndPhasePacket();
+					network->broadcastSend(start_end_phase_packet);
+					logger()->debug("GAME OVER: Broadcasting start end phase packet");
+					return END_GAME_PHASE;
 				}
 			}
 		}
@@ -597,6 +579,9 @@ int ServerGame::updatePreparePhase() {
 				memcpy(&player_meta->gold, data, sizeof(int));
 				data += sizeof(int);
 
+				logger()->debug("* * * * * * END PREP PHASE PACKET RECEIVED * * * * * *");
+				logger()->debug("Client {} remaining gold {}", client_id, player_meta->gold);
+
 				// deserialize number of skills
 				int total_skills = 0;
 				memcpy(&total_skills, data, sizeof(int));
@@ -609,10 +594,20 @@ int ServerGame::updatePreparePhase() {
 					data += sizeof(unsigned int);
 				}
 
+				// deserialize amount invested 
+				memcpy(&scene->scenePlayers[client_id].amount_invested, data, sizeof(int));
+				data += sizeof(int);
 
-				// 4.) TODO: deserialize invest for each player 
+				// deserialize player invested in
+				memcpy(&scene->scenePlayers[client_id].player_invested_in, data, sizeof(ArcheType));
+				data += sizeof(ArcheType);
 
-				// 5.) TODO: deserialize cheating for each player
+				// deserialize cheating for each player
+				int cheatingPoints = 0;
+				memcpy(&cheatingPoints, data, sizeof(unsigned int));
+				data += sizeof(unsigned int);
+
+				leaderBoard->currPoints[client_id] += cheatingPoints;
 
 			}
 
@@ -637,6 +632,43 @@ int ServerGame::updatePreparePhase() {
 
 	return PREP_PHASE;	// prep phase not over
 }
+
+/*
+	Calculate prior investments after each rounds kill phase.
+	Player investments already mapped, check results and update
+	winners gold by doubling origin investment.
+*/
+void ServerGame::calculateRoundInvestment(vector<ArcheType> round_winners)
+{
+	// iterate over all scene players
+	unordered_map<unsigned int, ScenePlayer>::iterator s_it = scene->scenePlayers.begin();
+	while (s_it != scene->scenePlayers.end())
+	{
+		// get client id & corresponding scene player
+		unsigned int client_id = s_it->first;
+		ScenePlayer curr_player = s_it->second;
+
+		// check if player invested in a winner
+		for (int i = 0; i < round_winners.size(); i++)
+		{
+			// bet on a winner! update gold in playerMetaData
+			if (round_winners[i] == curr_player.player_invested_in)
+			{
+				unordered_map<unsigned int, PlayerMetadata*>::iterator s_it = playerMetadatas->find(client_id);
+				PlayerMetadata* player_meta = s_it->second;
+				player_meta->gold += (curr_player.amount_invested * 2);
+				logger()->debug("Client {} bet on a winner!", client_id);
+			}
+		}
+
+		// reset investment
+		curr_player.player_invested_in = NONE;
+		curr_player.amount_invested = 0;
+
+		s_it++;
+	}
+}
+
 
 
 /*
@@ -665,6 +697,10 @@ ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsig
 	unsigned int sgSize;
 	char buf[10000] = { 0 };
 	char * bufPtr = buf;
+
+	// serialize client id
+	memcpy(bufPtr, &playerId, sizeof(unsigned int));
+	bufPtr += sizeof(unsigned int);
 
 	// serialize all usernames; PlayerMeta.username
 	for (int client_id = 0; client_id < usernames.size(); client_id++)

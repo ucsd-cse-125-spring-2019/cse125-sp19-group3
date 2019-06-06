@@ -80,14 +80,6 @@ unsigned int Serialization::serializeLeaderBoard(char* lb_data, LeaderBoard* lea
 		size += sizeof(int);
 		lb_data += sizeof(int);
 	}
-	/*
-	for (int i = 0; i < GAME_SIZE; i++)			// prizes
-	{
-		memcpy(lb_data, &leaderBoard->prizes[i], sizeof(int));
-		size += sizeof(int);
-		lb_data += sizeof(int);
-	}
-	*/
 	for (int i = 0; i < GAME_SIZE; i++)			// killstreak
 	{
 		memcpy(lb_data, &leaderBoard->killStreaks[i], sizeof(int));
@@ -108,8 +100,35 @@ unsigned int Serialization::serializeLeaderBoard(char* lb_data, LeaderBoard* lea
 		lb_data += sizeof(int);
 	}
 	
-	memcpy(lb_data, &leaderBoard->prizeChange, sizeof(float));
-	size += sizeof(float);
+	memcpy(lb_data, &leaderBoard->deaths_this_tick, sizeof(int));
+	size    += sizeof(int);
+	lb_data += sizeof(int);
+
+	// serialize who killed who (first int killers id, second int dead players id)
+	// for every death this tick you should pop two elements off the front of the list (killer, dead_player)
+	for (int i = 0; i < leaderBoard->deaths_this_tick; i++)
+	{
+		// get killer id
+		int killer_id = leaderBoard->kill_map.front();
+		leaderBoard->kill_map.pop_front();
+
+		// get dead players id
+		int dead_id = leaderBoard->kill_map.front();
+		leaderBoard->kill_map.pop_front();
+
+		// serialize killers id first
+		memcpy(lb_data, &killer_id, sizeof(int));
+		size	+= sizeof(int);
+		lb_data += sizeof(int);
+
+		// serialize dead players id second
+		memcpy(lb_data, &dead_id, sizeof(int));
+		size	+= sizeof(int);
+		lb_data += sizeof(int);
+	}
+
+	leaderBoard->deaths_this_tick = 0;	// reset deaths this tick
+	//leaderBoard->kill_map.clear();		// clear list of kills (just in case should be empty)
 
 	return size;
 }
@@ -130,15 +149,9 @@ unsigned int Serialization::deserializeLeaderBoard(char* lb_data, LeaderBoard* l
 		memcpy(&leaderBoard->currPoints[i], lb_data, sizeof(int));
 		lb_data += sizeof(int);
 		sz += sizeof(int);
+
+		logger()->debug("Deserialize.. client {} points {}", i, leaderBoard->currPoints[i]);
 	}
-	/*
-	for (int i = 0; i < GAME_SIZE; i++)		// prizes
-	{
-		memcpy(&leaderBoard->prizes[i], lb_data, sizeof(int));
-		lb_data += sizeof(int);
-		sz += sizeof(int);
-	}
-	*/
 	for (int i = 0; i < GAME_SIZE; i++)		// killstreak
 	{
 		memcpy(&leaderBoard->killStreaks[i], lb_data, sizeof(int));
@@ -158,8 +171,35 @@ unsigned int Serialization::deserializeLeaderBoard(char* lb_data, LeaderBoard* l
 		sz += sizeof(int);
 	}
 
-	memcpy(&leaderBoard->prizeChange, lb_data, sizeof(float));
-	sz += sizeof(float);
+	memcpy(&leaderBoard->deaths_this_tick, lb_data, sizeof(int));
+	lb_data += sizeof(int);
+	sz		+= sizeof(int);
+
+
+	// reset kill_map before adding this ticks kills
+	//leaderBoard->kill_map.clear();
+
+	// deserialize who killed who (first int killers id, second int dead players id)
+	// for every death this tick you should pop two elements off the front of the list (killer, dead_player)
+	for (int i = 0; i < leaderBoard->deaths_this_tick; i++)
+	{
+
+		// get killer id & dead player ID's
+		int killer_id = -1;
+		memcpy(&killer_id, lb_data, sizeof(int));
+		lb_data += sizeof(int);
+		sz		+= sizeof(int);
+
+		int dead_id = -1;
+		memcpy(&dead_id, lb_data, sizeof(int));
+		lb_data += sizeof(int);
+		sz		+= sizeof(int);
+
+		// add both to kill map (killer id then dead player id)
+		leaderBoard->kill_map.push_back(killer_id);
+		leaderBoard->kill_map.push_back(dead_id);
+
+	}
 
 	return sz;
 }

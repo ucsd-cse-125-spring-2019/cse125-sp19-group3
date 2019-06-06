@@ -298,7 +298,7 @@ void ClientGame::endKillPhase()
 		// start prep phase; deserialzie data & start prep phase timer
 		if ( startPrepPhase )
 		{
-			logger()->debug("Received start_prep_phase from server!");
+			//logger()->debug("Received start_prep_phase from server!");
 
 			// deserialzie leaderboard & all player gold
 			char* data = start_prep_packet->data;
@@ -317,8 +317,11 @@ void ClientGame::endKillPhase()
 			{
 				int gold = 0;
 				memcpy(&gold, data, sizeof(int));
-				leaderBoard->currGold.push_back(gold);
+				leaderBoard->currGold[client_id] = gold;
 				data += sizeof(int);
+
+				// update clients own gold
+				if (client_id == this->client_id) Window_static::updatePlayerGold(gold);
 			}
 
 			Window_static::playPreparePhaseBGM();
@@ -346,8 +349,8 @@ void ClientGame::endKillPhase()
 
 
 			// TODO: FINISH ME!!!
-			//std::chrono::seconds secPre(ENDGAME_TIME);
-			//prepareTimer = nanoseconds(secPre);
+			std::chrono::seconds sec(ENDGAME_TIME);
+			prepareTimer = nanoseconds(sec);
 			currPhase = FINAL;
 			startEndGamePhase = 1;
 			break;
@@ -370,13 +373,6 @@ void ClientGame::endPrepPhase()
 
 	char* headPtr = buf; // point to start of buffer
 	char* bufPtr = buf;	 // follow next open space of buffer 
-
-	/* TODO: Send packet to server with
-		XXX remaining gold
-		XXX skill levels
-		c.) investment
-		d.) cheating
-	*/
 
 	// serialize clients gold (from scenePlayer)
 	int curr_gold = Window_static::getPlayerGold();
@@ -402,11 +398,25 @@ void ClientGame::endPrepPhase()
 		sgSize += sizeof(int);
 	}
 
+	// serialize investment
+	vector<int> investment = Window_static::getInvestmentInfo();
 
-	// TODO: serialize investment
+	// serialize amount invested
+	memcpy(bufPtr, &investment[0], sizeof(int));
+	bufPtr += sizeof(int);
+	sgSize += sizeof(int);
 
-	// TODO: serialize cheating
+	// serialize player bet on
+	memcpy(bufPtr, &investment[1], sizeof(ArcheType));
+	bufPtr += sizeof(ArcheType);
+	sgSize += sizeof(ArcheType);
+	Window_static::clearInvestmentInfo();
 
+	// serialize cheating
+	memcpy(bufPtr, &cheatingPoints, sizeof(unsigned int));
+	bufPtr += sizeof(unsigned int);
+	sgSize += sizeof(int);
+	cheatingPoints = 0;
 
 	// create packet; copy all serialized data into packet.data & send to server
 	endPrepPacket.inputType = END_PREP_PHASE;
@@ -489,7 +499,7 @@ int ClientGame::switchPhase() {
 		// TODO: End game scene
 		case FINAL: 
 			logger()->debug("GAME OVER!!!!");
-			while (1) {};
+			currPhase = SUMMARY;
 			break;
 
 		// should never occur
@@ -519,7 +529,7 @@ void ClientGame::run() {
 	// This part will run after all players have selected their characters!
 
 	// Create the GLFW window
-	window = Window_static::create_window(640, 480);
+	window = Window_static::create_window();
 	// Setup OpenGL settings, including lighting, materials, etc.
 	setup_opengl_settings();
 	// Print OpenGL and GLSL versions
@@ -660,6 +670,13 @@ int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
 	//		next loop
 
 	// input character & username selection; send request to server; repeat if unavailable
+	/* TODO: Send packet to server with
+		XXX remaining gold
+		XXX skill levels
+		c.) investment
+		d.) cheating
+	*/
+
 
 
 	// TODO: REMOVE ME*********
@@ -797,7 +814,7 @@ void ClientGame::handleServerInputPacket(ServerInputPacket * packet) {
 		//handleCharacterSelectionPacket(packet);
 		break;
 	case INIT_SCENE:
-		Window_static::scene->handleInitScenePacket(packet->data);
+		client_id = Window_static::scene->handleInitScenePacket(packet->data);
 		break;
 	case UPDATE_SCENE_GRAPH:
 		Window_static::scene->handleServerTickPacket(packet->data);

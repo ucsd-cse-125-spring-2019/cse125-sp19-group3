@@ -9,6 +9,13 @@
 
 #define META_CONF "../../networking/KillStreak/meta_data.json"
 #define KILL_POINTS 3		// points awarded per kill
+#define FIRST  1
+#define SECOND 2
+#define THIRD  3
+#define FOURTH 4
+#define ROUND_3 3
+#define ROUND_4 4
+#define ROUND_5 5
 
 using json = nlohmann::json;
 using namespace std;
@@ -20,6 +27,102 @@ unordered_map<string, ArcheType> archetype_map = {
 	{"WARRIOR", WARRIOR},
 	{"KING", KING},
 };	
+
+/*
+	Return player id of winner of previous round.
+*/
+vector<ArcheType> LeaderBoard::getRoundWinner(unordered_map<ArcheType, int>* selected_characters)
+{
+	vector<ArcheType> winners;
+	// get max kills from list
+	auto it = std::max_element(currentKills.begin(), currentKills.end());		
+	int max_kills = *it;				
+
+	// any players with max_kills is a winner; add their ArcheType to vector of winners
+	for (int client_id = 0; client_id < GAME_SIZE; client_id++)
+	{
+		// current client_id is a winner; get their Archetype
+		if (currentKills[client_id] == max_kills)
+		{
+			// get ArcheType
+			unordered_map<ArcheType, int>::iterator a_it = selected_characters->begin();
+			while (a_it != selected_characters->end())
+			{
+				ArcheType curr_type = a_it->first;
+				int curr_id = a_it->second;
+				if (client_id == curr_id)
+				{
+					winners.push_back(curr_type);
+					break;
+				}
+
+				a_it++;
+			}
+		}
+	}
+	return winners;
+}
+
+
+/*
+	End of round... award points to all players based on rank.
+*/
+void LeaderBoard::awardRoundPoints(int round_number)
+{
+	vector<int> rankings(GAME_SIZE,0);		// indexed by player_id, holds ranking of last round 
+	vector<int> currKills = currentKills;	// make copy of rounds kill vector
+
+	// get max kills from list
+	auto it = std::max_element(currKills.begin(), currKills.end());		
+	int max_kills = *it;				
+
+	// assign ranking to each player (insert into rankings vector)
+	int current_rank = 1;
+	int total_assigned = 0;
+	while (total_assigned < GAME_SIZE)
+	{
+		for (int i = 0; i < GAME_SIZE; i++)
+		{
+			if (currentKills[i] == max_kills)	// this player has the max kills
+			{
+				rankings[i] = current_rank;
+				total_assigned++;
+			}
+		}
+
+		// set all current max kills to -1
+		replace(currKills.begin(), currKills.end(), max_kills, -1);	
+
+		// get next max	& ranking
+		it = std::max_element(currKills.begin(), currKills.end());	
+		max_kills = *it;
+		current_rank++;	
+	}
+
+
+	// award points based on ranking
+	for (int client_id = 0; client_id < GAME_SIZE; client_id++)
+	{
+		int points = 0;
+		int rank = rankings[client_id];
+
+		// award initial points
+		switch (rank)
+		{
+			case FIRST : points = 6; break;
+			case SECOND: points = 4; break;
+			case THIRD : points = 2; break;
+			case FOURTH: points = 1; break;
+			default	   : points = 0; break;
+		}
+
+		// multiply round points based on rank  
+		if (round_number == ROUND_3 || round_number == ROUND_4) points *= 1.5;
+		else if (round_number == ROUND_5) points += 2;
+
+		currPoints[client_id] = currPoints[client_id] + points; // add to points vector on leaderboard
+	}
+}
 
 
 // reset players kill streak in vector sent to all clients
@@ -75,6 +178,7 @@ void LeaderBoard::incDeath(unsigned int player_id)
 }
 
 
+/*
 vector<int>* LeaderBoard::roundSummary() {
 	// get the ranking result of this round
 	vector<int> temp(currentKills);
@@ -101,6 +205,7 @@ vector<int>* LeaderBoard::roundSummary() {
 
 	return rankings;
 }
+*/
 
 
 // Parse all archtypes from config and upload values to skill_map for each corresponding type.
@@ -117,10 +222,10 @@ void Skill::load_archtype_data(unordered_map<unsigned int, Skill> *skill_map,
 		unsigned int skill_id       = skill["skill_id"];
 		unsigned int initial_level  = skill["initial_level"];
 		string skill_name			= skill["skill_name"];
-		float cooldown              = skill["cooldown"];
+		int cooldown              = skill["cooldown"]; // in milliseconds
 		float range                 = skill["range"];
 		float speed                 = skill["speed"];
-		float duration              = skill["duration"];
+		int duration              = skill["duration"]; // in milliseconds
 
 		Skill curr_skill = Skill(skill_id, initial_level, skill_name, range, cooldown, duration, speed);
 		skill_map->insert({ skill_id, curr_skill });
@@ -140,9 +245,9 @@ void Skill::load_archtype_data(unordered_map<unsigned int, Skill> *skill_map,
 
 Skill Skill::calculateSkillBasedOnLevel(Skill &baseSkill, unsigned int level) {
 	auto range = baseSkill.range * pow(1.2, level);
-	auto cooldown = baseSkill.cooldown * pow(0.7, level);
-	auto duration = baseSkill.duration;
-	auto speed = baseSkill.speed * pow(1.1, level);
+	auto cooldown = (int)(baseSkill.cooldown * pow(0.8, level));
+	auto duration = (int)(baseSkill.duration * pow(1.2, level));
+	auto speed = baseSkill.speed * pow(1.2, level);
 	return Skill(baseSkill.skill_id,
 		level,
 		baseSkill.skillName,

@@ -9,7 +9,7 @@ using json = nlohmann::json;
 #define DEFAULT_X 666
 #define DEFAULT_Z 666
 
-#define GOLD			 5
+#define GOLD			 50
 #define GOLD_MULTIPLIER  3		// number of kills in killstreak before next bonus
 #define LOSESTREAK_BONUS 2		// gold awarded for losestreak
 
@@ -234,6 +234,23 @@ void ServerScene::resetScene()
 		PlayerMetadata* metaData = p_it->second;
 		metaData->silenced = false;
 		player.isSilenced = false;
+		auto & childs = player.playerRoot->children_ids;
+
+		auto childIter = childs.begin();
+		while (childIter != childs.end()) {
+			auto & child_id = *childIter;
+			auto silenceNode = serverSceneGraphMap[child_id];
+			auto mids = silenceNode->model_ids;
+			if (mids.find(300) != mids.end()) {
+				serverSceneGraphMap.erase(child_id);
+				player.playerRoot->removeChild(child_id);
+				delete(silenceNode);
+				break;
+			}
+			else {
+				childIter++;
+			}
+		}
 
 		// is_charge
 		player.warriorIsChargingServer = false;
@@ -262,8 +279,17 @@ void ServerScene::resetScene()
 			delete(skill.node);
 			skillIter = skills.erase(skillIter);
 		}
+
+		// reset speed
+		player.speed = player.default_speed; 
+		
+		// Invinciblity
+		player.isInvincible = false;
+		serverSceneGraphMap[node_id]->isInvincible = false;
 	}
+
 	warriorIsCharging = false;
+
 }
 
 void ServerScene::update()
@@ -315,6 +341,7 @@ void ServerScene::update()
 			if (character.warriorIsChargingServer && character.currentPos == character.destination) {
 				warriorIsCharging = false;
 				character.warriorIsChargingServer = false;
+				character.speed = 0.3f;
 			}
 		}
 	}
@@ -376,6 +403,7 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 	if (warriorIsCharging && dead_player.modelType == WARRIOR) {
 		warriorIsCharging = false;
 		dead_player.warriorIsChargingServer = false;
+		dead_player.speed = 0.3f;
 	}
 
 	// show animation for assassin if they die while invisible
@@ -384,6 +412,11 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 		int node_id = dead_player.root_id;
 		serverSceneGraphMap[node_id]->enabled = true;
 	}
+
+	// inc total deathst his tick; update kill map with killer & dead player id
+	leaderBoard->deaths_this_tick += 1;				
+	leaderBoard->kill_map.push_back(killer_id);
+	leaderBoard->kill_map.push_back(dead_player_id);
 
 }
 
@@ -554,10 +587,30 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 	// special case of unsilence
 	if (skill_id == UNSILENCE) {
 		logger()->debug("everyone is unsilenced");
-		for (auto& player : scenePlayers) {
-			player.second.isSilenced = false;
-			playerMetadatas->find(player.first)->second->silenced = false;
+		for (auto& element : scenePlayers) {
+			auto& player_id = element.first;
+			auto& player = element.second;
+			// setting server state of silencing for collision detection purposes
+			player.isSilenced = false;
+			(*playerMetadatas)[player_id]->silenced = false;
+			// DELETE SILENCE MODEL
+			auto & childs = player.playerRoot->children_ids;
 
+			auto childIter = childs.begin();
+			while (childIter != childs.end()){
+				auto & child_id = *childIter;
+				auto silenceNode = serverSceneGraphMap[child_id];
+				auto mids = silenceNode->model_ids;
+				if (mids.find(300) != mids.end()) {
+					serverSceneGraphMap.erase(child_id);
+					player.playerRoot->removeChild(child_id);
+					delete(silenceNode);
+					break;
+				}
+				else {
+					childIter++;
+				}
+			}
 		}
 		return;
 	}
@@ -607,7 +660,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 	Skill cur_skill = s_it->second;
 	Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(cur_skill, level);
 	Point initPoint = scenePlayers[player_id].currentPos;
-
+	scenePlayers[player_id].destination = initPoint;
 	skill_id = (skill_id % 10 == 1) ? 1 : skill_id;		// check if projectile; update skill_id if true
 	switch (skill_id)
 	{
@@ -670,7 +723,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 		case SPRINT: 
 		{
 			auto &assassin = scenePlayers[player_id];
-			assassin.speed *= 1.5; // twice as fast, tweak values later
+			assassin.speed *= pow(1.5, adjustedSkill.level); // twice as fast, tweak values later
 			break;
 		}
 		case SUBJUGATION:
@@ -691,7 +744,20 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 				if (glm::length(king.currentPos - player.second.currentPos) <= adjustedSkill.range) {
 					player.second.isSilenced = true;
 					playerMetadatas->find(player.first)->second->silenced = true;
+
+					nodeIdCounter++;
 					
+					auto silenceNode = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), player.second.currentPos+Point(0.00f, 10.0f, 0.00f)),
+						glm::rotate(glm::mat4(1.0f), 0 / 180.f * glm::pi<float>(), glm::vec3(1, 0, 0)),
+						glm::scale(glm::mat4(1.0f), Point(2.0f))
+					);
+
+					silenceNode->M = glm::inverse(player.second.playerRoot->M) * (silenceNode->M);
+					//TODO: CHANGE THIS, IT'S HARD CODED
+					silenceNode->model_ids.insert(300);
+
+					player.second.playerRoot->addChild(nodeIdCounter);
+					serverSceneGraphMap.insert({ nodeIdCounter, silenceNode });
 					logger()->debug("Player {} (model: {}) was silenced", player.first, player.second.modelType);
 				}
 			}

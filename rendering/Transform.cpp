@@ -105,6 +105,7 @@ unsigned int Transform::deserializeAndUpdate(char * data, Shader* particleShader
 	memcpy(&(newMat[0][0]), currLoc, sizeof(glm::mat4));
 	size += sizeof(glm::mat4);
 	currLoc += sizeof(glm::mat4);
+
 	//memcopy model ids size
 	memcpy(&numModels, currLoc, sizeof(unsigned int));
 	size += sizeof(unsigned int);
@@ -133,7 +134,7 @@ unsigned int Transform::deserializeAndUpdate(char * data, Shader* particleShader
 	setDestination(newMat);
 
 	if (!particle_effect)
-		particle_effect = new Particles( particleTexture, particleShader, { M[3][0], M[3][1], M[3][2] });
+		particle_effect = new Particles( particleTexture, particleShader, { newMat[3][0], newMat[3][1], newMat[3][2] });
 	return size;
 }
 
@@ -167,9 +168,10 @@ void Transform::draw( std::unordered_map<unsigned int, ModelData> &models, const
 			models[model_id].shader->use();
 			models[model_id].shader->setInt("isEvading", isEvading ? 1 : 0);
 			models[model_id].shader->setInt("isInvincible", isInvincible ? 1 : 0);
+			models[model_id].shader->setInt("isCharging", isCharging ? 1 : 0);
 			models[model_id].shader->setInt("isInvisible", isInvisible ? 1 : 0);
 			models[model_id].shader->setInt("UseTex", 1);
-			if (isInvisible) {
+			if (isInvisible || model_id == 300) {
 				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 				glEnable(GL_BLEND);
 			}
