@@ -682,6 +682,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			// set animation mode so everyone can see you're pyroblasting
 			scenePlayers[player_id].animationMode = skill_1;
 			handlePyroBlast(player_id, finalPoint, initPoint, adjustedSkill);
+			soundsToPlay.push_back(FIRE_AOE_AUDIO);
 			break;
 		}
 		case DRAGONS_BREATH:
@@ -695,17 +696,21 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			dirAOE.node->scale = glm::scale(glm::mat4(1.0f), Point(0.4f, 0.4f, 0.4f));
 			serverSceneGraphMap.insert({ nodeIdCounter, dirAOE.node });
 			skills.push_back(dirAOE);
+			soundsToPlay.push_back(FIRE_CONE_AOE_AUDIO);
 			break;
 		}
 		case WHIRLWIND:
 			// set animation mode
 			scenePlayers[player_id].animationMode = skill_1;
 			handleWhirlWind(player_id, finalPoint, initPoint, adjustedSkill);
+			soundsToPlay.push_back(WARRIOR_SLAM_AOE_AUDIO);
 			break;
 		case ROYAL_CROSS:
 			// set animation mode
 			scenePlayers[player_id].animationMode = skill_1;
 			handleRoyalCross(player_id, finalPoint, initPoint, adjustedSkill);
+			// TODO: put aoe sound here
+			//soundsToPlay.push_back()
 			break;
 		case INVISIBILITY:
 		{
@@ -756,6 +761,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 					logger()->debug("Player {} (model: {}) was silenced", player.first, player.second.modelType);
 				}
 			}
+			soundsToPlay.push_back(KING_SILENCE_AUDIO);
 			break;
 		}
 		case CHARGE:
@@ -780,6 +786,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 					warrior.rotate(angle, axis);
 				}
 			}
+			soundsToPlay.push_back(WARRIOR_CHARGE_AUDIO);
 		}
 		default:
 		{

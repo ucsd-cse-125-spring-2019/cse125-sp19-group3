@@ -20,10 +20,20 @@ Audio::Audio() {
 	skeleton_death_2.setBuffer(skeleton_death_2_Buffer);
 	skeleton_evade.setBuffer(skeleton_evade_Buffer);
 	skeleton_evade_2.setBuffer(skeleton_evade_2_Buffer);
+	cooldown_sound.setBuffer(cooldown_Buffer);
+	cannotBuyItem.setBuffer(cannotBuyItem_Buffer);
 	buyItem_1.setBuffer(buyItem_1_Buffer);
 	buyItem_2.setBuffer(buyItem_2_Buffer);
 	equipItem_1.setBuffer(equipItem_1_Buffer);
 	equipItem_2.setBuffer(equipItem_2_Buffer);
+	button_press.setBuffer(button_press_Buffer);
+	prepare_phase_music.setBuffer(prepare_phase_music_Buffer);
+	kill_phase_music.setBuffer(kill_phase_music_Buffer);
+	final_round_music.setBuffer(final_round_music_Buffer);
+	victory_music.setBuffer(victory_Buffer);
+	timer.setBuffer(timer_Buffer);
+	killstreak.setBuffer(killstreak_Buffer);
+	shutdown.setBuffer(shutdown_Buffer);
 	//**BGM**
 	//if (!music.openFromFile("./audio/music.wav"))
 	//	cout << "unable to load wav file " << "music.wav" << endl;
@@ -61,13 +71,15 @@ void Audio::loadWAVFiles() {
 		cout << "unable to load wav file " << "warrior_slam_aoe.wav" << endl;
 	if (!skeleton_death_1_Buffer.loadFromFile("../audio/model/skeleton_death1.wav"))
 		cout << "unable to load wav file " << "skeleton_death1.wav" << endl;
-	// Need to fix this soudn
+	// Need to fix this sound
 	//if (!skeleton_death_2_Buffer.loadFromFile("../audio/model/skeleton_death2.wav"))
 	//	cout << "unable to load wav file " << "skeleton_death2.wav" << endl;
 	if (!skeleton_evade_Buffer.loadFromFile("../audio/model/skeleton_evade1.wav"))
 		cout << "unable to load wav file " << "skeleton_evade1.wav" << endl;
 	if (!skeleton_evade_2_Buffer.loadFromFile("../audio/model/skeleton_evade2.wav"))
 		cout << "unable to load wav file " << "skeleton_evade2.wav" << endl;
+	if (!cannotBuyItem_Buffer.loadFromFile("../audio/store/cannotBuyItem.wav"))
+		cout << "unable to load wav file " << "cannotBuyItem.wav" << endl;
 	if (!buyItem_1_Buffer.loadFromFile("../audio/store/buyItem_1.wav"))
 		cout << "unable to load wav file " << "buyItem_1.wav" << endl;
 	if (!buyItem_2_Buffer.loadFromFile("../audio/store/buyItem_2.wav"))
@@ -76,6 +88,26 @@ void Audio::loadWAVFiles() {
 		cout << "unable to load wav file " << "equipItem_1.wav" << endl;
 	if (!equipItem_2_Buffer.loadFromFile("../audio/store/equipItem_2.wav"))
 		cout << "unable to load wav file " << "equipItem_2.wav" << endl;
+	if (!equipItem_2_Buffer.loadFromFile("../audio/store/equipItem_2.wav"))
+		cout << "unable to load wav file " << "equipItem_2.wav" << endl;
+	if (!cooldown_Buffer.loadFromFile("../audio/model/cooldown_reset.wav"))
+		cout << "unable to load wav file " << "cooldown_reset.wav" << endl;
+	if (!button_press_Buffer.loadFromFile("../audio/store/button_click.wav"))
+		cout << "unable to load wav file " << "timer_tick.wav" << endl;
+	if (!prepare_phase_music_Buffer.loadFromFile("../audio/phases/prepare_phase.wav"))
+		cout << "unable to load wav file " << "prepare_phase.wav" << endl;
+	if (!kill_phase_music_Buffer.loadFromFile("../audio/phases/kill_phase.wav"))
+		cout << "unable to load wav file " << "kill_phase.wav" << endl;
+	if (!final_round_music_Buffer.loadFromFile("../audio/phases/final_round.wav"))
+		cout << "unable to load wav file " << "final_round.wav" << endl;
+	if (!victory_Buffer.loadFromFile("../audio/phases/victory.wav"))
+		cout << "unable to load wav file " << "victory.wav" << endl;
+	if (!timer_Buffer.loadFromFile("../audio/phases/timer_tick.wav"))
+		cout << "unable to load wav file " << "timer_tick.wav" << endl;
+	if (!killstreak_Buffer.loadFromFile("../audio/phases/killstreak.wav"))
+		cout << "unable to load wav file " << "killstreak.wav" << endl;
+	if (!shutdown_Buffer.loadFromFile("../audio/phases/shutdown.wav"))
+		cout << "unable to load wav file " << "shutdown.wav" << endl;
 }
 
 void Audio::play(glm::vec3 pos, unsigned int audio_id) {
@@ -128,6 +160,9 @@ void Audio::play(glm::vec3 pos, unsigned int audio_id) {
 	case SKELETON_EVADE_2_AUDIO:
 		skeleton_evade_2.play();
 		break;
+	case CANNOT_BUY_ITEM_AUDIO:
+		cannotBuyItem.play();
+		break;
 	case BUY_ITEM_1_AUDIO:
 		buyItem_1.play();
 		break;
@@ -140,7 +175,38 @@ void Audio::play(glm::vec3 pos, unsigned int audio_id) {
 	case EQUIP_ITEM_2_AUDIO:
 		equipItem_2.play();
 		break;
+	case PREPARE_PHASE_MUSIC:
+		prepare_phase_music.play();
+		break;
+	case KILL_PHASE_MUSIC:
+		kill_phase_music.play();
+		break;
+	case FINAL_ROUND_MUSIC:
+		final_round_music.play();
+		break;
+	case VICTORY_AUDIO:
+		victory_music.play();
+		break;
+	case COOLDOWN_RESET_AUDIO:
+		cooldown_sound.play();
+		break;
+	case TIMER_AUDIO:
+		timer.play();
+		break;
+	case GAME_OVER_AUDIO:
+		game_over.play();
+		break;
+	case BUTTON_PRESS_AUDIO:
+		button_press.play();
+		break;
+	case KILLSTREAK_AUDIO:
+		killstreak.play();
+		break;
+	case SHUTDOWN_AUDIO:
+		shutdown.play();
+		break;
 	}
+	
 }
 
 void Audio::initListener(glm::vec3 pos) {

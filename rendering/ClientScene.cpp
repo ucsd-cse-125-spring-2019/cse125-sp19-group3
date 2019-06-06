@@ -334,6 +334,7 @@ void ClientScene::updateTimers(nanoseconds timePassed) {
 			skill_timers[i] -= timePassed;
 			if (skill_timers[i] < nanoseconds::zero()) {
 				skill_timers[i] = nanoseconds::zero();
+				audio.play(glm::vec3(0), COOLDOWN_RESET_AUDIO);
 				//logger()->debug("skill {} is ready to fire!", i);
 			}
 		}
@@ -683,11 +684,14 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 				skill_timers[OMNI_SKILL_INDEX] = nanoseconds(ms);
 			}
 
-			// hardcoded case for assassin (and king)
+			// hardcoded case for assassin
 			if (player.modelType == ASSASSIN && !player.isSilenced) {
-				// set duration for invisibility / minimap skill
-				std::chrono::milliseconds ms(adjustedSkill.duration);
-				skillDurationTimer = nanoseconds(ms);
+				// play localized sound
+				audio.play(glm::vec3(0), ASSASSIN_STEALTH_AUDIO);
+
+				// set duration for invisibility
+				std::chrono::seconds sec((int)adjustedSkill.duration);
+				skillDurationTimer = nanoseconds(sec);
 			}
 			
 			// send server skill packet
@@ -712,6 +716,9 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 			// set duration timer
 			evadeDurationTimer = nanoseconds(std::chrono::milliseconds(adjustedSkill.duration));
 
+			// play sound
+			audio.play(glm::vec3(0), SKELETON_EVADE_2_AUDIO);
+
 			// send server skill packet
 			ClientInputPacket evadeSkillPacket = game->createSkillPacket(NULL_POINT, adjustedSkill.skill_id);
 			network->sendToServer(evadeSkillPacket);
@@ -723,6 +730,30 @@ void ClientScene::scroll_callback(GLFWwindow* window, double xoffset, double yof
 	glm::vec3 z_dir = camera->cam_look_at - camera->cam_pos;
 	if (!((camera->cam_pos.y < min_scroll && yoffset > 0) || (camera->cam_pos.y > max_scroll && yoffset < 0)))
 		camera->cam_look_at -= ((float)-yoffset * glm::normalize(z_dir));
+}
+
+void ClientScene::playPreparePhaseBGM() {
+	audio.play(glm::vec3(0), PREPARE_PHASE_MUSIC);
+}
+
+void ClientScene::playKillPhaseBGM() {
+	audio.play(glm::vec3(0), KILL_PHASE_MUSIC);
+}
+
+void ClientScene::playCountdown() {
+	audio.play(glm::vec3(0), TIMER_AUDIO);
+}
+
+void ClientScene::playButtonPress() {
+	audio.play(glm::vec3(0), BUTTON_PRESS_AUDIO);
+}
+
+void ClientScene::playChaching() {
+	audio.play(glm::vec3(0), BUY_ITEM_1_AUDIO);
+}
+
+void ClientScene::playInvest() {
+	audio.play(glm::vec3(0), BUY_ITEM_2_AUDIO);
 }
 
 void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
@@ -860,9 +891,8 @@ int ClientScene::handleInitScenePacket(char * data) {
 	data += sizeof(unsigned int);
 	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap, particleTexture, particleShader);
 
-	//**Audio Test (Currently plays ASSASSIN_TELEPORT.wav)**//
-	//audio.initListener(glm::vec3(0));
-	//audio.play(glm::vec3(0), 2);
+	audio.initListener(glm::vec3(0));
+	playKillPhaseBGM();
 
 	return client_id;
 }
@@ -911,6 +941,22 @@ void ClientScene::handleServerTickPacket(char * data) {
 	sz += sizeof(bool);
 	data += sizeof(bool);
 
+	// deserialize audio
+	int numSounds = 0;
+	memcpy(&numSounds, data, sizeof(int));
+	sz += sizeof(int);
+	data += sizeof(int);
+
+	for (int i = 0; i < numSounds; i++) {
+		int soundToPlay = 0;
+		memcpy(&soundToPlay, data, sizeof(int));
+		sz += sizeof(int);
+		data += sizeof(int);
+
+		// play the sound
+		audio.play(glm::vec3(0), soundToPlay);
+	}
+
 	/*int currKill = INT_MAX;
 	if (isCharging) currKill = leaderBoard->currentKills[player.player_id];*/
 
@@ -937,6 +983,9 @@ void ClientScene::handleServerTickPacket(char * data) {
 	leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
 	data += leaderBoard_size;
 
+	if (leaderBoard->currentKills[player.player_id] > currKill) {
+		audio.play(glm::vec3(0), SKELETON_DEATH_2_AUDIO);
+	}
 	while (!leaderBoard->kill_map.empty()) {
 		int killer_id = leaderBoard->kill_map.front();
 		leaderBoard->kill_map.pop_front();
@@ -955,6 +1004,7 @@ void ClientScene::handleServerTickPacket(char * data) {
 		}
 	}
 	
+
 	if (isCharging && (leaderBoard->currentKills[player.player_id] > currKill)) 
 		skill_timers[DIR_SKILL_INDEX] = nanoseconds::zero();	// reset cooldown when kill someone using charge
    

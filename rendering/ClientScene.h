@@ -44,6 +44,12 @@ public:
 	GLuint particleTexture;
 	void initialize_objects(ClientGame * game, ClientNetwork* network, LeaderBoard* leaderBoard);
 	void initialize_skills(ArcheType selected_type);
+	void playPreparePhaseBGM();
+	void playKillPhaseBGM();
+	void playCountdown();
+	void playButtonPress();
+	void playChaching();
+	void playInvest();
 	//void playerInit(const ScenePlayer &player);
 	void clean_up();
 	GLFWwindow * create_window();
@@ -135,6 +141,12 @@ public:
 	static void resetGUIStatus() { scene->resetGUIStatus(); };
 
 	static void resetPreKillPhase() { scene->resetPreKillPhase(); };
+	static void playPreparePhaseBGM() { scene->playPreparePhaseBGM(); };
+	static void playKillPhaseBGM() { scene->playKillPhaseBGM(); };
+	static void playCountdown() { scene->playCountdown(); };
+	static void playButtonPress() { scene->playButtonPress(); };
+	static void playChaching() { scene->playChaching(); };
+	static void playInvest() { scene->playInvest(); };
 	static int getPlayerGold() { return scene->getPlayerGold(); };
 	static vector<Skill> getPlayerSkills() { return scene->getPlayerSkills(); };
 	static vector<string> getUsernames() { return scene->getUsernames(); };

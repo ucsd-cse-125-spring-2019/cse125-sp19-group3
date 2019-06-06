@@ -670,6 +670,7 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 		NK_WINDOW_NO_SCROLLBAR)) {
 		nk_layout_row_static(ctx, height*0.1, height*0.1, 1);
 		if (nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_RIGHT)) {
+			Window_static::playButtonPress();
 			guiS.currPrepareLayout = 1;
 		}
 	}
@@ -843,6 +844,7 @@ static void ui_bets_shop(struct nk_context *ctx, struct media *media, int width,
 		nk_layout_row(ctx, NK_DYNAMIC, height*0.05f, 3, bet_ratio);
 		nk_spacing(ctx, 1);
 		if (guiS.betAmount > 0 && nk_button_label(ctx, "Bet!")) {
+			Window_static::playInvest();
 			//TODO: SEND BET
 			if (op >= 1) {
 				player->amount_invested = guiS.betAmount;
@@ -908,16 +910,19 @@ static void ui_shop(struct nk_context *ctx, struct media *media, int width, int 
 
 			nk_layout_row_dynamic(ctx, 40, 1);
 			if (nk_button_label(ctx, "Skills")) {
+				Window_static::playButtonPress();
 				gStatuses.shopCategory = 0;
 			}
 			nk_layout_row_static(ctx, 30, 1, 1);
 			nk_layout_row_dynamic(ctx, 40, 1);
 			if (nk_button_label(ctx, "Bet")) {
+				Window_static::playButtonPress();
 				gStatuses.shopCategory = 1;
 			}
 			nk_layout_row_static(ctx, 30, 1, 1);
 			nk_layout_row_dynamic(ctx, 40, 1);
 			if (nk_button_label(ctx, "Cheat!")) {
+				Window_static::playButtonPress();
 				gStatuses.shopCategory = 2;
 			}
 		}
@@ -941,6 +946,7 @@ static void ui_shop(struct nk_context *ctx, struct media *media, int width, int 
 		NK_WINDOW_NO_SCROLLBAR)) {
 		nk_layout_row_static(ctx, height*0.1, height*0.1, 1);
 		if (nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_LEFT)) {
+			Window_static::playButtonPress();
 			gStatuses.currPrepareLayout = 0;
 		}
 	}

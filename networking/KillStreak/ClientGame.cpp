@@ -324,6 +324,7 @@ void ClientGame::endKillPhase()
 				if (client_id == this->client_id) Window_static::updatePlayerGold(gold);
 			}
 
+			Window_static::playPreparePhaseBGM();
 			// continue to enter prepare
 			std::chrono::seconds secPre(PREPHASE_TIME);
 			prepareTimer = nanoseconds(secPre);
@@ -465,6 +466,7 @@ void ClientGame::endPrepPhase()
 	Window_static::scene->resetPreKillPhase();
 
 	// server starting kill phase! 
+	Window_static::playKillPhaseBGM();
 	currPhase = KILL;
 	std::chrono::seconds secKill(KILLPHASE_TIME);
 	prepareTimer = nanoseconds(secKill);
@@ -574,14 +576,25 @@ void ClientGame::run() {
 			auto end = Clock::now();
 			nanoseconds elapsed = chrono::duration_cast<nanoseconds>(end - start);
 			Window_static::updateTimers(elapsed);
+			auto previousTime = prepareTimer;
 			prepareTimer -= elapsed;
+			auto timetoPlayCountdown = nanoseconds(std::chrono::seconds((int)TIMER_COUNTDOWN));
+			if (previousTime > timetoPlayCountdown && prepareTimer <= timetoPlayCountdown) {
+				Window_static::playCountdown();
+			}
 		}
 		else {
 			// Prepare Phase
 			auto start = Clock::now();
 			Window_static::display_callback(window);
 			auto end = Clock::now();
-			prepareTimer -= chrono::duration_cast<nanoseconds>(end - start);
+			nanoseconds elapsed = chrono::duration_cast<nanoseconds>(end - start);
+			auto previousTime = prepareTimer;
+			prepareTimer -= elapsed;
+			auto timeToPlayCountdown = nanoseconds(std::chrono::seconds((int)TIMER_COUNTDOWN));
+			if (previousTime > timeToPlayCountdown && prepareTimer <= timeToPlayCountdown) {
+				Window_static::playCountdown();
+			}
 			
 		}
 
