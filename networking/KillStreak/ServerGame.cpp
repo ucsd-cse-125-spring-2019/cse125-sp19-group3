@@ -594,17 +594,16 @@ int ServerGame::updatePreparePhase() {
 				// deserialize amount invested 
 				memcpy(&scene->scenePlayers[client_id].amount_invested, data, sizeof(int));
 				data += sizeof(int);
-//				logger()->debug("Client {} invested {}", client_id, scene->scenePlayers[client_id].amount_invested);
 
 				// deserialize player invested in
 				memcpy(&scene->scenePlayers[client_id].player_invested_in, data, sizeof(ArcheType));
 				data += sizeof(ArcheType);
-//				logger()->debug("Client {} invested in player {}", client_id, scene->scenePlayers[client_id].player_invested_in);
 
 				// deserialize cheating for each player
 				int cheatingPoints = 0;
 				memcpy(&cheatingPoints, data, sizeof(unsigned int));
 				data += sizeof(unsigned int);
+
 				leaderBoard->currPoints[client_id] += cheatingPoints;
 
 			}
@@ -814,8 +813,6 @@ ServerInputPacket ServerGame::createStartPrepPhasePacket()
 		memcpy(bufPtr, &curr_gold, sizeof(int));
 		sgSize += sizeof(int);
 		bufPtr += sizeof(int);
-
-		logger()->debug("Client {} has gold {} (serializing)", client_id, curr_gold);
 	}
 
 	packet.packetType = START_PREP_PHASE;

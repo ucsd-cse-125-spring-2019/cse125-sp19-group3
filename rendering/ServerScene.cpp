@@ -9,7 +9,7 @@ using json = nlohmann::json;
 #define DEFAULT_X 666
 #define DEFAULT_Z 666
 
-#define GOLD			 5
+#define GOLD			 50
 #define GOLD_MULTIPLIER  3		// number of kills in killstreak before next bonus
 #define LOSESTREAK_BONUS 2		// gold awarded for losestreak
 
