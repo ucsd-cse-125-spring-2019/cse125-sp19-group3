@@ -996,3 +996,8 @@ vector<int> ClientScene::getInvestmentInfo() {
 	result.push_back(player.player_invested_in);
 	return result;
 }
+
+void ClientScene::clearInvestmentInfo() {
+	player.amount_invested = 0;
+	player.player_invested_in = NONE;
+}

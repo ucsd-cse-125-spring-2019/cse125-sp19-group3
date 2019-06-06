@@ -633,7 +633,7 @@ ui_skill_group(struct nk_context *ctx, struct media *media, int width, int heigh
 	vector<int> prices, int row, char * name) {
 	ArcheType type = player->modelType;
 	static const float skratio[] = { 0.38f, 0.24f, 0.38f };  /* 0.3 + 0.4 + 0.3 = 1 */
-	static const unsigned int sequential_bindings[] = { EVADE_INDEX , PROJ_INDEX, DIR_SKILL_INDEX , OMNI_SKILL_INDEX };
+	static const unsigned int sequential_bindings[] = {  OMNI_SKILL_INDEX, DIR_SKILL_INDEX, PROJ_INDEX, EVADE_INDEX };
 
 	nk_layout_row_dynamic(ctx, height*0.4,1);
 	if (nk_group_begin(ctx, name, NK_WINDOW_NO_SCROLLBAR)) {

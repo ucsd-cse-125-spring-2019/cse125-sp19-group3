@@ -404,6 +404,7 @@ void ClientGame::endPrepPhase()
 	memcpy(bufPtr, &investment[1], sizeof(ArcheType));
 	bufPtr += sizeof(ArcheType);
 	sgSize += sizeof(ArcheType);
+	Window_static::clearInvestmentInfo();
 
 	// serialize cheating
 	memcpy(bufPtr, &cheatingPoints, sizeof(unsigned int));
