@@ -262,8 +262,12 @@ void ServerScene::resetScene()
 			delete(skill.node);
 			skillIter = skills.erase(skillIter);
 		}
+
+		player.speed = player.default_speed; // reset speed
 	}
+
 	warriorIsCharging = false;
+
 }
 
 void ServerScene::update()

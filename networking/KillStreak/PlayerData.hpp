@@ -57,10 +57,10 @@ public:
 	unsigned int level;
 	unsigned int skill_id;
 	float range;
-	float cooldown;
-	float duration;
+	int cooldown; // in milliseconds
+	int duration; // in milliseconds
 	float speed;
-	Skill(unsigned int skill_id, unsigned int initialLevel, string skillName, float range, float cooldown, float duration, float speed) {
+	Skill(unsigned int skill_id, unsigned int initialLevel, string skillName, float range, int cooldown, int duration, float speed) {
 		this->skillName = skillName;
 		this->level = initialLevel;
 		this->skill_id = skill_id;
