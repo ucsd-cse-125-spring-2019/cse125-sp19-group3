@@ -623,7 +623,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 	Skill cur_skill = s_it->second;
 	Skill adjustedSkill = Skill::calculateSkillBasedOnLevel(cur_skill, level);
 	Point initPoint = scenePlayers[player_id].currentPos;
-
+	scenePlayers[player_id].destination = initPoint;
 	skill_id = (skill_id % 10 == 1) ? 1 : skill_id;		// check if projectile; update skill_id if true
 	switch (skill_id)
 	{
