@@ -423,14 +423,39 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 		int index = it - curKills.begin();
 		int numKills = *it;
 
-		// add next client with most kills username, kills & archetype
-		ordered_usernames.push_back(usernames[index]);
-		ordered_types.push_back(archetypes[index]);
-		kills.push_back(numKills);
-		deaths.push_back(curDeaths[index]);
+		// add next client with most kills username, kills, points & archetype
+		ordered_usernames.push_back(usernames[index]);					// add usernames to ordered index
+		ordered_types.push_back(archetypes[index]);						// add types to ordered index
+		kills.push_back(numKills);										// add kills to ordered index
+		deaths.push_back(curDeaths[index]);								// add deaths to ordered index
 
 		*it = -1;		// reset current max to -1
 	}
+
+
+	// ordered usernames, types, and points for global points leader board
+	vector<string> ordered_usernames_global;
+	vector<ArcheType> ordered_types_global;
+	vector<int> ordered_points_global;
+	vector<int> ordered_gold_global;
+	vector<int> points_copy = leaderBoard->currPoints;
+
+	// order global points leaderboard in order of highest points 
+	for (int i = 0; i < GAME_SIZE; i++)
+	{
+		// find max element in list; get total points for that player
+		auto it = std::max_element(points_copy.begin(), points_copy.end());
+		int index = it - points_copy.begin();
+		int numPoints = *it;
+
+		ordered_usernames_global.push_back(usernames[index]);					// add username to ordered index
+		ordered_types_global.push_back(archetypes[index]);						// add type to ordered index
+		ordered_points_global.push_back(leaderBoard->currPoints[index]);		// add points to ordered index
+		ordered_gold_global.push_back(leaderBoard->currGold[index]);			// add gold to ordered index
+
+		*it = -1;		// reset current max to -1
+	}
+
 	if (nk_begin(ctx, "round result", nk_rect(0, 0, width, height),
 		NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BACKGROUND))
 	{
@@ -497,9 +522,13 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 			player_id = s.c_str();
 			const char * player_point;
 
-			// total kills for player
-			string point_s = std::to_string(kills[i]);
+			// total points for player
+			string point_s = std::to_string(ordered_points_global[i]);
 			player_point = point_s.c_str();
+
+			// total gold for player
+			string gold_s = std::to_string(ordered_gold_global[i]);
+			const char * player_gold = gold_s.c_str();
 
 			nk_layout_row(ctx, NK_DYNAMIC, width*0.02, 6, globalLBratio);
 			nk_spacing(ctx, 1);
@@ -515,8 +544,8 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 
 			// TODO: SWITCH OUT WITH REAL SUMMARY PACKETS
 			nk_text(ctx, ordered_usernames[i].c_str(), strlen(ordered_usernames[i].c_str()), NK_TEXT_LEFT);
-			nk_text(ctx, player_point, strlen(player_point), NK_TEXT_LEFT);
-			nk_text(ctx, player_point, strlen(player_point), NK_TEXT_LEFT);
+			nk_text(ctx, player_gold, strlen(player_gold), NK_TEXT_LEFT);   // gold
+			nk_text(ctx, player_point, strlen(player_point), NK_TEXT_LEFT); // points
 		}
 
 	}

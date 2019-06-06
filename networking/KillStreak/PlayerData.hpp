@@ -28,6 +28,7 @@ public:
 	void incKillStreak(unsigned int player_id);			// increment players killstreak
 	void incDeath(unsigned int player_id);				// increment players death count
 	void awardPoint(unsigned int player_id);			// award point to player_id
+	void awardRoundPoints(int round_number);			// award points to all players based on rank
 
 	// for testing
 	void printCurrentKillStreaks();	
