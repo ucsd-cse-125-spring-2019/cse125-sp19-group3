@@ -445,33 +445,6 @@ int ServerGame::updateKillPhase() {
 				{
 					end_kill_phase = 1;				// set end_kill_phase as initiated
 					total_end_kill_packets++;		// inc total end kill phase packets received
-
-					// For testing with single player... 
-					if (total_end_kill_packets >= GAME_SIZE)
-					{
-						end_kill_phase = 0;
-						total_end_kill_packets = 0;
-
-						// calculate points based on round rankings; move to next round
-						leaderBoard->awardRoundPoints(round_number);
-						round_number++;
-
-						if (round_number <= TOTAL_ROUNDS)
-						{
-							// serialize leaderboard and gold of all players then broadcast to all clients
-							ServerInputPacket start_prep_phase_packet = createStartPrepPhasePacket();
-							network->broadcastSend(start_prep_phase_packet);
-							logger()->debug("Prep Phase: Broadcasting start prep phase packet");
-							return PREP_PHASE;
-						}
-						else	// GAME OVER! Send end game phase packet!
-						{	
-							ServerInputPacket start_end_phase_packet = createStartEndPhasePacket();
-							network->broadcastSend(start_end_phase_packet);
-							logger()->debug("GAME OVER: Broadcasting start end phase packet");
-							return END_GAME_PHASE;
-						}
-					}
 				}
 			}
 			// end kill phase has been initiated
@@ -479,37 +452,41 @@ int ServerGame::updateKillPhase() {
 			{
 				// inc. total end kill phase packets if matches type; otherwise drop packet
 				if (packet->inputType == END_KILL_PHASE) total_end_kill_packets++;
+			}
 
-				// all clients ended kill phase -> reset values & broadcast start prep phase packet
-				if (total_end_kill_packets >= GAME_SIZE)
+			// all end game phase packets received?
+			if (total_end_kill_packets >= GAME_SIZE)
+			{
+				end_kill_phase = 0;
+				total_end_kill_packets = 0;
+
+				// get winners of round 
+				//vector<ArcheType> round_winners = leaderBoard->getRoundWinner(playerMetadatas);
+
+				// calculate investment 
+				//calculateRoundInvestment(round_winners);
+
+				// calculate points based on round rankings; move to next round
+				leaderBoard->awardRoundPoints(round_number);
+				round_number++;
+
+				if (round_number <= TOTAL_ROUNDS)
 				{
-					end_kill_phase = 0;
-					total_end_kill_packets = 0;
-
-					// calculate points based on round rankings; move to next round
-					leaderBoard->awardRoundPoints(round_number);
-					round_number++;
-
-					// game not over --> enter prepare phase
-					if (round_number <= TOTAL_ROUNDS)
-					{
-						// serialize leaderboard and gold of all players then broadcast to all clients
-						ServerInputPacket start_prep_phase_packet = createStartPrepPhasePacket();
-						network->broadcastSend(start_prep_phase_packet);
-						logger()->debug("Prep Phase: Broadcasting start prep phase packet");
-						return PREP_PHASE;
-
-					}
-					else	// GAME OVER! Send end game phase packet!
-					{	
-						ServerInputPacket start_end_phase_packet = createStartEndPhasePacket();
-						network->broadcastSend(start_end_phase_packet);
-						logger()->debug("GAME OVER: Broadcasting start end phase packet");
-						return END_GAME_PHASE;
-					}
-
+					// serialize leaderboard and gold of all players then broadcast to all clients
+					ServerInputPacket start_prep_phase_packet = createStartPrepPhasePacket();
+					network->broadcastSend(start_prep_phase_packet);
+					logger()->debug("Prep Phase: Broadcasting start prep phase packet");
+					return PREP_PHASE;
+				}
+				else	// GAME OVER! Send end game phase packet!
+				{	
+					ServerInputPacket start_end_phase_packet = createStartEndPhasePacket();
+					network->broadcastSend(start_end_phase_packet);
+					logger()->debug("GAME OVER: Broadcasting start end phase packet");
+					return END_GAME_PHASE;
 				}
 			}
+
 		}
 	}
 
@@ -600,6 +577,9 @@ int ServerGame::updatePreparePhase() {
 				memcpy(&player_meta->gold, data, sizeof(int));
 				data += sizeof(int);
 
+
+
+
 				// deserialize number of skills
 				int total_skills = 0;
 				memcpy(&total_skills, data, sizeof(int));
@@ -639,6 +619,42 @@ int ServerGame::updatePreparePhase() {
 	}
 
 	return PREP_PHASE;	// prep phase not over
+}
+
+
+/*
+	Calculate prior investments after each rounds kill phase.
+	Player investments already mapped, check results and update 
+	winners gold by doubling origin investment.
+*/
+void ServerGame::calculateRoundInvestment(vector<ArcheType> round_winners)
+{
+	// iterate over all scene players
+	unordered_map<unsigned int, ScenePlayer>::iterator s_it = scene->scenePlayers.begin();
+	while (s_it != scene->scenePlayers.end())
+	{
+		// get client id & corresponding scene player
+		unsigned int client_id = s_it->first;
+		ScenePlayer curr_player = s_it->second;		
+		
+		// check if player invested in a winner
+		for (int i = 0; i < round_winners.size(); i++)
+		{
+			// bet on a winner! update gold in playerMetaData
+			if (round_winners[i] == curr_player.player_invested_in)	
+			{
+				unordered_map<unsigned int, PlayerMetadata*>::iterator s_it = playerMetadatas->find(client_id);
+				PlayerMetadata* player_meta = s_it->second;
+				player_meta->gold += (curr_player.amount_invested * 2);
+			}
+		}
+		
+		// reset investment
+		curr_player.player_invested_in = NONE;
+		curr_player.amount_invested = 0;
+
+		s_it++;
+	}
 }
 
 

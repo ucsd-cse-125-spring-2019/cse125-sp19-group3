@@ -10,10 +10,10 @@
 #define SERVER_TICK_PACKET_SIZE 10000
 #define END_PHASE_PACKET_SIZE   512
 
-#define KILLPHASE_TIME			15			// duration of kill phase
-#define PREPHASE_TIME			10			// duration of prepare phase
+#define KILLPHASE_TIME			20			// duration of kill phase
+#define PREPHASE_TIME			15			// duration of prepare phase
 #define ENDGAME_TIME			5			// duration of end of game 
-#define TOTAL_ROUNDS			5			// total rounds to be played in game
+#define TOTAL_ROUNDS			2			// total rounds to be played in game
 
 
 
@@ -24,7 +24,7 @@ typedef enum {INIT_CONN, CHAR_SELECT, MOVEMENT, SKILL, RESPAWN, END_KILL_PHASE, 
 typedef enum { WELCOME, INIT_SCENE, UPDATE_SCENE_GRAPH, 
 				CHAR_SELECT_PHASE, START_PREP_PHASE, START_KILL_PHASE, START_END_GAME_PHASE } ServerPacketType;
 
-typedef enum { HUMAN, MAGE, ASSASSIN, WARRIOR, KING } ArcheType;
+typedef enum { HUMAN, MAGE, ASSASSIN, WARRIOR, KING, NONE } ArcheType;
 
 enum AnimationType { idle, run, evade, projectile, skill_1, skill_2, die, spawn };
 

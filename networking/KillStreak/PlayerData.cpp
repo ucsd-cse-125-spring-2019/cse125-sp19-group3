@@ -2,6 +2,7 @@
 #include "logger.hpp"
 #include "sysexits.h"
 #include "nlohmann\json.hpp"
+#include "CoreTypes.hpp"
 
 #include <fstream>
 #include <string>
@@ -28,6 +29,33 @@ unordered_map<string, ArcheType> archetype_map = {
 	{"KING", KING},
 };	
 
+
+/*
+	Return player id of winner of previous round.
+*/
+/*
+vector<ArcheType> LeaderBoard::getRoundWinner(unordered_map<unsigned int, PlayerMetadata*>* playerMetadatas)
+{
+	vector<ArcheType> winners;
+
+	// get max kills from list
+	auto it = std::max_element(currentKills.begin(), currentKills.end());		
+	int max_kills = *it;				
+
+	// any players with max_kills is a winner; add their ArcheType to vector of winners
+	for (int client_id = 0; client_id < GAME_SIZE; client_id++)
+	{
+		if (currentKills[client_id] == max_kills)
+		{
+			// get ArcheType
+			unordered_map<unsigned int, PlayerMetadata*>::iterator p_it = playerMetadatas->find(client_id);
+			winners.push_back(p_it->second->type);
+		}
+	}
+
+	return winners;
+}
+*/
 
 /*
 	End of round... award points to all players based on rank.

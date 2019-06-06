@@ -99,6 +99,7 @@ protected:
 	ServerInputPacket createCharSelectPacket(char* data, int size);
 	
 	int handleClientInputPacket(ClientInputPacket* packet, int client_id);
+	void calculateRoundInvestment(vector<ArcheType> winners);
 
 	friend class ScenePlayer;
 };
