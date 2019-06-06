@@ -788,7 +788,7 @@ static void ui_cheat_shop(struct nk_context *ctx, struct media *media, int width
 		nk_spacing(ctx, 1);
 		if (player->gold >= CHEATING_GOLD) {
 			if (nk_button_label(ctx, "Cheat!")) {
-				game->cheatingPoints += CHEATING_GOLD;
+				game->cheatingPoints += CHEATING_POINTS;
 				player->gold -= CHEATING_GOLD;
 			}
 		}
