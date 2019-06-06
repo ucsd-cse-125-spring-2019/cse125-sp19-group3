@@ -535,7 +535,7 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 			string gold_s = std::to_string(ordered_gold_global[i]);
 			const char * player_gold = gold_s.c_str();
 
-			nk_layout_row(ctx, NK_DYNAMIC, width*0.02, 6, globalLBratio);
+			nk_layout_row(ctx, NK_DYNAMIC, width*0.03, 6, globalLBratio);
 			nk_spacing(ctx, 1);
 			nk_text(ctx, player_id, strlen(player_id), NK_TEXT_LEFT);
 
