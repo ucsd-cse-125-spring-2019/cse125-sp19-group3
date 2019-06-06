@@ -368,12 +368,17 @@ static void ui_kill_info(struct nk_context *ctx, struct media *media, int width,
 	if (nk_begin(ctx, "kill_info_updates", nk_rect(width * 0.80, 20, width * 0.20, height*0.3),
 		NK_WINDOW_NO_SCROLLBAR))
 	{
-		std::deque<string>::iterator it = gStatus.killUpdates.begin();
+		std::deque<std::pair<string,string>>::iterator it = gStatus.killUpdates.begin();
 
 		while (it != gStatus.killUpdates.end()) {
-			nk_layout_row_static(ctx, 32, width * 0.20, 1);
-			const char * text = (*it++).c_str();
-			nk_label(ctx, text, NK_TEXT_LEFT);
+			nk_layout_row_dynamic(ctx, 32, 3);
+			auto text = (*it++);
+			ctx->style.text.color = nk_rgba(55, 255, 55, 255);
+			nk_label(ctx, text.first.c_str(), NK_TEXT_LEFT);
+			ctx->style.text.color = nk_rgba(235, 235, 235, 255);
+			nk_label(ctx, "killed", NK_TEXT_LEFT);
+			ctx->style.text.color = nk_rgba(255, 55, 55, 255);
+			nk_label(ctx, text.second.c_str(), NK_TEXT_LEFT);
 		}
 	}
 	nk_end(ctx);
