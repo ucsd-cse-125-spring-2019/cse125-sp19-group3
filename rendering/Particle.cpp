@@ -1,7 +1,7 @@
 #pragma warning(disable : 4996)
 #include "Particle.h"
 #include "ClientScene.h"
-#define MaxParticles 200
+#define MaxParticles 10
 
 static GLfloat g_vertex_buffer_data[] = {
 	-0.5f, -0.5f, 0.0f,
@@ -17,7 +17,7 @@ Particle ParticlesContainer[MaxParticles];
 void SortParticles() {
 	std::sort(&ParticlesContainer[0], &ParticlesContainer[MaxParticles]);
 }
-int newparticles = 40;
+int newparticles = 5;
 // Finds a Particle in ParticlesContainer which isn't used yet.
 // (i.e. life < 0);
 int FindUnusedParticle() {
@@ -204,7 +204,7 @@ void Particles::reinitParticle(Particle& p) {
 	p.b = 163;
 	p.a = (rand() % 256) / 2 + 100;
 
-	p.size = (rand() % 1000) / 4000.0f + 0.05f;
+	p.size = (rand() % 1000) / 2000.0f + 0.5f;
 }
 
 void Particles::draw() {

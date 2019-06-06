@@ -510,7 +510,7 @@ void ClientGame::run() {
 	// This part will run after all players have selected their characters!
 
 	// Create the GLFW window
-	window = Window_static::create_window(1600, 900);
+	window = Window_static::create_window();
 	// Setup OpenGL settings, including lighting, materials, etc.
 	setup_opengl_settings();
 	// Print OpenGL and GLSL versions
