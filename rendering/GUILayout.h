@@ -890,10 +890,13 @@ static void ui_cheat_shop(struct nk_context *ctx, struct media *media, int width
 			if (nk_button_label(ctx, "Cheat!")) {
 				game->cheatingPoints += CHEATING_POINTS;
 				player->gold -= CHEATING_GOLD;
+				Window_static::playChaching();
 			}
 		}
 		else {
-			nk_button_label(ctx, "NO ENOUGH GOLD");
+			if ((nk_button_label(ctx, "NOT ENOUGH GOLD"))) {
+				Window_static::playInvalidButtonPress();
+			}
 		}
 		nk_spacing(ctx, 1);
 
