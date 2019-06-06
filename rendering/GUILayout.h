@@ -86,7 +86,7 @@ static void ui_killphase_header(struct nk_context *ctx, struct media *media, int
 	struct nk_style *s = &ctx->style;
 	nk_style_push_color(ctx, &s->window.background, nk_rgba(0, 0, 0, 0));
 	nk_style_push_style_item(ctx, &s->window.fixed_background, nk_style_item_color(nk_rgba(0, 0, 0, 0)));
-	if (nk_begin(ctx, "kill_player_info", nk_rect(10, 310, width * 0.15, 190),
+	if (nk_begin(ctx, "kill_player_info", nk_rect(10, 310, width * 0.15, 180),
 		NK_WINDOW_NO_SCROLLBAR))
 	{
 		static const float kill_ratio[] = { 0.3f,0.3f, 0.4f };  /* 0.3 + 0.4 + 0.3 = 1 */
@@ -106,19 +106,19 @@ static void ui_killphase_header(struct nk_context *ctx, struct media *media, int
 
 		nk_spacing(ctx, 1);
 		if (nk_group_begin(ctx, "icons", NK_WINDOW_NO_SCROLLBAR)) { // column 1
-			nk_layout_row_static(ctx, 48, 48, 1);
+			nk_layout_row_static(ctx, 36, 36, 1);
 			nk_image(ctx, media->gold);
 			nk_layout_row_static(ctx, 20, 1, 1);
-			nk_layout_row_static(ctx, 48, 48, 1);
+			nk_layout_row_static(ctx, 36, 36, 1);
 			nk_image(ctx, media->points);
 		}
 		nk_group_end(ctx);
 
 		if (nk_group_begin(ctx, "nums", NK_WINDOW_NO_SCROLLBAR)) { // column 1
-			nk_layout_row_static(ctx, 48, 48, 1);
+			nk_layout_row_static(ctx, 36, 36, 1);
 			nk_label(ctx, gold_char, NK_TEXT_RIGHT | NK_TEXT_ALIGN_CENTERED);
 			nk_layout_row_static(ctx, 20, 1, 1);
-			nk_layout_row_static(ctx, 48, 48, 1);
+			nk_layout_row_static(ctx, 36, 36, 1);
 			nk_text(ctx, vic_char, strlen(vic_char), NK_TEXT_RIGHT | NK_TEXT_ALIGN_CENTERED);
 		}
 		nk_group_end(ctx);
@@ -583,19 +583,19 @@ static void ui_shop_header(struct nk_context *ctx, struct media *media, int widt
 
 		nk_spacing(ctx, 1);
 		if (nk_group_begin(ctx, "icons", NK_WINDOW_NO_SCROLLBAR)) { // column 1
-			nk_layout_row_static(ctx, 48, 48, 1);
+			nk_layout_row_static(ctx, 36, 36, 1);
 			nk_image(ctx, media->gold);
 			nk_layout_row_static(ctx, 20, 1, 1);
-			nk_layout_row_static(ctx, 48, 48, 1);
+			nk_layout_row_static(ctx, 36, 36, 1);
 			nk_image(ctx, media->points);
 		}
 		nk_group_end(ctx);
 
 		if (nk_group_begin(ctx, "nums", NK_WINDOW_NO_SCROLLBAR)) { // column 1
-			nk_layout_row_static(ctx, 48, 48, 1);
+			nk_layout_row_static(ctx, 36, 36, 1);
 			nk_label(ctx, gold_char, NK_TEXT_RIGHT | NK_TEXT_ALIGN_CENTERED);
 			nk_layout_row_static(ctx, 20, 1, 1);
-			nk_layout_row_static(ctx, 48, 48, 1);
+			nk_layout_row_static(ctx, 36, 36, 1);
 			nk_text(ctx, vic_char, strlen(vic_char), NK_TEXT_RIGHT | NK_TEXT_ALIGN_CENTERED);
 		}
 		nk_group_end(ctx);
@@ -610,9 +610,9 @@ ui_skill_group(struct nk_context *ctx, struct media *media, int width, int heigh
 	vector<int> prices, int row, char * name) {
 	ArcheType type = player->modelType;
 	static const float skratio[] = { 0.38f, 0.24f, 0.38f };  /* 0.3 + 0.4 + 0.3 = 1 */
-	nk_layout_row_dynamic(ctx, height*0.21f + 160,1);
+	nk_layout_row_dynamic(ctx, height*0.23f + 160,1);
 	if (nk_group_begin(ctx, name, NK_WINDOW_NO_SCROLLBAR)) {
-		nk_layout_row(ctx, NK_DYNAMIC, height*0.21f +160, 3, skratio);
+		nk_layout_row(ctx, NK_DYNAMIC, height*0.22f +160, 3, skratio);
 		for (int j = 0; j < 3; j++) {
 			int i = j / 2 + row*2;
 			if (j % 2 == 0) {
@@ -621,7 +621,7 @@ ui_skill_group(struct nk_context *ctx, struct media *media, int width, int heigh
 				string p = "Cost: " + to_string(prices[i]);
 				const char * price = p.c_str();
 				if (nk_group_begin(ctx, skill_string, NK_WINDOW_NO_SCROLLBAR)) { // column 1
-					nk_layout_row_static(ctx, height*0.2, height*0.2, 1); // nested row
+					nk_layout_row_static(ctx, height*0.15, height*0.15, 1); // nested row
 					if (type == WARRIOR) {
 						nk_image(ctx, media->warrior_skills[i]);
 					}
@@ -643,7 +643,7 @@ ui_skill_group(struct nk_context *ctx, struct media *media, int width, int heigh
 					nk_layout_row_dynamic(ctx, 32, 1);
 					string level = "Current Level: " + to_string(skill.level);
 					nk_label(ctx, level.c_str(), NK_TEXT_ALIGN_LEFT);
-					nk_layout_row_dynamic(ctx, 32, 1);
+					nk_layout_row_static(ctx, 48, 144, 1);
 					if (nk_button_label(ctx, "upgrade")) {
 						//Gold check
 						if (player->gold >= prices[i]) {
