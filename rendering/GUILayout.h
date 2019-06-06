@@ -807,14 +807,14 @@ static void ui_bets_shop(struct nk_context *ctx, struct media *media, int width,
 	char* skill_string[4] = { "Cone AOE", "AOE", "Evade", "Projectile" };
 	static const char * characterTypeStrings[] = { "HUMAN", "MAGE", "ASSASSIN","WARRIOR","KING" };
 	char* prices[4] = { "Cost: 5", "Cost: 10", "Cost: 15", "Cost: 20" };
-	static const float bet_ratio[] = { 0.34f, 0.33f, 0.33f };
+	static const float bet_ratio[] = { 0.25f, 0.25f, 0.25f, 0.25f };
 	static int op = -1;
 	ArcheType type = player->modelType;
 	if (nk_group_begin(ctx, "bets_shop", NK_WINDOW_NO_SCROLLBAR)) {
 		nk_layout_row_static(ctx, height *0.12f, height *0.12f, 1); // nested row
-		nk_layout_row(ctx, NK_DYNAMIC, width *0.13f +100, 3, bet_ratio);
+		nk_layout_row(ctx, NK_DYNAMIC, width *0.13f +100, 4, bet_ratio);
 		for (int i = 1; i < 5; i++) {
-			if (i == type) continue;
+			//if (i == type) continue;
 			if (nk_group_begin(ctx, characterTypeStrings[i], 0)) { // column 1
 				nk_layout_row_static(ctx, width *0.12f, width *0.12f, 1); // nested row
 
@@ -837,11 +837,11 @@ static void ui_bets_shop(struct nk_context *ctx, struct media *media, int width,
 		amount = s.c_str();
 		nk_layout_row_static(ctx, 48, 0.6*width, 1);
 		nk_label(ctx, amount, NK_TEXT_CENTERED);
-		nk_layout_row(ctx, NK_DYNAMIC, 65, 3, bet_ratio);
+		nk_layout_row(ctx, NK_DYNAMIC, 65, 4, bet_ratio);
 		nk_spacing(ctx, 1);
 		nk_slider_int(ctx, 0, &guiS.betAmount, player->gold, 1);
 		nk_spacing(ctx, 1);
-		nk_layout_row(ctx, NK_DYNAMIC, height*0.05f, 3, bet_ratio);
+		nk_layout_row(ctx, NK_DYNAMIC, height*0.05f, 4, bet_ratio);
 		nk_spacing(ctx, 1);
 		if (guiS.betAmount > 0 && nk_button_label(ctx, "Bet!")) {
 			Window_static::playInvest();
