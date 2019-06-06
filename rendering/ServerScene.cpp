@@ -262,6 +262,10 @@ void ServerScene::resetScene()
 			delete(skill.node);
 			skillIter = skills.erase(skillIter);
 		}
+		
+		// Invinciblity
+		player.isInvincible = false;
+		serverSceneGraphMap[node_id]->isInvincible = false;
 	}
 	warriorIsCharging = false;
 }
@@ -315,6 +319,7 @@ void ServerScene::update()
 			if (character.warriorIsChargingServer && character.currentPos == character.destination) {
 				warriorIsCharging = false;
 				character.warriorIsChargingServer = false;
+				character.speed = 0.3f;
 			}
 		}
 	}
@@ -376,6 +381,7 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 	if (warriorIsCharging && dead_player.modelType == WARRIOR) {
 		warriorIsCharging = false;
 		dead_player.warriorIsChargingServer = false;
+		dead_player.speed = 0.3f;
 	}
 
 	// show animation for assassin if they die while invisible
