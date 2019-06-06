@@ -214,23 +214,23 @@ void ClientScene::initialize_UI(GLFWwindow* window) {
 	struct nk_font_config cfg = nk_font_config(0);
 	struct nk_font_atlas *atlas;
 	nk_glfw3_font_stash_begin(&atlas);
-	media.font_14 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/PermanentMarker-Regular.ttf", 14.0f, &cfg);
+	media.font_14 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/monogram_extended.ttf", 14.0f, &cfg);
 
-	media.font_18 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/PermanentMarker-Regular.ttf", 18.0f, &cfg);
+	media.font_18 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/monogram_extended.ttf", 18.0f, &cfg);
 
-	media.font_20 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/PermanentMarker-Regular.ttf", 20.0f, &cfg);
-	media.font_22 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/PermanentMarker-Regular.ttf", 22.0f, &cfg);
-	media.font_32 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/PermanentMarker-Regular.ttf", 32.0f, &cfg);
-	media.font_48 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/PermanentMarker-Regular.ttf", 48.0f, &cfg);
+	media.font_20 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/monogram_extended.ttf", 20.0f, &cfg);
+	media.font_22 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/monogram_extended.ttf", 22.0f, &cfg);
+	media.font_32 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/monogram_extended.ttf", 32.0f, &cfg);
+	media.font_48 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/monogram_extended.ttf", 48.0f, &cfg);
 
-	media.font_64 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/PermanentMarker-Regular.ttf", 64.0f, &cfg);
+	media.font_64 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/monogram_extended.ttf", 64.0f, &cfg);
 	nk_glfw3_font_stash_end();
 	}
-	glfw.atlas.default_font = media.font_22;
-	nk_style_set_font(ctx, &(media.font_22->handle));
+	glfw.atlas.default_font = media.font_32;
+	nk_style_set_font(ctx, &(media.font_32->handle));
 	//create media
 	media.mage = icon_load("../icon/mage_icon.png");
-	media.assasin = icon_load("../icon/assasin_icon.png");
+	media.assasin = icon_load("../icon/assassin_icon.png");
 	media.king = icon_load("../icon/king_icon.png");
 	media.warrior = icon_load("../icon/warrior_icon.png");
 
