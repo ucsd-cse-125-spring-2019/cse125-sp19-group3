@@ -149,6 +149,8 @@ unsigned int Serialization::deserializeLeaderBoard(char* lb_data, LeaderBoard* l
 		memcpy(&leaderBoard->currPoints[i], lb_data, sizeof(int));
 		lb_data += sizeof(int);
 		sz += sizeof(int);
+
+		logger()->debug("Deserialize.. client {} points {}", i, leaderBoard->currPoints[i]);
 	}
 	for (int i = 0; i < GAME_SIZE; i++)		// killstreak
 	{

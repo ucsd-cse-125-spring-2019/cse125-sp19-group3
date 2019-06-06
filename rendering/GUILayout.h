@@ -650,7 +650,7 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 			nk_spacing(ctx, 1);
 			nk_text(ctx, player_id, strlen(player_id), NK_TEXT_LEFT);
 
-			switch (ordered_types[i])	// archetype icon on leaderboard
+			switch (ordered_types_global[i])	// archetype icon on leaderboard
 			{
 			case MAGE: nk_image(ctx, media->mage);	  break;
 			case ASSASSIN: nk_image(ctx, media->assasin); break;
@@ -659,7 +659,7 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 			}
 
 			// TODO: SWITCH OUT WITH REAL SUMMARY PACKETS
-			nk_text(ctx, ordered_usernames[i].c_str(), strlen(ordered_usernames[i].c_str()), NK_TEXT_LEFT);
+			nk_text(ctx, ordered_usernames_global[i].c_str(), strlen(ordered_usernames_global[i].c_str()), NK_TEXT_LEFT);
 			nk_text(ctx, player_gold, strlen(player_gold), NK_TEXT_LEFT);   // gold
 			nk_text(ctx, player_point, strlen(player_point), NK_TEXT_LEFT); // points
 		}
