@@ -892,7 +892,7 @@ int ClientScene::handleInitScenePacket(char * data) {
 	root = Serialization::deserializeSceneGraph(data, clientSceneGraphMap, particleTexture, particleShader);
 
 	audio.initListener(glm::vec3(0));
-	audio.play(glm::vec3(0), KILL_PHASE_MUSIC);
+	playKillPhaseBGM();
 
 	return client_id;
 }
