@@ -748,6 +748,10 @@ void ClientScene::playKillPhaseBGM() {
 	audio.play(glm::vec3(0), KILL_PHASE_MUSIC);
 }
 
+void ClientScene::playFinalRoundBGM() {
+	audio.play(glm::vec3(0), FINAL_ROUND_MUSIC);
+}
+
 void ClientScene::playCountdown() {
 	audio.play(glm::vec3(0), TIMER_AUDIO);
 }
