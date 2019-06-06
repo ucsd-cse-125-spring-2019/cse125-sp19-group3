@@ -4,7 +4,6 @@
 #include <queue>
 #include <string>
 
-
 #define GAME_SIZE				2			// total players required to start game
 #define NULL_POINT				Point(0.0,0.0,0.0)
 

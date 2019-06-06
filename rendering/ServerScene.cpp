@@ -262,12 +262,17 @@ void ServerScene::resetScene()
 			delete(skill.node);
 			skillIter = skills.erase(skillIter);
 		}
+
+		// reset speed
+		player.speed = player.default_speed; 
 		
 		// Invinciblity
 		player.isInvincible = false;
 		serverSceneGraphMap[node_id]->isInvincible = false;
 	}
+
 	warriorIsCharging = false;
+
 }
 
 void ServerScene::update()
@@ -676,7 +681,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 		case SPRINT: 
 		{
 			auto &assassin = scenePlayers[player_id];
-			assassin.speed *= 1.5; // twice as fast, tweak values later
+			assassin.speed *= pow(1.5, adjustedSkill.level); // twice as fast, tweak values later
 			break;
 		}
 		case SUBJUGATION:
