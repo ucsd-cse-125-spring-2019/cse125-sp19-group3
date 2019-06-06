@@ -86,6 +86,7 @@ private:
 	Model * floor;
 	Model * arrow;
 	Model * cross;
+	Model * quad;
 	Circle * range;
 	ScenePlayer player;
 	Transform * root;
@@ -114,6 +115,8 @@ private:
 	unsigned int frameBufferTexture[2];
 
 	unsigned int textureId;
+
+	glm::mat4 viewportM = glm::mat4(1.0f);
 
 	vector<glm::vec3> quadVertices{
 		{ -1.0f, -1.0f, 0.0f },

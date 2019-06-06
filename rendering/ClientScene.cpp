@@ -59,10 +59,6 @@ void ClientScene::resetGUIStatus() {
 
 void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network, LeaderBoard* leaderBoard)
 {
-	camera = new Camera();
-	camera->SetAspect(width / height);
-	camera->Reset();
-
 	animationShader = new Shader(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
 	staticShader = new Shader(TOON_VERTEX_SHADER_PATH, TOON_FRAGMENT_SHADER_PATH);
 	particleShader = new Shader(PARTICLE_VERTEX_SHADER_PATH, PARTICLE_FRAGMENT_SHADER_PATH);
@@ -124,7 +120,13 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network,
 		glm::rotate(glm::mat4(1.0f), -90.0f / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)) *
 		glm::scale(glm::mat4(1.0f), glm::vec3(3));
 
-	prepareBloomEffect();
+	quad = new Model("../models/quad_new.obj", "../textures/cross.png", false);
+	quad->localMtx = glm::mat4(1.0f);
+	//quad->localMtx = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.0f, 0.0f)) *
+	//	glm::rotate(glm::mat4(1.0f), -90.0f / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)) *
+	//	glm::scale(glm::mat4(1.0f), glm::vec3(5));
+	//prepareBloomEffect();
+	//prepareQuad();
 }
 
 
@@ -365,8 +367,17 @@ GLFWwindow* ClientScene::create_window(int width, int height)
 	//ClientScene::resize_callback(window, width, height);
 	ClientScene::width = width;
 	ClientScene::height = height;
+
+	camera = new Camera();
+	camera->SetAspect(width / height);
+	camera->Reset();
+
 	// Set the viewport size. This is the only matrix that OpenGL maintains for us in modern OpenGL!
 	glViewport(0, 0, width, height);
+	viewportM = glm::translate(glm::mat4(1.0f), glm::vec3(width / 2, height / 2, (camera->GetFarClip() + camera->GetNearClip()) / 2));
+	viewportM[0][0] = width / 2;
+	viewportM[1][1] = height / 2;
+	viewportM[2][2] = (camera->GetFarClip() - camera->GetNearClip()) / 2;
 	return window;
 }
 
@@ -457,6 +468,10 @@ void ClientScene::resize_callback(GLFWwindow* window, int width, int height)
 	ClientScene::height = height;
 	// Set the viewport size. This is the only matrix that OpenGL maintains for us in modern OpenGL!
 	glViewport(0, 0, width, height);
+	viewportM = glm::translate(glm::mat4(1.0f), glm::vec3(width / 2, height / 2, (camera->GetFarClip() + camera->GetNearClip()) / 2));
+	viewportM[0][0] = width / 2;
+	viewportM[1][1] = height / 2;
+	viewportM[2][2] = (camera->GetFarClip() - camera->GetNearClip()) / 2;
 
 	if (height > 0)
 	{
@@ -538,7 +553,7 @@ void ClientScene::renderKillPhase(GLFWwindow* window) {
 	// environment objects
 	for (auto &env_obj : env_objs) {
 		//env_obj->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap, false, normalFBO);
-		//env_obj->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap, false, 0);
+		env_obj->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap, false, 0);
 	}
 
 	// floor
@@ -548,7 +563,7 @@ void ClientScene::renderKillPhase(GLFWwindow* window) {
 	// players
 	//root->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap, true, bloomFBO);
 	//root->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap, false, normalFBO);
-	//root->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap, true, 0);
+	root->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap, true, 0);
 
 	// directional skill
 	if (player.action_state == ACTION_DIRECTIONAL_SKILL) {
@@ -561,8 +576,8 @@ void ClientScene::renderKillPhase(GLFWwindow* window) {
 			glEnable(GL_BLEND);
 			//range->draw(circleShader, glm::translate(glm::mat4(1.0f), playerPos), vpMatrix, normalFBO);
 			//cross->draw(staticShader, glm::translate(glm::mat4(1.0f), playerPos) * glm::translate(glm::mat4(1.0f), convertedPos - playerPos), vpMatrix, normalFBO);
-			//range->draw(circleShader, glm::translate(glm::mat4(1.0f), playerPos), vpMatrix, 0);
-			//cross->draw(staticShader, glm::translate(glm::mat4(1.0f), playerPos) * glm::translate(glm::mat4(1.0f), convertedPos - playerPos), vpMatrix, 0);
+			range->draw(circleShader, glm::translate(glm::mat4(1.0f), playerPos), vpMatrix, 0);
+			cross->draw(staticShader, glm::translate(glm::mat4(1.0f), playerPos) * glm::translate(glm::mat4(1.0f), convertedPos - playerPos), vpMatrix, 0);
 			glDisable(GL_BLEND);
 		}
 		else {
@@ -573,16 +588,18 @@ void ClientScene::renderKillPhase(GLFWwindow* window) {
 			glEnable(GL_BLEND);
 			//range->draw(circleShader, glm::translate(glm::mat4(1.0f), playerPos), vpMatrix, normalFBO);
 			//arrow->draw(staticShader, glm::translate(glm::mat4(1.0f), playerPos) * glm::rotate(glm::mat4(1.0f), angle, axis), vpMatrix, normalFBO);
-			//range->draw(circleShader, glm::translate(glm::mat4(1.0f), playerPos), vpMatrix, 0);
-			//arrow->draw(staticShader, glm::translate(glm::mat4(1.0f), playerPos) * glm::rotate(glm::mat4(1.0f), angle, axis), vpMatrix, 0);
+			range->draw(circleShader, glm::translate(glm::mat4(1.0f), playerPos), vpMatrix, 0);
+			arrow->draw(staticShader, glm::translate(glm::mat4(1.0f), playerPos) * glm::rotate(glm::mat4(1.0f), angle, axis), vpMatrix, 0);
 			glDisable(GL_BLEND);
 		}
 	}
 
+	quad->draw(blendShader, glm::mat4(1.0f), viewportM, 0);
+
 	//blendBloomEffect();
-	blendShader->use();
-	blendShader->setMat4("ModelViewProjMtx", vpMatrix);
-	renderQuad();
+	//blendShader->use();
+	//blendShader->setMat4("ModelViewProjMtx", vpMatrix);
+	//renderQuad();
 
 	 /* Input */
 	glfwPollEvents();
@@ -607,6 +624,10 @@ void ClientScene::display_callback(GLFWwindow* window)
 {
 	glfwGetWindowSize(window, &width, &height);
 	glViewport(0, 0, width, height);
+	viewportM = glm::translate(glm::mat4(1.0f), glm::vec3(width / 2, height / 2, (camera->GetFarClip() + camera->GetNearClip()) / 2));
+	viewportM[0][0] = width / 2;
+	viewportM[1][1] = height / 2;
+	viewportM[2][2] = (camera->GetFarClip() - camera->GetNearClip()) / 2;
 	//glClear(GL_COLOR_BUFFER_BIT);
 	//glClearColor(bg.r, bg.g, bg.b, bg.a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

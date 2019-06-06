@@ -31,6 +31,8 @@ public:
 	float GetAzimuth()						{return Azimuth;}
 	float GetIncline()						{return Incline;}
 	float GetDepth();
+	float GetFarClip() { return FarClip; }
+	float GetNearClip() { return NearClip; }
 	void setDestination(glm::vec3 dest);
 
 	const glm::mat4 &GetViewMtx() { return  glm::lookAt(cam_pos, cam_look_at, cam_up); }
