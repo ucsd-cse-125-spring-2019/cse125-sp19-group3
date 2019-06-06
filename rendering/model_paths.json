@@ -259,6 +259,18 @@
       ],
       "animated": false,
       "radius": 1.0
+    },
+    {
+      "path": "../models/quad.obj",
+      "texture_path": "../textures/cross.png",
+      "model_id": 300,
+      "color_rgb": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "animated": false,
+      "radius": 0.0
     }
   ]
 }

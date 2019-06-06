@@ -171,7 +171,7 @@ void Transform::draw( std::unordered_map<unsigned int, ModelData> &models, const
 			models[model_id].shader->setInt("isCharging", isCharging ? 1 : 0);
 			models[model_id].shader->setInt("isInvisible", isInvisible ? 1 : 0);
 			models[model_id].shader->setInt("UseTex", 1);
-			if (isInvisible) {
+			if (isInvisible || model_id == 300) {
 				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 				glEnable(GL_BLEND);
 			}
