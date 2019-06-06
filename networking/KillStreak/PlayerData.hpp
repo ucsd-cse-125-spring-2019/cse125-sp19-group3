@@ -30,6 +30,9 @@ public:
 	void awardPoint(unsigned int player_id);			// award point to player_id
 	void awardRoundPoints(int round_number);			// award points to all players based on rank
 
+	// get winner(s) of last round
+	vector<ArcheType> getRoundWinner(unordered_map<ArcheType, int>* selected_characters);
+
 	// for testing
 	void printCurrentKillStreaks();	
 	void printCurrentKills();	
