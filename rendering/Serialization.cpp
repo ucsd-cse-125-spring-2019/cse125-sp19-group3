@@ -65,7 +65,8 @@ unsigned int Serialization::serializeAnimationMode(unordered_map<unsigned int, S
 }
 
 // deserialize one of the leaderbo// serialize leaderboard
-unsigned int Serialization::serializeLeaderBoard(char* lb_data, LeaderBoard* leaderBoard)
+unsigned int Serialization::serializeLeaderBoard(char* lb_data, LeaderBoard* leaderBoard, 
+	unordered_map<unsigned int, PlayerMetadata*>* playerMetadatas)
 {
 	unsigned int size = 0;
 	for (int i = 0; i < GAME_SIZE; i++)			// kills
@@ -127,14 +128,57 @@ unsigned int Serialization::serializeLeaderBoard(char* lb_data, LeaderBoard* lea
 		lb_data += sizeof(int);
 	}
 
+	// find which players are on killstreak; 
+	// for each killstreak add two elements --> player_id : number kills 
+	int num_killstreaks = 0;
+	list<int> kill_streak_data;
+	unordered_map<unsigned int, PlayerMetadata*>::iterator p_it = playerMetadatas->begin();
+	while (p_it != playerMetadatas->end())
+	{
+		int client_id = p_it->first;
+		PlayerMetadata* player_meta = p_it->second;
+
+		// player on killstreak!
+		if (player_meta->currKillStreak > 0 && player_meta->currKillStreak % 3 == 0)
+		{
+			num_killstreaks++;
+			kill_streak_data.push_back(client_id);						// player id
+			kill_streak_data.push_back(player_meta->currKillStreak);	// killstreak
+		}
+
+		p_it++;
+	}
+
+	// serialize total kill streaks
+	memcpy(lb_data, &num_killstreaks, sizeof(int));
+	size += sizeof(int);
+	lb_data += sizeof(int);
+
+	// for each killstreak... serialize client ID followed by running number of kills
+	for (int i = 0; i < num_killstreaks; i++)
+	{
+		// player id
+		memcpy(lb_data, &kill_streak_data.front(), sizeof(int));
+		kill_streak_data.pop_front();
+		size += sizeof(int);
+		lb_data += sizeof(int);
+
+		// num running kills
+		memcpy(lb_data, &kill_streak_data.front(), sizeof(int));
+		kill_streak_data.pop_front();
+		size += sizeof(int);
+		lb_data += sizeof(int);
+	}
+
+	// TODO: SHUTDOWN!
+
 	leaderBoard->deaths_this_tick = 0;	// reset deaths this tick
-	//leaderBoard->kill_map.clear();		// clear list of kills (just in case should be empty)
 
 	return size;
 }
 
 // deserialize leaderboard
-unsigned int Serialization::deserializeLeaderBoard(char* lb_data, LeaderBoard* leaderBoard)
+unsigned int Serialization::deserializeLeaderBoard(char* lb_data, LeaderBoard* leaderBoard, list<int>* killstreak_data)
 {
 	unsigned int sz = 0;
 
@@ -149,8 +193,6 @@ unsigned int Serialization::deserializeLeaderBoard(char* lb_data, LeaderBoard* l
 		memcpy(&leaderBoard->currPoints[i], lb_data, sizeof(int));
 		lb_data += sizeof(int);
 		sz += sizeof(int);
-
-		logger()->debug("Deserialize.. client {} points {}", i, leaderBoard->currPoints[i]);
 	}
 	for (int i = 0; i < GAME_SIZE; i++)		// killstreak
 	{
@@ -176,9 +218,6 @@ unsigned int Serialization::deserializeLeaderBoard(char* lb_data, LeaderBoard* l
 	sz		+= sizeof(int);
 
 
-	// reset kill_map before adding this ticks kills
-	//leaderBoard->kill_map.clear();
-
 	// deserialize who killed who (first int killers id, second int dead players id)
 	// for every death this tick you should pop two elements off the front of the list (killer, dead_player)
 	for (int i = 0; i < leaderBoard->deaths_this_tick; i++)
@@ -200,6 +239,50 @@ unsigned int Serialization::deserializeLeaderBoard(char* lb_data, LeaderBoard* l
 		leaderBoard->kill_map.push_back(dead_id);
 
 	}
+
+	// deserialize total killstreaks
+	int total_killstreaks = 0;
+	memcpy(&total_killstreaks, lb_data, sizeof(int));
+	lb_data += sizeof(int);
+	sz += sizeof(int);
+
+	// deserialize player id then total kills & add to killstreak_data list
+	for (int i = 0; i < total_killstreaks; i++)
+	{
+		int curr_client_id = -1;
+		int curr_kills = -1;
+
+		memcpy(&curr_client_id, lb_data, sizeof(int));
+		lb_data += sizeof(int);
+		sz		+= sizeof(int);
+
+		memcpy(&curr_kills, lb_data, sizeof(int));
+		lb_data += sizeof(int);
+		sz		+= sizeof(int);
+
+		killstreak_data->push_back(curr_client_id);
+		killstreak_data->push_back(curr_kills);
+	}
+
+	/*
+
+	// for each killstreak... serialize client ID followed by running number of kills
+	for (int i = 0; i < num_killstreaks; i++)
+	{
+		// player id
+		memcpy(lb_data, &kill_streak_data.front(), sizeof(int));
+		kill_streak_data.pop_front();
+		size += sizeof(int);
+		lb_data += sizeof(int);
+
+		// num running kills
+		memcpy(lb_data, &kill_streak_data.front(), sizeof(int));
+		kill_streak_data.pop_front();
+		size += sizeof(int);
+		lb_data += sizeof(int);
+	}
+*/
+
 
 	return sz;
 }

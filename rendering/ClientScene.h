@@ -42,7 +42,7 @@ public:
 	vector<string> usernames;		// list of all player usernames ordered by index of client id on server
 
 	GLuint particleTexture;
-	void initialize_objects(ClientGame * game, ClientNetwork* network, LeaderBoard* leaderBoard);
+	void initialize_objects(ClientGame * game, ClientNetwork* network, LeaderBoard* leaderBoard, list<int>* killstreak_data);
 	void initialize_skills(ArcheType selected_type);
 	void playPreparePhaseBGM();
 	void playKillPhaseBGM();
@@ -94,6 +94,7 @@ private:
 	ScenePlayer player;
 	Transform * root;
 	LeaderBoard* leaderBoard;
+	list<int>* killstreak_data;
 	int killTextDeterminant = 0;
 	std::unordered_map<unsigned int, ModelData> models;
 	std::unordered_set<unsigned int> updated_ids;
@@ -121,7 +122,7 @@ class Window_static
 {
 public:
 	static ClientScene * scene;
-	static void initialize_objects(ClientGame * game, ClientNetwork * network, LeaderBoard* leaderBoard) { scene->initialize_objects(game, network, leaderBoard); };
+	static void initialize_objects(ClientGame * game, ClientNetwork * network, LeaderBoard* leaderBoard, list<int>* killstread_data) { scene->initialize_objects(game, network, leaderBoard, killstread_data); };
 	static void initialize_skills(ArcheType selected_type) { scene->initialize_skills(selected_type); };
 	static void updateTimers(nanoseconds timePassed) { scene->updateTimers(timePassed); };
 	static void initialize_UI(GLFWwindow* window) { scene->initialize_UI(window); };

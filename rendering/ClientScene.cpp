@@ -57,7 +57,8 @@ void ClientScene::resetGUIStatus() {
 	guiStatuses.killUpdates.clear();
 }
 
-void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network, LeaderBoard* leaderBoard)
+void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network, LeaderBoard* leaderBoard, 
+	list<int>* killstreak_data)
 {
 	camera = new Camera();
 	camera->SetAspect(width / height);
@@ -102,6 +103,7 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network,
 	this->game = game;
 	this->network = network;
 	this->leaderBoard = leaderBoard;
+	this->killstreak_data = killstreak_data;
 
 	// Floor
 	floor = new Model("../models/quad.obj", "../textures/floor.png", false);
@@ -980,7 +982,7 @@ void ClientScene::handleServerTickPacket(char * data) {
 
 	// deserialize leaderboard
 	unsigned int leaderBoard_size = 0;
-	leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
+	leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard, killstreak_data);
 	data += leaderBoard_size;
 
 	if (leaderBoard->currentKills[player.player_id] > currKill) {

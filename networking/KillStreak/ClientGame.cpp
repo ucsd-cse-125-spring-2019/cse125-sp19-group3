@@ -38,6 +38,7 @@ ClientGame::ClientGame(string host, string port, int char_select_time)
 	leaderBoard   = new LeaderBoard();
 	serverPackets = new ServerInputQueue();
 	network		  = new ClientNetwork(this->host, this->serverPort);
+	killstreak_data = new list<int>();
 
 	round_number  = 1;
 }
@@ -309,7 +310,7 @@ void ClientGame::endKillPhase()
 
 			// deserialize leaderboard
 			unsigned int leaderBoard_size = 0;
-			leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
+			leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard, killstreak_data);
 			data += leaderBoard_size;
 
 			// deserialize gold of all clients
@@ -342,7 +343,7 @@ void ClientGame::endKillPhase()
 
 			// deserialize leaderboard
 			unsigned int leaderBoard_size = 0;
-			leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
+			leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard, killstreak_data);
 			data += leaderBoard_size;
 
 			// TODO: Deserialize any more data? 
@@ -459,7 +460,7 @@ void ClientGame::endPrepPhase()
 
 	// deserialize leaderboard
 	unsigned int leaderBoard_size = 0;
-	leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
+	leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard, killstreak_data);
 	data += leaderBoard_size;
 
 	// reset scene 
@@ -538,7 +539,7 @@ void ClientGame::run() {
 	setup_callbacks(currPhase);
 
 	// Initialize objects/pointers for rendering
-	Window_static::initialize_objects(this, network, leaderBoard);
+	Window_static::initialize_objects(this, network, leaderBoard, killstreak_data);
 	Window_static::initialize_UI(window);
 
 	// Loop while GLFW window should stay open
@@ -571,6 +572,19 @@ void ClientGame::run() {
 			Window_static::display_callback(window);
 			// Idle callback. Updating objects, etc. can be done here.
 			Window_static::idle_callback();
+
+			// TODO: REMOVE ******
+			while (!killstreak_data->empty())
+			{
+				int curr_id = killstreak_data->front();
+				killstreak_data->pop_front();
+				int curr_kills = killstreak_data->front();
+				killstreak_data->pop_front();
+
+				string curr_name = Window_static::getUsernames()[curr_id];
+				logger()->debug("{} has a killstreak of {}!", curr_name, curr_kills);
+			}
+			// TODO: REMOVE ******
 
 			// update all timers based on time elapsed
 			auto end = Clock::now();
