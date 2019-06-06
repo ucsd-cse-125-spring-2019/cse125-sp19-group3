@@ -18,6 +18,7 @@ public:
 	nanoseconds prepareTimer;
 	LeaderBoard* leaderBoard;
 	int round_number;
+	unsigned int cheatingPoints;
 
 	void run();
 	int join_game();
@@ -46,7 +47,6 @@ protected:
 	ServerInputQueue* serverPackets;	// queue of packets from server
 	mutex* q_lock;						// lock for queue
 	vector<int> cooldown_times;
-	unsigned int cheatingPoints;
 
 	friend class ClientScene;
 
