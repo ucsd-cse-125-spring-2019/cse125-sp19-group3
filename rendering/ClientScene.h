@@ -72,6 +72,7 @@ public:
 	bool checkInAnimation();
 	void resetGUIStatus();
 	vector<int> getInvestmentInfo();
+	void clearInvestmentInfo();
 
 private:
 	Audio audio;
@@ -137,6 +138,7 @@ public:
 	static vector<Skill> getPlayerSkills() { return scene->getPlayerSkills(); };
 	static vector<string> getUsernames() { return scene->getUsernames(); };
 	static vector<int> getInvestmentInfo() { return scene->getInvestmentInfo(); };
+	static void clearInvestmentInfo() { return scene->clearInvestmentInfo(); };
 };
 
 
