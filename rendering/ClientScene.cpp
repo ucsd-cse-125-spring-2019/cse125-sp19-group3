@@ -158,6 +158,10 @@ void ClientScene::resetPreKillPhase()
 
 	// reset invisibility
 	clientSceneGraphMap[player.root_id]->isInvisible = false;
+
+	// reset invincibility
+	player.isInvincible = false;
+	clientSceneGraphMap[player.root_id]->isInvincible = false;
 }
 
 
