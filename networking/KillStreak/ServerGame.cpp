@@ -604,14 +604,7 @@ int ServerGame::updatePreparePhase() {
 				memcpy(&cheatingPoints, data, sizeof(unsigned int));
 				data += sizeof(unsigned int);
 
-				int old_points = leaderBoard->currPoints[client_id];		// TODDO: REMOVE ME*****
 				leaderBoard->currPoints[client_id] += cheatingPoints;
-
-				// TODO: REMOVE ***
-				// NOTE CORRECT VALUES HERE! Sending to servr messing it up?!?!
-				logger()->debug("Client {} purchases {} points", client_id, cheatingPoints);
-				logger()->debug("Client {} points from {} -> {}", client_id, old_points, leaderBoard->currPoints[client_id]);
-				// TODO: REMOVE ***
 
 			}
 
