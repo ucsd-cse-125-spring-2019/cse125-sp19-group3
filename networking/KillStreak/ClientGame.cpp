@@ -319,6 +319,12 @@ void ClientGame::endKillPhase()
 				memcpy(&gold, data, sizeof(int));
 				leaderBoard->currGold[client_id] = gold;
 				data += sizeof(int);
+
+				// update clients own gold
+				if (client_id == this->client_id) Window_static::updatePlayerGold(gold);
+
+				// correct.. could do GUI possibly be mixing them up? 
+				//logger()->debug("Client {} has gold {}", client_id, gold);
 			}
 
 			// continue to enter prepare
@@ -394,17 +400,33 @@ void ClientGame::endPrepPhase()
 		sgSize += sizeof(int);
 	}
 
-
 	// serialize investment
 	vector<int> investment = Window_static::getInvestmentInfo();
-	
+
+	// serialize amount invested
 	memcpy(bufPtr, &investment[0], sizeof(int));
-	bufPtr += sizeof(unsigned int);
+	bufPtr += sizeof(int);
 	sgSize += sizeof(int);
+
+	// TODO: REMOVE *****
+	logger()->debug("Amount Invested: {}", investment[0]);
+	// TODO: REMOVE *****
+
+	// serialize player bet on
 	memcpy(bufPtr, &investment[1], sizeof(ArcheType));
 	bufPtr += sizeof(ArcheType);
 	sgSize += sizeof(ArcheType);
 	Window_static::clearInvestmentInfo();
+
+	// TODO: REMOVE *****
+	switch (investment[1])
+	{
+		case MAGE: logger()->debug("Invested in MAGE"); break;
+		case ASSASSIN: logger()->debug("Invested in ASSASSIN"); break;
+		case WARRIOR: logger()->debug("Invested in WARRIOR"); break;
+		case KING: logger()->debug("Invested in KING"); break;
+	}
+	// TODO: REMOVE *****
 
 	// serialize cheating
 	memcpy(bufPtr, &cheatingPoints, sizeof(unsigned int));
@@ -796,7 +818,7 @@ void ClientGame::handleServerInputPacket(ServerInputPacket * packet) {
 		//handleCharacterSelectionPacket(packet);
 		break;
 	case INIT_SCENE:
-		Window_static::scene->handleInitScenePacket(packet->data);
+		client_id = Window_static::scene->handleInitScenePacket(packet->data);
 		break;
 	case UPDATE_SCENE_GRAPH:
 		Window_static::scene->handleServerTickPacket(packet->data);

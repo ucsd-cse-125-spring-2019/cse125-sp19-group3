@@ -18,6 +18,7 @@ public:
 	nanoseconds prepareTimer;
 	LeaderBoard* leaderBoard;
 	int round_number;
+	int client_id;
 	unsigned int cheatingPoints;
 
 	void run();
