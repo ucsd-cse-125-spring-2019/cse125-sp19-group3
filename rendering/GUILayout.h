@@ -738,7 +738,8 @@ static void ui_bets_shop(struct nk_context *ctx, struct media *media, int width,
 		if (guiS.betAmount > 0 && nk_button_label(ctx, "Bet!")) {
 			//TODO: SEND BET
 			if (op >= 1) {
-
+				player->amount_invested = guiS.betAmount;
+				player->player_invested_in = static_cast<ArcheType>(op);
 			}
 		}
 		nk_spacing(ctx, 1);

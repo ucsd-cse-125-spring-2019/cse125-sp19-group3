@@ -616,8 +616,8 @@ int ServerGame::updatePreparePhase() {
 				// deserialize invest for each player 
 				memcpy(&scene->scenePlayers[client_id].amount_invested, data, sizeof(int));
 				data += sizeof(int);
-				memcpy(&scene->scenePlayers[client_id].player_invested_in, data, sizeof(int));
-				data += sizeof(int);
+				memcpy(&scene->scenePlayers[client_id].player_invested_in, data, sizeof(ArcheType));
+				data += sizeof(ArcheType);
 
 
 				// deserialize cheating for each player
