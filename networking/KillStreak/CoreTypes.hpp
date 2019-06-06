@@ -4,7 +4,7 @@
 #include <queue>
 #include <string>
 
-#define GAME_SIZE				2			// total players required to start game
+#define GAME_SIZE				3			// total players required to start game
 #define NULL_POINT				Point(0.0,0.0,0.0)
 
 #define SERVER_TICK_PACKET_SIZE 10000
@@ -24,7 +24,7 @@ typedef enum {INIT_CONN, CHAR_SELECT, MOVEMENT, SKILL, RESPAWN, END_KILL_PHASE, 
 typedef enum { WELCOME, INIT_SCENE, UPDATE_SCENE_GRAPH, 
 				CHAR_SELECT_PHASE, START_PREP_PHASE, START_KILL_PHASE, START_END_GAME_PHASE } ServerPacketType;
 
-typedef enum { HUMAN, MAGE, ASSASSIN, WARRIOR, KING } ArcheType;
+typedef enum { HUMAN, MAGE, ASSASSIN, WARRIOR, KING, NONE } ArcheType;
 
 enum AnimationType { idle, run, evade, projectile, skill_1, skill_2, die, spawn };
 

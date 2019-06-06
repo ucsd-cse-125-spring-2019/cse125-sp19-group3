@@ -48,7 +48,7 @@ public:
 	bool warriorIsChargingServer = false;
 	int gold = 0;
 	int amount_invested = 0;
-	int player_invested_in = -1;
+	ArcheType player_invested_in = NONE;
 	vector<Skill> availableSkills;
 
 };

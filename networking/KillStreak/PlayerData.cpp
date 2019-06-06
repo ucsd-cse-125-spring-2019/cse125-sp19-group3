@@ -28,6 +28,41 @@ unordered_map<string, ArcheType> archetype_map = {
 	{"KING", KING},
 };	
 
+/*
+	Return player id of winner of previous round.
+*/
+vector<ArcheType> LeaderBoard::getRoundWinner(unordered_map<ArcheType, int>* selected_characters)
+{
+	vector<ArcheType> winners;
+	// get max kills from list
+	auto it = std::max_element(currentKills.begin(), currentKills.end());		
+	int max_kills = *it;				
+
+	// any players with max_kills is a winner; add their ArcheType to vector of winners
+	for (int client_id = 0; client_id < GAME_SIZE; client_id++)
+	{
+		// current client_id is a winner; get their Archetype
+		if (currentKills[client_id] == max_kills)
+		{
+			// get ArcheType
+			unordered_map<ArcheType, int>::iterator a_it = selected_characters->begin();
+			while (a_it != selected_characters->end())
+			{
+				ArcheType curr_type = a_it->first;
+				int curr_id = a_it->second;
+				if (client_id == curr_id)
+				{
+					winners.push_back(curr_type);
+					break;
+				}
+
+				a_it++;
+			}
+		}
+	}
+	return winners;
+}
+
 
 /*
 	End of round... award points to all players based on rank.
