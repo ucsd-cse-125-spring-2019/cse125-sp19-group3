@@ -46,6 +46,7 @@ public:
 	void initialize_skills(ArcheType selected_type);
 	void playPreparePhaseBGM();
 	void playKillPhaseBGM();
+	void playFinalRoundBGM();
 	void playCountdown();
 	void playButtonPress();
 	void playInvalidButtonPress();
@@ -144,6 +145,7 @@ public:
 	static void resetPreKillPhase() { scene->resetPreKillPhase(); };
 	static void playPreparePhaseBGM() { scene->playPreparePhaseBGM(); };
 	static void playKillPhaseBGM() { scene->playKillPhaseBGM(); };
+	static void playFinalRoundBGM() { scene->playFinalRoundBGM(); };
 	static void playCountdown() { scene->playCountdown(); };
 	static void playButtonPress() { scene->playButtonPress(); };
 	static void playChaching() { scene->playChaching(); };
