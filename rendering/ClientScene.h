@@ -48,6 +48,7 @@ public:
 	void playKillPhaseBGM();
 	void playCountdown();
 	void playButtonPress();
+	void playInvalidButtonPress();
 	void playChaching();
 	void playInvest();
 	//void playerInit(const ScenePlayer &player);
@@ -147,6 +148,7 @@ public:
 	static void playButtonPress() { scene->playButtonPress(); };
 	static void playChaching() { scene->playChaching(); };
 	static void playInvest() { scene->playInvest(); };
+	static void playInvalidButtonPress() { scene->playInvalidButtonPress(); };
 	static int getPlayerGold() { return scene->getPlayerGold(); };
 	static vector<Skill> getPlayerSkills() { return scene->getPlayerSkills(); };
 	static vector<string> getUsernames() { return scene->getUsernames(); };

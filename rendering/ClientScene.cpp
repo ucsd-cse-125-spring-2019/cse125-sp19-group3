@@ -748,6 +748,10 @@ void ClientScene::playButtonPress() {
 	audio.play(glm::vec3(0), BUTTON_PRESS_AUDIO);
 }
 
+void ClientScene::playInvalidButtonPress() {
+	audio.play(glm::vec3(0), CANNOT_BUY_ITEM_AUDIO);
+}
+
 void ClientScene::playChaching() {
 	audio.play(glm::vec3(0), BUY_ITEM_1_AUDIO);
 }
@@ -755,6 +759,7 @@ void ClientScene::playChaching() {
 void ClientScene::playInvest() {
 	audio.play(glm::vec3(0), BUY_ITEM_2_AUDIO);
 }
+
 
 void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {

@@ -774,14 +774,19 @@ ui_skill_group(struct nk_context *ctx, struct media *media, int width, int heigh
 								//Gold check and max level check
 								player->gold -= prices[i];
 								skill.level++;
+								Window_static::playChaching();
 							}
 						}
 						else {
-							nk_button_label(ctx, "NO ENOUGH GOLD");
+							if (nk_button_label(ctx, "NOT ENOUGH GOLD")) {
+								Window_static::playInvalidButtonPress();
+							}
 						}
 					}
 					else {
-						nk_button_label(ctx, "NOT AVAILABLE");
+						if (nk_button_label(ctx, "NOT AVAILABLE")) {
+							Window_static::playInvalidButtonPress();
+						};
 					}
 					
 				}
