@@ -945,7 +945,7 @@ void ClientScene::handleServerTickPacket(char * data) {
 
 		string killername = usernames[killer_id];
 		string deadname = usernames[dead_id];
-		string info = killername + " just crashed " + deadname + "!";
+		string info = killername + " --> " + deadname;
 		if (guiStatuses.killUpdates.size() < MAX_KILL_UPDATES) {
 			guiStatuses.killUpdates.push_front(info);
 		}
