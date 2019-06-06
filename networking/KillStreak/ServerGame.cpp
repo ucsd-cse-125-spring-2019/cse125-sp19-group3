@@ -814,8 +814,6 @@ ServerInputPacket ServerGame::createStartPrepPhasePacket()
 		memcpy(bufPtr, &curr_gold, sizeof(int));
 		sgSize += sizeof(int);
 		bufPtr += sizeof(int);
-
-		logger()->debug("Client {} has gold {} (serializing)", client_id, curr_gold);
 	}
 
 	packet.packetType = START_PREP_PHASE;
