@@ -71,6 +71,8 @@ public:
 	vector<string> getUsernames();
 	bool checkInAnimation();
 	void resetGUIStatus();
+	vector<int> getInvestmentInfo();
+
 private:
 	Audio audio;
 	float min_scroll = 20.0f;
@@ -134,6 +136,7 @@ public:
 	static int getPlayerGold() { return scene->getPlayerGold(); };
 	static vector<Skill> getPlayerSkills() { return scene->getPlayerSkills(); };
 	static vector<string> getUsernames() { return scene->getUsernames(); };
+	static vector<int> getInvestmentInfo() { return scene->getInvestmentInfo(); };
 };
 
 

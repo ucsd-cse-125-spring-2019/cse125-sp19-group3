@@ -989,3 +989,10 @@ bool ClientScene::checkInAnimation() {
 	auto thisModel = models[*(transform->model_ids.begin())].model;
 	return thisModel->curr_mode != thisModel->movementMode;
 }
+
+vector<int> ClientScene::getInvestmentInfo() {
+	vector<int> result;
+	result.push_back(player.amount_invested);
+	result.push_back(player.player_invested_in);
+	return result;
+}

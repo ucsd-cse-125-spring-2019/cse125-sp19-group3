@@ -396,6 +396,14 @@ void ClientGame::endPrepPhase()
 
 
 	// TODO: serialize investment
+	vector<int> investment = Window_static::getInvestmentInfo();
+	
+	memcpy(bufPtr, &investment[0], sizeof(int));
+	bufPtr += sizeof(unsigned int);
+	sgSize += sizeof(int);
+	memcpy(bufPtr, &investment[1], sizeof(int));
+	bufPtr += sizeof(unsigned int);
+	sgSize += sizeof(int);
 
 	// TODO: serialize cheating
 
