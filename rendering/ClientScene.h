@@ -30,6 +30,8 @@
 #define CIRCLE_VERTEX_SHADER_PATH "../shaders/circleshader.vert"
 #define CIRCLE_FRAGMENT_SHADER_PATH "../shaders/circleshader.frag"
 
+#define MAX_KILL_UPDATES 3
+
 class ClientScene {
 public:
 	Camera * camera;
@@ -66,6 +68,7 @@ public:
 	void resetPreKillPhase();
 	int getPlayerGold();
 	vector<Skill> getPlayerSkills();
+	vector<string> getUsernames();
 	bool checkInAnimation();
 	void resetGUIStatus();
 private:
@@ -76,6 +79,7 @@ private:
 	Shader * animationShader, * staticShader, * particleShader, * circleShader;
 	Model * floor;
 	Model * arrow;
+	Model * cross;
 	Circle * range;
 	ScenePlayer player;
 	Transform * root;
@@ -129,6 +133,7 @@ public:
 	static void resetPreKillPhase() { scene->resetPreKillPhase(); };
 	static int getPlayerGold() { return scene->getPlayerGold(); };
 	static vector<Skill> getPlayerSkills() { return scene->getPlayerSkills(); };
+	static vector<string> getUsernames() { return scene->getUsernames(); };
 };
 
 

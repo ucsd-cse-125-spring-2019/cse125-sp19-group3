@@ -298,7 +298,7 @@ void ClientGame::endKillPhase()
 		// start prep phase; deserialzie data & start prep phase timer
 		if ( startPrepPhase )
 		{
-			logger()->debug("Received start_prep_phase from server!");
+			//logger()->debug("Received start_prep_phase from server!");
 
 			// deserialzie leaderboard & all player gold
 			char* data = start_prep_packet->data;
@@ -317,7 +317,7 @@ void ClientGame::endKillPhase()
 			{
 				int gold = 0;
 				memcpy(&gold, data, sizeof(int));
-				leaderBoard->currGold.push_back(gold);
+				leaderBoard->currGold[client_id] = gold;
 				data += sizeof(int);
 			}
 
@@ -370,26 +370,14 @@ void ClientGame::endPrepPhase()
 	char* headPtr = buf; // point to start of buffer
 	char* bufPtr = buf;	 // follow next open space of buffer 
 
-	/* TODO: Send packet to server with
-		XXX remaining gold
-		b.) skill levels
-		c.) investment
-		d.) cheating
-	*/
-
 	// serialize clients gold (from scenePlayer)
 	int curr_gold = Window_static::getPlayerGold();
 	memcpy(bufPtr, &curr_gold, sizeof(int));
 	bufPtr += sizeof(int);
 	sgSize += sizeof(int);
 
-/*
-	// TODO: Why is the skills vector empty?!?!?!
-
 	// get skills for player 
-	// BUG: This vector has size 0? Why?!?!?!
 	vector<Skill> curr_skills = Window_static::getPlayerSkills();
-	//logger()->debug("PLAYER SKILLS SIZE: {}", curr_skills.size());
 
 	// serialize number of skills
 	int skill_sz = curr_skills.size();
@@ -401,20 +389,11 @@ void ClientGame::endPrepPhase()
 	for (int i = 0; i < skill_sz; i++)
 	{
 		unsigned int cur_level = curr_skills[i].level;
-
-		// TODO: REMOVE ME ************
-		cur_level += 69 + i;
-		logger()->debug("SKILL {} LEVEL {} ", i, cur_level);
-		// TODO: REMOVE ME ************
-
 		memcpy(bufPtr, &cur_level, sizeof(unsigned int));
 		bufPtr += sizeof(unsigned int);
 		sgSize += sizeof(int);
 	}
 
-
-
-*/
 
 	// TODO: serialize investment
 
@@ -661,6 +640,13 @@ int ClientGame::handleCharacterSelectionPacket(ServerInputPacket* packet) {
 	//		next loop
 
 	// input character & username selection; send request to server; repeat if unavailable
+	/* TODO: Send packet to server with
+		XXX remaining gold
+		XXX skill levels
+		c.) investment
+		d.) cheating
+	*/
+
 
 
 	// TODO: REMOVE ME*********

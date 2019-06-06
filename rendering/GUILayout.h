@@ -265,26 +265,75 @@ summary_layout(struct nk_context *ctx, struct media *media, int width, int heigh
 		//TODO
 }
 
-static void
-kill_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player,
-	vector<nanoseconds> skill_timers, LeaderBoard* leaderBoard, vector<string> usernames, vector<ArcheType> archetypes,
-	int killTextDeterminant, ClientGame* game, guiStatus & gStatus) {
-	
+
+static void ui_kill_info(struct nk_context *ctx, struct media *media, int width, int height, ClientGame * game, guiStatus & gStatus) {
+	struct nk_style *s = &ctx->style;
+	nk_style_push_color(ctx, &s->window.background, nk_rgba(0, 0, 0, 0));
+	nk_style_push_style_item(ctx, &s->window.fixed_background, nk_style_item_color(nk_rgba(0, 0, 0, 0)));
+	if (nk_begin(ctx, "kill_info_updates", nk_rect(width * 0.80, 20, width * 0.20, height*0.3),
+		NK_WINDOW_NO_SCROLLBAR))
+	{
+		std::deque<string>::iterator it = gStatus.killUpdates.begin();
+
+		while (it != gStatus.killUpdates.end()) {
+			nk_layout_row_static(ctx, 32, width * 0.20, 1);
+			const char * text = (*it++).c_str();
+			nk_label(ctx, text, NK_TEXT_LEFT);
+		}
+	}
+	nk_end(ctx);
+	nk_style_pop_color(ctx);
+	nk_style_pop_style_item(ctx);
+}
+
+
+static void ui_kill_timer(struct nk_context *ctx, struct media *media, int width, int height, ClientGame * game) {
+	static const float ratio[] = { 0.3f, 0.4f , 0.3f};
+	nk_style_set_font(ctx, &(media->font_64->handle));
+	nk_layout_row(ctx, NK_DYNAMIC, 65, 2, ratio);
+	nk_spacing(ctx, 1);
 
 	if (game->prepareTimer > std::chrono::seconds::zero()) {
-		set_style(ctx, THEME_BLACK);
-		if (!player->isAlive) {
-			ui_deadscreen(ctx, media, width, height, killTextDeterminant);
-		}
-		ui_leaderboard(ctx, media, leaderBoard, usernames, archetypes);
-
-		ui_skills(ctx, media, width, height, player, skill_timers);
-		ui_killphase_header(ctx, media, width, height, 1, player, leaderBoard, gStatus);
+		auto timeExpr = chrono::duration_cast<chrono::seconds>(game->prepareTimer);
+		string result_string = to_string(timeExpr.count());
+		char * result = new char[100];
+		strcpy(result, ("Time Left:  " + result_string).c_str());
+		//const char* result = ("Time Left:  " + result_string).c_str();
+		nk_text(ctx, result, strlen(result), NK_TEXT_CENTERED);
 	}
 	else {
 		game->switchPhase();
 	}
+	nk_spacing(ctx, 1);
+	nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
 }
+
+
+static void
+kill_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player,
+	vector<nanoseconds> skill_timers, LeaderBoard* leaderBoard, vector<string> usernames, vector<ArcheType> archetypes,
+	int killTextDeterminant, ClientGame* game, guiStatus & gStatus) {
+	struct nk_style *s = &ctx->style;
+	set_style(ctx, THEME_BLACK);
+	nk_style_push_color(ctx, &s->window.background, nk_rgba(0, 0, 0, 0));
+	nk_style_push_style_item(ctx, &s->window.fixed_background, nk_style_item_color(nk_rgba(0, 0, 0, 0)));
+	if (nk_begin(ctx, "kill_title", nk_rect(0, 0, width, height),
+		NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BACKGROUND)) {
+		ui_kill_timer(ctx, media, width, height, game);
+	}
+	nk_end(ctx);
+	nk_style_pop_color(ctx);
+	nk_style_pop_style_item(ctx);
+	if (!player->isAlive) {
+		ui_deadscreen(ctx, media, width, height, killTextDeterminant);
+	}
+	ui_leaderboard(ctx, media, leaderBoard, usernames, archetypes);
+
+	ui_skills(ctx, media, width, height, player, skill_timers);
+	ui_killphase_header(ctx, media, width, height, game->round_number, player, leaderBoard, gStatus);
+	ui_kill_info(ctx, media, width, height, game, gStatus);
+}
+
 
 
 
@@ -342,6 +391,7 @@ lobby_layout(struct nk_context *ctx, struct media *media, int width, int height,
 		nk_layout_row(ctx, NK_DYNAMIC, 60, 3, ratio);
 		nk_spacing(ctx, 1);
 		if (nk_button_label(ctx, "Confirm")) {
+			buf[6] = '\0';
 			fprintf(stdout, "button pressed, curr selection: %s, curr buf: %s\n", characterTypeStrings[op], buf);
 			available = game->sendCharacterSelection(buf, op);
 			selected = true;
@@ -392,14 +442,39 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 		int index = it - curKills.begin();
 		int numKills = *it;
 
-		// add next client with most kills username, kills & archetype
-		ordered_usernames.push_back(usernames[index]);
-		ordered_types.push_back(archetypes[index]);
-		kills.push_back(numKills);
-		deaths.push_back(curDeaths[index]);
+		// add next client with most kills username, kills, points & archetype
+		ordered_usernames.push_back(usernames[index]);					// add usernames to ordered index
+		ordered_types.push_back(archetypes[index]);						// add types to ordered index
+		kills.push_back(numKills);										// add kills to ordered index
+		deaths.push_back(curDeaths[index]);								// add deaths to ordered index
 
 		*it = -1;		// reset current max to -1
 	}
+
+
+	// ordered usernames, types, and points for global points leader board
+	vector<string> ordered_usernames_global;
+	vector<ArcheType> ordered_types_global;
+	vector<int> ordered_points_global;
+	vector<int> ordered_gold_global;
+	vector<int> points_copy = leaderBoard->currPoints;
+
+	// order global points leaderboard in order of highest points 
+	for (int i = 0; i < GAME_SIZE; i++)
+	{
+		// find max element in list; get total points for that player
+		auto it = std::max_element(points_copy.begin(), points_copy.end());
+		int index = it - points_copy.begin();
+		int numPoints = *it;
+
+		ordered_usernames_global.push_back(usernames[index]);					// add username to ordered index
+		ordered_types_global.push_back(archetypes[index]);						// add type to ordered index
+		ordered_points_global.push_back(leaderBoard->currPoints[index]);		// add points to ordered index
+		ordered_gold_global.push_back(leaderBoard->currGold[index]);			// add gold to ordered index
+
+		*it = -1;		// reset current max to -1
+	}
+
 	if (nk_begin(ctx, "round result", nk_rect(0, 0, width, height),
 		NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BACKGROUND))
 	{
@@ -466,9 +541,13 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 			player_id = s.c_str();
 			const char * player_point;
 
-			// total kills for player
-			string point_s = std::to_string(kills[i]);
+			// total points for player
+			string point_s = std::to_string(ordered_points_global[i]);
 			player_point = point_s.c_str();
+
+			// total gold for player
+			string gold_s = std::to_string(ordered_gold_global[i]);
+			const char * player_gold = gold_s.c_str();
 
 			nk_layout_row(ctx, NK_DYNAMIC, width*0.02, 6, globalLBratio);
 			nk_spacing(ctx, 1);
@@ -484,8 +563,8 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 
 			// TODO: SWITCH OUT WITH REAL SUMMARY PACKETS
 			nk_text(ctx, ordered_usernames[i].c_str(), strlen(ordered_usernames[i].c_str()), NK_TEXT_LEFT);
-			nk_text(ctx, player_point, strlen(player_point), NK_TEXT_LEFT);
-			nk_text(ctx, player_point, strlen(player_point), NK_TEXT_LEFT);
+			nk_text(ctx, player_gold, strlen(player_gold), NK_TEXT_LEFT);   // gold
+			nk_text(ctx, player_point, strlen(player_point), NK_TEXT_LEFT); // points
 		}
 
 	}

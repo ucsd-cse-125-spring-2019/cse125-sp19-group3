@@ -245,11 +245,13 @@ void ServerScene::resetScene()
 		// invisibility
 		int node_id = player.root_id;
 		serverSceneGraphMap[node_id]->enabled = true;
+		serverSceneGraphMap[node_id]->isInvisible = false;
 
 		// clear remaining data
 		player.movementMode = idle;
 		player.animationMode = -1;
 		player.isEvading = false;
+		serverSceneGraphMap[node_id]->isEvading = false;
 
 		// clear projectiles
 		auto skillIter = skills.begin();
@@ -260,6 +262,10 @@ void ServerScene::resetScene()
 			delete(skill.node);
 			skillIter = skills.erase(skillIter);
 		}
+		
+		// Invinciblity
+		player.isInvincible = false;
+		serverSceneGraphMap[node_id]->isInvincible = false;
 	}
 	warriorIsCharging = false;
 }
@@ -313,6 +319,7 @@ void ServerScene::update()
 			if (character.warriorIsChargingServer && character.currentPos == character.destination) {
 				warriorIsCharging = false;
 				character.warriorIsChargingServer = false;
+				character.speed = 0.3f;
 			}
 		}
 	}
@@ -374,6 +381,7 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 	if (warriorIsCharging && dead_player.modelType == WARRIOR) {
 		warriorIsCharging = false;
 		dead_player.warriorIsChargingServer = false;
+		dead_player.speed = 0.3f;
 	}
 
 	// show animation for assassin if they die while invisible
@@ -382,6 +390,11 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 		int node_id = dead_player.root_id;
 		serverSceneGraphMap[node_id]->enabled = true;
 	}
+
+	// inc total deathst his tick; update kill map with killer & dead player id
+	leaderBoard->deaths_this_tick += 1;				
+	leaderBoard->kill_map.push_back(killer_id);
+	leaderBoard->kill_map.push_back(dead_player_id);
 
 }
 
@@ -566,6 +579,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 		logger()->debug("undo invisibility");
 		int node_id = scenePlayers[player_id].root_id;
 		serverSceneGraphMap[node_id]->enabled = true;
+		serverSceneGraphMap[node_id]->isInvisible = false;
 		return;
 	}
 
@@ -656,6 +670,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			// client must send another skill packet after duration is over.
 			int node_id = scenePlayers[player_id].root_id;
 			serverSceneGraphMap[node_id]->enabled = false;
+			serverSceneGraphMap[node_id]->isInvisible = true;
 			break;
 		}
 		case SPRINT: 
