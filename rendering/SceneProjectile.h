@@ -19,7 +19,7 @@ public:
 			this->range = range;
 			node = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), currentPos),
 				glm::rotate(glm::mat4(1.0f), 0 / 180.f * glm::pi<float>(), glm::vec3(1, 0, 0)),
-				glm::scale(glm::mat4(1.0f), Point(0.02f, 0.02f, 0.02f))
+				glm::scale(glm::mat4(1.0f), Point(0.02f, 0.02f, 0.02f)), true
 			);
 			node->model_ids.insert(KUNAI_ID);
 			skillRoot->addChild(nodeIdCounter);

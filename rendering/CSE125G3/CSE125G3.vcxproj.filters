@@ -210,5 +210,17 @@
     <None Include="..\shaders\toonshader.vert">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\shaders\blurShader.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\shaders\blurShader.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\shaders\blendShader.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\shaders\blendShader.vert">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -22,15 +22,19 @@ public:
 	}
 
 	// draws the model, and thus all its meshes
-	void draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx) {
+	void draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx, unsigned int frameBuffer) {
 		glm::mat4 modelMtx = parentMtx * localMtx;
 		shader->use();
 		shader->setMat4("ModelViewProjMtx", viewProjMtx * modelMtx);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 		glActiveTexture(GL_TEXTURE0);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 	void createCircle(float radius) {

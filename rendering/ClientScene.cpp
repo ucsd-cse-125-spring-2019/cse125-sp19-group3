@@ -67,6 +67,9 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network,
 	staticShader = new Shader(TOON_VERTEX_SHADER_PATH, TOON_FRAGMENT_SHADER_PATH);
 	particleShader = new Shader(PARTICLE_VERTEX_SHADER_PATH, PARTICLE_FRAGMENT_SHADER_PATH);
 	circleShader = new Shader(CIRCLE_VERTEX_SHADER_PATH, CIRCLE_FRAGMENT_SHADER_PATH);
+	blurShader = new Shader(BLUR_VERTEX_SHADER_PATH, BLUR_FRAGMENT_SHADER_PATH);
+	blendShader = new Shader(BLEND_VERTEX_SHADER_PATH, BLEND_FRAGMENT_SHADER_PATH);
+
 	particleTexture = loadTexture("../textures/flame.png");
 	ifstream json_model_paths("../model_paths.json");
 	json pathObjs = json::parse(json_model_paths);
@@ -94,7 +97,7 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network,
 	for (auto & obj : jsonObjs["data"]) {
 		Transform * envobj = new Transform(envCounter++, glm::translate(glm::mat4(1.0f), glm::vec3((float)(obj["translate"][0]), (float)(obj["translate"][1]), (float)(obj["translate"][2]))),
 			glm::rotate(glm::mat4(1.0f), (float)obj["rotate"] / 180.0f * glm::pi<float>(), glm::vec3(0, 1, 0)),
-			glm::scale(glm::mat4(1.0f), glm::vec3((float)obj["scale"], (float)obj["scale"], (float)obj["scale"])));
+			glm::scale(glm::mat4(1.0f), glm::vec3((float)obj["scale"], (float)obj["scale"], (float)obj["scale"])), false);
 
 		envobj->model_ids.insert((int)obj["model_id"]);
 		env_objs.push_back(envobj);
@@ -120,6 +123,8 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network,
 	cross->localMtx = glm::translate(glm::mat4(1.0f), glm::vec3(0.1f, 2.0f, 4.3f)) *
 		glm::rotate(glm::mat4(1.0f), -90.0f / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)) *
 		glm::scale(glm::mat4(1.0f), glm::vec3(3));
+
+	prepareBloomEffect();
 }
 
 
@@ -191,6 +196,54 @@ void ClientScene::initialize_skills(ArcheType selected_type) {
 	sprintDurationTimer = nanoseconds::zero();
 	invincibilityTimer = nanoseconds::zero();
 	player.modelType = selected_type;
+}
+
+void ClientScene::blendBloomEffect() {
+	unsigned int pingpongFBO[2];
+	unsigned int pingpongBuffer[2];
+	glGenFramebuffers(2, pingpongFBO);
+	glGenTextures(2, pingpongBuffer);
+	for (unsigned int i = 0; i < 2; i++)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[i]);
+		glBindTexture(GL_TEXTURE_2D, pingpongBuffer[i]);
+		glTexImage2D(
+			GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, NULL
+		);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glFramebufferTexture2D(
+			GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pingpongBuffer[i], 0
+		);
+	}
+
+	// blurring
+	bool horizontal = true, first_iteration = true;
+	int amount = 10;
+	blurShader->use();
+	for (unsigned int i = 0; i < amount; i++)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[horizontal]);
+		blurShader->setInt("horizontal", horizontal);
+		glBindTexture(
+			GL_TEXTURE_2D, first_iteration ? bloomFBO : pingpongBuffer[!horizontal]
+		);
+		renderQuad();
+		horizontal = !horizontal;
+		if (first_iteration)
+			first_iteration = false;
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	blendShader->use();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, bloomFBO);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, pingpongBuffer[!horizontal]);
+	blendShader->setFloat("exposure", 1.0f);
+	renderQuad();
 }
 
 void ClientScene::clean_up()
@@ -268,7 +321,7 @@ void ClientScene::initialize_UI(GLFWwindow* window) {
 	guiStatuses.shopCategory = 0;
 }
 
-void  ClientScene::text_input(GLFWwindow *win, unsigned int codepoint)
+void ClientScene::text_input(GLFWwindow *win, unsigned int codepoint)
 {
 	(void)win;
 	if (glfw.text_len < NK_GLFW_TEXT_MAX)
@@ -459,8 +512,6 @@ void ClientScene::renderPreparePhase(GLFWwindow* window) {
 	// Swap buffers
 	glfwSwapBuffers(window);
 }
- 
-
 
 void ClientScene::renderLobbyPhase(GLFWwindow* window) {
 	
@@ -480,16 +531,24 @@ void ClientScene::renderKillPhase(GLFWwindow* window) {
 
 	auto vpMatrix = camera->GetViewProjectMtx();
 
+	//glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // we're not using the stencil buffer now
+	//glEnable(GL_DEPTH_TEST);
+
 	// environment objects
 	for (auto &env_obj : env_objs) {
-		env_obj->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
+		//env_obj->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap, false, normalFBO);
+		//env_obj->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap, false, 0);
 	}
 
 	// floor
-	floor->draw(staticShader, glm::mat4(1.0f), vpMatrix);
+	//floor->draw(staticShader, glm::mat4(1.0f), vpMatrix, normalFBO);
+	//floor->draw(staticShader, glm::mat4(1.0f), vpMatrix, 0);
 
 	// players
-	root->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
+	//root->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap, true, bloomFBO);
+	//root->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap, false, normalFBO);
+	//root->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap, true, 0);
 
 	// directional skill
 	if (player.action_state == ACTION_DIRECTIONAL_SKILL) {
@@ -500,8 +559,10 @@ void ClientScene::renderKillPhase(GLFWwindow* window) {
 		if (player.modelType == MAGE && !player.isPrepProjectile) {
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			glEnable(GL_BLEND);
-			range->draw(circleShader, glm::translate(glm::mat4(1.0f), playerPos), vpMatrix);
-			cross->draw(staticShader, glm::translate(glm::mat4(1.0f), playerPos) * glm::translate(glm::mat4(1.0f), convertedPos - playerPos), vpMatrix);
+			//range->draw(circleShader, glm::translate(glm::mat4(1.0f), playerPos), vpMatrix, normalFBO);
+			//cross->draw(staticShader, glm::translate(glm::mat4(1.0f), playerPos) * glm::translate(glm::mat4(1.0f), convertedPos - playerPos), vpMatrix, normalFBO);
+			//range->draw(circleShader, glm::translate(glm::mat4(1.0f), playerPos), vpMatrix, 0);
+			//cross->draw(staticShader, glm::translate(glm::mat4(1.0f), playerPos) * glm::translate(glm::mat4(1.0f), convertedPos - playerPos), vpMatrix, 0);
 			glDisable(GL_BLEND);
 		}
 		else {
@@ -510,11 +571,18 @@ void ClientScene::renderKillPhase(GLFWwindow* window) {
 			glm::vec3 axis = glm::cross(direction, glm::vec3(0, 0, -1));
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			glEnable(GL_BLEND);
-			range->draw(circleShader, glm::translate(glm::mat4(1.0f), playerPos), vpMatrix);
-			arrow->draw(staticShader, glm::translate(glm::mat4(1.0f), playerPos) * glm::rotate(glm::mat4(1.0f), angle, axis), vpMatrix);
+			//range->draw(circleShader, glm::translate(glm::mat4(1.0f), playerPos), vpMatrix, normalFBO);
+			//arrow->draw(staticShader, glm::translate(glm::mat4(1.0f), playerPos) * glm::rotate(glm::mat4(1.0f), angle, axis), vpMatrix, normalFBO);
+			//range->draw(circleShader, glm::translate(glm::mat4(1.0f), playerPos), vpMatrix, 0);
+			//arrow->draw(staticShader, glm::translate(glm::mat4(1.0f), playerPos) * glm::rotate(glm::mat4(1.0f), angle, axis), vpMatrix, 0);
 			glDisable(GL_BLEND);
 		}
 	}
+
+	//blendBloomEffect();
+	blendShader->use();
+	blendShader->setMat4("ModelViewProjMtx", vpMatrix);
+	renderQuad();
 
 	 /* Input */
 	glfwPollEvents();

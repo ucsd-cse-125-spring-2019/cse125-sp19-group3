@@ -71,8 +71,10 @@ public:
 	}
 
 	// render the mesh
-	void draw(Shader * shader, const glm::mat4 &viewProjMtx, unsigned int textureId)
+	void draw(Shader * shader, const glm::mat4 &viewProjMtx, unsigned int textureId, unsigned int frameBuffer)
 	{
+		glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureId);
 
@@ -83,135 +85,14 @@ public:
 
 		// always good practice to set everything back to defaults once configured.
 		glActiveTexture(GL_TEXTURE0);
-	}
-
-	void prepareBloomEffect(unsigned int width, unsigned int height) {
-		unsigned int frameBufferTexture[2];
-
-		glGenFramebuffers(1, &bloomFBO);
-		glBindFramebuffer(GL_FRAMEBUFFER, bloomFBO);
-		glGenTextures(1, &frameBufferTexture[0]);
-		glBindTexture(GL_TEXTURE_2D, frameBufferTexture[0]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		// attach texture to framebuffer
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frameBufferTexture[0], 0);
-
-		glGenFramebuffers(1, &normalFBO);
-		glBindFramebuffer(GL_FRAMEBUFFER, normalFBO);
-		glGenTextures(1, &frameBufferTexture[1]);
-		glBindTexture(GL_TEXTURE_2D, frameBufferTexture[1]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		// attach texture to framebuffer
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frameBufferTexture[1], 0);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-		prepareQuad();
-	}
-
-	void renderToBloomBuffer(Shader * shader, const glm::mat4 &viewProjMtx, unsigned int textureId) {
-		glBindFramebuffer(GL_FRAMEBUFFER, bloomFBO);
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // we're not using the stencil buffer now
-		glEnable(GL_DEPTH_TEST);
-		draw(shader, viewProjMtx, textureId);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	}
-
-	void renderToNormalBuffer(Shader * shader, const glm::mat4 &viewProjMtx, unsigned int textureId) {
-		glBindFramebuffer(GL_FRAMEBUFFER, normalFBO);
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // we're not using the stencil buffer now
-		glEnable(GL_DEPTH_TEST);
-		draw(shader, viewProjMtx, textureId);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	}
-
-	void blendBloomTexture(unsigned int width, unsigned int height, Shader * blurShader, Shader * blendShader) {
-		unsigned int pingpongFBO[2];
-		unsigned int pingpongBuffer[2];
-		glGenFramebuffers(2, pingpongFBO);
-		glGenTextures(2, pingpongBuffer);
-		for (unsigned int i = 0; i < 2; i++)
-		{
-			glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[i]);
-			glBindTexture(GL_TEXTURE_2D, pingpongBuffer[i]);
-			glTexImage2D(
-				GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, NULL
-			);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			glFramebufferTexture2D(
-				GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pingpongBuffer[i], 0
-			);
-		}
-
-		// blurring
-		bool horizontal = true, first_iteration = true;
-		int amount = 10;
-		blurShader->use();
-		for (unsigned int i = 0; i < amount; i++)
-		{
-			glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[horizontal]);
-			blurShader->setInt("horizontal", horizontal);
-			glBindTexture(
-				GL_TEXTURE_2D, first_iteration ? bloomFBO : pingpongBuffer[!horizontal]
-			);
-			renderQuad();
-			horizontal = !horizontal;
-			if (first_iteration)
-				first_iteration = false;
-		}
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-		blendShader->use();
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, bloomFBO);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, pingpongBuffer[!horizontal]);
-		blendShader->setFloat("exposure", 1.0f);
-		renderQuad();
-	}
-
-	void blendBloomEffect(Shader * blendShader) {
 
 	}
 
 private:
 	/*  Render data  */
 	unsigned int VBO, EBO;
-	unsigned int bloomFBO, normalFBO;
-
-	unsigned int quadVAO, quadVBO, quadVBO2, quadEBO;
-
-	vector<glm::vec2> quadVertices {
-		{-1.0f, -1.0f},
-		{1.0f, -1.0f},
-		{1.0f, 1.0f},
-		{-1.0f, 1.0f}
-	};
-
-	vector<glm::vec2> quadTexCoords{
-		{0, 0},
-		{1, 0},
-		{1, 1},
-		{0, 1}
-	};
-
-	vector<unsigned int> quadIndices {
-		0, 1, 2,
-		0, 2, 3
-	};
 
 	/*  Functions    */
 	// initializes all the buffer objects/arrays
@@ -250,36 +131,6 @@ private:
 		glEnableVertexAttribArray(6);
 		glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(offsetof(Vertex, Weights) + 4 * sizeof(float)));
 
-		glBindVertexArray(0);
-	}
-
-	void prepareQuad() {
-		glGenVertexArrays(1, &quadVAO);
-		glGenBuffers(1, &quadVBO);
-		glGenBuffers(1, &quadEBO);
-
-		glBindVertexArray(quadVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-		glBufferData(GL_ARRAY_BUFFER, quadVertices.size() * sizeof(glm::vec2), &quadVertices[0], GL_STATIC_DRAW);
-
-		glBindBuffer(GL_ARRAY_BUFFER, quadVBO2);
-		glBufferData(GL_ARRAY_BUFFER, quadTexCoords.size() * sizeof(glm::vec2), &quadTexCoords[0], GL_STATIC_DRAW);
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadEBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, quadIndices.size() * sizeof(unsigned int), &quadIndices[0], GL_STATIC_DRAW);
-	
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void*)0);
-
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void*)0);
-
-		glBindVertexArray(0);
-	}
-
-	void renderQuad() {
-		glBindVertexArray(quadVAO);
-		glDrawElements(GL_TRIANGLES, quadIndices.size(), GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 	}
 };

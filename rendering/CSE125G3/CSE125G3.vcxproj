@@ -80,6 +80,10 @@
     <None Include="..\model_paths.json" />
     <None Include="..\shaders\animatedShader.frag" />
     <None Include="..\shaders\animatedShader.vert" />
+    <None Include="..\shaders\blendShader.frag" />
+    <None Include="..\shaders\blendShader.vert" />
+    <None Include="..\shaders\blurShader.frag" />
+    <None Include="..\shaders\blurShader.vert" />
     <None Include="..\shaders\circleshader.frag" />
     <None Include="..\shaders\circleshader.vert" />
     <None Include="..\shaders\particleShader.frag" />

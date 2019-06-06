@@ -30,6 +30,12 @@
 #define CIRCLE_VERTEX_SHADER_PATH "../shaders/circleshader.vert"
 #define CIRCLE_FRAGMENT_SHADER_PATH "../shaders/circleshader.frag"
 
+#define BLUR_VERTEX_SHADER_PATH "../shaders/blurShader.vert"
+#define BLUR_FRAGMENT_SHADER_PATH "../shaders/blurShader.frag"
+
+#define BLEND_VERTEX_SHADER_PATH "../shaders/blendShader.vert"
+#define BLEND_FRAGMENT_SHADER_PATH "../shaders/blendShader.frag"
+
 #define MAX_KILL_UPDATES 3
 
 class ClientScene {
@@ -44,6 +50,7 @@ public:
 	GLuint particleTexture;
 	void initialize_objects(ClientGame * game, ClientNetwork* network, LeaderBoard* leaderBoard);
 	void initialize_skills(ArcheType selected_type);
+	void blendBloomEffect();
 	//void playerInit(const ScenePlayer &player);
 	void clean_up();
 	GLFWwindow * create_window(int width, int height);
@@ -75,6 +82,7 @@ private:
 	float max_scroll = 60.0f;
 	const char* window_title = "CSE 125 Group 3";
 	Shader * animationShader, * staticShader, * particleShader, * circleShader;
+	Shader * blurShader, * blendShader;
 	Model * floor;
 	Model * arrow;
 	Model * cross;
@@ -101,7 +109,97 @@ private:
 	nanoseconds invincibilityTimer;
 	bool isCharging = false;
 
-	// void removeTransform(Transform * parent, const unsigned int node_id);
+	unsigned int bloomFBO, normalFBO;
+	unsigned int quadVAO, quadVBO, quadVBO2, quadEBO;
+	unsigned int frameBufferTexture[2];
+
+	unsigned int textureId;
+
+	vector<glm::vec3> quadVertices{
+		{ -1.0f, -1.0f, 0.0f },
+		{ 1.0f, -1.0f, 0.0f },
+		{ 1.0f, 1.0f, 0.0f },
+		{ -1.0f, 1.0f, 0.0f }
+	};
+
+	vector<glm::vec2> quadTexCoords{
+		{ 0.0f, 0.0f },
+		{ 1.0f, 0.0f },
+		{ 1.0f, 1.0f },
+		{ 0.0f, 1.0f }
+	};
+
+	vector<unsigned int> quadIndices{
+		0, 1, 2,
+		0, 2, 3
+	};
+
+	void prepareBloomEffect() {
+		glGenFramebuffers(1, &bloomFBO);
+		glBindFramebuffer(GL_FRAMEBUFFER, bloomFBO);
+		glGenTextures(1, &frameBufferTexture[0]);
+		glBindTexture(GL_TEXTURE_2D, frameBufferTexture[0]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		// attach texture to framebuffer
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frameBufferTexture[0], 0);
+
+		glGenFramebuffers(1, &normalFBO);
+		glBindFramebuffer(GL_FRAMEBUFFER, normalFBO);
+		glGenTextures(1, &frameBufferTexture[1]);
+		glBindTexture(GL_TEXTURE_2D, frameBufferTexture[1]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		// attach texture to framebuffer
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frameBufferTexture[1], 0);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		prepareQuad();
+	}
+
+	void prepareQuad() {
+		glGenVertexArrays(1, &quadVAO);
+		glGenBuffers(1, &quadVBO);
+		glGenBuffers(1, &quadVBO2);
+		glGenBuffers(1, &quadEBO);
+
+		glBindVertexArray(quadVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+		glBufferData(GL_ARRAY_BUFFER, quadVertices.size() * sizeof(glm::vec3), &quadVertices[0], GL_STATIC_DRAW);
+
+		glBindBuffer(GL_ARRAY_BUFFER, quadVBO2);
+		glBufferData(GL_ARRAY_BUFFER, quadTexCoords.size() * sizeof(glm::vec2), &quadTexCoords[0], GL_STATIC_DRAW);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadEBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, quadIndices.size() * sizeof(unsigned int), &quadIndices[0], GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void*)0);
+
+		glBindVertexArray(0);
+
+		textureId = TextureFromFile("../textures/floor.png");
+
+	}
+
+	void renderQuad() {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureId);
+		glBindVertexArray(quadVAO);
+		glDrawElements(GL_TRIANGLES, quadIndices.size(), GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
+		glActiveTexture(GL_TEXTURE0);
+	}
 	
 };
 

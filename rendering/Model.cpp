@@ -2,11 +2,9 @@
 #include "../networking/KillStreak/Logger.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+
 glm::mat4 aiM4x4toGlmMat4(aiMatrix4x4 m);
 glm::mat4 aiM3x3toGlmMat4(aiMatrix3x3 m);
-
-unsigned int TextureFromFile(const string& path);
-//static inline glm::mat4 mat4_cast(const aiMatrix4x4& m) { return glm::transpose(glm::make_mat4(&m.a1)); }
 
 Model::Model(string const &path, string const &texPath, bool animated)
 {
@@ -21,7 +19,7 @@ Model::Model(string const &path, string const &texPath, bool animated)
 //}
 
 // draws the model, and thus all its meshes
-void Model::draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx)
+void Model::draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx, unsigned int frameBuffer)
 {
 	glm::mat4 modelMtx = parentMtx * localMtx;
 	shader->use();
@@ -34,7 +32,7 @@ void Model::draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &v
 	}
 
 	for (unsigned int i = 0; i < meshes.size(); i++)
-		meshes[i].draw(shader, viewProjMtx, textureId);
+		meshes[i].draw(shader, viewProjMtx, textureId, frameBuffer);
 }
 
 void Model::BoneTransform(float timeToIncrement)

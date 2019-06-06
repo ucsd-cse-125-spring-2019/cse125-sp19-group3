@@ -174,7 +174,7 @@ void ServerScene::initEnv() {
 	for (auto & obj : jsonObjs["data"]) {
 		Transform * envobj = new Transform(envCounter++, glm::translate(glm::mat4(1.0f), glm::vec3((float)(obj["translate"][0]), (float)(obj["translate"][1]), (float)(obj["translate"][2]))),
 		glm::rotate(glm::mat4(1.0f), (float)obj["rotate"] / 180.0f * glm::pi<float>(), glm::vec3(0, 1, 0)),
-		glm::scale(glm::mat4(1.0f), glm::vec3((float)obj["scale"], (float)obj["scale"], (float)obj["scale"])));
+		glm::scale(glm::mat4(1.0f), glm::vec3((float)obj["scale"], (float)obj["scale"], (float)obj["scale"])), false);
 		envobj->initialRotation = (float)obj["rotate"];
 		envobj->model_ids.insert((int)obj["model_id"]);
 		env_objs.push_back(envobj);
@@ -190,7 +190,7 @@ void ServerScene::addPlayer(unsigned int playerId, ArcheType modelType) {
 		if (modelType == (unsigned int)obj["model_id"]) {
 			playerObj = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), glm::vec3(0)),
 				glm::rotate(glm::mat4(1.0f), (float)obj["rotate_angle"] / 180.0f * glm::pi<float>(), glm::vec3((float)(obj["rotate_axis"][0]), (float)(obj["rotate_axis"][1]), (float)(obj["rotate_axis"][2]))),
-				glm::scale(glm::mat4(1.0f), glm::vec3((float)obj["scale"])));
+				glm::scale(glm::mat4(1.0f), glm::vec3((float)obj["scale"])), true);
 			break;
 		}
 	}

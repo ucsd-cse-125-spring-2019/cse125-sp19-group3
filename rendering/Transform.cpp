@@ -27,6 +27,7 @@ unsigned int Transform::serialize(char * data) {
 	currLoc += sizeof(bool);
 	size += sizeof(bool);
 
+	// copy over if belong to a character
 	memcpy(currLoc, &isCharacter, sizeof(bool));
 	currLoc += sizeof(bool);
 	size += sizeof(bool);
@@ -41,6 +42,7 @@ unsigned int Transform::serialize(char * data) {
 	currLoc += sizeof(bool);
 	size += sizeof(bool);
 
+	// copy over the invisible state of assasin
 	memcpy(currLoc, &isInvisible, sizeof(bool));
 	currLoc += sizeof(bool);
 	size += sizeof(bool);
@@ -156,7 +158,8 @@ void Transform::removeChild(unsigned int id) {
 	children_ids.erase(id);
 }
 
-void Transform::draw( std::unordered_map<unsigned int, ModelData> &models, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx, unordered_map<unsigned int, Transform *> &sceneGraphMap) {
+void Transform::draw(std::unordered_map<unsigned int, ModelData> &models, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx, 
+	unordered_map<unsigned int, Transform *> &sceneGraphMap, bool renderBloomEffect, unsigned int frameBuffer) {
 	if (!enabled)
 		return;
 
@@ -164,32 +167,37 @@ void Transform::draw( std::unordered_map<unsigned int, ModelData> &models, const
 
 	for (unsigned int child_id : children_ids) {
 		Transform * child = sceneGraphMap[child_id];
-		child->draw( models, childMtx, viewProjMtx, sceneGraphMap);
+		child->draw(models, childMtx, viewProjMtx, sceneGraphMap, renderBloomEffect, frameBuffer);
 	}
 
 	for (unsigned int model_id : model_ids) {
 		if (models[model_id].renderMode == COLOR) {
 			models[model_id].shader->use();
 			models[model_id].shader->setVec4("color", models[model_id].color);
-			models[model_id].model->draw(models[model_id].shader, childMtx, viewProjMtx);
+			if ((renderBloomEffect && isCharacter) || !renderBloomEffect) {
+				models[model_id].model->draw(models[model_id].shader, childMtx, viewProjMtx, frameBuffer);
+			}
 		}
 		else if (models[model_id].renderMode == TEXTURE) {
 			models[model_id].shader->use();
+			models[model_id].shader->setInt("UseTex", 1);
 			if (isCharacter) {
 				models[model_id].shader->setInt("isEvading", isEvading ? 1 : 0);
 				models[model_id].shader->setInt("isInvincible", isInvincible ? 1 : 0);
 				models[model_id].shader->setInt("isCharging", isCharging ? 1 : 0);
 				models[model_id].shader->setInt("isInvisible", isInvisible ? 1 : 0);
 			}
-			models[model_id].shader->setInt("UseTex", 1);
-			if (isInvisible) {
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-				glEnable(GL_BLEND);
+
+			if ((renderBloomEffect && isCharacter) || !renderBloomEffect) {
+				if (isInvisible) {
+					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+					glEnable(GL_BLEND);
+				}
+				glBindTexture(GL_TEXTURE_2D, models[model_id].texID);
+				models[model_id].model->draw(models[model_id].shader, childMtx, viewProjMtx, frameBuffer);
+				glBindTexture(GL_TEXTURE_2D, 0);
+				glDisable(GL_BLEND);
 			}
-			glBindTexture(GL_TEXTURE_2D, models[model_id].texID);
-			models[model_id].model->draw(models[model_id].shader, childMtx, viewProjMtx);
-			glBindTexture(GL_TEXTURE_2D, 0);
-			glDisable(GL_BLEND);
 		}
 		//TODO: CHANGE THIS LATER
 		if (model_id == 200) {

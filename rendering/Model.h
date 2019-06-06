@@ -33,7 +33,7 @@ typedef struct{
 	unsigned int baseIndex;
 } MeshData;
 
-
+unsigned int TextureFromFile(const string& path);
 
 //unsigned int TextureFromFile(const char *path, const string &directory, bool gamma = false);
 
@@ -60,10 +60,10 @@ public:
 	//Sphere * bounding_sphere;
 	/*  Functions   */
 	// constructor, expects a filepath to a 3D model.
-	Model(string const &path, string const &texPath, bool animated=false);
+	Model(string const &path, string const &texPath, bool animated);
 
 	// draws the model, and thus all its meshes
-	void draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx);
+	void draw(Shader * shader, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx, unsigned int frameBuffer);
 
 	void BoneTransform(float TimeInSeconds);
 

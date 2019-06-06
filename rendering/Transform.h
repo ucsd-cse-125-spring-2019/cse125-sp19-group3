@@ -62,7 +62,7 @@ public:
 	void removeChild(unsigned int id);
 	unsigned int serialize(char * data);
 	unsigned deserializeAndUpdate(char * data, Shader* particleShader, GLuint particleTexture);
-	void draw(std::unordered_map<unsigned int, ModelData> &models, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx, unordered_map<unsigned int, Transform *> &sceneGraphMap);
+	void draw(std::unordered_map<unsigned int, ModelData> &models, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx, unordered_map<unsigned int, Transform *> &sceneGraphMap, bool renderBloomEffect, unsigned int frameBuffer);
 	void update();
 	void clientUpdate();
 	bool isCollided(glm::vec3 forwardVector, unordered_map<unsigned int, float> &modelRadius, unordered_map<unsigned int, Transform *> &sceneGraphMap, Transform * otherNode, unordered_map<unsigned int, glm::vec3> &modelBoundingBoxes, bool toEnv);
