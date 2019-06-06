@@ -594,18 +594,23 @@ int ServerGame::updatePreparePhase() {
 				// deserialize amount invested 
 				memcpy(&scene->scenePlayers[client_id].amount_invested, data, sizeof(int));
 				data += sizeof(int);
-//				logger()->debug("Client {} invested {}", client_id, scene->scenePlayers[client_id].amount_invested);
 
 				// deserialize player invested in
 				memcpy(&scene->scenePlayers[client_id].player_invested_in, data, sizeof(ArcheType));
 				data += sizeof(ArcheType);
-//				logger()->debug("Client {} invested in player {}", client_id, scene->scenePlayers[client_id].player_invested_in);
 
 				// deserialize cheating for each player
 				int cheatingPoints = 0;
 				memcpy(&cheatingPoints, data, sizeof(unsigned int));
 				data += sizeof(unsigned int);
+
+				int old_points = leaderBoard->currPoints[client_id];		// TODDO: REMOVE ME*****
 				leaderBoard->currPoints[client_id] += cheatingPoints;
+
+				// TODO: REMOVE ***
+				logger()->debug("Client {} purchases {} points", client_id, cheatingPoints);
+				logger()->debug("Client {} points from {} -> {}", client_id, old_points, leaderBoard->currPoints[client_id]);
+				// TODO: REMOVE ***
 
 			}
 
