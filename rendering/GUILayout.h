@@ -86,7 +86,7 @@ static void ui_killphase_header(struct nk_context *ctx, struct media *media, int
 	struct nk_style *s = &ctx->style;
 	nk_style_push_color(ctx, &s->window.background, nk_rgba(0, 0, 0, 0));
 	nk_style_push_style_item(ctx, &s->window.fixed_background, nk_style_item_color(nk_rgba(0, 0, 0, 0)));
-	if (nk_begin(ctx, "kill_player_info", nk_rect(10, 310, width * 0.15, width * 0.09+65),
+	if (nk_begin(ctx, "kill_player_info", nk_rect(10, 310, width * 0.15, 190),
 		NK_WINDOW_NO_SCROLLBAR))
 	{
 		static const float kill_ratio[] = { 0.3f,0.3f, 0.4f };  /* 0.3 + 0.4 + 0.3 = 1 */
@@ -102,7 +102,7 @@ static void ui_killphase_header(struct nk_context *ctx, struct media *media, int
 		nk_label(ctx, round_char, NK_TEXT_RIGHT | NK_TEXT_ALIGN_CENTERED);
 		nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
 
-		nk_layout_row(ctx, NK_DYNAMIC, width * 0.07,3, kill_ratio);
+		nk_layout_row(ctx, NK_DYNAMIC, 116,3, kill_ratio);
 
 		nk_spacing(ctx, 1);
 		if (nk_group_begin(ctx, "icons", NK_WINDOW_NO_SCROLLBAR)) { // column 1
@@ -571,7 +571,7 @@ static void ui_shop_header(struct nk_context *ctx, struct media *media, int widt
 	struct nk_style *s = &ctx->style;
 	nk_style_push_color(ctx, &s->window.background, nk_rgba(0, 0, 0, 0));
 	nk_style_push_style_item(ctx, &s->window.fixed_background, nk_style_item_color(nk_rgba(0, 0, 0, 0)));
-	if (nk_begin(ctx, "kill_header", nk_rect(10, height*0.15f, width * 0.15, width * 0.09 + 65),
+	if (nk_begin(ctx, "kill_header", nk_rect(10, height*0.15f, width * 0.15, 190),
 		NK_WINDOW_NO_SCROLLBAR))
 	{
 		static const float kill_ratio[] = { 0.3f,0.3f, 0.4f };  /* 0.3 + 0.4 + 0.3 = 1 */
@@ -579,7 +579,7 @@ static void ui_shop_header(struct nk_context *ctx, struct media *media, int widt
 		string vicPtsStr = std::to_string(leaderBoard->currPoints[player->player_id]);
 		const char * gold_char = goldStr.c_str();
 		const char * vic_char = vicPtsStr.c_str();
-		nk_layout_row(ctx, NK_DYNAMIC, width * 0.07, 3, kill_ratio);
+		nk_layout_row(ctx, NK_DYNAMIC, 116, 3, kill_ratio);
 
 		nk_spacing(ctx, 1);
 		if (nk_group_begin(ctx, "icons", NK_WINDOW_NO_SCROLLBAR)) { // column 1
@@ -610,9 +610,9 @@ ui_skill_group(struct nk_context *ctx, struct media *media, int width, int heigh
 	vector<int> prices, int row, char * name) {
 	ArcheType type = player->modelType;
 	static const float skratio[] = { 0.38f, 0.24f, 0.38f };  /* 0.3 + 0.4 + 0.3 = 1 */
-	nk_layout_row_dynamic(ctx, height*0.4,1);
+	nk_layout_row_dynamic(ctx, height*0.21f + 160,1);
 	if (nk_group_begin(ctx, name, NK_WINDOW_NO_SCROLLBAR)) {
-		nk_layout_row(ctx, NK_DYNAMIC, height*0.4, 3, skratio);
+		nk_layout_row(ctx, NK_DYNAMIC, height*0.21f +160, 3, skratio);
 		for (int j = 0; j < 3; j++) {
 			int i = j / 2 + row*2;
 			if (j % 2 == 0) {
