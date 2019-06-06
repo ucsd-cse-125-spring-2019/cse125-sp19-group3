@@ -529,6 +529,12 @@ void ClientScene::renderKillPhase(GLFWwindow* window) {
 
 	// directional skill
 	if (player.action_state == ACTION_DIRECTIONAL_SKILL) {
+		auto personal_skills = getPlayerSkills();
+		Skill & skill = player.isPrepProjectile ? personal_skills[PROJ_INDEX] : personal_skills[DIR_SKILL_INDEX];
+		Skill & adjustedSkill = Skill::calculateSkillBasedOnLevel(skill, skill.level);
+		float radius = adjustedSkill.range;
+		range->createCircle(radius);
+
 		glm::vec3 playerPos = glm::vec3(clientSceneGraphMap[player.root_id]->M[3][0], clientSceneGraphMap[player.root_id]->M[3][1], clientSceneGraphMap[player.root_id]->M[3][2]);
 		double xpos, ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
