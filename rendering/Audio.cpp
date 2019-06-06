@@ -25,6 +25,10 @@ Audio::Audio() {
 	buyItem_2.setBuffer(buyItem_2_Buffer);
 	equipItem_1.setBuffer(equipItem_1_Buffer);
 	equipItem_2.setBuffer(equipItem_2_Buffer);
+	button_press.setBuffer(button_press_Buffer);
+	prepare_phase_music.setBuffer(prepare_phase_music_Buffer);
+	kill_phase_music.setBuffer(kill_phase_music_Buffer);
+	timer.setBuffer(timer_Buffer);
 	//**BGM**
 	//if (!music.openFromFile("./audio/music.wav"))
 	//	cout << "unable to load wav file " << "music.wav" << endl;
@@ -81,14 +85,15 @@ void Audio::loadWAVFiles() {
 		cout << "unable to load wav file " << "equipItem_2.wav" << endl;
 	if (!cooldown_Buffer.loadFromFile("../audio/model/cooldown_reset.wav"))
 		cout << "unable to load wav file " << "cooldown_reset.wav" << endl;
-	if (!prepare_phase_music.openFromFile("../audio/phases/prepare_phase.wav"))
+	if (!button_press_Buffer.loadFromFile("../audio/store/button_click.wav"))
+		cout << "unable to load wav file " << "timer_tick.wav" << endl;
+	if (!prepare_phase_music_Buffer.loadFromFile("../audio/phases/prepare_phase.wav"))
 		cout << "unable to load wav file " << "prepare_phase.wav" << endl;
-	if (!kill_phase_music.openFromFile("../audio/phases/kill_phase.wav"))
+	if (!kill_phase_music_Buffer.loadFromFile("../audio/phases/kill_phase.wav"))
 		cout << "unable to load wav file " << "kill_phase.wav" << endl;
-	if (!timer.openFromFile("../audio/phases/timer_tick.wav"))
+	if (!timer_Buffer.loadFromFile("../audio/phases/timer_tick.wav"))
 		cout << "unable to load wav file " << "timer_tick.wav" << endl;
-	if (!button_press.openFromFile("../audio/store/button_click.wav"))
-		cout << "unable to load wav file " << "timer_tick.wav" << endl;
+	
 
 }
 

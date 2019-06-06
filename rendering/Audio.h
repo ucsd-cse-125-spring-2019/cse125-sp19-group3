@@ -70,16 +70,20 @@ private:
 	sf::SoundBuffer buyItem_2_Buffer;
 	sf::SoundBuffer equipItem_1_Buffer;
 	sf::SoundBuffer equipItem_2_Buffer;
+	sf::SoundBuffer button_press_Buffer;
 	sf::Sound buyItem_1;
 	sf::Sound buyItem_2;
 	sf::Sound equipItem_1;
 	sf::Sound equipItem_2;
+	sf::Sound button_press;
 
 	//**BGM**//
-	sf::Music prepare_phase_music;
-	sf::Music kill_phase_music;
-	sf::Music timer;
+	sf::SoundBuffer prepare_phase_music_Buffer;
+	sf::SoundBuffer kill_phase_music_Buffer;
+	sf::SoundBuffer timer_Buffer;
 	sf::Music game_over;
-	sf::Music button_press;
+	sf::Sound prepare_phase_music;
+	sf::Sound kill_phase_music;
+	sf::Sound timer;
 	void loadWAVFiles();
 };
