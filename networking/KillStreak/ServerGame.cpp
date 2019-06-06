@@ -377,10 +377,6 @@ void ServerGame::launch() {
 			scheduledEvent.ticksLeft--;
 
 			if (scheduledEvent.ticksLeft <= 0) {
-				// initNewPhase(isKillPhase);
-				//isKillPhase = !isKillPhase;
-				// pop off / get rid of event alarm here?
-
 				current_phase = (current_phase == KILL_PHASE) ? PREP_PHASE : KILL_PHASE;
 			}
 
@@ -576,6 +572,8 @@ int ServerGame::updatePreparePhase() {
 				memcpy(&player_meta->gold, data, sizeof(int));
 				data += sizeof(int);
 
+				logger()->debug("Client {} remaining gold {}", client_id, player_meta->gold);
+
 				// deserialize number of skills
 				int total_skills = 0;
 				memcpy(&total_skills, data, sizeof(int));
@@ -588,9 +586,21 @@ int ServerGame::updatePreparePhase() {
 					data += sizeof(unsigned int);
 				}
 
-				// 4.) TODO: deserialize invest for each player 
+				// deserialize amount invested 
+				memcpy(&scene->scenePlayers[client_id].amount_invested, data, sizeof(int));
+				data += sizeof(int);
+				logger()->debug("Client {} invested {}", client_id, scene->scenePlayers[client_id].amount_invested);
 
-				// 5.) TODO: deserialize cheating for each player
+				// deserialize player invested in
+				memcpy(&scene->scenePlayers[client_id].player_invested_in, data, sizeof(ArcheType));
+				data += sizeof(ArcheType);
+				logger()->debug("Client {} invested in player {}", client_id, scene->scenePlayers[client_id].player_invested_in);
+
+				// deserialize cheating for each player
+				int cheatingPoints = 0;
+				memcpy(&cheatingPoints, data, sizeof(unsigned int));
+				data += sizeof(unsigned int);
+				leaderBoard->currPoints[client_id] += cheatingPoints;
 
 			}
 
@@ -640,6 +650,7 @@ void ServerGame::calculateRoundInvestment(vector<ArcheType> round_winners)
 				unordered_map<unsigned int, PlayerMetadata*>::iterator s_it = playerMetadatas->find(client_id);
 				PlayerMetadata* player_meta = s_it->second;
 				player_meta->gold += (curr_player.amount_invested * 2);
+				logger()->debug("Client {} bet on a winner!", client_id);
 			}
 		}
 

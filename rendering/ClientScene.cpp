@@ -459,7 +459,32 @@ void ClientScene::renderPreparePhase(GLFWwindow* window) {
 	// Swap buffers
 	glfwSwapBuffers(window);
 }
+
+void ClientScene::renderFinalPhase(GLFWwindow* window) {
+	/* Input */
+	glfwPollEvents();
+	nk_glfw3_new_frame();
+	winner_layout(ctx, &media, ClientScene::width, ClientScene::height, leaderBoard, usernames, archetypes, game);
+
+
+	nk_glfw3_render(NK_ANTI_ALIASING_OFF, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+
+	// Swap buffers
+	glfwSwapBuffers(window);
+}
  
+ void ClientScene::renderSummaryPhase(GLFWwindow* window) {
+	 /* Input */
+	glfwPollEvents();
+	nk_glfw3_new_frame();
+	summary_layout(ctx, &media, ClientScene::width, ClientScene::height, leaderBoard, usernames, archetypes, game);
+
+
+	nk_glfw3_render(NK_ANTI_ALIASING_OFF, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
+
+	// Swap buffers
+	glfwSwapBuffers(window);
+ }
 
 
 void ClientScene::renderLobbyPhase(GLFWwindow* window) {
@@ -545,7 +570,9 @@ void ClientScene::display_callback(GLFWwindow* window)
 
 	if (game->currPhase == ClientStatus::LOBBY) renderLobbyPhase(window);
 	else if (game->currPhase == ClientStatus::KILL) renderKillPhase(window);
-	else renderPreparePhase(window);
+	else if (game->currPhase == ClientStatus::PREPARE) renderPreparePhase(window);
+	else if (game->currPhase == ClientStatus::FINAL) renderFinalPhase(window);
+	else renderSummaryPhase(window);
 }
 
 void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -961,4 +988,11 @@ bool ClientScene::checkInAnimation() {
 	auto transform = clientSceneGraphMap[player.root_id];
 	auto thisModel = models[*(transform->model_ids.begin())].model;
 	return thisModel->curr_mode != thisModel->movementMode;
+}
+
+vector<int> ClientScene::getInvestmentInfo() {
+	vector<int> result;
+	result.push_back(player.amount_invested);
+	result.push_back(player.player_invested_in);
+	return result;
 }

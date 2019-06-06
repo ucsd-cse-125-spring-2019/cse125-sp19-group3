@@ -345,8 +345,8 @@ void ClientGame::endKillPhase()
 
 
 			// TODO: FINISH ME!!!
-			//std::chrono::seconds secPre(ENDGAME_TIME);
-			//prepareTimer = nanoseconds(secPre);
+			std::chrono::seconds sec(ENDGAME_TIME);
+			prepareTimer = nanoseconds(sec);
 			currPhase = FINAL;
 			startEndGamePhase = 1;
 			break;
@@ -394,11 +394,38 @@ void ClientGame::endPrepPhase()
 		sgSize += sizeof(int);
 	}
 
+	// serialize investment
+	vector<int> investment = Window_static::getInvestmentInfo();
 
-	// TODO: serialize investment
+	// serialize amount invested
+	memcpy(bufPtr, &investment[0], sizeof(int));
+	bufPtr += sizeof(int);
+	sgSize += sizeof(int);
 
-	// TODO: serialize cheating
+	// TODO: REMOVE *****
+	logger()->debug("Amount Invested: {}", investment[0]);
+	// TODO: REMOVE *****
 
+	// serialize player bet on
+	memcpy(bufPtr, &investment[1], sizeof(ArcheType));
+	bufPtr += sizeof(ArcheType);
+	sgSize += sizeof(ArcheType);
+
+	// TODO: REMOVE *****
+	switch (investment[1])
+	{
+		case MAGE: logger()->debug("Invested in MAGE"); break;
+		case ASSASSIN: logger()->debug("Invested in ASSASSIN"); break;
+		case WARRIOR: logger()->debug("Invested in WARRIOR"); break;
+		case KING: logger()->debug("Invested in KING"); break;
+	}
+	// TODO: REMOVE *****
+
+	// serialize cheating
+	memcpy(bufPtr, &cheatingPoints, sizeof(unsigned int));
+	bufPtr += sizeof(unsigned int);
+	sgSize += sizeof(int);
+	cheatingPoints = 0;
 
 	// create packet; copy all serialized data into packet.data & send to server
 	endPrepPacket.inputType = END_PREP_PHASE;
@@ -480,7 +507,7 @@ int ClientGame::switchPhase() {
 		// TODO: End game scene
 		case FINAL: 
 			logger()->debug("GAME OVER!!!!");
-			while (1) {};
+			currPhase = SUMMARY;
 			break;
 
 		// should never occur

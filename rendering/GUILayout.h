@@ -6,6 +6,10 @@
 #define DIR_SKILL_INDEX 3
 
 #define KILLED_TEXT_NUM 4
+
+#define CHEATING_GOLD 45
+#define CHEATING_POINTS 3
+
 const char * intToCharArray(int i) {
 	string s = std::to_string(i);
 	const int n = s.length();
@@ -244,6 +248,25 @@ static void ui_prepare_title(struct nk_context *ctx, struct media *media, int wi
 			game->switchPhase();
 		}
 		nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
+}
+
+static void
+winner_layout(struct nk_context *ctx, struct media *media, int width, int height,
+	LeaderBoard* leaderBoard, vector<string> usernames, vector<ArcheType> archetypes, ClientGame* game) {
+	if (game->prepareTimer > std::chrono::seconds::zero()) {
+		set_style(ctx, THEME_BLACK);
+		//TODO
+	}
+	else {
+		game->switchPhase();
+	}
+}
+
+static void
+summary_layout(struct nk_context *ctx, struct media *media, int width, int height,
+	LeaderBoard* leaderBoard, vector<string> usernames, vector<ArcheType> archetypes, ClientGame* game) {
+		set_style(ctx, THEME_BLACK);
+		//TODO
 }
 
 
@@ -640,12 +663,9 @@ ui_skill_group(struct nk_context *ctx, struct media *media, int width, int heigh
 					nk_label(ctx, level.c_str(), NK_TEXT_ALIGN_LEFT);
 					nk_layout_row_dynamic(ctx, 32, 1);
 					if (nk_button_label(ctx, "upgrade")) {
-						//Gold check
-						if (player->gold >= prices[i]) {
+						//Gold check and max level check
+						if (player->gold >= prices[i] && skill.level < 3) {
 							player->gold -= prices[i];
-						}
-						//Max Level check
-						if (skill.level < 3) {
 							skill.level++;
 						}
 					}
@@ -715,7 +735,9 @@ static void ui_bets_shop(struct nk_context *ctx, struct media *media, int width,
 		if (guiS.betAmount > 0 && nk_button_label(ctx, "Bet!")) {
 			//TODO: SEND BET
 			if (op >= 1) {
-
+				player->amount_invested = guiS.betAmount;
+				player->player_invested_in = static_cast<ArcheType>(op);
+				player->gold -= guiS.betAmount;
 			}
 		}
 		nk_spacing(ctx, 1);
@@ -724,24 +746,30 @@ static void ui_bets_shop(struct nk_context *ctx, struct media *media, int width,
 		nk_group_end(ctx);
 }
 
-static void ui_cheat_shop(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player) {
+static void ui_cheat_shop(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, ClientGame * game) {
 	if (nk_group_begin(ctx, "cheat", NK_WINDOW_NO_SCROLLBAR)) {
 		static const float cheatRatio[] = { 0.25f, 0.25f,  0.25f, 0.25f };
 		static const float middeRatio[] = { 0.33f, 0.33f, 0.34f };
 		nk_layout_row_static(ctx, 32, 0.3*width, 1);
 		nk_layout_row(ctx, NK_DYNAMIC, 0.16*width, 4, cheatRatio);
 		nk_spacing(ctx, 1);
-		nk_label(ctx, "1 Point", NK_TEXT_CENTERED);
+		string cheating_point = to_string(CHEATING_POINTS) + " Point";
+		nk_label(ctx, cheating_point.c_str(), NK_TEXT_CENTERED);
 		nk_image(ctx, media->points);
 		nk_spacing(ctx, 1);
 		nk_layout_row(ctx, NK_DYNAMIC, height*0.03f, 3, middeRatio);
 		nk_spacing(ctx, 1);
-		nk_label(ctx, "Cost: 500 gold", NK_TEXT_CENTERED);
+		string cheating_gold = "Cost: " + to_string(CHEATING_GOLD) + " gold";
+		nk_label(ctx, cheating_gold.c_str(), NK_TEXT_CENTERED);
 		nk_spacing(ctx, 1);
 		nk_layout_row(ctx, NK_DYNAMIC, height*0.04f, 3, middeRatio);
 		nk_spacing(ctx, 1);
 		if (nk_button_label(ctx, "Cheat!")) {
 			//TODO: SEND CHEAT
+			if (player->gold >= CHEATING_GOLD) {
+				game->cheatingPoints += CHEATING_GOLD;
+				player->gold -= CHEATING_GOLD;
+			}
 		}
 		nk_spacing(ctx, 1);
 
@@ -790,7 +818,7 @@ static void ui_shop(struct nk_context *ctx, struct media *media, int width, int 
 			ui_bets_shop(ctx, media, width, height, player, game, gStatuses);
 		}
 		else {
-			ui_cheat_shop(ctx, media, width, height, player);
+			ui_cheat_shop(ctx, media, width, height, player, game);
 		}
 
 
