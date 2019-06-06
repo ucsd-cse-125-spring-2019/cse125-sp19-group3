@@ -633,6 +633,8 @@ ui_skill_group(struct nk_context *ctx, struct media *media, int width, int heigh
 	vector<int> prices, int row, char * name) {
 	ArcheType type = player->modelType;
 	static const float skratio[] = { 0.38f, 0.24f, 0.38f };  /* 0.3 + 0.4 + 0.3 = 1 */
+	static const unsigned int sequential_bindings[] = { EVADE_INDEX , PROJ_INDEX, DIR_SKILL_INDEX , OMNI_SKILL_INDEX };
+
 	nk_layout_row_dynamic(ctx, height*0.4,1);
 	if (nk_group_begin(ctx, name, NK_WINDOW_NO_SCROLLBAR)) {
 		nk_layout_row(ctx, NK_DYNAMIC, height*0.4, 3, skratio);
@@ -646,16 +648,16 @@ ui_skill_group(struct nk_context *ctx, struct media *media, int width, int heigh
 				if (nk_group_begin(ctx, skill_string, NK_WINDOW_NO_SCROLLBAR)) { // column 1
 					nk_layout_row_static(ctx, height*0.2, height*0.2, 1); // nested row
 					if (type == WARRIOR) {
-						nk_image(ctx, media->warrior_skills[i]);
+						nk_image(ctx, media->warrior_skills[sequential_bindings[i]]);
 					}
 					else if (type == MAGE) {
-						nk_image(ctx, media->mage_skills[i]);
+						nk_image(ctx, media->mage_skills[sequential_bindings[i]]);
 					}
 					else if (type == ASSASSIN) {
-						nk_image(ctx, media->assassin_skills[i]);
+						nk_image(ctx, media->assassin_skills[sequential_bindings[i]]);
 					}
 					else {
-						nk_image(ctx, media->king_skills[i]);
+						nk_image(ctx, media->king_skills[sequential_bindings[i]]);
 					}
 					nk_layout_row_dynamic(ctx, 32, 1);
 					nk_label(ctx, skill_string, NK_TEXT_ALIGN_LEFT);
