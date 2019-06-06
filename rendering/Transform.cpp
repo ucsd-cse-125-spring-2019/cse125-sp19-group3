@@ -5,12 +5,13 @@ Transform::Transform() : Transform(0, glm::mat4(1)) {}
 
 Transform::Transform(unsigned int nodeId, glm::mat4 M) : node_id(nodeId), M(M) {}
 
-Transform::Transform(unsigned int nodeId, glm::mat4 translation, glm::mat4 rotation, glm::mat4 scale) {
+Transform::Transform(unsigned int nodeId, glm::mat4 translation, glm::mat4 rotation, glm::mat4 scale, bool isCharacter) {
 	this->node_id = nodeId;
 	this->translation = translation;
 	this->rotation = rotation;
 	this->scale = scale;
 	this->M = translation * rotation * scale;
+	this->isCharacter = isCharacter;
 }
 
 unsigned int Transform::serialize(char * data) {
@@ -23,6 +24,10 @@ unsigned int Transform::serialize(char * data) {
 
 	// copy over enabled
 	memcpy(currLoc, &enabled, sizeof(bool));
+	currLoc += sizeof(bool);
+	size += sizeof(bool);
+
+	memcpy(currLoc, &isCharacter, sizeof(bool));
 	currLoc += sizeof(bool);
 	size += sizeof(bool);
 
@@ -89,6 +94,10 @@ unsigned int Transform::deserializeAndUpdate(char * data, Shader* particleShader
 	memcpy(&enabled, currLoc, sizeof(bool));
 	size += sizeof(bool);
 	currLoc += sizeof(bool);
+
+	memcpy(&isCharacter, currLoc, sizeof(bool));
+	currLoc += sizeof(bool);
+	size += sizeof(bool);
 
 	memcpy(&isEvading, currLoc, sizeof(bool));
 	size += sizeof(bool);
@@ -166,10 +175,12 @@ void Transform::draw( std::unordered_map<unsigned int, ModelData> &models, const
 		}
 		else if (models[model_id].renderMode == TEXTURE) {
 			models[model_id].shader->use();
-			models[model_id].shader->setInt("isEvading", isEvading ? 1 : 0);
-			models[model_id].shader->setInt("isInvincible", isInvincible ? 1 : 0);
-			models[model_id].shader->setInt("isCharging", isCharging ? 1 : 0);
-			models[model_id].shader->setInt("isInvisible", isInvisible ? 1 : 0);
+			if (isCharacter) {
+				models[model_id].shader->setInt("isEvading", isEvading ? 1 : 0);
+				models[model_id].shader->setInt("isInvincible", isInvincible ? 1 : 0);
+				models[model_id].shader->setInt("isCharging", isCharging ? 1 : 0);
+				models[model_id].shader->setInt("isInvisible", isInvisible ? 1 : 0);
+			}
 			models[model_id].shader->setInt("UseTex", 1);
 			if (isInvisible) {
 				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

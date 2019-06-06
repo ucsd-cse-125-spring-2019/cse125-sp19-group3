@@ -37,6 +37,7 @@ class Transform
 public:
 	unsigned int node_id;
 	bool enabled = true;
+	bool isCharacter = false;
 	bool isEvading = false;
 	bool isInvincible = false;
 	bool isCharging = false;
@@ -55,7 +56,7 @@ public:
 	Transform();
 	
 	Transform(unsigned int nodeId, glm::mat4 M);
-	Transform(unsigned int nodeId, glm::mat4 translation, glm::mat4 rotation, glm::mat4 scale);
+	Transform(unsigned int nodeId, glm::mat4 translation, glm::mat4 rotation, glm::mat4 scale, bool isCharacter);
 	void Transform::setDestination(glm::mat4 & updatedM);
 	void addChild(const unsigned int id);
 	void removeChild(unsigned int id);
