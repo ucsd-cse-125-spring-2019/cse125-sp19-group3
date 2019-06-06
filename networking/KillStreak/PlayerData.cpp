@@ -9,6 +9,13 @@
 
 #define META_CONF "../../networking/KillStreak/meta_data.json"
 #define KILL_POINTS 3		// points awarded per kill
+#define FIRST  1
+#define SECOND 2
+#define THIRD  3
+#define FOURTH 4
+#define ROUND_3 3
+#define ROUND_4 4
+#define ROUND_5 5
 
 using json = nlohmann::json;
 using namespace std;
@@ -20,6 +27,67 @@ unordered_map<string, ArcheType> archetype_map = {
 	{"WARRIOR", WARRIOR},
 	{"KING", KING},
 };	
+
+
+/*
+	End of round... award points to all players based on rank.
+*/
+void LeaderBoard::awardRoundPoints(int round_number)
+{
+	vector<int> rankings(GAME_SIZE,0);		// indexed by player_id, holds ranking of last round 
+	vector<int> currKills = currentKills;	// make copy of rounds kill vector
+
+	// get max kills from list
+	auto it = std::max_element(currKills.begin(), currKills.end());		
+	int max_kills = *it;				
+
+	// assign ranking to each player (insert into rankings vector)
+	int current_rank = 1;
+	int total_assigned = 0;
+	while (total_assigned < GAME_SIZE)
+	{
+		for (int i = 0; i < GAME_SIZE; i++)
+		{
+			if (currentKills[i] == max_kills)	// this player has the max kills
+			{
+				rankings[i] = current_rank;
+				total_assigned++;
+			}
+		}
+
+		// set all current max kills to -1
+		replace(currKills.begin(), currKills.end(), max_kills, -1);	
+
+		// get next max	& ranking
+		it = std::max_element(currKills.begin(), currKills.end());	
+		max_kills = *it;
+		current_rank++;	
+	}
+
+
+	// award points based on ranking
+	for (int client_id = 0; client_id < GAME_SIZE; client_id++)
+	{
+		int points = 0;
+		int rank = rankings[client_id];
+
+		// award initial points
+		switch (rank)
+		{
+			case FIRST : points = 6; break;
+			case SECOND: points = 4; break;
+			case THIRD : points = 2; break;
+			case FOURTH: points = 1; break;
+			default	   : points = 0; break;
+		}
+
+		// multiply round points based on rank  
+		if (round_number == ROUND_3 || round_number == ROUND_4) points *= 1.5;
+		else if (round_number == ROUND_5) points += 2;
+
+		currPoints[client_id] = currPoints[client_id] + points; // add to points vector on leaderboard
+	}
+}
 
 
 // reset players kill streak in vector sent to all clients
