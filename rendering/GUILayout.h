@@ -666,16 +666,30 @@ ui_skill_group(struct nk_context *ctx, struct media *media, int width, int heigh
 					nk_layout_row_dynamic(ctx, 32, 1);
 					nk_label(ctx, price, NK_TEXT_ALIGN_LEFT);
 					nk_layout_row_dynamic(ctx, 32, 1);
-					string level = "Current Level: " + to_string(skill.level);
-					nk_label(ctx, level.c_str(), NK_TEXT_ALIGN_LEFT);
+					if (skill.level < 3) {
+						string level = "Current Level: " + to_string(skill.level);
+						nk_label(ctx, level.c_str(), NK_TEXT_ALIGN_LEFT);
+					}
+					else {
+						nk_label(ctx, "MAX LEVEL", NK_TEXT_ALIGN_LEFT);
+					}
 					nk_layout_row_dynamic(ctx, 32, 1);
-					if (nk_button_label(ctx, "upgrade")) {
-						//Gold check and max level check
-						if (player->gold >= prices[i] && skill.level < 3) {
-							player->gold -= prices[i];
-							skill.level++;
+					if (skill.level < 3) {
+						if (player->gold >= prices[i]) {
+							if (nk_button_label(ctx, "upgrade")) {
+								//Gold check and max level check
+								player->gold -= prices[i];
+								skill.level++;
+							}
+						}
+						else {
+							nk_button_label(ctx, "NO ENOUGH GOLD");
 						}
 					}
+					else {
+						nk_button_label(ctx, "NOT AVAILABLE");
+					}
+					
 				}
 				nk_group_end(ctx);
 			}
@@ -772,12 +786,14 @@ static void ui_cheat_shop(struct nk_context *ctx, struct media *media, int width
 		nk_spacing(ctx, 1);
 		nk_layout_row(ctx, NK_DYNAMIC, height*0.04f, 3, middeRatio);
 		nk_spacing(ctx, 1);
-		if (nk_button_label(ctx, "Cheat!")) {
-			//TODO: SEND CHEAT
-			if (player->gold >= CHEATING_GOLD) {
+		if (player->gold >= CHEATING_GOLD) {
+			if (nk_button_label(ctx, "Cheat!")) {
 				game->cheatingPoints += CHEATING_GOLD;
 				player->gold -= CHEATING_GOLD;
 			}
+		}
+		else {
+			nk_button_label(ctx, "NO ENOUGH GOLD");
 		}
 		nk_spacing(ctx, 1);
 
