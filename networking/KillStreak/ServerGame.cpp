@@ -456,11 +456,15 @@ int ServerGame::updateKillPhase() {
 				end_kill_phase = 0;
 				total_end_kill_packets = 0;
 
-				// get winners of round 
-				vector<ArcheType> round_winners = leaderBoard->getRoundWinner(selected_characters);
+				// calculate bets after first round
+				if (round_number > 1)
+				{
+					// get winners of round 
+					vector<ArcheType> round_winners = leaderBoard->getRoundWinner(selected_characters);
 
-				// calculate investment 
-				calculateRoundInvestment(round_winners);
+					// calculate investment 
+					calculateRoundInvestment(round_winners);
+				}
 
 				// calculate points based on round rankings; move to next round
 				leaderBoard->awardRoundPoints(round_number);
@@ -572,6 +576,7 @@ int ServerGame::updatePreparePhase() {
 				memcpy(&player_meta->gold, data, sizeof(int));
 				data += sizeof(int);
 
+				logger()->debug("* * * * * * END PREP PHASE PACKET RECEIVED * * * * * *");
 				logger()->debug("Client {} remaining gold {}", client_id, player_meta->gold);
 
 				// deserialize number of skills
@@ -589,12 +594,12 @@ int ServerGame::updatePreparePhase() {
 				// deserialize amount invested 
 				memcpy(&scene->scenePlayers[client_id].amount_invested, data, sizeof(int));
 				data += sizeof(int);
-				logger()->debug("Client {} invested {}", client_id, scene->scenePlayers[client_id].amount_invested);
+//				logger()->debug("Client {} invested {}", client_id, scene->scenePlayers[client_id].amount_invested);
 
 				// deserialize player invested in
 				memcpy(&scene->scenePlayers[client_id].player_invested_in, data, sizeof(ArcheType));
 				data += sizeof(ArcheType);
-				logger()->debug("Client {} invested in player {}", client_id, scene->scenePlayers[client_id].player_invested_in);
+//				logger()->debug("Client {} invested in player {}", client_id, scene->scenePlayers[client_id].player_invested_in);
 
 				// deserialize cheating for each player
 				int cheatingPoints = 0;
@@ -690,6 +695,10 @@ ServerInputPacket ServerGame::createInitScenePacket(unsigned int playerId, unsig
 	unsigned int sgSize;
 	char buf[10000] = { 0 };
 	char * bufPtr = buf;
+
+	// serialize client id
+	memcpy(bufPtr, &playerId, sizeof(unsigned int));
+	bufPtr += sizeof(unsigned int);
 
 	// serialize all usernames; PlayerMeta.username
 	for (int client_id = 0; client_id < usernames.size(); client_id++)
@@ -805,6 +814,8 @@ ServerInputPacket ServerGame::createStartPrepPhasePacket()
 		memcpy(bufPtr, &curr_gold, sizeof(int));
 		sgSize += sizeof(int);
 		bufPtr += sizeof(int);
+
+		logger()->debug("Client {} has gold {} (serializing)", client_id, curr_gold);
 	}
 
 	packet.packetType = START_PREP_PHASE;

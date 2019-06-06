@@ -319,6 +319,12 @@ void ClientGame::endKillPhase()
 				memcpy(&gold, data, sizeof(int));
 				leaderBoard->currGold[client_id] = gold;
 				data += sizeof(int);
+
+				// update clients own gold
+				if (client_id == this->client_id) Window_static::updatePlayerGold(gold);
+
+				// correct.. could do GUI possibly be mixing them up? 
+				//logger()->debug("Client {} has gold {}", client_id, gold);
 			}
 
 			// continue to enter prepare
@@ -812,7 +818,7 @@ void ClientGame::handleServerInputPacket(ServerInputPacket * packet) {
 		//handleCharacterSelectionPacket(packet);
 		break;
 	case INIT_SCENE:
-		Window_static::scene->handleInitScenePacket(packet->data);
+		client_id = Window_static::scene->handleInitScenePacket(packet->data);
 		break;
 	case UPDATE_SCENE_GRAPH:
 		Window_static::scene->handleServerTickPacket(packet->data);

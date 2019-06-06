@@ -815,7 +815,12 @@ glm::vec3 ClientScene::viewToWorldCoordTransform(int mouse_x, int mouse_y) {
 /*
 	Deserialize init scene packet from server, initialize player_id, root_id, root. 
 */
-void ClientScene::handleInitScenePacket(char * data) {
+int ClientScene::handleInitScenePacket(char * data) {
+
+	// deserialize client id
+	int client_id = -1;
+	memcpy(&client_id, data, sizeof(unsigned int));
+	data += sizeof(unsigned int);
 
 	// deserialize usernames
 	for (int i = 0; i < GAME_SIZE; i++) 
@@ -848,6 +853,8 @@ void ClientScene::handleInitScenePacket(char * data) {
 	//**Audio Test (Currently plays ASSASSIN_TELEPORT.wav)**//
 	//audio.initListener(glm::vec3(0));
 	//audio.play(glm::vec3(0), 2);
+
+	return client_id;
 }
 
 /*
@@ -1000,4 +1007,9 @@ vector<int> ClientScene::getInvestmentInfo() {
 void ClientScene::clearInvestmentInfo() {
 	player.amount_invested = 0;
 	player.player_invested_in = NONE;
+}
+
+void ClientScene::updatePlayerGold(int curr_gold)
+{
+	player.gold = curr_gold;
 }
