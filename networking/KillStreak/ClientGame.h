@@ -46,6 +46,7 @@ protected:
 	ServerInputQueue* serverPackets;	// queue of packets from server
 	mutex* q_lock;						// lock for queue
 	vector<int> cooldown_times;
+	unsigned int cheatingPoints;
 
 	friend class ClientScene;
 

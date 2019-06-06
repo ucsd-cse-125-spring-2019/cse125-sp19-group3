@@ -6,6 +6,10 @@
 #define DIR_SKILL_INDEX 3
 
 #define KILLED_TEXT_NUM 4
+
+#define CHEATING_GOLD 45
+#define CHEATING_POINTS 3
+
 const char * intToCharArray(int i) {
 	string s = std::to_string(i);
 	const int n = s.length();

@@ -395,7 +395,7 @@ void ClientGame::endPrepPhase()
 	}
 
 
-	// TODO: serialize investment
+	// serialize investment
 	vector<int> investment = Window_static::getInvestmentInfo();
 	
 	memcpy(bufPtr, &investment[0], sizeof(int));
@@ -405,8 +405,11 @@ void ClientGame::endPrepPhase()
 	bufPtr += sizeof(unsigned int);
 	sgSize += sizeof(int);
 
-	// TODO: serialize cheating
-
+	// serialize cheating
+	memcpy(bufPtr, &cheatingPoints, sizeof(unsigned int));
+	bufPtr += sizeof(unsigned int);
+	sgSize += sizeof(int);
+	cheatingPoints = 0;
 
 	// create packet; copy all serialized data into packet.data & send to server
 	endPrepPacket.inputType = END_PREP_PHASE;

@@ -613,15 +613,17 @@ int ServerGame::updatePreparePhase() {
 				}
 
 
-				// 4.) TODO: deserialize invest for each player 
+				// deserialize invest for each player 
 				memcpy(&scene->scenePlayers[client_id].amount_invested, data, sizeof(int));
 				data += sizeof(int);
 				memcpy(&scene->scenePlayers[client_id].player_invested_in, data, sizeof(int));
 				data += sizeof(int);
 
 
-				// 5.) TODO: deserialize cheating for each player
-
+				// deserialize cheating for each player
+				int cheatingPoints = 0;
+				memcpy(&cheatingPoints, data, sizeof(unsigned int));
+				leaderBoard->currPoints[client_id] += cheatingPoints;
 			}
 
 			// all clients ended prep phase -> reset values & broadcast start kill phase packet
