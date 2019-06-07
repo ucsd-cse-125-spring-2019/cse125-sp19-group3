@@ -51,7 +51,7 @@ Audio::Audio() {
 	killstreak.setBuffer(killstreak_Buffer);
 	shutdown.setBuffer(shutdown_Buffer);
 	game_over.setBuffer(game_over_Buffer);
-	timeup.setBuffer(timeup_buffer);
+	timeup.setBuffer(timeup_Buffer);
 	//**BGM**
 	//if (!music.openFromFile("./audio/music.wav"))
 	//	cout << "unable to load wav file " << "music.wav" << endl;
