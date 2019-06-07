@@ -695,7 +695,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 
 	// don't handle class skills if the player is silenced
 	if (scenePlayers[player_id].isSilenced) {
-		if (skill_id != PROJECTILE && skill_id != EVADE) {
+		if (skill_id != PROJECTILE && skill_id != EVADE && skill_id != ASSASSIN_PROJECTILE) {
 			return;
 		}
 	}
