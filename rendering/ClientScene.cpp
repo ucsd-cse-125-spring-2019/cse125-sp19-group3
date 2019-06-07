@@ -277,6 +277,10 @@ void ClientScene::initialize_UI(GLFWwindow* window) {
 	media.king_silenced[1] = icon_load("../icon/skills/king-aoe.png");
 	media.king_silenced[0] = icon_load("../icon/skills/king-silence.png");
 
+	media.loading_assassin = icon_load("../icon/skills/loading_page_assassin.png");
+	media.loading_king = icon_load("../icon/skills/loading_page_king.png");
+	media.loading_mage = icon_load("../icon/skills/loading_page_mage.png");
+	media.loading_warrior = icon_load("../icon/skills/loading_page_warrior.png");
 	guiStatuses.betAmount = 0;
 	guiStatuses.currPrepareLayout = 0;
 	guiStatuses.shopCategory = 0;
