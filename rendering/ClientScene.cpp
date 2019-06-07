@@ -119,6 +119,11 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network,
 		glm::rotate(glm::mat4(1.0f), -90.0f / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)) *
 		glm::scale(glm::mat4(1.0f), glm::vec3(200));
 
+	KOTHfloor = new Model("../models/quad.obj", "../textures/floor_koth.jpg", false);
+	KOTHfloor->localMtx = glm::translate(glm::mat4(1.0f), glm::vec3(100.0f, 0.5f, 120.0f)) *
+		glm::rotate(glm::mat4(1.0f), -90.0f / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)) *
+		glm::scale(glm::mat4(1.0f), glm::vec3(200));
+
 	// Circle and arrow of directional skill rendering
 	range = new Circle();
 	range->localMtx = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, -0.8f));
@@ -562,6 +567,9 @@ void ClientScene::renderKillPhase(GLFWwindow* window) {
 	// floor
 	floor->draw(staticShader, glm::mat4(1.0f), vpMatrix);
 
+	// KOTH floor
+	KOTHfloor->draw(staticShader, glm::mat4(1.0f), vpMatrix);
+
 	// players
 	root->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
 
@@ -661,14 +669,15 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 			*******    In meta_data.json    ******
 			Skills MUST be in the order of: evade (0), projectile (1), omni (2), directional (3)
 		*/
-		if (key == GLFW_KEY_ESCAPE)
+		/*if (key == GLFW_KEY_ESCAPE)
 		{
 			// Close the window. This causes the program to also terminate.
 			// glfwSetWindowShouldClose(window, GL_TRUE);
 			player.action_state = ACTION_MOVEMENT;
 			player.isPrepProjectile = false;
 		}
-		else if (key == GLFW_KEY_Q) // DIRECTIONAL SKILL		
+		else */
+		if (key == GLFW_KEY_Q) // DIRECTIONAL SKILL		
 		{
 
 			// check cooldown

@@ -95,6 +95,7 @@ private:
 	const char* window_title = "CSE 125 Group 3";
 	Shader * animationShader, * staticShader, * particleShader, * circleShader;
 	Model * floor;
+	Model * KOTHfloor;
 	Model * arrow;
 	Model * cross;
 	Model * circle;
