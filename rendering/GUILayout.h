@@ -967,7 +967,7 @@ static void ui_cheat_shop(struct nk_context *ctx, struct media *media, int width
 		nk_layout_row(ctx, NK_DYNAMIC, height*0.04f, 3, middeRatio);
 		nk_spacing(ctx, 1);
 		if (player->gold >= CHEATING_GOLD) {
-			if (nk_button_label(ctx, "Cheat!")) {
+			if (nk_button_label(ctx, "Buy Points!")) {
 				game->cheatingPoints += CHEATING_POINTS;
 				player->gold -= CHEATING_GOLD;
 				Window_static::playChaching();
@@ -1014,7 +1014,7 @@ static void ui_shop(struct nk_context *ctx, struct media *media, int width, int 
 			}
 			nk_layout_row_static(ctx, 30, 1, 1);
 			nk_layout_row_dynamic(ctx, 40, 1);
-			if (nk_button_label(ctx, "Cheat!")) {
+			if (nk_button_label(ctx, "Buy Points!")) {
 				Window_static::playButtonPress();
 				gStatuses.shopCategory = 2;
 			}
