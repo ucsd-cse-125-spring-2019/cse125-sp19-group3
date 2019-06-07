@@ -77,6 +77,7 @@ public:
 		this->duration = duration;
 		this->speed = speed;
 	};
+
 	Skill() : skillName("Default Skill"), range(-1), cooldown(-1), duration(-1), speed(-1) {}
 	~Skill(){}
 	static void load_archtype_data(unordered_map<unsigned int, Skill> *skill_map, 
