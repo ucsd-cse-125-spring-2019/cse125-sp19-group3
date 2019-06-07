@@ -13,7 +13,6 @@
 
 using namespace std;
 
-
 /*
 Contains meta data for client passed to client thread.
 */
@@ -80,6 +79,7 @@ protected:
 
 	vector<int> archetypes;					// list of all client archetypes indexed by client id
 	vector<string> usernames;				// list of all client usernames indexed by client id
+	vector<int> kingsOfTheHill;				// track which players have stayed on the hill
 
 	ServerScene * scene;
 	ServerNetwork* network;					// ptr to servers network
@@ -100,6 +100,7 @@ protected:
 	
 	void calculateRoundInvestment(vector<ArcheType> round_winners);
 	int handleClientInputPacket(ClientInputPacket* packet, int client_id);
+	void handleKingOfTheHill();
 
 	friend class ScenePlayer;
 };

@@ -119,6 +119,11 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network,
 		glm::rotate(glm::mat4(1.0f), -90.0f / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)) *
 		glm::scale(glm::mat4(1.0f), glm::vec3(200));
 
+	KOTHfloor = new Model("../models/quad.obj", "../textures/floor_koth.jpg", false);
+	KOTHfloor->localMtx = glm::translate(glm::mat4(1.0f), glm::vec3(100.0f, 0.5f, 120.0f)) *
+		glm::rotate(glm::mat4(1.0f), -90.0f / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)) *
+		glm::scale(glm::mat4(1.0f), glm::vec3(200));
+
 	// Circle and arrow of directional skill rendering
 	range = new Circle();
 	range->localMtx = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, -0.8f));
@@ -252,28 +257,28 @@ void ClientScene::initialize_UI(GLFWwindow* window) {
 	media.gold = icon_load("../icon/gold.png");
 	media.lobby_background = icon_load("../icon/lobbybg.jpg");
 	media.prepare_background = icon_load("../icon/preparebg.jpeg");
-	media.mage_skills[2] = icon_load("../icon/skills/evade.png");
-	media.mage_skills[3] = icon_load("../icon/skills/projectile.png");
-	media.mage_skills[1] = icon_load("../icon/skills/mage-aoe.png");
-	media.mage_skills[0] = icon_load("../icon/skills/mage-cone_aoe.png");
-	media.mage_silenced[1] = icon_load("../icon/skills/mage-aoe-silenced.png");
-	media.mage_silenced[0] = icon_load("../icon/skills/mage-cone_aoe-silenced.png");
-	media.warrior_skills[2] = icon_load("../icon/skills/evade.png");
-	media.warrior_skills[3] = icon_load("../icon/skills/projectile.png");
-	media.warrior_skills[1] = icon_load("../icon/skills/warrior-charge.png");
-	media.warrior_skills[0] = icon_load("../icon/skills/warrior-aoe.png");
-	media.warrior_silenced[1] = icon_load("../icon/skills/warrior-charge-silenced.png");
-	media.warrior_silenced[0] = icon_load("../icon/skills/warrior-aoe-silenced.png");
-	media.assassin_skills[2] = icon_load("../icon/skills/evade.png");
-	media.assassin_skills[3] = icon_load("../icon/skills/projectile.png");
-	media.assassin_skills[1] = icon_load("../icon/skills/assassin-invisiblity.png");
-	media.assassin_skills[0] = icon_load("../icon/skills/assassin-teleport.png");
-	media.assassin_silenced[1] = icon_load("../icon/skills/assassin-invisiblity-silenced.png");
-	media.assassin_silenced[0] = icon_load("../icon/skills/assassin-teleport-silenced.png");
-	media.king_skills[2] = icon_load("../icon/skills/evade.png");
-	media.king_skills[3] = icon_load("../icon/skills/projectile.png");
-	media.king_skills[1] = icon_load("../icon/skills/king-aoe.png");
-	media.king_skills[0] = icon_load("../icon/skills/king-silence.png");
+	media.mage_skills[2] = icon_load("../icon/new_icon/evade_skill.png");
+	media.mage_skills[3] = icon_load("../icon/new_icon/projectile_skill.png");
+	media.mage_skills[1] = icon_load("../icon/new_icon/pyro.png");
+	media.mage_skills[0] = icon_load("../icon/new_icon/Meteor.png");
+	media.mage_silenced[1] = icon_load("../icon/new_icon/pyro_silence.png");
+	media.mage_silenced[0] = icon_load("../icon/new_icon/Meteor_silence.png");
+	media.warrior_skills[2] = icon_load("../icon/new_icon/evade_skill.png");
+	media.warrior_skills[3] = icon_load("../icon/new_icon/projectile_skill.png");
+	media.warrior_skills[1] = icon_load("../icon/new_icon/whirlwind_skill.png");
+	media.warrior_skills[0] = icon_load("../icon/new_icon/charge_skill.png");
+	media.warrior_silenced[1] = icon_load("../icon/new_icon/whirlwind_skill_silence.png");
+	media.warrior_silenced[0] = icon_load("../icon/new_icon/charge_skill_silence.png");
+	media.assassin_skills[2] = icon_load("../icon/new_icon/evade_skill.png");
+	media.assassin_skills[3] = icon_load("../icon/new_icon/projectile_skill.png");
+	media.assassin_skills[1] = icon_load("../icon/new_icon/invisibility_skill.png");
+	media.assassin_skills[0] = icon_load("../icon/new_icon/sprint_skill.png");
+	media.assassin_silenced[1] = icon_load("../icon/new_icon/invisibility_skill_silence.png");
+	media.assassin_silenced[0] = icon_load("../icon/new_icon/sprint_skill_silence.png");
+	media.king_skills[2] = icon_load("../icon/new_icon/evade_skill.png");
+	media.king_skills[3] = icon_load("../icon/new_icon/projectile_skill.png");
+	media.king_skills[1] = icon_load("../icon/new_icon/king_cross_skill.png");
+	media.king_skills[0] = icon_load("../icon/new_icon/silence_skill.png");
 	media.king_silenced[1] = icon_load("../icon/skills/king-aoe.png");
 	media.king_silenced[0] = icon_load("../icon/skills/king-silence.png");
 
@@ -579,6 +584,12 @@ void ClientScene::renderKillPhase(GLFWwindow* window) {
 	// floor
 	floor->draw(staticShader, glm::mat4(1.0f), vpMatrix);
 
+	// KOTH floor
+	if (round_number == 3 || round_number == 4)
+	{
+		KOTHfloor->draw(staticShader, glm::mat4(1.0f), vpMatrix);
+	}
+
 	// players
 	root->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
 
@@ -678,14 +689,15 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 			*******    In meta_data.json    ******
 			Skills MUST be in the order of: evade (0), projectile (1), omni (2), directional (3)
 		*/
-		if (key == GLFW_KEY_ESCAPE)
+		/*if (key == GLFW_KEY_ESCAPE)
 		{
 			// Close the window. This causes the program to also terminate.
 			// glfwSetWindowShouldClose(window, GL_TRUE);
 			player.action_state = ACTION_MOVEMENT;
 			player.isPrepProjectile = false;
 		}
-		else if (key == GLFW_KEY_Q) // DIRECTIONAL SKILL		
+		else */
+		if (key == GLFW_KEY_Q) // DIRECTIONAL SKILL		
 		{
 
 			// check cooldown
@@ -1222,4 +1234,9 @@ void ClientScene::clearInvestmentInfo() {
 void ClientScene::updatePlayerGold(int curr_gold)
 {
 	player.gold = curr_gold;
+}
+
+void ClientScene::setRoundNumber(int curr_round)
+{
+	round_number = curr_round;
 }

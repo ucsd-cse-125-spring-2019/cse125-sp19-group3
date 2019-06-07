@@ -79,6 +79,7 @@ public:
 	void renderSummaryPhase(GLFWwindow* window);
 	void initialize_UI(GLFWwindow* window);
 	void resetPreKillPhase();
+	void setRoundNumber(int curr_round);
 	int getPlayerGold();
 	void updatePlayerGold(int curr_gold);
 	vector<Skill> getPlayerSkills();
@@ -95,6 +96,7 @@ private:
 	const char* window_title = "CSE 125 Group 3";
 	Shader * animationShader, * staticShader, * particleShader, * circleShader;
 	Model * floor;
+	Model * KOTHfloor;
 	Model * arrow;
 	Model * cross;
 	Model * circle;
@@ -103,6 +105,7 @@ private:
 	Transform * root;
 	LeaderBoard* leaderBoard;
 	list<int>* killstreak_data;
+	int round_number = 1;
 	int killTextDeterminant = 0;
 	std::unordered_map<unsigned int, ModelData> models;
 	std::unordered_set<unsigned int> updated_ids;
@@ -170,6 +173,7 @@ public:
 	static vector<string> getUsernames() { return scene->getUsernames(); };
 	static vector<int> getInvestmentInfo() { return scene->getInvestmentInfo(); };
 	static void clearInvestmentInfo() { return scene->clearInvestmentInfo(); };
+	static void setRoundNumber(int curr_round) { return scene->setRoundNumber(curr_round); };
 	static void updatePlayerGold(int curr_gold) { return scene->updatePlayerGold(curr_gold); };
 
 };
