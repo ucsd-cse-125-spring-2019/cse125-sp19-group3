@@ -395,7 +395,6 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 	// killer_id : current killstreak
 	if ( killer_data->currKillStreak > 0 && killer_data->currKillStreak % 3 == 0 )
 	{ 
-		logger()->debug("Player {} is on a killstreak!", killer_id);
 		killer_data->gold += 2;		// extra bonus for every 3
 		leaderBoard->curr_killstreaks.push_back(killer_id);
 		leaderBoard->curr_killstreaks.push_back(killer_data->currKillStreak);

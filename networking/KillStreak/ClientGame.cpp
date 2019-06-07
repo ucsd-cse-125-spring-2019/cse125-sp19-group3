@@ -573,37 +573,6 @@ void ClientGame::run() {
 			// Idle callback. Updating objects, etc. can be done here.
 			Window_static::idle_callback();
 
-			// TODO: REMOVE ******
-
-			// any killstreaks?
-			while (!leaderBoard->curr_killstreaks.empty())
-			{
-				int curr_id = leaderBoard->curr_killstreaks.front();
-				leaderBoard->curr_killstreaks.pop_front();
-				int curr_kills = leaderBoard->curr_killstreaks.front();
-				leaderBoard->curr_killstreaks.pop_front();
-
-				string curr_name = Window_static::getUsernames()[curr_id];
-				logger()->debug("{} has a KILLSTREAK of {}!", curr_name, curr_kills);
-			}
-
-			// any shutdowns?
-			while (!leaderBoard->curr_shutdowns.empty())
-			{
-				int killer_id = leaderBoard->curr_shutdowns.front();
-				leaderBoard->curr_shutdowns.pop_front();
-				int dead_id = leaderBoard->curr_shutdowns.front();
-				leaderBoard->curr_shutdowns.pop_front();
-
-				string killer_name = Window_static::getUsernames()[killer_id];
-				string dead_name = Window_static::getUsernames()[dead_id];
-				logger()->debug("{} SHUTDOWN {}!", killer_name, dead_name);
-			}
-
-
-
-			// TODO: REMOVE ******
-
 			// update all timers based on time elapsed
 			auto end = Clock::now();
 			nanoseconds elapsed = chrono::duration_cast<nanoseconds>(end - start);
