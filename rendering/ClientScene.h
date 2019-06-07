@@ -42,14 +42,20 @@ public:
 	vector<string> usernames;		// list of all player usernames ordered by index of client id on server
 
 	GLuint particleTexture;
-	void initialize_objects(ClientGame * game, ClientNetwork* network, LeaderBoard* leaderBoard);
+	void initialize_objects(ClientGame * game, ClientNetwork* network, LeaderBoard* leaderBoard, list<int>* killstreak_data);
 	void initialize_skills(ArcheType selected_type);
 	void playPreparePhaseBGM();
 	void playKillPhaseBGM();
+	void playFinalRoundBGM();
 	void playCountdown();
 	void playButtonPress();
+	void playInvalidButtonPress();
 	void playChaching();
 	void playInvest();
+	void playRoundOver();
+	void playKillStreak();
+	void playShutdown();
+	void playVictory();
 	//void playerInit(const ScenePlayer &player);
 	void clean_up();
 	GLFWwindow * create_window();
@@ -94,6 +100,7 @@ private:
 	ScenePlayer player;
 	Transform * root;
 	LeaderBoard* leaderBoard;
+	list<int>* killstreak_data;
 	int killTextDeterminant = 0;
 	std::unordered_map<unsigned int, ModelData> models;
 	std::unordered_set<unsigned int> updated_ids;
@@ -121,7 +128,7 @@ class Window_static
 {
 public:
 	static ClientScene * scene;
-	static void initialize_objects(ClientGame * game, ClientNetwork * network, LeaderBoard* leaderBoard) { scene->initialize_objects(game, network, leaderBoard); };
+	static void initialize_objects(ClientGame * game, ClientNetwork * network, LeaderBoard* leaderBoard, list<int>* killstread_data) { scene->initialize_objects(game, network, leaderBoard, killstread_data); };
 	static void initialize_skills(ArcheType selected_type) { scene->initialize_skills(selected_type); };
 	static void updateTimers(nanoseconds timePassed) { scene->updateTimers(timePassed); };
 	static void initialize_UI(GLFWwindow* window) { scene->initialize_UI(window); };
@@ -143,16 +150,24 @@ public:
 	static void resetPreKillPhase() { scene->resetPreKillPhase(); };
 	static void playPreparePhaseBGM() { scene->playPreparePhaseBGM(); };
 	static void playKillPhaseBGM() { scene->playKillPhaseBGM(); };
+	static void playFinalRoundBGM() { scene->playFinalRoundBGM(); };
+	static void playRoundOver() { scene->playRoundOver(); };
 	static void playCountdown() { scene->playCountdown(); };
 	static void playButtonPress() { scene->playButtonPress(); };
 	static void playChaching() { scene->playChaching(); };
 	static void playInvest() { scene->playInvest(); };
+	static void playInvalidButtonPress() { scene->playInvalidButtonPress(); };
+	static void playKillStreak() { scene->playKillStreak(); };
+	static void playShutdown() { scene->playShutdown(); };
+	static void playVictory() { scene->playVictory(); };
+
 	static int getPlayerGold() { return scene->getPlayerGold(); };
 	static vector<Skill> getPlayerSkills() { return scene->getPlayerSkills(); };
 	static vector<string> getUsernames() { return scene->getUsernames(); };
 	static vector<int> getInvestmentInfo() { return scene->getInvestmentInfo(); };
 	static void clearInvestmentInfo() { return scene->clearInvestmentInfo(); };
 	static void updatePlayerGold(int curr_gold) { return scene->updatePlayerGold(curr_gold); };
+
 };
 
 

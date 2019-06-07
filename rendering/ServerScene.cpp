@@ -391,9 +391,29 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 	killer_data->currKillStreak += 1;
 	killer_data->currLoseStreak  = 0;
 
-	// if killer ended killstreak they get bonus points
-	int shutdown_bonus = GOLD * (dead_player_ks / GOLD_MULTIPLIER);
-	killer_data->gold += shutdown_bonus;
+	// add killstreak data to list to be serialized to clients
+	// killer_id : current killstreak
+	if ( killer_data->currKillStreak > 0 && killer_data->currKillStreak % 3 == 0 )
+	{ 
+		killer_data->gold += 2;		// extra bonus for every 3
+		leaderBoard->curr_killstreaks.push_back(killer_id);
+		leaderBoard->curr_killstreaks.push_back(killer_data->currKillStreak);
+		leaderBoard->total_killstreaks++;
+	}
+
+
+	// if killer SHUTDOWN dead player they get bonus points
+	if ( dead_player_ks >= 3)
+	{
+		int shutdown_bonus = GOLD * (dead_player_ks / GOLD_MULTIPLIER);
+		killer_data->gold += shutdown_bonus;
+
+		// add data to list to be serialized to clients
+		// killer id: dead_player id
+		leaderBoard->curr_shutdowns.push_back(killer_id);
+		leaderBoard->curr_shutdowns.push_back(dead_player_id);
+		leaderBoard->total_shutdowns++;
+	}
 
 	// award kill to player (global & current rounds leaderboard)
 	leaderBoard->awardKillRound(killer_id);

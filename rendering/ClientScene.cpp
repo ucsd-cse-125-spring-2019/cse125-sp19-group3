@@ -57,7 +57,8 @@ void ClientScene::resetGUIStatus() {
 	guiStatuses.killUpdates.clear();
 }
 
-void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network, LeaderBoard* leaderBoard)
+void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network, LeaderBoard* leaderBoard, 
+	list<int>* killstreak_data)
 {
 	camera = new Camera();
 	camera->SetAspect(width / height);
@@ -102,6 +103,7 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network,
 	this->game = game;
 	this->network = network;
 	this->leaderBoard = leaderBoard;
+	this->killstreak_data = killstreak_data;
 
 	// Floor
 	floor = new Model("../models/quad.obj", "../textures/floor.png", false);
@@ -529,6 +531,12 @@ void ClientScene::renderKillPhase(GLFWwindow* window) {
 
 	// directional skill
 	if (player.action_state == ACTION_DIRECTIONAL_SKILL) {
+		auto personal_skills = getPlayerSkills();
+		Skill & skill = player.isPrepProjectile ? personal_skills[PROJ_INDEX] : personal_skills[DIR_SKILL_INDEX];
+		Skill & adjustedSkill = Skill::calculateSkillBasedOnLevel(skill, skill.level);
+		float radius = adjustedSkill.range;
+		range->createCircle(radius);
+
 		glm::vec3 playerPos = glm::vec3(clientSceneGraphMap[player.root_id]->M[3][0], clientSceneGraphMap[player.root_id]->M[3][1], clientSceneGraphMap[player.root_id]->M[3][2]);
 		double xpos, ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
@@ -740,12 +748,20 @@ void ClientScene::playKillPhaseBGM() {
 	audio.play(glm::vec3(0), KILL_PHASE_MUSIC);
 }
 
+void ClientScene::playFinalRoundBGM() {
+	audio.play(glm::vec3(0), FINAL_ROUND_MUSIC);
+}
+
 void ClientScene::playCountdown() {
 	audio.play(glm::vec3(0), TIMER_AUDIO);
 }
 
 void ClientScene::playButtonPress() {
 	audio.play(glm::vec3(0), BUTTON_PRESS_AUDIO);
+}
+
+void ClientScene::playInvalidButtonPress() {
+	audio.play(glm::vec3(0), CANNOT_BUY_ITEM_AUDIO);
 }
 
 void ClientScene::playChaching() {
@@ -755,6 +771,23 @@ void ClientScene::playChaching() {
 void ClientScene::playInvest() {
 	audio.play(glm::vec3(0), BUY_ITEM_2_AUDIO);
 }
+
+void ClientScene::playRoundOver() {
+	audio.play(glm::vec3(0), GAME_OVER_AUDIO);
+}
+
+void ClientScene::playKillStreak() {
+	audio.play(glm::vec3(0), KILLSTREAK_AUDIO);
+}
+
+void ClientScene::playShutdown() {
+	audio.play(glm::vec3(0), SHUTDOWN_AUDIO);
+}
+
+void ClientScene::playVictory() {
+	audio.play(glm::vec3(0), VICTORY_AUDIO);
+}
+
 
 void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
@@ -980,7 +1013,7 @@ void ClientScene::handleServerTickPacket(char * data) {
 
 	// deserialize leaderboard
 	unsigned int leaderBoard_size = 0;
-	leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard);
+	leaderBoard_size = Serialization::deserializeLeaderBoard(data, leaderBoard, killstreak_data);
 	data += leaderBoard_size;
 
 	if (leaderBoard->currentKills[player.player_id] > currKill) {

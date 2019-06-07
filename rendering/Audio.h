@@ -81,6 +81,7 @@ private:
 	sf::Sound button_press;
 
 	//**BGM**//
+	sf::SoundBuffer game_over_Buffer;
 	sf::SoundBuffer prepare_phase_music_Buffer;
 	sf::SoundBuffer kill_phase_music_Buffer;
 	sf::SoundBuffer final_round_music_Buffer;
@@ -89,7 +90,7 @@ private:
 	sf::SoundBuffer killstreak_Buffer;
 	sf::SoundBuffer shutdown_Buffer;
 
-	sf::Music game_over;
+	sf::Sound game_over;
 	sf::Sound prepare_phase_music;
 	sf::Sound kill_phase_music;
 	sf::Sound final_round_music;

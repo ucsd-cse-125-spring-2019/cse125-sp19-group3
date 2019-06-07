@@ -17,6 +17,20 @@
 #define ROUND_4 4
 #define ROUND_5 5
 
+// COPIED FROM SERVERSCENE, CHANGE THIS IF YOU CHANGE THAT
+#define EVADE				0
+#define PROJECTILE			1
+#define PYROBLAST			2
+#define DRAGONS_BREATH		3
+#define ASSASSIN_PROJECTILE	11
+#define INVISIBILITY		12
+#define SPRINT			    13
+#define VISIBILITY          14
+#define WHIRLWIND			22
+#define CHARGE				23
+#define ROYAL_CROSS			32
+#define SUBJUGATION			33
+
 using json = nlohmann::json;
 using namespace std;
 
@@ -244,17 +258,103 @@ void Skill::load_archtype_data(unordered_map<unsigned int, Skill> *skill_map,
 }
 
 Skill Skill::calculateSkillBasedOnLevel(Skill &baseSkill, unsigned int level) {
-	auto range = baseSkill.range * pow(1.2, level);
+	/*auto range = baseSkill.range * pow(1.2, level);
 	auto cooldown = (int)(baseSkill.cooldown * pow(0.8, level));
 	auto duration = (int)(baseSkill.duration * pow(1.2, level));
-	auto speed = baseSkill.speed * pow(1.2, level);
-	return Skill(baseSkill.skill_id,
-		level,
-		baseSkill.skillName,
-		range,
-		cooldown,
-		duration, // worry about this for animation vs invisibility + evade
-		speed);
+	auto speed = baseSkill.speed * pow(1.2, level);*/
+
+	Skill adjustedSkill = baseSkill;
+	switch (baseSkill.skill_id) {
+	
+	// duration-based skills (evade, sprint, invisibility, silence)
+	case EVADE: 
+	{
+		// only change cooldown for evade
+		auto newCooldown = baseSkill.cooldown - 2000 * (level - 1);
+		adjustedSkill.cooldown = newCooldown;
+		break;
+	}
+	case SPRINT:
+	{
+		// only change duration for sprint, max level duration == cooldown
+		auto newDuration = baseSkill.duration + 5000 * (level - 1);
+		adjustedSkill.duration = newDuration;
+		break;
+	}
+	case INVISIBILITY:
+	{
+		auto newDuration = baseSkill.duration + 1000 * (level - 1);
+		adjustedSkill.duration = newDuration;
+		break;
+	}
+	case SUBJUGATION:
+	{
+		auto newDuration = baseSkill.duration + 1000 * (level - 1);
+		adjustedSkill.duration = newDuration;
+		break;
+	}
+	// aoe skills (pyroblast, whirlwind, royal cross)
+	case PYROBLAST:
+	{
+		auto newRange = baseSkill.range + 5 * (level - 1);
+		auto newCooldown = baseSkill.cooldown - 1000 * (level - 1);
+		adjustedSkill.range = newRange;
+		adjustedSkill.cooldown = newCooldown;
+		break;
+	}
+	case WHIRLWIND:
+	{
+		auto newCooldown = baseSkill.cooldown - 1500 * (level - 1);
+		adjustedSkill.cooldown = newCooldown;
+		break;
+	}
+	case ROYAL_CROSS:
+	{
+		auto newCooldown = baseSkill.cooldown - 1500 * (level - 1);
+		adjustedSkill.cooldown = newCooldown;
+		break;
+	}
+	// point skills (meteor, charge, projectile, assassin projectile)
+	case DRAGONS_BREATH:
+	{
+		auto newCooldown = baseSkill.cooldown - 1000 * (level - 1);
+		adjustedSkill.cooldown = newCooldown;
+		auto newSpeed = baseSkill.speed + 1.5 * (level - 1);
+		adjustedSkill.speed = newSpeed;
+		break;
+	}
+	case CHARGE:
+	{
+		auto newCooldown = baseSkill.cooldown - 2000 * (level - 1);
+		auto newRange = baseSkill.range + 5 * (level - 1);
+		adjustedSkill.cooldown = newCooldown;
+		adjustedSkill.range = newRange;
+		break;
+	}
+	case PROJECTILE:
+	{
+		auto newCooldown = baseSkill.cooldown - 2000 * (level - 1);
+		auto newRange = baseSkill.range + 4 * (level - 1);
+		auto newSpeed = baseSkill.speed + 0.1 * (level - 1);
+		adjustedSkill.cooldown = newCooldown;
+		adjustedSkill.range = newRange;
+		adjustedSkill.speed = newSpeed;
+		break;
+	}
+	case ASSASSIN_PROJECTILE:
+	{
+		auto newCooldown = baseSkill.cooldown - 1000 * (level - 1);
+		auto newSpeed = baseSkill.speed + 0.1 * (level - 1);
+		adjustedSkill.cooldown = newCooldown;
+		adjustedSkill.speed = newSpeed;
+		break;
+	}
+
+	default:
+		break;
+	}
+
+	return adjustedSkill;
 }
 
 

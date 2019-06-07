@@ -49,9 +49,14 @@ public:
 	vector<int> currPoints;		// accumulative points of each player
 	vector<int> currGold;		// accumulative gold of each player
 
+	list<int> curr_killstreaks;	// track which players are on killstreaks
+	list<int> curr_shutdowns;	// trakc which players shutdown other players
+
 	vector<int> prizes;			// points added to player each round based on ranking
 	list<int> kill_map;			// map of who killed who on every server tick
 	int deaths_this_tick;		// total deaths that occured this tick
+	int total_killstreaks = 0;  // total killstreaks per tick 
+	int total_shutdowns = 0;    // total shutdowns per tick
 };
 
 class Skill {
@@ -72,6 +77,7 @@ public:
 		this->duration = duration;
 		this->speed = speed;
 	};
+
 	Skill() : skillName("Default Skill"), range(-1), cooldown(-1), duration(-1), speed(-1) {}
 	~Skill(){}
 	static void load_archtype_data(unordered_map<unsigned int, Skill> *skill_map, 

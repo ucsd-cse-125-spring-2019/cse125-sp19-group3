@@ -4,7 +4,7 @@
       "skill_id": 0,
       "initial_level": 1,
       "skill_name": "EVADE",
-      "cooldown": 12500,
+      "cooldown": 10000,
       "range": 0.0,
       "speed": 0.0,
       "duration": 800
@@ -22,17 +22,17 @@
       "skill_id": 2,
       "initial_level": 1,
       "skill_name": "PYROBLAST",
-      "cooldown": 12500,
-      "range": 30.0,
-      "speed": 0.6,
+      "cooldown": 10000,
+      "range": 15.0,
+      "speed": 0.8,
       "duration": 0.0
     },
     {
       "skill_id": 3,
       "initial_level": 1,
       "skill_name": "DRAGON'S BREATH",
-      "cooldown": 9375,
-      "range": 30.0,
+      "cooldown": 8000,
+      "range": 20.0,
       "speed": 0.6,
       "duration": 0.0
     },
@@ -49,26 +49,26 @@
       "skill_id": 12,
       "initial_level": 1,
       "skill_name": "INVISIBILITY",
-      "cooldown": 12500,
+      "cooldown": 10000,
       "range": 5.0,
       "speed": 0.0,
-      "duration": 5000
+      "duration": 4000
     },
     {
       "skill_id": 13,
       "initial_level": 1,
       "skill_name": "SPRINT",
-      "cooldown": 12500,
+      "cooldown": 15000,
       "range": 0.0,
       "speed": 0.0,
-      "duration": 6000
+      "duration": 5000
     },
     {
       "skill_id": 22,
       "initial_level": 1,
       "skill_name": "WHIRLWIND",
-      "cooldown": 18750,
-      "range": 5.0,
+      "cooldown": 10000,
+      "range": 7.0,
       "speed": 0.8,
       "duration": 0.0
     },
@@ -76,8 +76,8 @@
       "skill_id": 23,
       "initial_level": 1,
       "skill_name": "CHARGE",
-      "cooldown": 12500,
-      "range": 5.0,
+      "cooldown": 14000,
+      "range": 10.0,
       "speed": 5.0,
       "duration": 0.0
     },
@@ -85,8 +85,8 @@
       "skill_id": 32,
       "initial_level": 1,
       "skill_name": "ROYAL CROSS",
-      "cooldown": 6250,
-      "range": 25.0,
+      "cooldown": 5000,
+      "range": 22.0,
       "speed": 0.7,
       "duration": 0.0
     },
@@ -94,10 +94,10 @@
       "skill_id": 33,
       "initial_level": 1,
       "skill_name": "SUBJUGATION",
-      "cooldown": 12500,
+      "cooldown": 15000,
       "range": 30.0,
       "speed": 5.0,
-      "duration": 4167
+      "duration": 7000
     }
   ],
   "ArcheTypes": {

@@ -8,6 +8,9 @@
 #include "../networking/KillStreak/PlayerData.hpp"
 #include "../rendering/ServerScene.h"
 
+
+
+
 // typedef enum {HUMAN_MODEL, MAGE_MODEL, WARRIOR_MODEL, ASSASIN_MODEL} MODEL_TYPE;
 typedef enum {ACTION_MOVEMENT, ACTION_DIRECTIONAL_SKILL} ACTION_STATE;		// client moving or in projectile mode? 
 
