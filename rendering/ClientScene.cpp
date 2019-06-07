@@ -821,6 +821,10 @@ void ClientScene::playVictory() {
 	audio.play(glm::vec3(0), VICTORY_AUDIO);
 }
 
+void ClientScene::playTimeup() {
+	audio.play(glm::vec3(0), TIMEUP_AUDIO);
+}
+
 
 void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
