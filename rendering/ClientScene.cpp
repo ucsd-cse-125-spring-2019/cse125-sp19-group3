@@ -375,8 +375,10 @@ void ClientScene::updateTimers(nanoseconds timePassed) {
 		if (skillDurationTimer <= nanoseconds::zero()) {
 			// hardcode for assassin and king (only classes w duration skills)
 			if (player.modelType == ASSASSIN) {
-				ClientInputPacket endSkillPacket = game->createSkillPacket(NULL_POINT, 14);
-				network->sendToServer(endSkillPacket);
+				ClientInputPacket cancelInvisibilityPacket = game->createSkillPacket(NULL_POINT, VISIBILITY);
+				network->sendToServer(cancelInvisibilityPacket);
+				skillDurationTimer = nanoseconds::zero();
+				logger()->debug("INVISIBILITY OVER SENDING TO SERVER!");
 			}
 			if (player.modelType == KING) {
 				logger()->debug("sent unsilence packet");
@@ -724,8 +726,8 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 				audio.play(glm::vec3(0), ASSASSIN_STEALTH_AUDIO);
 
 				// set duration for invisibility
-				std::chrono::seconds sec((int)adjustedSkill.duration);
-				skillDurationTimer = nanoseconds(sec);
+				std::chrono::milliseconds ms((int)adjustedSkill.duration);
+				skillDurationTimer = nanoseconds(ms);
 			}
 			
 			// send server skill packet
@@ -796,6 +798,9 @@ void ClientScene::playChaching() {
 
 void ClientScene::playInvest() {
 	audio.play(glm::vec3(0), BUY_ITEM_2_AUDIO);
+				ClientInputPacket endSkillPacket = game->createSkillPacket(NULL_POINT, 14);
+				network->sendToServer(endSkillPacket);
+
 }
 
 void ClientScene::playRoundOver() {

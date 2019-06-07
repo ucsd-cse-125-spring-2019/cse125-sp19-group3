@@ -664,8 +664,6 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 
 	// special case of undoing invisibility
 	if (skill_id == VISIBILITY) {
-
-		logger()->debug("undo invisibility");
 		int node_id = scenePlayers[player_id].root_id;
 		serverSceneGraphMap[node_id]->enabled = true;
 		serverSceneGraphMap[node_id]->isInvisible = false;
