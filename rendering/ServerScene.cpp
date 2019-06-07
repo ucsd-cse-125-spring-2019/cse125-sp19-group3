@@ -9,7 +9,7 @@ using json = nlohmann::json;
 #define DEFAULT_X 666
 #define DEFAULT_Z 666
 
-#define GOLD			 50
+#define GOLD			 5
 #define GOLD_MULTIPLIER  3		// number of kills in killstreak before next bonus
 #define LOSESTREAK_BONUS 2		// gold awarded for losestreak
 
@@ -385,7 +385,7 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 
 	// award bonus gold for kilstreak 
 	int killstreak_bonus = killer_data->currKillStreak / GOLD_MULTIPLIER;	
-	killer_data->gold	+= (GOLD * killstreak_bonus);
+	killer_data->gold	+= ((GOLD*2) * killstreak_bonus);
 
 	// award killer gold, increment killstreak & reset losestreak 
 	killer_data->gold			+= GOLD;
@@ -664,8 +664,6 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 
 	// special case of undoing invisibility
 	if (skill_id == VISIBILITY) {
-
-		logger()->debug("undo invisibility");
 		int node_id = scenePlayers[player_id].root_id;
 		serverSceneGraphMap[node_id]->enabled = true;
 		serverSceneGraphMap[node_id]->isInvisible = false;
@@ -675,7 +673,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 	// special case of undoing sprint
 	if (skill_id == UNSPRINT) {
 		auto &assassin = scenePlayers[player_id];
-		assassin.speed /= 1.5; // tweak values later
+		assassin.speed = assassin.default_speed; // tweak values later
 		return;
 	}
 
@@ -697,7 +695,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 
 	// don't handle class skills if the player is silenced
 	if (scenePlayers[player_id].isSilenced) {
-		if (skill_id != PROJECTILE && skill_id != EVADE) {
+		if (skill_id != PROJECTILE && skill_id != EVADE && skill_id != ASSASSIN_PROJECTILE) {
 			return;
 		}
 	}
@@ -756,8 +754,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			// set animation mode
 			scenePlayers[player_id].animationMode = skill_1;
 			handleRoyalCross(player_id, finalPoint, initPoint, adjustedSkill);
-			// TODO: put aoe sound here
-			//soundsToPlay.push_back()
+			soundsToPlay.push_back(KING_AOE_AUDIO);
 			break;
 		case INVISIBILITY:
 		{
@@ -770,7 +767,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 		case SPRINT: 
 		{
 			auto &assassin = scenePlayers[player_id];
-			assassin.speed *= pow(1.5, adjustedSkill.level); // twice as fast, tweak values later
+			assassin.speed = assassin.default_speed * 1.5; // twice as fast, tweak values later
 			break;
 		}
 		case SUBJUGATION:
@@ -785,7 +782,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			// grab all players who are in the range of the skill.
 			for (auto& player : scenePlayers) {
 				// you can't silence yourself && players that are evading
-				if (player.second.isEvading) {
+				if (player.second.isEvading || !playerMetadatas->find(player.first)->second->alive) {
 					continue;
 				}
 				// add purple sphere effect above king
@@ -805,6 +802,8 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 				if (glm::length(king.currentPos - player.second.currentPos) <= adjustedSkill.range) {
 					player.second.isSilenced = true;
 					playerMetadatas->find(player.first)->second->silenced = true;
+					player.second.speed = player.second.default_speed;
+					serverSceneGraphMap[player_id]->isInvisible = false;
 
 					nodeIdCounter++;
 					

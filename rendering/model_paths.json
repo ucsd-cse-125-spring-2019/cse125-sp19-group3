@@ -24,7 +24,7 @@
       "rotate_axis": [ 0.0, 1.0, 0.0 ],
       "scale": 0.0003,
       "animated": true,
-      "radius": 1.5
+      "radius": 1.8
     },
     {
       "path": "../models/crossbowman/crossbowman.dae",
@@ -50,7 +50,7 @@
       "rotate_axis": [ 0.0, 1.0, 0.0 ],
       "scale": 0.0003,
       "animated": true,
-      "radius": 1.5
+      "radius": 1.8
     },
     {
       "path": "../models/swordman/swordman.dae",
@@ -76,7 +76,7 @@
       "rotate_axis": [ 0.0, 1.0, 0.0 ],
       "scale": 0.00025,
       "animated": true,
-      "radius": 1.5
+      "radius": 1.8
     },
     {
       "path": "../models/king/allinone.fbx",
@@ -102,7 +102,7 @@
       "rotate_axis": [ 0.0, 1.0, 0.0 ],
       "scale": 0.025,
       "animated": true,
-      "radius": 1.5
+      "radius": 1.8
     },
     {
       "path": "../models/environment/fence_element_3.fbx",

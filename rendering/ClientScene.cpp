@@ -17,6 +17,7 @@
 #define VISIBILITY 14
 #define UNSPRINT 15
 #define RESPAWN_TIME 3
+#define TEXT_SHOW_TIME 3
 #define INVINCIBILITY_TIME 1
 
 using json = nlohmann::json;
@@ -56,6 +57,7 @@ void ClientScene::resetGUIStatus() {
 	guiStatuses.currPrepareLayout = 0;
 	guiStatuses.shopCategory = 0;
 	guiStatuses.killUpdates.clear();
+	guiStatuses.killStreakUpdates.clear();
 }
 
 void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network, LeaderBoard* leaderBoard, 
@@ -234,6 +236,8 @@ void ClientScene::initialize_UI(GLFWwindow* window) {
 	media.font_48 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/monogram_extended.ttf", 48.0f, &cfg);
 
 	media.font_64 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/monogram_extended.ttf", 64.0f, &cfg);
+
+	media.font_128 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/monogram_extended.ttf", 128.0f, &cfg);
 	nk_glfw3_font_stash_end();
 	}
 	glfw.atlas.default_font = media.font_32;
@@ -338,6 +342,19 @@ GLFWwindow* ClientScene::create_window()
 }
 
 void ClientScene::updateTimers(nanoseconds timePassed) {
+	//update kill streak timers
+	auto streakIter = guiStatuses.killStreakUpdates.begin();
+	for (; streakIter != guiStatuses.killStreakUpdates.end();) {
+		auto & ns = (*streakIter).second;
+		ns -= timePassed;
+		if (ns < nanoseconds::zero()) {
+			streakIter = guiStatuses.killStreakUpdates.erase(streakIter);
+		}
+		else {
+			++streakIter;
+		}
+	}
+
 	// update individual skill timers
 	for (int i = 0; i < skill_timers.size(); i++) {
 		if (skill_timers[i] > nanoseconds::zero()) {
@@ -375,8 +392,10 @@ void ClientScene::updateTimers(nanoseconds timePassed) {
 		if (skillDurationTimer <= nanoseconds::zero()) {
 			// hardcode for assassin and king (only classes w duration skills)
 			if (player.modelType == ASSASSIN) {
-				ClientInputPacket endSkillPacket = game->createSkillPacket(NULL_POINT, 14);
-				network->sendToServer(endSkillPacket);
+				ClientInputPacket cancelInvisibilityPacket = game->createSkillPacket(NULL_POINT, VISIBILITY);
+				network->sendToServer(cancelInvisibilityPacket);
+				skillDurationTimer = nanoseconds::zero();
+				logger()->debug("INVISIBILITY OVER SENDING TO SERVER!");
 			}
 			if (player.modelType == KING) {
 				logger()->debug("sent unsilence packet");
@@ -723,8 +742,8 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 				audio.play(glm::vec3(0), ASSASSIN_STEALTH_AUDIO);
 
 				// set duration for invisibility
-				std::chrono::seconds sec((int)adjustedSkill.duration);
-				skillDurationTimer = nanoseconds(sec);
+				std::chrono::milliseconds ms((int)adjustedSkill.duration);
+				skillDurationTimer = nanoseconds(ms);
 			}
 			
 			// send server skill packet
@@ -795,6 +814,9 @@ void ClientScene::playChaching() {
 
 void ClientScene::playInvest() {
 	audio.play(glm::vec3(0), BUY_ITEM_2_AUDIO);
+				ClientInputPacket endSkillPacket = game->createSkillPacket(NULL_POINT, 14);
+				network->sendToServer(endSkillPacket);
+
 }
 
 void ClientScene::playRoundOver() {
@@ -811,6 +833,10 @@ void ClientScene::playShutdown() {
 
 void ClientScene::playVictory() {
 	audio.play(glm::vec3(0), VICTORY_AUDIO);
+}
+
+void ClientScene::playTimeup() {
+	audio.play(glm::vec3(0), TIMEUP_AUDIO);
 }
 
 
@@ -844,10 +870,13 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 			// set cooldown
 			std::chrono::milliseconds ms(adjustedSkill.cooldown);
 			if (player.isPrepProjectile) {
-				if (!player.isSilenced) {
-					logger()->debug("left key cooldown set");
-					skill_timers[PROJ_INDEX] = nanoseconds(ms);
-				}
+				logger()->debug("left key cooldown set");
+				skill_timers[PROJ_INDEX] = nanoseconds(ms);
+
+				// TODO: REMOVE ME****
+				logger()->debug("FIRING PROJECTILE");
+				// TODO: REMOVE ME****
+			
 				// hardcode assassin: on firing projectile, you instantly cancel invisibility if active
 				if (player.modelType == ASSASSIN && skillDurationTimer > nanoseconds::zero()) {
 					ClientInputPacket cancelInvisibilityPacket = game->createSkillPacket(NULL_POINT, VISIBILITY);
@@ -1047,7 +1076,8 @@ void ClientScene::handleServerTickPacket(char * data) {
 	data += leaderBoard_size;
 
 	if (leaderBoard->currentKills[player.player_id] > currKill) {
-		audio.play(glm::vec3(0), SKELETON_DEATH_2_AUDIO);
+		audio.play(glm::vec3(0), CRACK_AUDIO);
+		logger()->debug("you killed somebody");
 	}
 	while (!leaderBoard->kill_map.empty()) {
 		int killer_id = leaderBoard->kill_map.front();
@@ -1063,6 +1093,47 @@ void ClientScene::handleServerTickPacket(char * data) {
 		else {
 			guiStatuses.killUpdates.pop_back();
 			guiStatuses.killUpdates.push_front(std::make_pair(killername, deadname));
+		}
+	}
+
+	while (!leaderBoard->curr_killstreaks.empty()) {
+		int killer_id = leaderBoard->curr_killstreaks.front();
+		leaderBoard->curr_killstreaks.pop_front();
+		int numStreaks = leaderBoard->curr_killstreaks.front();
+		leaderBoard->curr_killstreaks.pop_front();
+
+		string killername = usernames[killer_id];
+		string update = killername + " is on KILLSTREAK " + (char)('0' +numStreaks) + "!";
+		std::chrono::seconds s(TEXT_SHOW_TIME);
+		std::chrono::nanoseconds ns(s);
+		if (guiStatuses.killStreakUpdates.size() < MAX_KILL_UPDATES) {
+			guiStatuses.killStreakUpdates.push_front(make_pair(update, ns));
+		}
+		else {
+			guiStatuses.killStreakUpdates.pop_back();
+			guiStatuses.killStreakUpdates.push_front(make_pair(update, ns));
+		}
+	}
+
+
+
+	while (!leaderBoard->curr_shutdowns.empty()) {
+		int killer_id = leaderBoard->curr_shutdowns.front();
+		leaderBoard->curr_shutdowns.pop_front();
+		int dead_id = leaderBoard->curr_shutdowns.front();
+		leaderBoard->curr_shutdowns.pop_front();
+
+		string killername = usernames[killer_id];
+		string deadname = usernames[dead_id];
+		string update = killername + " has shutdown " + deadname + "!";
+		std::chrono::seconds s(TEXT_SHOW_TIME);
+		std::chrono::nanoseconds ns(s);
+		if (guiStatuses.killStreakUpdates.size() < MAX_KILL_UPDATES) {
+			guiStatuses.killStreakUpdates.push_front(make_pair(update, ns));
+		}
+		else {
+			guiStatuses.killStreakUpdates.pop_back();
+			guiStatuses.killStreakUpdates.push_front(make_pair(update, ns));
 		}
 	}
 	

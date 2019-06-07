@@ -11,6 +11,7 @@ Audio::Audio() {
 	
 	// king skill sounds
 	king_silence.setBuffer(king_silence_Buffer);
+	king_aoe.setBuffer(king_aoe_Buffer);
 	
 	// mage sounds
 	fire_aoe.setBuffer(fire_aoe_Buffer);
@@ -30,6 +31,7 @@ Audio::Audio() {
 	skeleton_evade.setBuffer(skeleton_evade_Buffer);
 	skeleton_evade_2.setBuffer(skeleton_evade_2_Buffer);
 	cooldown_sound.setBuffer(cooldown_Buffer);
+	crack_sound.setBuffer(crack_Buffer);
 	
 	// shop sounds
 	cannotBuyItem.setBuffer(cannotBuyItem_Buffer);
@@ -50,6 +52,7 @@ Audio::Audio() {
 	killstreak.setBuffer(killstreak_Buffer);
 	shutdown.setBuffer(shutdown_Buffer);
 	game_over.setBuffer(game_over_Buffer);
+	timeup.setBuffer(timeup_Buffer);
 	//**BGM**
 	//if (!music.openFromFile("./audio/music.wav"))
 	//	cout << "unable to load wav file " << "music.wav" << endl;
@@ -69,6 +72,8 @@ void Audio::loadWAVFiles() {
 		cout << "unable to load wav file " << "assassin_teleport.wav" << endl;
 	if (!king_silence_Buffer.loadFromFile("../audio/king/king_silence.wav"))
 		cout << "unable to load wav file " << "king_silence.wav" << endl;
+	if (!king_aoe_Buffer.loadFromFile("../audio/king/king_aoe.wav"))
+		cout << "unable to load wav file " << "king_aoe.wav" << endl;
 	if (!fire_aoe_Buffer.loadFromFile("../audio/mage/fire_aoe.wav"))
 		cout << "unable to load wav file " << "fire_aoe.wav" << endl;
 	if (!fire_cone_aoe_Buffer.loadFromFile("../audio/mage/fire_cone_aoe.wav"))
@@ -88,8 +93,8 @@ void Audio::loadWAVFiles() {
 	if (!skeleton_death_1_Buffer.loadFromFile("../audio/model/skeleton_death1.wav"))
 		cout << "unable to load wav file " << "skeleton_death1.wav" << endl;
 	// Need to fix this sound
-	//if (!skeleton_death_2_Buffer.loadFromFile("../audio/model/skeleton_death2.wav"))
-	//	cout << "unable to load wav file " << "skeleton_death2.wav" << endl;
+	if (!skeleton_death_2_Buffer.loadFromFile("../audio/model/skeleton_death2.wav"))
+		cout << "unable to load wav file " << "skeleton_death2.wav" << endl;
 	if (!skeleton_evade_Buffer.loadFromFile("../audio/model/skeleton_evade1.wav"))
 		cout << "unable to load wav file " << "skeleton_evade1.wav" << endl;
 	if (!skeleton_evade_2_Buffer.loadFromFile("../audio/model/skeleton_evade2.wav"))
@@ -128,6 +133,11 @@ void Audio::loadWAVFiles() {
 		cout << "unable to load wav file " << "game_over.wav" << endl;
 	if (!cannotBuyItem_Buffer.loadFromFile("../audio/store/cannotBuyItem.wav"))
 		cout << "unable to load wav file " << "cannotBuyItem.wav" << endl;
+	if (!crack_Buffer.loadFromFile("../audio/model/crack.wav"))
+		cout << "unable to load wav file " << "crack.wav" << endl;
+	if (!timeup_Buffer.loadFromFile("../audio/phases/timeup.wav"))
+		cout << "unable to load wav file " << "timeup.wav" << endl;
+
 }
 
 void Audio::play(glm::vec3 pos, unsigned int audio_id) {
@@ -143,6 +153,9 @@ void Audio::play(glm::vec3 pos, unsigned int audio_id) {
 		break;
 	case KING_SILENCE_AUDIO:
 		king_silence.play();
+		break;
+	case KING_AOE_AUDIO:
+		king_aoe.play();
 		break;
 	case FIRE_AOE_AUDIO:
 		fire_aoe.play();
@@ -224,6 +237,12 @@ void Audio::play(glm::vec3 pos, unsigned int audio_id) {
 		break;
 	case SHUTDOWN_AUDIO:
 		shutdown.play();
+		break;
+	case CRACK_AUDIO:
+		crack_sound.play();
+		break;
+	case TIMEUP_AUDIO:
+		timeup.play();
 		break;
 	}
 	

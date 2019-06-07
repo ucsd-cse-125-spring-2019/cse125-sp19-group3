@@ -39,7 +39,7 @@ struct media {
 	struct nk_font *font_32;
 	struct nk_font *font_48;
 	struct nk_font *font_64;
-
+	struct nk_font *font_128;
 	struct nk_image mage;
 	struct nk_image warrior;
 	struct nk_image assasin;
@@ -64,6 +64,7 @@ struct guiStatus {
 	int betAmount;
 	int shopCategory;// 0 for skills 1 for bet 2 for cheat
 	deque<pair<string,string>> killUpdates;
+	deque<pair<string, std::chrono::nanoseconds>> killStreakUpdates;
 };
 
 enum nk_glfw_init_state{

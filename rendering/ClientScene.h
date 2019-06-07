@@ -56,6 +56,7 @@ public:
 	void playKillStreak();
 	void playShutdown();
 	void playVictory();
+	void playTimeup();
 	//void playerInit(const ScenePlayer &player);
 	void clean_up();
 	GLFWwindow * create_window();
@@ -162,6 +163,7 @@ public:
 	static void playKillStreak() { scene->playKillStreak(); };
 	static void playShutdown() { scene->playShutdown(); };
 	static void playVictory() { scene->playVictory(); };
+	static void playTimeup() { scene->playTimeup(); };
 
 	static int getPlayerGold() { return scene->getPlayerGold(); };
 	static vector<Skill> getPlayerSkills() { return scene->getPlayerSkills(); };
