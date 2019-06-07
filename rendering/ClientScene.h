@@ -96,7 +96,7 @@ private:
 	Model * floor;
 	Model * arrow;
 	Model * cross;
-	Model * sphere;
+	Model * circle;
 	Circle * range;
 	ScenePlayer player;
 	Transform * root;
