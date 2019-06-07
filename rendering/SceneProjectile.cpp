@@ -22,6 +22,6 @@ void SceneProjectile::update() {
 }
 
 bool SceneProjectile::outOfRange() {
-	return glm::length(currentPos - initPos) > range;
+	return (glm::length(currentPos - initPos) > range || currentPos.y <0.5f);
 }
 

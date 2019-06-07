@@ -32,7 +32,7 @@
       "initial_level": 1,
       "skill_name": "DRAGON'S BREATH",
       "cooldown": 8000,
-      "range": 20.0,
+      "range": 10000.0,
       "speed": 0.6,
       "duration": 0.0
     },
