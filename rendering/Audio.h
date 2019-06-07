@@ -10,7 +10,7 @@ enum AUDIO_TYPE { ASSASSIN_PROJECTILE_AUDIO, ASSASSIN_STEALTH_AUDIO, ASSASSIN_TE
 	WARRIOR_CHARGE_AUDIO, WARRIOR_PROJECTILE_AUDIO, WARRIOR_SLAM_AOE_AUDIO, SKELETON_DEATH_1_AUDIO, SKELETON_DEATH_2_AUDIO, 
 	SKELETON_EVADE_AUDIO, SKELETON_EVADE_2_AUDIO, CANNOT_BUY_ITEM_AUDIO, BUY_ITEM_1_AUDIO, BUY_ITEM_2_AUDIO, EQUIP_ITEM_1_AUDIO, EQUIP_ITEM_2_AUDIO,
 	PREPARE_PHASE_MUSIC, KILL_PHASE_MUSIC, FINAL_ROUND_MUSIC, COOLDOWN_RESET_AUDIO, TIMER_AUDIO, GAME_OVER_AUDIO, BUTTON_PRESS_AUDIO, VICTORY_AUDIO,
-	KILLSTREAK_AUDIO, SHUTDOWN_AUDIO};
+	KILLSTREAK_AUDIO, SHUTDOWN_AUDIO, CRACK_AUDIO};
 
 class Audio {
 public:
@@ -60,11 +60,13 @@ private:
 	sf::SoundBuffer skeleton_evade_Buffer;
 	sf::SoundBuffer skeleton_evade_2_Buffer;
 	sf::SoundBuffer cooldown_Buffer;
+	sf::SoundBuffer crack_Buffer;
 	sf::Sound skeleton_death_1;
 	sf::Sound skeleton_death_2;
 	sf::Sound skeleton_evade;
 	sf::Sound skeleton_evade_2;
 	sf::Sound cooldown_sound;
+	sf::Sound crack_sound;
 
 	//**STORE SOUNDS**//
 	sf::SoundBuffer cannotBuyItem_Buffer;
