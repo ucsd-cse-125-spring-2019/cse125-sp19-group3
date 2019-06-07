@@ -217,6 +217,8 @@ int ClientGame::join_game()
 	*/
 	log->info("Received servers welcome packet, waiting in lobby for all players to join...");
 	
+	//TODO: Clean up this packet
+
 	// block until server sends Character selection packet
 	ServerInputPacket* char_select_packet = network->receivePacket();
 	log->info("received character selection packet from server");
@@ -481,46 +483,6 @@ void ClientGame::endPrepPhase()
 
 
 /*
-	After character selection wait for server to inititate game info scene. 
-	Display associated data for player and wait for server to send end of game 
-	info packet.
-*/
-void ClientGame::gameInfoScene()
-{
-
-	// block until server initiates start game info scene
-	int startGameInfoPhase = 0;
-	while (!startGameInfoPhase)
-	{
-		ServerInputPacket* start_game_info_packet = network->receivePacket();
-		if (start_game_info_packet->packetType == GAME_INFO_PHASE)
-		{
-			startGameInfoPhase = 1;
-			break;
-		}
-	}
-
-	logger()->info("Starting game info scene!");
-
-	/*
-		TODO: Display UI and start timer...
-	*/
-	Sleep(5000);
-
-
-	// NOTE: ONCE TIMER IS UP THIS CODE SHOULD RUN!
-
-	// send this packet once done with game_info phase
-	ClientInputPacket end_game_info_packet = createGameInfoPacket();
-	int iResult = network->sendToServer(end_game_info_packet);	
-
-	// TODO: check if iResult failed
-	
-
-}
-
-
-/*
 	Called to switch from Lobby -> kill -> prep -> etc..
 */
 int ClientGame::switchPhase() {
@@ -528,11 +490,6 @@ int ClientGame::switchPhase() {
 	switch (currPhase)
 	{
 		case LOBBY: 
-
-			// wait for game_info to start & end
-			gameInfoScene();
-
-			// launch thread to listen for incoming packets
 			if (waitingInitScene() == 0)
 				return 0;
 
@@ -891,10 +848,6 @@ ClientInputPacket ClientGame::createEndKillPhasePacket()
 
 ClientInputPacket ClientGame::createInitPacket() {
 	return createClientInputPacket(INIT_CONN, NULL_POINT, -1);
-}
-
-ClientInputPacket ClientGame::createGameInfoPacket() {
-	return createClientInputPacket(START_GAME_INFO, NULL_POINT, -1);
 }
 
 /*
