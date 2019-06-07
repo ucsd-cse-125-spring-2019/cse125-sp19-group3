@@ -426,18 +426,8 @@ static void ui_kill_timer(struct nk_context *ctx, struct media *media, int width
 			nk_spacing(ctx, 1);
 
 
-			ctx->style.text.color = nk_rgba(255, 255, 255, 255);
-			auto it = gStatus.killStreakUpdates.begin();
-
-			while (it != gStatus.killStreakUpdates.end()) {
-				nk_layout_row(ctx, NK_DYNAMIC, 65, 3, ratio);
-				auto text = (*it++).first;
-				nk_spacing(ctx, 1);
-				nk_label(ctx, text.c_str(), NK_TEXT_LEFT);
-				nk_spacing(ctx, 1);
-			}
-
 			if (minutes == 0 && seconds < 1) {
+				ctx->style.text.color = nk_rgba(255, 255, 255, 255);
 				nk_style_set_font(ctx, &(media->font_128->handle));
 				nk_layout_row_static(ctx, 0.3*height, 1, 1);
 				nk_layout_row(ctx, NK_DYNAMIC, 130, 3, ratio);
@@ -445,6 +435,18 @@ static void ui_kill_timer(struct nk_context *ctx, struct media *media, int width
 				nk_label(ctx, "TIME'S UP!", NK_TEXT_CENTERED);
 				nk_spacing(ctx, 1);
 
+			}
+			else {
+				ctx->style.text.color = nk_rgba(255, 55, 55, 255);
+				auto it = gStatus.killStreakUpdates.begin();
+
+				while (it != gStatus.killStreakUpdates.end()) {
+					nk_layout_row(ctx, NK_DYNAMIC, 65, 3, ratio);
+					auto text = (*it++).first;
+					nk_spacing(ctx, 1);
+					nk_label(ctx, text.c_str(), NK_TEXT_LEFT);
+					nk_spacing(ctx, 1);
+				}
 			}
 	}
 	else {
