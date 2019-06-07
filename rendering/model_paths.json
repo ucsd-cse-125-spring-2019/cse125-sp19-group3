@@ -86,7 +86,7 @@
         [ 983, 1032 ],
         [ 613, 647 ],
         [ 699, 752 ],
-        [ 752, 790 ],
+        [ 752, 780 ],
         [ 647, 699 ],
         [ 1303, 1377 ],
         [ 1254, 1303 ]
@@ -240,6 +240,18 @@
       "path": "../models/environment/tomb.fbx",
       "texture_path": "../textures/cemetery.tga",
       "model_id": 111,
+      "color_rgb": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "animated": false,
+      "radius": 1.0
+    },
+    {
+      "path": "../models/environment/candle_big_1.fbx",
+      "texture_path": "../textures/cemetery.tga",
+      "model_id": 112,
       "color_rgb": [
         1.0,
         0.0,

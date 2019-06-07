@@ -112,7 +112,7 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network,
 	this->killstreak_data = killstreak_data;
 
 	// Floor
-	floor = new Model("../models/quad.obj", "../textures/floor.png", false);
+	floor = new Model("../models/quad.obj", "../textures/brickgroundxxl.jpg", false);
 	floor->localMtx = glm::translate(glm::mat4(1.0f), glm::vec3(100.0f, 0.0f, 120.0f)) *
 		glm::rotate(glm::mat4(1.0f), -90.0f / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)) *
 		glm::scale(glm::mat4(1.0f), glm::vec3(200));
@@ -1023,7 +1023,9 @@ void ClientScene::handleServerTickPacket(char * data) {
 	memcpy(&isCharging, data, sizeof(bool));
 	sz += sizeof(bool);
 	data += sizeof(bool);
-	clientSceneGraphMap[player.root_id]->isCharging = isCharging;
+	if (player.modelType == WARRIOR) {
+		clientSceneGraphMap[player.root_id]->isCharging = isCharging;
+	}
 
 	//deserialize animation mode
     unordered_map<unsigned int, vector<int>> animationModes;
