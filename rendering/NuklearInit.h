@@ -39,7 +39,7 @@ struct media {
 	struct nk_font *font_32;
 	struct nk_font *font_48;
 	struct nk_font *font_64;
-
+	struct nk_font *font_128;
 	struct nk_image mage;
 	struct nk_image warrior;
 	struct nk_image assasin;

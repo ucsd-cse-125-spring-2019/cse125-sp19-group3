@@ -754,8 +754,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			// set animation mode
 			scenePlayers[player_id].animationMode = skill_1;
 			handleRoyalCross(player_id, finalPoint, initPoint, adjustedSkill);
-			// TODO: put aoe sound here
-			//soundsToPlay.push_back()
+			soundsToPlay.push_back(KING_AOE_AUDIO);
 			break;
 		case INVISIBILITY:
 		{
