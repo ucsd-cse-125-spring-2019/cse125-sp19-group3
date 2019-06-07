@@ -6,11 +6,11 @@
 #include <iostream>
 
 enum AUDIO_TYPE { ASSASSIN_PROJECTILE_AUDIO, ASSASSIN_STEALTH_AUDIO, ASSASSIN_TELEPORT_AUDIO, 
-	KING_SILENCE_AUDIO, FIRE_AOE_AUDIO, FIRE_CONE_AOE_AUDIO, FIRE_BALL_1_AUDIO, FIREBALL_2_AUDIO, FIRE_BALL_3_AUDIO,
+	KING_SILENCE_AUDIO, KING_AOE_AUDIO, FIRE_AOE_AUDIO, FIRE_CONE_AOE_AUDIO, FIRE_BALL_1_AUDIO, FIREBALL_2_AUDIO, FIRE_BALL_3_AUDIO,
 	WARRIOR_CHARGE_AUDIO, WARRIOR_PROJECTILE_AUDIO, WARRIOR_SLAM_AOE_AUDIO, SKELETON_DEATH_1_AUDIO, SKELETON_DEATH_2_AUDIO, 
 	SKELETON_EVADE_AUDIO, SKELETON_EVADE_2_AUDIO, CANNOT_BUY_ITEM_AUDIO, BUY_ITEM_1_AUDIO, BUY_ITEM_2_AUDIO, EQUIP_ITEM_1_AUDIO, EQUIP_ITEM_2_AUDIO,
 	PREPARE_PHASE_MUSIC, KILL_PHASE_MUSIC, FINAL_ROUND_MUSIC, COOLDOWN_RESET_AUDIO, TIMER_AUDIO, GAME_OVER_AUDIO, BUTTON_PRESS_AUDIO, VICTORY_AUDIO,
-	KILLSTREAK_AUDIO, SHUTDOWN_AUDIO, CRACK_AUDIO};
+	KILLSTREAK_AUDIO, SHUTDOWN_AUDIO, CRACK_AUDIO, TIMEUP_AUDIO};
 
 class Audio {
 public:
@@ -33,6 +33,8 @@ private:
 	//**KING SKILLS**//
 	sf::SoundBuffer king_silence_Buffer;
 	sf::Sound king_silence;
+	sf::SoundBuffer king_aoe_Buffer;
+	sf::Sound king_aoe;
 
 	//**MAGE SKILLS**//
 	sf::SoundBuffer fire_aoe_Buffer;
@@ -91,6 +93,7 @@ private:
 	sf::SoundBuffer timer_Buffer;
 	sf::SoundBuffer killstreak_Buffer;
 	sf::SoundBuffer shutdown_Buffer;
+	sf::SoundBuffer timeup_Buffer;
 
 	sf::Sound game_over;
 	sf::Sound prepare_phase_music;
@@ -100,5 +103,6 @@ private:
 	sf::Sound timer;
 	sf::Sound killstreak;
 	sf::Sound shutdown;
+	sf::Sound timeup;
 	void loadWAVFiles();
 };
