@@ -799,6 +799,11 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 				}
 				if (glm::length(king.currentPos - player.second.currentPos) <= adjustedSkill.range) {
 					player.second.isSilenced = true;
+
+					unordered_map<unsigned int, PlayerMetadata*>::iterator p_it = playerMetadatas->find(player.first);
+					PlayerMetadata* player_meta = p_it->second;
+					player_meta->silenced = true;
+
 					if (player.second.modelType == ASSASSIN) {
 						serverSceneGraphMap[player.second.root_id]->enabled = true;
 						serverSceneGraphMap[player.second.root_id]->isInvisible = false;
