@@ -457,6 +457,46 @@ static void ui_kill_timer(struct nk_context *ctx, struct media *media, int width
 	nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
 }
 
+static void skill_info_page(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player) {
+	struct nk_style *s = &ctx->style;
+
+	nk_style_push_style_item(ctx, &s->window.fixed_background, nk_style_item_color(nk_rgba(0, 0, 0, 0)));
+
+	switch (player->modelType) {
+
+	case MAGE: // code to be executed if n = 1;
+		nk_style_push_style_item(ctx, &s->window.fixed_background, nk_style_item_image(media->loading_mage));
+		//ctx->style.window.fixed_background = nk_style_item_image(media->lobby_background);
+
+		break;
+	case ASSASSIN: // code to be executed if n = 2;
+		nk_style_push_style_item(ctx, &s->window.fixed_background, nk_style_item_image(media->loading_assassin));
+		//ctx->style.window.fixed_background = nk_style_item_image(media->lobby_background);
+		break;
+	case KING: // code to be executed if n = 2;
+		//ctx->style.window.fixed_background = nk_style_item_image(media->lobby_background);
+		nk_style_push_style_item(ctx, &s->window.fixed_background, nk_style_item_image(media->loading_king));
+		break;
+	case WARRIOR: // code to be executed if n = 2;
+		//ctx->style.window.fixed_background = nk_style_item_image(media->lobby_background);
+		nk_style_push_style_item(ctx, &s->window.fixed_background, nk_style_item_image(media->loading_warrior));
+
+		break;
+	default: // code to be executed if n doesn't match any cases
+		nk_style_push_style_item(ctx, &s->window.fixed_background, nk_style_item_image(media->loading_mage));
+		//ctx->style.window.fixed_background = nk_style_item_image(media->lobby_background);
+
+		break;
+	}
+	if (nk_begin(ctx, "SKILL_INFO", nk_rect(0, 0, width, height),
+		NK_WINDOW_NO_SCROLLBAR
+	))
+	{ }
+	nk_end(ctx);
+	nk_style_pop_style_item(ctx);
+	
+}
+
 
 static void
 kill_layout(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player,

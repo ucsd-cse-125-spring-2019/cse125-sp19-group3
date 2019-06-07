@@ -317,8 +317,20 @@ void ServerGame::game_match()
 	logger()->info("MT: Waiting for character selection phase to end");
 	while (character_select_over != END_CHAR_SELECTION);
 
-	// add each player to scene based on character selection
-	log->info("All client character selections received, initializing game...");
+	// received all character selections... tell clients to display game info UI
+	log->info("All client character selections received, display game info scene...");
+	ServerInputPacket game_info_packet = createServerPacket(GAME_INFO_PHASE, 0, buf);
+	network->broadcastSend(game_info_packet);
+
+	// wait until all clients send end game info packet; drop all other packets
+	int curr_client = 0;
+	while(curr_client < GAME_SIZE)
+	{
+		ClientInputPacket* curr_packet = network->receivePacket(curr_client);
+		if (curr_packet->inputType == START_GAME_INFO) curr_client++;
+	}
+
+	log->info("All clients ended game info phase... initializing game...");
 	for (auto client_data : client_data_list) {
 		unsigned int client_id = client_data->id;
 		unordered_map<unsigned int, PlayerMetadata*>::iterator m_it = playerMetadatas->find(client_id);

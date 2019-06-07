@@ -5,7 +5,7 @@
 #include <string>
 
 
-#define GAME_SIZE				2			// total players required to start game
+#define GAME_SIZE				4			// total players required to start game
 #define NULL_POINT				Point(0.0,0.0,0.0)
 
 #define SERVER_TICK_PACKET_SIZE 10000
@@ -25,10 +25,12 @@
 
 typedef glm::vec3 Point;
 
-typedef enum {INIT_CONN, CHAR_SELECT, MOVEMENT, SKILL, RESPAWN, END_KILL_PHASE, END_PREP_PHASE } InputType;
+typedef enum {INIT_CONN, CHAR_SELECT, MOVEMENT, SKILL, RESPAWN,
+				END_KILL_PHASE, END_PREP_PHASE, START_GAME_INFO } InputType;
 
 typedef enum { WELCOME, INIT_SCENE, UPDATE_SCENE_GRAPH, 
-				CHAR_SELECT_PHASE, START_PREP_PHASE, START_KILL_PHASE, START_END_GAME_PHASE } ServerPacketType;
+				CHAR_SELECT_PHASE, START_PREP_PHASE, START_KILL_PHASE, 
+				START_END_GAME_PHASE, GAME_INFO_PHASE } ServerPacketType;
 
 typedef enum { HUMAN, MAGE, ASSASSIN, WARRIOR, KING, NONE } ArcheType;
 
