@@ -1128,6 +1128,10 @@ void ClientScene::handleServerTickPacket(char * data) {
 		}
 	}
 
+	if (!leaderBoard->curr_killstreaks.empty()) {
+		Window_static::playKillStreak();
+	}
+
 	while (!leaderBoard->curr_killstreaks.empty()) {
 		int killer_id = leaderBoard->curr_killstreaks.front();
 		leaderBoard->curr_killstreaks.pop_front();
@@ -1148,7 +1152,9 @@ void ClientScene::handleServerTickPacket(char * data) {
 	}
 
 
-
+	if (!leaderBoard->curr_shutdowns.empty()) {
+		Window_static::playShutdown();
+	}
 	while (!leaderBoard->curr_shutdowns.empty()) {
 		int killer_id = leaderBoard->curr_shutdowns.front();
 		leaderBoard->curr_shutdowns.pop_front();

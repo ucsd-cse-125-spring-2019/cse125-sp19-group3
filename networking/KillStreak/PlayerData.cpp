@@ -326,7 +326,7 @@ Skill Skill::calculateSkillBasedOnLevel(Skill &baseSkill, unsigned int level) {
 	case CHARGE:
 	{
 		auto newCooldown = baseSkill.cooldown - 2000 * (level - 1);
-		auto newRange = baseSkill.range + 5 * (level - 1);
+		auto newRange = baseSkill.range + 3 * (level - 1);
 		adjustedSkill.cooldown = newCooldown;
 		adjustedSkill.range = newRange;
 		break;
