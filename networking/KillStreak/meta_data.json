@@ -86,7 +86,7 @@
       "initial_level": 1,
       "skill_name": "ROYAL CROSS",
       "cooldown": 5000,
-      "range": 22.0,
+      "range": 35.0,
       "speed": 0.7,
       "duration": 0.0
     },
