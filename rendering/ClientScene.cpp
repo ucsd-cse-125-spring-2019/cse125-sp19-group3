@@ -568,7 +568,10 @@ void ClientScene::renderKillPhase(GLFWwindow* window) {
 	floor->draw(staticShader, glm::mat4(1.0f), vpMatrix);
 
 	// KOTH floor
-	KOTHfloor->draw(staticShader, glm::mat4(1.0f), vpMatrix);
+	if (round_number == 3 || round_number == 4)
+	{
+		KOTHfloor->draw(staticShader, glm::mat4(1.0f), vpMatrix);
+	}
 
 	// players
 	root->draw(models, glm::mat4(1.0f), vpMatrix, clientSceneGraphMap);
