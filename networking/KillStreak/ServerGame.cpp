@@ -579,8 +579,8 @@ int ServerGame::updatePreparePhase() {
 				memcpy(&player_meta->gold, data, sizeof(int));
 				data += sizeof(int);
 
-				logger()->debug("* * * * * * END PREP PHASE PACKET RECEIVED * * * * * *");
-				logger()->debug("Client {} remaining gold {}", client_id, player_meta->gold);
+				//logger()->debug("* * * * * * END PREP PHASE PACKET RECEIVED * * * * * *");
+				//logger()->debug("Client {} remaining gold {}", client_id, player_meta->gold);
 
 				// deserialize number of skills
 				int total_skills = 0;
@@ -614,7 +614,7 @@ int ServerGame::updatePreparePhase() {
 			// all clients ended prep phase -> reset values & broadcast start kill phase packet
 			if (total_end_prep_packets >= GAME_SIZE)
 			{
-				logger()->debug("END PREP PHASE INITIATED BY ALL CLIENTS");
+				//logger()->debug("END PREP PHASE INITIATED BY ALL CLIENTS");
 				total_end_prep_packets = 0;
 
 				// reset all values before next kill phase
@@ -623,7 +623,7 @@ int ServerGame::updatePreparePhase() {
 				// serialize data & broadcast to all clients
 				ServerInputPacket start_kill_phase_packet = createStartKillPhasePacket();
 				network->broadcastSend(start_kill_phase_packet);
-				logger()->debug("BROADCAST START KILL PHASE PACKET");
+				//logger()->debug("BROADCAST START KILL PHASE PACKET");
 
 				return KILL_PHASE;	// dont care about any other packets;  prep phase over start kill!
 			}
@@ -833,6 +833,7 @@ ServerInputPacket ServerGame::createStartPrepPhasePacket()
 		// get clients gold 
 		unordered_map<unsigned int, PlayerMetadata*>::iterator p_it = playerMetadatas->find(client_id);
 		PlayerMetadata* player_meta = p_it->second;
+		player_meta->gold += BASE_GOLD;
 		int curr_gold = player_meta->gold;
 		memcpy(bufPtr, &curr_gold, sizeof(int));
 		sgSize += sizeof(int);
