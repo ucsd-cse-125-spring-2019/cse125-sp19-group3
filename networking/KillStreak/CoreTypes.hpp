@@ -12,8 +12,8 @@
 #define END_PHASE_PACKET_SIZE   512
 
 
-#define KILLPHASE_TIME			90			// duration of kill phase
-#define PREPHASE_TIME			45			// duration of prepare phase
+#define KILLPHASE_TIME			45			// duration of kill phase
+#define PREPHASE_TIME			15			// duration of prepare phase
 #define ENDGAME_TIME			5			// duration of end of game 
 #define TOTAL_ROUNDS			3			// total rounds to be played in game
 #define TIMER_COUNTDOWN         10          // when the countdown tick sound should start playing
