@@ -1043,7 +1043,8 @@ void ClientScene::handleServerTickPacket(char * data) {
 	data += leaderBoard_size;
 
 	if (leaderBoard->currentKills[player.player_id] > currKill) {
-		audio.play(glm::vec3(0), SKELETON_DEATH_2_AUDIO);
+		audio.play(glm::vec3(0), CRACK_AUDIO);
+		logger()->debug("you killed somebody");
 	}
 	while (!leaderBoard->kill_map.empty()) {
 		int killer_id = leaderBoard->kill_map.front();
