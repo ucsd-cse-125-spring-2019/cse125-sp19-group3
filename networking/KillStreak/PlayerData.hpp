@@ -10,6 +10,8 @@
 
 using namespace std;
 
+#define BASE_GOLD 10
+
 class LeaderBoard {
 public:
 
@@ -110,7 +112,7 @@ public:
 
 		alive = true;
 		silenced = false;
-		gold = 0;
+		gold = BASE_GOLD;
 		currKillStreak = 0;
 		currLoseStreak = 0;
 		
