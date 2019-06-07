@@ -1206,3 +1206,8 @@ void ClientScene::updatePlayerGold(int curr_gold)
 {
 	player.gold = curr_gold;
 }
+
+void ClientScene::setRoundNumber(int curr_round)
+{
+	round_number = curr_round;
+}

@@ -309,6 +309,9 @@ void ClientGame::endKillPhase()
 			// deserialize round number
 			memcpy(&round_number, data, sizeof(int));
 			data += sizeof(int);
+			
+			// update client_scene with round number
+			Window_static::setRoundNumber(round_number);
 
 			// deserialize leaderboard
 			unsigned int leaderBoard_size = 0;
