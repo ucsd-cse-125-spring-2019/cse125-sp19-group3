@@ -433,7 +433,6 @@ static void ui_kill_timer(struct nk_context *ctx, struct media *media, int width
 				nk_spacing(ctx, 1);
 				nk_label(ctx, "TIME'S UP!", NK_TEXT_CENTERED);
 				nk_spacing(ctx, 1);
-				Window_static::playTimeup();
 			}
 	}
 	else {
