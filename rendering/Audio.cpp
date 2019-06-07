@@ -11,6 +11,7 @@ Audio::Audio() {
 	
 	// king skill sounds
 	king_silence.setBuffer(king_silence_Buffer);
+	king_aoe.setBuffer(king_aoe_Buffer);
 	
 	// mage sounds
 	fire_aoe.setBuffer(fire_aoe_Buffer);
@@ -51,7 +52,7 @@ Audio::Audio() {
 	killstreak.setBuffer(killstreak_Buffer);
 	shutdown.setBuffer(shutdown_Buffer);
 	game_over.setBuffer(game_over_Buffer);
-	timeup.setBuffer(timeup_buffer);
+	timeup.setBuffer(timeup_Buffer);
 	//**BGM**
 	//if (!music.openFromFile("./audio/music.wav"))
 	//	cout << "unable to load wav file " << "music.wav" << endl;
@@ -71,6 +72,8 @@ void Audio::loadWAVFiles() {
 		cout << "unable to load wav file " << "assassin_teleport.wav" << endl;
 	if (!king_silence_Buffer.loadFromFile("../audio/king/king_silence.wav"))
 		cout << "unable to load wav file " << "king_silence.wav" << endl;
+	if (!king_aoe_Buffer.loadFromFile("../audio/king/king_aoe.wav"))
+		cout << "unable to load wav file " << "king_aoe.wav" << endl;
 	if (!fire_aoe_Buffer.loadFromFile("../audio/mage/fire_aoe.wav"))
 		cout << "unable to load wav file " << "fire_aoe.wav" << endl;
 	if (!fire_cone_aoe_Buffer.loadFromFile("../audio/mage/fire_cone_aoe.wav"))
@@ -150,6 +153,9 @@ void Audio::play(glm::vec3 pos, unsigned int audio_id) {
 		break;
 	case KING_SILENCE_AUDIO:
 		king_silence.play();
+		break;
+	case KING_AOE_AUDIO:
+		king_aoe.play();
 		break;
 	case FIRE_AOE_AUDIO:
 		fire_aoe.play();
