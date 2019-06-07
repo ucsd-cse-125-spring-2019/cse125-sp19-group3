@@ -400,7 +400,7 @@ static void ui_kill_info(struct nk_context *ctx, struct media *media, int width,
 }
 
 
-static void ui_kill_timer(struct nk_context *ctx, struct media *media, int width, int height, ClientGame * game) {
+static void ui_kill_timer(struct nk_context *ctx, struct media *media, int width, int height, ClientGame * game, guiStatus gStatus) {
 	static const float ratio[] = { 0.3f, 0.4f , 0.3f};
 	nk_style_set_font(ctx, &(media->font_64->handle));
 
@@ -425,14 +425,28 @@ static void ui_kill_timer(struct nk_context *ctx, struct media *media, int width
 			nk_text(ctx, result, strlen(result), NK_TEXT_CENTERED);
 			nk_spacing(ctx, 1);
 
-			if (seconds < 1) {
-				nk_style_set_font(ctx, &(media->font_128->handle));
+
+			if (minutes == 0 && seconds < 1) {
 				ctx->style.text.color = nk_rgba(255, 255, 255, 255);
+				nk_style_set_font(ctx, &(media->font_128->handle));
 				nk_layout_row_static(ctx, 0.3*height, 1, 1);
 				nk_layout_row(ctx, NK_DYNAMIC, 130, 3, ratio);
 				nk_spacing(ctx, 1);
 				nk_label(ctx, "TIME'S UP!", NK_TEXT_CENTERED);
 				nk_spacing(ctx, 1);
+
+			}
+			else {
+				ctx->style.text.color = nk_rgba(255, 55, 55, 255);
+				auto it = gStatus.killStreakUpdates.begin();
+
+				while (it != gStatus.killStreakUpdates.end()) {
+					nk_layout_row(ctx, NK_DYNAMIC, 65, 3, ratio);
+					auto text = (*it++).first;
+					nk_spacing(ctx, 1);
+					nk_label(ctx, text.c_str(), NK_TEXT_LEFT);
+					nk_spacing(ctx, 1);
+				}
 			}
 	}
 	else {
@@ -454,7 +468,7 @@ kill_layout(struct nk_context *ctx, struct media *media, int width, int height, 
 	nk_style_push_style_item(ctx, &s->window.fixed_background, nk_style_item_color(nk_rgba(0, 0, 0, 0)));
 	if (nk_begin(ctx, "kill_title", nk_rect(0, 0, width, height),
 		NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BACKGROUND)) {
-		ui_kill_timer(ctx, media, width, height, game);
+		ui_kill_timer(ctx, media, width, height, game, gStatus);
 	}
 	nk_end(ctx);
 	nk_style_pop_color(ctx);
