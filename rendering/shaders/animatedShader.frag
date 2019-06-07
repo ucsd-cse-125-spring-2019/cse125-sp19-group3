@@ -34,22 +34,44 @@ void main() {
 	float intensity = dot(lightDirection, fragNormal);
 	float lightFactor = getLightFactor(intensity);
 	vec3 diffuseColor = lightColor * max(0, intensity);
+	vec3 corrected = vec3(1, 0, 0);
+	vec3 gamma = vec3(1/2.2);
 
 	if (UseTex == 0) {
 		// Gamma correction
-		finalColor = vec4(lightFactor * (ambientColor + diffuseColor) * vec3(color), color[3]);
+		vec3 corrected = (ambientColor + diffuseColor) * vec3(color); 
+		finalColor = vec4(lightFactor * corrected, color[3]);
 	}
 	else {
 		if (isCharging == 1) {
-			finalColor = vec4(lightFactor * (ambientColor + diffuseColor) * (0.5 * vec3(texture(Texture, texCoord)) + 0.5 * vec3(1, 0, 0)), 1.0);
+			corrected = (ambientColor + diffuseColor) * (0.5 * vec3(texture(Texture, texCoord)) + 0.5 * vec3(1, 0, 0));
 		} else if (isEvading == 1) {
-			finalColor = vec4(lightFactor * (ambientColor + diffuseColor) * (vec3(texture(Texture, texCoord)) + vec3(0.8, 0.8, 0.8)), 1.0);
+			corrected = (ambientColor + diffuseColor) * (vec3(texture(Texture, texCoord)) + vec3(0.8, 0.8, 0.8));
 		} else if (isInvisible == 1) {
-			finalColor = vec4(lightFactor * (ambientColor + diffuseColor) * (vec3(texture(Texture, texCoord)) + vec3(0.1, 0.1, 0.1)), 0.5);
+			corrected = (ambientColor + diffuseColor) * (vec3(texture(Texture, texCoord)) + vec3(0.1, 0.1, 0.1));
 		} else if (isInvincible == 1) {
-			finalColor = vec4(lightFactor * (ambientColor + diffuseColor) * (vec3(0.988, 0.832, 0.2617)), 1.0);
+			corrected = (ambientColor + diffuseColor) * (vec3(0.988, 0.832, 0.2617));
 		} else {
-		    finalColor = vec4(lightFactor * (ambientColor + diffuseColor) * (vec3(texture(Texture, texCoord)) + vec3(0.1, 0.1, 0.1)), 1.0);
+		    corrected = (ambientColor + diffuseColor) * (vec3(texture(Texture, texCoord)) + vec3(0.1, 0.1, 0.1));
 		}
+		finalColor = vec4(lightFactor * corrected, 1.0);
 	}
+
+	/*if (UseTex == 0) {
+		// Gamma correction
+		finalColor = vec4((ambientColor + diffuseColor) * vec3(color), color[3]);
+	}
+	else {
+		if (isCharging == 1) {
+			finalColor = vec4((ambientColor + diffuseColor) * (0.5 * vec3(texture(Texture, texCoord)) + 0.5 * vec3(1, 0, 0)), 1.0);
+		} else if (isEvading == 1) {
+			finalColor = vec4((ambientColor + diffuseColor) * (vec3(texture(Texture, texCoord)) + vec3(0.8, 0.8, 0.8)), 1.0);
+		} else if (isInvisible == 1) {
+			finalColor = vec4((ambientColor + diffuseColor) * (vec3(texture(Texture, texCoord)) + vec3(0.1, 0.1, 0.1)), 0.5);
+		} else if (isInvincible == 1) {
+			finalColor = vec4((ambientColor + diffuseColor) * (vec3(0.988, 0.832, 0.2617)), 1.0);
+		} else {
+		    finalColor = vec4((ambientColor + diffuseColor) * (vec3(texture(Texture, texCoord)) + vec3(0.1, 0.1, 0.1)), 1.0);
+		}
+	}*/
 }

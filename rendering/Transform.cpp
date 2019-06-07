@@ -173,7 +173,7 @@ void Transform::draw( std::unordered_map<unsigned int, ModelData> &models, const
 				glEnable(GL_BLEND);
 			}
 			models[model_id].model->draw(models[model_id].shader, childMtx, viewProjMtx);
-			glDisable(GL_BLEND);
+			//glDisable(GL_BLEND);
 		}
 		else if (models[model_id].renderMode == TEXTURE) {
 			models[model_id].shader->use();
