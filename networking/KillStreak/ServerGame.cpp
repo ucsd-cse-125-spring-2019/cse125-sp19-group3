@@ -552,7 +552,8 @@ int ServerGame::updateKillPhase() {
 
 	scene->update();	// update scene graph
 
-	handleKingOfTheHill();
+	// KOTH rounds 3 & 4
+	if ( round_number == 3 || round_number == 4 ) handleKingOfTheHill();
 
 	// Serialize scene graph & leaderboard -> send packet to clients
 	ServerInputPacket serverTickPacket = createServerTickPacket();

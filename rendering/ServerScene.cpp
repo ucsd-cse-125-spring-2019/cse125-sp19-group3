@@ -353,7 +353,7 @@ void ServerScene::update()
 */
 void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int killer_id)
 {
-	logger()->debug("Player {} killed player {}", killer_id, dead_player.player_id);
+	//logger()->debug("Player {} killed player {}", killer_id, dead_player.player_id);
 	// set animation mode on dead player
 	dead_player.animationMode = die;
 
@@ -381,7 +381,7 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 
 	// award bonus gold for kilstreak 
 	int killstreak_bonus = killer_data->currKillStreak / GOLD_MULTIPLIER;	
-	killer_data->gold	+= ((GOLD*2) * killstreak_bonus);
+	killer_data->gold	+= (GOLD * killstreak_bonus);
 
 	// award killer gold, increment killstreak & reset losestreak 
 	killer_data->gold			+= GOLD;
@@ -605,7 +605,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 {
 	// special case of unsilence
 	if (skill_id == UNSILENCE) {
-		logger()->debug("everyone is unsilenced");
+		//logger()->debug("everyone is unsilenced");
 		for (auto& element : scenePlayers) {
 			auto& player_id = element.first;
 			auto& player = element.second;
@@ -676,7 +676,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 
 	// special case of unevade
 	if (skill_id == UNEVADE) {
-		logger()->debug("{} player stopped evading!", playerMetadata->username);
+		//logger()->debug("{} player stopped evading!", playerMetadata->username);
 		auto &player = scenePlayers[player_id];
 		player.isEvading = false;
 		serverSceneGraphMap[player.root_id]->isEvading = false;
@@ -708,7 +708,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 	{
 		case EVADE: 
 		{
-			logger()->debug("{} player is evading!", playerMetadata->username);
+			//logger()->debug("{} player is evading!", playerMetadata->username);
 			auto &player = scenePlayers[player_id];
 			player.isEvading = true;
 			serverSceneGraphMap[player.root_id]->isEvading = true;
@@ -818,7 +818,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 
 					player.second.playerRoot->addChild(nodeIdCounter);
 					serverSceneGraphMap.insert({ nodeIdCounter, silenceNode });
-					logger()->debug("Player {} (model: {}) was silenced", player.first, player.second.modelType);
+					//logger()->debug("Player {} (model: {}) was silenced", player.first, player.second.modelType);
 				}
 			}
 			soundsToPlay.push_back(KING_SILENCE_AUDIO);
