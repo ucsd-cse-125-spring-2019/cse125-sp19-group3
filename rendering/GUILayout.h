@@ -853,7 +853,7 @@ ui_skill_group(struct nk_context *ctx, struct media *media, int width, int heigh
 					nk_layout_row_dynamic(ctx, 32, 1);
 					nk_label(ctx, skill_string, NK_TEXT_ALIGN_LEFT);
 					nk_layout_row_dynamic(ctx, 32, 1);
-					nk_label(ctx, "description of the skill | description of the skill", NK_TEXT_ALIGN_LEFT);
+					nk_label(ctx, "", NK_TEXT_ALIGN_LEFT);
 					nk_layout_row_dynamic(ctx, 32, 1);
 					nk_label(ctx, price, NK_TEXT_ALIGN_LEFT);
 					nk_layout_row_dynamic(ctx, 32, 1);
