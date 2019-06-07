@@ -28,9 +28,9 @@ struct Vertex {
 	// position
 	glm::vec3 Position;
 	// normal
-	glm::vec3 Normal;
+	glm::vec3 Normal = { 0, 1, 0 };
 	// texCoords
-	glm::vec2 TexCoords;
+	glm::vec2 TexCoords = { 0, 0 };
 
 	int IDs[NUM_BONES_PER_VERTEX] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 

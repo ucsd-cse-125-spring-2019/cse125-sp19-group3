@@ -268,7 +268,7 @@ void ClientGame::endKillPhase()
 		return;
 	}
 	
-	Window_static::playRoundOver();
+	Window_static::playTimeup();
 
 	// wait for confirmation from server to start prep phase
 	int startPrepPhase = 0;

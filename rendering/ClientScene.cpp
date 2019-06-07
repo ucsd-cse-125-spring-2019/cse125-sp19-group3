@@ -17,6 +17,7 @@
 #define VISIBILITY 14
 #define UNSPRINT 15
 #define RESPAWN_TIME 3
+#define TEXT_SHOW_TIME 3
 #define INVINCIBILITY_TIME 1
 
 using json = nlohmann::json;
@@ -56,6 +57,7 @@ void ClientScene::resetGUIStatus() {
 	guiStatuses.currPrepareLayout = 0;
 	guiStatuses.shopCategory = 0;
 	guiStatuses.killUpdates.clear();
+	guiStatuses.killStreakUpdates.clear();
 }
 
 void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network, LeaderBoard* leaderBoard, 
@@ -87,11 +89,11 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network,
 		}
 		else if ((unsigned int)obj["model_id"] == 301) {
 			models[(unsigned int)obj["model_id"]] = ModelData{ new Model(obj["path"], obj["texture_path"], false), glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 0.2f), staticShader, COLOR, 0 };
+			//circle = models[(unsigned int)obj["model_id"]].model;
 		}
 		// the sphere for king's silence
 		else {
 			models[(unsigned int)obj["model_id"]] = ModelData{ new Model(obj["path"], obj["texture_path"], false), glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), staticShader, TEXTURE, 0 };
-			//sphere = models[(unsigned int)obj["model_id"]].model;
 		}
 	}
 
@@ -340,6 +342,19 @@ GLFWwindow* ClientScene::create_window()
 }
 
 void ClientScene::updateTimers(nanoseconds timePassed) {
+	//update kill streak timers
+	auto streakIter = guiStatuses.killStreakUpdates.begin();
+	for (; streakIter != guiStatuses.killStreakUpdates.end();) {
+		auto & ns = (*streakIter).second;
+		ns -= timePassed;
+		if (ns < nanoseconds::zero()) {
+			streakIter = guiStatuses.killStreakUpdates.erase(streakIter);
+		}
+		else {
+			++streakIter;
+		}
+	}
+
 	// update individual skill timers
 	for (int i = 0; i < skill_timers.size(); i++) {
 		if (skill_timers[i] > nanoseconds::zero()) {
@@ -581,12 +596,11 @@ void ClientScene::renderKillPhase(GLFWwindow* window) {
 		}
 	}
 
-	/*staticShader->use();
-	staticShader->setInt("UseTex", 0);
-	staticShader->setVec4("color", glm::vec4(0.621, 0.527, 0.6836, 0.5));
+	/*circleShader->use();
+	circleShader->setVec4("color", glm::vec4(0.621, 0.527, 0.6836, 0.7));
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
-	sphere->draw(staticShader, glm::translate(glm::mat4(1.0f), glm::vec3(0, 5, 0)), vpMatrix);
+	circle->draw(circleShader, glm::translate(glm::mat4(1.0f), glm::vec3(0, 5, 0)) * glm::rotate(glm::mat4(1.0f), -90.0f / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)), vpMatrix);
 	glDisable(GL_BLEND);*/
 
 	 /* Input */
@@ -996,8 +1010,11 @@ void ClientScene::handleServerTickPacket(char * data) {
 	}
 
 	// server respawning player (they're alive); client still thinks they're dead
-	else if ( server_alive && !player.isAlive) {
+	else if (server_alive && !player.isAlive) {
 		player.isAlive = true;
+		player.action_state = ACTION_MOVEMENT;
+		player.isPrepProjectile = false;
+		isCharging = false;
 		// start the invincibility timer
 		std::chrono::seconds sec((int)INVINCIBILITY_TIME);
 		invincibilityTimer = nanoseconds(sec);
@@ -1037,7 +1054,9 @@ void ClientScene::handleServerTickPacket(char * data) {
 	memcpy(&isCharging, data, sizeof(bool));
 	sz += sizeof(bool);
 	data += sizeof(bool);
-	clientSceneGraphMap[player.root_id]->isCharging = isCharging;
+	if (player.modelType == WARRIOR) {
+		clientSceneGraphMap[player.root_id]->isCharging = isCharging;
+	}
 
 	//deserialize animation mode
     unordered_map<unsigned int, vector<int>> animationModes;
@@ -1074,6 +1093,47 @@ void ClientScene::handleServerTickPacket(char * data) {
 		else {
 			guiStatuses.killUpdates.pop_back();
 			guiStatuses.killUpdates.push_front(std::make_pair(killername, deadname));
+		}
+	}
+
+	while (!leaderBoard->curr_killstreaks.empty()) {
+		int killer_id = leaderBoard->curr_killstreaks.front();
+		leaderBoard->curr_killstreaks.pop_front();
+		int numStreaks = leaderBoard->curr_killstreaks.front();
+		leaderBoard->curr_killstreaks.pop_front();
+
+		string killername = usernames[killer_id];
+		string update = killername + " is on KILLSTREAK " + (char)('0' +numStreaks) + "!";
+		std::chrono::seconds s(TEXT_SHOW_TIME);
+		std::chrono::nanoseconds ns(s);
+		if (guiStatuses.killStreakUpdates.size() < MAX_KILL_UPDATES) {
+			guiStatuses.killStreakUpdates.push_front(make_pair(update, ns));
+		}
+		else {
+			guiStatuses.killStreakUpdates.pop_back();
+			guiStatuses.killStreakUpdates.push_front(make_pair(update, ns));
+		}
+	}
+
+
+
+	while (!leaderBoard->curr_shutdowns.empty()) {
+		int killer_id = leaderBoard->curr_shutdowns.front();
+		leaderBoard->curr_shutdowns.pop_front();
+		int dead_id = leaderBoard->curr_shutdowns.front();
+		leaderBoard->curr_shutdowns.pop_front();
+
+		string killername = usernames[killer_id];
+		string deadname = usernames[dead_id];
+		string update = killername + " has shutdown " + deadname + "!";
+		std::chrono::seconds s(TEXT_SHOW_TIME);
+		std::chrono::nanoseconds ns(s);
+		if (guiStatuses.killStreakUpdates.size() < MAX_KILL_UPDATES) {
+			guiStatuses.killStreakUpdates.push_front(make_pair(update, ns));
+		}
+		else {
+			guiStatuses.killStreakUpdates.pop_back();
+			guiStatuses.killStreakUpdates.push_front(make_pair(update, ns));
 		}
 	}
 	

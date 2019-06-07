@@ -27,12 +27,24 @@ void main() {
 	float intensity = dot(lightDirection, fragNormal);
 	float lightFactor = getLightFactor(intensity);
 	vec3 diffuseColor = lightColor * max(0, intensity);
+	vec3 corrected = vec3(1, 0, 0);
+	vec3 gamma = vec3(1/2.2);
 
 	if (UseTex == 0) {
 		// Gamma correction
-		finalColor = vec4(lightFactor * (ambientColor + diffuseColor) * vec3(color), color[3]);
+		corrected = (ambientColor + diffuseColor) * vec3(color);
+		finalColor = vec4(lightFactor * corrected, color[3]);
 	}
 	else {
-		finalColor = vec4(lightFactor * (ambientColor + diffuseColor) * vec3(texture(Texture, texCoord)), texture(Texture, texCoord)[3]);
+		corrected = (ambientColor + diffuseColor) * vec3(texture(Texture, texCoord));
+		finalColor = vec4(lightFactor * corrected, texture(Texture, texCoord)[3]);
 	}
+
+	//if (UseTex == 0) {
+	//	// Gamma correction
+	//	finalColor = vec4((ambientColor + diffuseColor) * vec3(color), color[3]);
+	//}
+	//else {
+	//	finalColor = vec4((ambientColor + diffuseColor) * vec3(texture(Texture, texCoord)), texture(Texture, texCoord)[3]);
+	//}
 }

@@ -64,6 +64,7 @@ struct guiStatus {
 	int betAmount;
 	int shopCategory;// 0 for skills 1 for bet 2 for cheat
 	deque<pair<string,string>> killUpdates;
+	deque<pair<string, std::chrono::nanoseconds>> killStreakUpdates;
 };
 
 enum nk_glfw_init_state{
