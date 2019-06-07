@@ -858,6 +858,10 @@ void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int acti
 			if (player.isPrepProjectile) {
 				logger()->debug("left key cooldown set");
 				skill_timers[PROJ_INDEX] = nanoseconds(ms);
+
+				// TODO: REMOVE ME****
+				logger()->debug("FIRING PROJECTILE");
+				// TODO: REMOVE ME****
 			
 				// hardcode assassin: on firing projectile, you instantly cancel invisibility if active
 				if (player.modelType == ASSASSIN && skillDurationTimer > nanoseconds::zero()) {
