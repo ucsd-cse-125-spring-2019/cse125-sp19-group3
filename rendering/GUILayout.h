@@ -713,19 +713,19 @@ static void ui_shop_header(struct nk_context *ctx, struct media *media, int widt
 	struct nk_style *s = &ctx->style;
 	nk_style_push_color(ctx, &s->window.background, nk_rgba(0, 0, 0, 0));
 	nk_style_push_style_item(ctx, &s->window.fixed_background, nk_style_item_color(nk_rgba(0, 0, 0, 0)));
-	if (nk_begin(ctx, "kill_header", nk_rect(10, height*0.15f, width * 0.15, 190),
+	if (nk_begin(ctx, "kill_header", nk_rect(5, height*0.15f, width * 0.19f, 190),
 		NK_WINDOW_NO_SCROLLBAR))
 	{
 		static const float kill_ratio[] = { 0.3f,0.3f, 0.4f };  /* 0.3 + 0.4 + 0.3 = 1 */
-		string roundStr = "ROUND: " + std::to_string(game->round_number);
+		string roundStr = "NEXT ROUND: " + std::to_string(game->round_number);
 		const char * round_char = roundStr.c_str();
 
 		string goldStr = std::to_string(player->gold);
 		string vicPtsStr = std::to_string(leaderBoard->currPoints[player->player_id]);
 		const char * gold_char = goldStr.c_str();
 		const char * vic_char = vicPtsStr.c_str();
-		nk_style_set_font(ctx, &(media->font_64->handle));
-		nk_layout_row_dynamic(ctx, 65, 1);
+		nk_style_set_font(ctx, &(media->font_48->handle));
+		nk_layout_row_dynamic(ctx, 50, 1);
 		nk_label(ctx, round_char, NK_TEXT_RIGHT | NK_TEXT_ALIGN_CENTERED);
 		nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
 
@@ -882,7 +882,7 @@ static void ui_bets_shop(struct nk_context *ctx, struct media *media, int width,
 		nk_label(ctx, amount, NK_TEXT_CENTERED);
 		nk_layout_row(ctx, NK_DYNAMIC, 65, 4, bet_ratio);
 		nk_spacing(ctx, 1);
-		nk_slider_int(ctx, 0, &guiS.betAmount, player->gold, 1);
+		nk_slider_int(ctx, 0, &guiS.betAmount, player->gold, 2);
 		nk_spacing(ctx, 1);
 		nk_layout_row(ctx, NK_DYNAMIC, height*0.05f, 4, bet_ratio);
 		nk_spacing(ctx, 1);
@@ -946,7 +946,7 @@ static void ui_shop(struct nk_context *ctx, struct media *media, int width, int 
 		static const float ratio[] = { 0.35f, 0.3f, 0.35f };  /* 0.3 + 0.4 + 0.3 = 1 */
 
 
-		static const float choice_ratio[] = { 0.15f, 0.2f, 0.65f };
+		static const float choice_ratio[] = { 0.20f, 0.15f, 0.65f };
 		ctx->style.window.fixed_background = nk_style_item_color(nk_rgba(0, 0, 0, 0));
 		ui_prepare_title(ctx, media, width, height, "Shop", game);
 
