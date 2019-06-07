@@ -283,6 +283,7 @@ void ClientGame::endKillPhase()
 		while (!(serverPackets->empty()))
 		{
 			ServerInputPacket* curr_packet = serverPackets->front();
+
 			if (curr_packet->packetType == START_PREP_PHASE)		  // server saying start prep phase
 			{
 				start_prep_packet = curr_packet;
@@ -338,6 +339,7 @@ void ClientGame::endKillPhase()
 			startPrepPhase = 1;
 			break;
 		}
+
 		// start end game phase; deserialzie data & start end game phase timer
 		else if (startEndGamePhase)
 		{
@@ -449,6 +451,7 @@ void ClientGame::endPrepPhase()
 		while (!(serverPackets->empty()))
 		{
 			ServerInputPacket* curr_packet = serverPackets->front();
+
 			if (curr_packet->packetType == START_KILL_PHASE)
 			{
 				end_prep_packet = curr_packet;
@@ -479,9 +482,15 @@ void ClientGame::endPrepPhase()
 		Window_static::playKillPhaseBGM();
 	}
 	currPhase = KILL;
-	std::chrono::seconds secKill(KILLPHASE_TIME);
-	prepareTimer = nanoseconds(secKill);
-
+	if (round_number == 5)
+	{
+		std::chrono::seconds secKill(KILLPHASE_TIME + 30);
+		prepareTimer = nanoseconds(secKill);
+	}
+	else {
+		std::chrono::seconds secKill(KILLPHASE_TIME);
+		prepareTimer = nanoseconds(secKill);
+	}
 }
 
 

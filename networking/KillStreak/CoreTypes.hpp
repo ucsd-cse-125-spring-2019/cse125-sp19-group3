@@ -5,14 +5,14 @@
 #include <string>
 
 
-#define GAME_SIZE				1			// total players required to start game
+#define GAME_SIZE				4			// total players required to start game
 #define NULL_POINT				Point(0.0,0.0,0.0)
 
 #define SERVER_TICK_PACKET_SIZE 10000
 #define END_PHASE_PACKET_SIZE   512
 
-#define KILLPHASE_TIME			15			// duration of kill phase
-#define PREPHASE_TIME			5			// duration of prepare phase
+#define KILLPHASE_TIME			90			// duration of kill phase
+#define PREPHASE_TIME			45			// duration of prepare phase
 #define ENDGAME_TIME			5			// duration of end of game 
 #define TOTAL_ROUNDS			5			// total rounds to be played in game
 #define TIMER_COUNTDOWN         10          // when the countdown tick sound should start playing
