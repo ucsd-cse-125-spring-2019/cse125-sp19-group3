@@ -648,7 +648,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 	// special case of undoing sprint
 	if (skill_id == UNSPRINT) {
 		auto &assassin = scenePlayers[player_id];
-		assassin.speed /= 1.5; // tweak values later
+		assassin.speed = assassin.default_speed; // tweak values later
 		return;
 	}
 
@@ -743,7 +743,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 		case SPRINT: 
 		{
 			auto &assassin = scenePlayers[player_id];
-			assassin.speed *= pow(1.5, adjustedSkill.level); // twice as fast, tweak values later
+			assassin.speed = assassin.default_speed * 1.5; // twice as fast, tweak values later
 			break;
 		}
 		case SUBJUGATION:
@@ -758,12 +758,14 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			// grab all players who are in the range of the skill.
 			for (auto& player : scenePlayers) {
 				// you can't silence yourself && players that are evading
-				if (player_id == player.first || player.second.isEvading) {
+				if (player_id == player.first || player.second.isEvading || !player.second.isAlive) {
 					continue;
 				}
 				if (glm::length(king.currentPos - player.second.currentPos) <= adjustedSkill.range) {
 					player.second.isSilenced = true;
 					playerMetadatas->find(player.first)->second->silenced = true;
+					player.second.speed = player.second.default_speed;
+					serverSceneGraphMap[player_id]->isInvisible = false;
 
 					nodeIdCounter++;
 					
