@@ -56,6 +56,7 @@ public:
 	void playKillStreak();
 	void playShutdown();
 	void playVictory();
+	void playTimeup();
 	//void playerInit(const ScenePlayer &player);
 	void clean_up();
 	GLFWwindow * create_window();
@@ -96,6 +97,7 @@ private:
 	Model * floor;
 	Model * arrow;
 	Model * cross;
+	Model * sphere;
 	Circle * range;
 	ScenePlayer player;
 	Transform * root;
@@ -118,6 +120,7 @@ private:
 	nanoseconds evadeDurationTimer; // used for evade
 	nanoseconds sprintDurationTimer; // used for sprint
 	nanoseconds invincibilityTimer;
+	nanoseconds kingSilenceHemisphereTimer;
 	bool isCharging = false;
 
 	// void removeTransform(Transform * parent, const unsigned int node_id);
@@ -160,6 +163,7 @@ public:
 	static void playKillStreak() { scene->playKillStreak(); };
 	static void playShutdown() { scene->playShutdown(); };
 	static void playVictory() { scene->playVictory(); };
+	static void playTimeup() { scene->playTimeup(); };
 
 	static int getPlayerGold() { return scene->getPlayerGold(); };
 	static vector<Skill> getPlayerSkills() { return scene->getPlayerSkills(); };

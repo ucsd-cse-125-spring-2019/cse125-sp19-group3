@@ -241,15 +241,28 @@ static void ui_prepare_title(struct nk_context *ctx, struct media *media, int wi
 
 		if (game->prepareTimer > std::chrono::seconds::zero()) {
 			auto timeExpr = chrono::duration_cast<chrono::seconds>(game->prepareTimer);
-			string result_string = to_string(timeExpr.count());
-			char * result = new char[100];
-			strcpy(result, ("Time Left:  " + result_string).c_str());
-			//const char* result = ("Time Left:  " + result_string).c_str();
+			int minutes = timeExpr.count() / 60;
+			int seconds = timeExpr.count() % 60;
+			char buf[100];
+			if (seconds < 10) {
+				sprintf(buf, "%d:0%d", minutes, seconds);
+				if (minutes == 0) {
+					ctx->style.text.color = nk_rgba(255, 55, 55, 255);
+				}
+			}
+			else {
+				sprintf(buf, "%d:%d", minutes, seconds);
+				ctx->style.text.color = nk_rgba(255, 255, 255, 255);
+			}
+			const char* result = (const char *)buf;
 			nk_text(ctx, result, strlen(result), NK_TEXT_CENTERED);
 		}
 		else {
 			game->switchPhase();
 		}
+		// reset to white
+		ctx->style.text.color = nk_rgba(255, 255, 255, 255);
+		nk_spacing(ctx, 1);
 		nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
 }
 
@@ -390,21 +403,43 @@ static void ui_kill_info(struct nk_context *ctx, struct media *media, int width,
 static void ui_kill_timer(struct nk_context *ctx, struct media *media, int width, int height, ClientGame * game) {
 	static const float ratio[] = { 0.3f, 0.4f , 0.3f};
 	nk_style_set_font(ctx, &(media->font_64->handle));
-	nk_layout_row(ctx, NK_DYNAMIC, 65, 2, ratio);
-	nk_spacing(ctx, 1);
 
 	if (game->prepareTimer > std::chrono::seconds::zero()) {
 		auto timeExpr = chrono::duration_cast<chrono::seconds>(game->prepareTimer);
-		string result_string = to_string(timeExpr.count());
-		char * result = new char[100];
-		strcpy(result, ("Time Left:  " + result_string).c_str());
-		//const char* result = ("Time Left:  " + result_string).c_str();
-		nk_text(ctx, result, strlen(result), NK_TEXT_CENTERED);
+			int minutes = timeExpr.count() / 60;
+			int seconds = timeExpr.count() % 60;
+			char buf[100];
+			if (seconds < 10) {
+				sprintf(buf, "%d:0%d", minutes, seconds);
+				if (minutes == 0) {
+					ctx->style.text.color = nk_rgba(255, 55, 55, 255);
+				}
+			}
+			else {
+				sprintf(buf, "%d:%d", minutes, seconds);
+				ctx->style.text.color = nk_rgba(255, 255, 255, 255);
+			}
+			const char * result = (const char *)buf;
+			nk_layout_row(ctx, NK_DYNAMIC, 65, 3, ratio);
+			nk_spacing(ctx, 1);
+			nk_text(ctx, result, strlen(result), NK_TEXT_CENTERED);
+			nk_spacing(ctx, 1);
+
+			if (seconds < 1) {
+				nk_style_set_font(ctx, &(media->font_128->handle));
+				ctx->style.text.color = nk_rgba(255, 255, 255, 255);
+				nk_layout_row_static(ctx, 0.3*height, 1, 1);
+				nk_layout_row(ctx, NK_DYNAMIC, 130, 3, ratio);
+				nk_spacing(ctx, 1);
+				nk_label(ctx, "TIME'S UP!", NK_TEXT_CENTERED);
+				nk_spacing(ctx, 1);
+			}
 	}
 	else {
 		game->switchPhase();
 	}
-	nk_spacing(ctx, 1);
+	// reset to white
+	ctx->style.text.color = nk_rgba(255, 255, 255, 255);
 	nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
 }
 
@@ -532,8 +567,8 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 	vector<ArcheType> ordered_types;
 	vector<int> curKills = leaderBoard->currentKills;
 	vector<int> curDeaths = leaderBoard->currentDeaths;
-	static const float lbratio[] = { 0.30f, 0.08f, 0.03f, 0.10f, 0.1f, 0.39f };  /* 0.3 + 0.4 + 0.3 = 1 */
-	static const float globalLBratio[] = { 0.30f, 0.08f, 0.03f, 0.10f, 0.10f, 0.39f };  /* 0.3 + 0.4 + 0.3 = 1 */
+	static const float lbratio[] = { 0.30f, 0.08f, 0.025f, 0.10f, 0.1f, 0.395f };  /* 0.3 + 0.4 + 0.3 = 1 */
+	static const float globalLBratio[] = { 0.30f, 0.08f, 0.025f, 0.10f, 0.10f, 0.395f };  /* 0.3 + 0.4 + 0.3 = 1 */
 	static const float subTitleratio[] = { 0.30f, 0.70f };  /* 0.3 + 0.4 + 0.3 = 1 */
 	static const float btnRatio[] = { 0.97f, 0.03f };
 	// make parallel arrays 'kills' & 'ordered_usernames' having same index for players based on number of kills
@@ -586,7 +621,7 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 		nk_spacing(ctx, 1);
 		nk_label(ctx, "Round Summary", NK_TEXT_LEFT | NK_TEXT_ALIGN_CENTERED);
 		nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
-		nk_layout_row(ctx, NK_DYNAMIC, width*0.03, 6, lbratio);
+		nk_layout_row(ctx, NK_DYNAMIC, width*0.02, 6, lbratio);
 		nk_spacing(ctx, 1);
 		nk_label(ctx, "Rank", NK_TEXT_LEFT);
 		nk_spacing(ctx, 1);
@@ -605,7 +640,7 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 			string point_s = std::to_string(kills[i]);
 			player_point = point_s.c_str();
 
-			nk_layout_row(ctx, NK_DYNAMIC, width*0.03, 6, lbratio);
+			nk_layout_row(ctx, NK_DYNAMIC, width*0.025, 6, lbratio);
 			nk_spacing(ctx, 1);
 			nk_text(ctx, player_id, strlen(player_id), NK_TEXT_LEFT);
 			switch (ordered_types[i])	// archetype icon on leaderboard
@@ -628,7 +663,7 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 		nk_spacing(ctx, 1);
 		nk_label(ctx, "Overall Summary", NK_TEXT_LEFT | NK_TEXT_ALIGN_CENTERED);
 		nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
-		nk_layout_row(ctx, NK_DYNAMIC, width*0.03, 6, globalLBratio);
+		nk_layout_row(ctx, NK_DYNAMIC, width*0.02, 6, globalLBratio);
 		nk_spacing(ctx, 1);
 		nk_label(ctx, "Rank", NK_TEXT_LEFT);
 		nk_spacing(ctx, 1);
@@ -651,7 +686,7 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 			string gold_s = std::to_string(ordered_gold_global[i]);
 			const char * player_gold = gold_s.c_str();
 
-			nk_layout_row(ctx, NK_DYNAMIC, width*0.03, 6, globalLBratio);
+			nk_layout_row(ctx, NK_DYNAMIC, width*0.025, 6, globalLBratio);
 			nk_spacing(ctx, 1);
 			nk_text(ctx, player_id, strlen(player_id), NK_TEXT_LEFT);
 
@@ -683,19 +718,27 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 }
 
 
-static void ui_shop_header(struct nk_context *ctx, struct media *media, int width, int height, 
-	ScenePlayer * player, LeaderBoard * leaderBoard) {
+static void ui_shop_header(struct nk_context *ctx, struct media *media, int width, int height,
+	ScenePlayer * player, LeaderBoard * leaderBoard, ClientGame * game) {
 	struct nk_style *s = &ctx->style;
 	nk_style_push_color(ctx, &s->window.background, nk_rgba(0, 0, 0, 0));
 	nk_style_push_style_item(ctx, &s->window.fixed_background, nk_style_item_color(nk_rgba(0, 0, 0, 0)));
-	if (nk_begin(ctx, "kill_header", nk_rect(10, height*0.15f, width * 0.15, 190),
+	if (nk_begin(ctx, "kill_header", nk_rect(5, height*0.15f, width * 0.19f, 190),
 		NK_WINDOW_NO_SCROLLBAR))
 	{
 		static const float kill_ratio[] = { 0.3f,0.3f, 0.4f };  /* 0.3 + 0.4 + 0.3 = 1 */
+		string roundStr = "NEXT ROUND: " + std::to_string(game->round_number);
+		const char * round_char = roundStr.c_str();
+
 		string goldStr = std::to_string(player->gold);
 		string vicPtsStr = std::to_string(leaderBoard->currPoints[player->player_id]);
 		const char * gold_char = goldStr.c_str();
 		const char * vic_char = vicPtsStr.c_str();
+		nk_style_set_font(ctx, &(media->font_48->handle));
+		nk_layout_row_dynamic(ctx, 50, 1);
+		nk_label(ctx, round_char, NK_TEXT_RIGHT | NK_TEXT_ALIGN_CENTERED);
+		nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
+
 		nk_layout_row(ctx, NK_DYNAMIC, 116, 3, kill_ratio);
 
 		nk_spacing(ctx, 1);
@@ -913,7 +956,7 @@ static void ui_shop(struct nk_context *ctx, struct media *media, int width, int 
 		static const float ratio[] = { 0.35f, 0.3f, 0.35f };  /* 0.3 + 0.4 + 0.3 = 1 */
 
 
-		static const float choice_ratio[] = { 0.15f, 0.2f, 0.65f };
+		static const float choice_ratio[] = { 0.20f, 0.15f, 0.65f };
 		ctx->style.window.fixed_background = nk_style_item_color(nk_rgba(0, 0, 0, 0));
 		ui_prepare_title(ctx, media, width, height, "Shop", game);
 
@@ -977,7 +1020,7 @@ prepare_layout(struct nk_context *ctx, struct media *media, int width, int heigh
 		ui_round_results(ctx, media, leaderBoard, usernames, archetypes, width, height, game, gStatuses);
 	}
 	else {
-		ui_shop_header(ctx, media, width, height,  player, leaderBoard);
+		ui_shop_header(ctx, media, width, height,  player, leaderBoard, game);
 		ui_shop(ctx, media, width, height, player, game, gStatuses);
 	}
 }

@@ -17,17 +17,25 @@ public:
 			this->currentOri = Point(0.0f, 1.0f, 0.0f);
 			this->speed = speed;
 			this->range = range;
-			node = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), currentPos),
-				glm::rotate(glm::mat4(1.0f), 0 / 180.f * glm::pi<float>(), glm::vec3(1, 0, 0)),
-				glm::scale(glm::mat4(1.0f), Point(0.02f, 0.02f, 0.02f))
-			);
-			node->model_ids.insert(KUNAI_ID);
 			skillRoot->addChild(nodeIdCounter);
-		
+			
 			float dotResult = glm::dot(glm::normalize(finalPoint - initPoint), currentOri);
 			float angle = glm::acos(dotResult);
 			Point axis = glm::cross(currentOri, glm::normalize(finalPoint - initPoint));
-			rotate(angle, axis);
+			if (glm::length(axis) > 0) {
+				node = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), currentPos),
+					glm::rotate(glm::mat4(1.0f), 180 / 180.f * glm::pi<float>(), glm::vec3(1, 0, 0)),
+					glm::scale(glm::mat4(1.0f), Point(0.1f))
+				);
+				rotate(angle, axis);
+			}
+			else {
+				node = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), currentPos),
+					glm::rotate(glm::mat4(1.0f), 0 / 180.f * glm::pi<float>(), glm::vec3(1, 0, 0)),
+					glm::scale(glm::mat4(1.0f), Point(0.1f))
+				);
+			}
+			node->model_ids.insert(KUNAI_ID);
 		};
 		~SceneProjectile() {};
 		void move();

@@ -13,6 +13,7 @@
 #define OMNI_SKILL_INDEX 2
 #define DIR_SKILL_INDEX 3
 #define UNSILENCE 34
+#define END_SILENCE_HEMISPHERE 35
 #define VISIBILITY 14
 #define UNSPRINT 15
 #define RESPAWN_TIME 3
@@ -84,8 +85,13 @@ void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network,
 				models[(unsigned int)obj["model_id"]].model->animation_frames.push_back(vector<float>{ ((unsigned int)obj["animations"][i][0]) / 30.0f * (unsigned int)obj["ticks_per_second"], ((unsigned int)obj["animations"][i][1]) / 30.0f * (unsigned int)obj["ticks_per_second"]});
 			}
 		}
+		else if ((unsigned int)obj["model_id"] == 301) {
+			models[(unsigned int)obj["model_id"]] = ModelData{ new Model(obj["path"], obj["texture_path"], false), glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 0.2f), staticShader, COLOR, 0 };
+		}
+		// the sphere for king's silence
 		else {
 			models[(unsigned int)obj["model_id"]] = ModelData{ new Model(obj["path"], obj["texture_path"], false), glm::vec4((float)(obj["color_rgb"][0]), (float)(obj["color_rgb"][1]), (float)(obj["color_rgb"][2]), 1.0f), staticShader, TEXTURE, 0 };
+			//sphere = models[(unsigned int)obj["model_id"]].model;
 		}
 	}
 
@@ -144,6 +150,7 @@ void ClientScene::resetPreKillPhase()
 	evadeDurationTimer = nanoseconds::zero();
 	sprintDurationTimer = nanoseconds::zero();
 	invincibilityTimer = nanoseconds::zero();
+	kingSilenceHemisphereTimer = nanoseconds::zero();
 	isCharging = false;
 
 	// interrupt death animation if necessary
@@ -192,6 +199,7 @@ void ClientScene::initialize_skills(ArcheType selected_type) {
 	evadeDurationTimer = nanoseconds::zero();
 	sprintDurationTimer = nanoseconds::zero();
 	invincibilityTimer = nanoseconds::zero();
+	kingSilenceHemisphereTimer = nanoseconds::zero();
 	player.modelType = selected_type;
 }
 
@@ -226,6 +234,8 @@ void ClientScene::initialize_UI(GLFWwindow* window) {
 	media.font_48 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/monogram_extended.ttf", 48.0f, &cfg);
 
 	media.font_64 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/monogram_extended.ttf", 64.0f, &cfg);
+
+	media.font_128 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/monogram_extended.ttf", 128.0f, &cfg);
 	nk_glfw3_font_stash_end();
 	}
 	glfw.atlas.default_font = media.font_32;
@@ -367,8 +377,10 @@ void ClientScene::updateTimers(nanoseconds timePassed) {
 		if (skillDurationTimer <= nanoseconds::zero()) {
 			// hardcode for assassin and king (only classes w duration skills)
 			if (player.modelType == ASSASSIN) {
-				ClientInputPacket endSkillPacket = game->createSkillPacket(NULL_POINT, 14);
-				network->sendToServer(endSkillPacket);
+				ClientInputPacket cancelInvisibilityPacket = game->createSkillPacket(NULL_POINT, VISIBILITY);
+				network->sendToServer(cancelInvisibilityPacket);
+				skillDurationTimer = nanoseconds::zero();
+				logger()->debug("INVISIBILITY OVER SENDING TO SERVER!");
 			}
 			if (player.modelType == KING) {
 				logger()->debug("sent unsilence packet");
@@ -409,6 +421,15 @@ void ClientScene::updateTimers(nanoseconds timePassed) {
 		}
 	}
 
+	// update king silence hemisphere duration
+	if (kingSilenceHemisphereTimer > nanoseconds::zero()) {
+		kingSilenceHemisphereTimer -= timePassed;
+		if (kingSilenceHemisphereTimer <= nanoseconds::zero()) {
+			ClientInputPacket disappearHemispherePacket = game->createSkillPacket(NULL_POINT, END_SILENCE_HEMISPHERE);
+			network->sendToServer(disappearHemispherePacket);
+			kingSilenceHemisphereTimer = nanoseconds::zero();
+		}
+	}
 }
 
 void ClientScene::resize_callback(GLFWwindow* window, int width, int height)
@@ -560,6 +581,14 @@ void ClientScene::renderKillPhase(GLFWwindow* window) {
 		}
 	}
 
+	/*staticShader->use();
+	staticShader->setInt("UseTex", 0);
+	staticShader->setVec4("color", glm::vec4(0.621, 0.527, 0.6836, 0.5));
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
+	sphere->draw(staticShader, glm::translate(glm::mat4(1.0f), glm::vec3(0, 5, 0)), vpMatrix);
+	glDisable(GL_BLEND);*/
+
 	 /* Input */
 	glfwPollEvents();
 	nk_glfw3_new_frame();
@@ -650,6 +679,7 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 				// set duration for silence / sprint
 				if (player.modelType == KING) {
 					skillDurationTimer = nanoseconds(ms);
+					kingSilenceHemisphereTimer = nanoseconds(std::chrono::milliseconds(1500));
 				}
 				else {
 					sprintDurationTimer = nanoseconds(ms);
@@ -698,8 +728,8 @@ void ClientScene::key_callback(GLFWwindow* window, int key, int scancode, int ac
 				audio.play(glm::vec3(0), ASSASSIN_STEALTH_AUDIO);
 
 				// set duration for invisibility
-				std::chrono::seconds sec((int)adjustedSkill.duration);
-				skillDurationTimer = nanoseconds(sec);
+				std::chrono::milliseconds ms((int)adjustedSkill.duration);
+				skillDurationTimer = nanoseconds(ms);
 			}
 			
 			// send server skill packet
@@ -770,6 +800,9 @@ void ClientScene::playChaching() {
 
 void ClientScene::playInvest() {
 	audio.play(glm::vec3(0), BUY_ITEM_2_AUDIO);
+				ClientInputPacket endSkillPacket = game->createSkillPacket(NULL_POINT, 14);
+				network->sendToServer(endSkillPacket);
+
 }
 
 void ClientScene::playRoundOver() {
@@ -786,6 +819,10 @@ void ClientScene::playShutdown() {
 
 void ClientScene::playVictory() {
 	audio.play(glm::vec3(0), VICTORY_AUDIO);
+}
+
+void ClientScene::playTimeup() {
+	audio.play(glm::vec3(0), TIMEUP_AUDIO);
 }
 
 
@@ -1016,7 +1053,8 @@ void ClientScene::handleServerTickPacket(char * data) {
 	data += leaderBoard_size;
 
 	if (leaderBoard->currentKills[player.player_id] > currKill) {
-		audio.play(glm::vec3(0), SKELETON_DEATH_2_AUDIO);
+		audio.play(glm::vec3(0), CRACK_AUDIO);
+		logger()->debug("you killed somebody");
 	}
 	while (!leaderBoard->kill_map.empty()) {
 		int killer_id = leaderBoard->kill_map.front();
