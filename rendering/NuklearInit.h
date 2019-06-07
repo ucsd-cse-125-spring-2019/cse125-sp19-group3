@@ -63,6 +63,8 @@ struct media {
 	struct nk_image loading_mage;
 	struct nk_image loading_warrior;
 
+	struct nk_image right_arrow;
+	struct nk_image left_arrow;
 
 };
 

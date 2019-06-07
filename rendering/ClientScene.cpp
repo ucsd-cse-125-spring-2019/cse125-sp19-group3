@@ -286,6 +286,9 @@ void ClientScene::initialize_UI(GLFWwindow* window) {
 	media.loading_king = icon_load("../icon/loading_page_king.png");
 	media.loading_mage = icon_load("../icon/loading_page_mage.png");
 	media.loading_warrior = icon_load("../icon/loading_page_warrior.png");
+
+	media.left_arrow = icon_load("../icon/arrow_left.png");
+	media.right_arrow = icon_load("../icon/arrow_right.png");
 	guiStatuses.betAmount = 0;
 	guiStatuses.currPrepareLayout = 0;
 	guiStatuses.shopCategory = 0;

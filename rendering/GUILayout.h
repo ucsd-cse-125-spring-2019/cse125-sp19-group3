@@ -763,7 +763,7 @@ static void ui_round_results(struct nk_context *ctx, struct media *media,
 	if (nk_begin(ctx, "SwitchPage", nk_rect(0.03*width, 0.9*height, height*0.1, height*0.1),
 		NK_WINDOW_NO_SCROLLBAR)) {
 		nk_layout_row_static(ctx, height*0.1, height*0.1, 1);
-		if (nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_RIGHT)) {
+		if (nk_button_image(ctx, media->right_arrow)) {
 			Window_static::playButtonPress();
 			guiS.currPrepareLayout = 1;
 		}
@@ -1078,7 +1078,7 @@ static void ui_shop(struct nk_context *ctx, struct media *media, int width, int 
 	if (nk_begin(ctx, "SwitchPageBack", nk_rect(0.03*width, 0.9*height, height*0.1, height*0.1),
 		NK_WINDOW_NO_SCROLLBAR)) {
 		nk_layout_row_static(ctx, height*0.1, height*0.1, 1);
-		if (nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_LEFT)) {
+		if (nk_button_image(ctx, media->left_arrow)) {
 			Window_static::playButtonPress();
 			gStatuses.currPrepareLayout = 0;
 		}
