@@ -519,7 +519,7 @@ void ClientGame::gameInfoScene()
 	*/
 	Window_static::scene->renderSkillInfo(window);
 
-	Sleep(5000);
+	Sleep(15000);
 
 
 	// NOTE: ONCE TIMER IS UP THIS CODE SHOULD RUN!
