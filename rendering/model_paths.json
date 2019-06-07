@@ -285,7 +285,7 @@
       "radius": 0.0
     },
     {
-      "path": "../models/sphere.obj",
+      "path": "../models/circle.obj",
       "texture_path": "../textures/flame.png",
       "model_id": 301,
       "color_rgb": [

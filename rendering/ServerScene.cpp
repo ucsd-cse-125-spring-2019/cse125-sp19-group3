@@ -68,10 +68,12 @@ void processMesh(vector<Vertex>& vertices, vector<unsigned int>& indices, aiMesh
 		vector.z = mesh->mVertices[i].z;
 		vertex.Position = vector;
 		// normals
-		vector.x = mesh->mNormals[i].x;
-		vector.y = mesh->mNormals[i].y;
-		vector.z = mesh->mNormals[i].z;
-		vertex.Normal = vector;
+		if (mesh->mNormals) {
+			vector.x = mesh->mNormals[i].x;
+			vector.y = mesh->mNormals[i].y;
+			vector.z = mesh->mNormals[i].z;
+			vertex.Normal = vector;
+		}
 		// texture coordinates
 		if (mesh->mTextureCoords[0]) // does the mesh contain texture coordinates?
 		{
@@ -786,9 +788,9 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 				// add purple sphere effect above king
 				if (player_id == player.first) {
 					nodeIdCounter++;
-					auto silenceNode = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), player.second.currentPos + Point(0, -adjustedSkill.range * 1.5, 0)),
-						glm::rotate(glm::mat4(1.0f), 0 / 180.f * glm::pi<float>(), glm::vec3(1, 0, 0)),
-						glm::scale(glm::mat4(1.0f), Point((adjustedSkill.range + 5) * 0.05f)));
+					auto silenceNode = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), player.second.currentPos + Point(0, 1, 30)),
+						glm::rotate(glm::mat4(1.0f), -90.0f / 180.0f * glm::pi<float>(), glm::vec3(1, 0, 0)),
+						glm::scale(glm::mat4(1.0f), Point(adjustedSkill.range * 45.0f)));
 					silenceNode->M = glm::inverse(player.second.playerRoot->M) * (silenceNode->M);
 					//TODO: CHANGE THIS, IT'S HARD CODED
 					silenceNode->model_ids.insert(301);
