@@ -782,7 +782,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			// grab all players who are in the range of the skill.
 			for (auto& player : scenePlayers) {
 				// you can't silence yourself && players that are evading
-				if (player.second.isEvading || !player.second.isAlive) {
+				if (player.second.isEvading || !playerMetadatas->find(player.first)->second->alive) {
 					continue;
 				}
 				// add purple sphere effect above king
