@@ -9,7 +9,7 @@ using json = nlohmann::json;
 #define DEFAULT_X 666
 #define DEFAULT_Z 666
 
-#define GOLD			 50
+#define GOLD			 5
 #define GOLD_MULTIPLIER  3		// number of kills in killstreak before next bonus
 #define LOSESTREAK_BONUS 2		// gold awarded for losestreak
 
@@ -385,7 +385,7 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 
 	// award bonus gold for kilstreak 
 	int killstreak_bonus = killer_data->currKillStreak / GOLD_MULTIPLIER;	
-	killer_data->gold	+= (GOLD * killstreak_bonus);
+	killer_data->gold	+= ((GOLD*2) * killstreak_bonus);
 
 	// award killer gold, increment killstreak & reset losestreak 
 	killer_data->gold			+= GOLD;
@@ -664,8 +664,6 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 
 	// special case of undoing invisibility
 	if (skill_id == VISIBILITY) {
-
-		logger()->debug("undo invisibility");
 		int node_id = scenePlayers[player_id].root_id;
 		serverSceneGraphMap[node_id]->enabled = true;
 		serverSceneGraphMap[node_id]->isInvisible = false;

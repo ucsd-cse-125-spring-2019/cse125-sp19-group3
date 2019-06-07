@@ -856,10 +856,33 @@ ui_skill_group(struct nk_context *ctx, struct media *media, int width, int heigh
 	nk_group_end(ctx);
 }
 
+
+/*
+	Scale cost of skill based on skill level.
+*/
+vector<int> scaleSkillCost(ScenePlayer* player)
+{
+	vector<int> prices;
+	for (int i = 0; i < player->availableSkills.size(); i++)
+	{
+		// get current skill & ajdust gold based on level
+		Skill curr_skill = player->availableSkills[i];	
+		switch (curr_skill.level)
+		{
+			case 1: prices.push_back(10); break;
+			case 2: prices.push_back(15); break;
+			case 3: prices.push_back(20); break;
+			default: prices.push_back(1000); break; // shouldn't happen
+		}
+	}
+
+	return prices;
+}
+
 static void ui_skills_shop(struct nk_context *ctx, struct media *media, int width, int height, ScenePlayer * player, ClientGame * game) {
 	char* skill_string[4] = { "Cone AOE", "AOE", "Evade", "Projectile" };
-	//char* prices[4] = { "Cost: 5", "Cost: 10", "Cost: 15", "Cost: 20" };
-	vector<int> prices = { 5, 10, 15, 20 };
+	vector<int> prices = scaleSkillCost(player);
+
 	//ArcheType type = player->modelType;
 	if (nk_group_begin(ctx, "skill", NK_WINDOW_NO_SCROLLBAR)) {
 		ui_skill_group(ctx, media, width, height, player, prices, 0, "row 0");
