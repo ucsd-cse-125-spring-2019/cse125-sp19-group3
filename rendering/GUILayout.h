@@ -332,10 +332,10 @@ summary_layout(struct nk_context *ctx, struct media *media, int width, int heigh
 		*it = -1;		// reset current max to -1
 	}
 	set_style(ctx, THEME_BLACK);
-	const static float finalRatio[] = { 0.25f, 0.25f, 0.25f, 0.25f };
+	const static float finalRatio[] = { 0.18f, 0.18f, 0.18f, 0.18f,0.28f };
 	if (nk_begin(ctx, "final_summary", nk_rect(0, 0, width, height),
 		NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_BORDER)) {
-		nk_layout_row(ctx, NK_DYNAMIC, height*0.95, 4, finalRatio);
+		nk_layout_row(ctx, NK_DYNAMIC, height*0.95, 5, finalRatio);
 		for (int i = 0; i < GAME_SIZE; i++) {
 			if(nk_group_begin(ctx, ordered_usernames_global[i].c_str(), NK_WINDOW_NO_SCROLLBAR)) {
 				nk_style_set_font(ctx, &(media->font_64->handle));
@@ -344,7 +344,7 @@ summary_layout(struct nk_context *ctx, struct media *media, int width, int heigh
 				nk_label(ctx, placements[i].c_str(), NK_TEXT_LEFT);
 				nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
 				nk_layout_row_static(ctx, 64, 64, 1);
-				nk_layout_row_static(ctx, 0.12*width, 0.12*width, 1);
+				nk_layout_row_static(ctx, 0.1*width, 0.1*width, 1);
 				if (ordered_types_global[i] == MAGE)
 					nk_image(ctx, media->mage);
 				else if (ordered_types_global[i] == WARRIOR)
@@ -368,6 +368,43 @@ summary_layout(struct nk_context *ctx, struct media *media, int width, int heigh
 			}
 			nk_group_end(ctx);
 		}
+
+		if (nk_group_begin(ctx, "sudoNerds", NK_WINDOW_NO_SCROLLBAR)) {
+			nk_style_set_font(ctx, &(media->font_64->handle));
+			nk_layout_row_static(ctx, 64, 64, 1);
+			nk_layout_row_dynamic(ctx, 64, 1);
+			nk_label(ctx, "Sudo_Nerds", NK_TEXT_LEFT);
+			nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
+			nk_layout_row_dynamic(ctx, 48, 2);
+			nk_label(ctx, "Graphics: ", NK_TEXT_LEFT);
+			nk_label(ctx, "Lingfeng Guo", NK_TEXT_LEFT);
+
+			nk_layout_row_dynamic(ctx, 48, 2);			
+			nk_label(ctx, "", NK_TEXT_LEFT);
+			nk_label(ctx, "Jianhan Xu", NK_TEXT_LEFT);
+
+			nk_layout_row_dynamic(ctx, 48, 2);
+			nk_label(ctx, "Network: ", NK_TEXT_LEFT);
+			nk_label(ctx, "Joshua Chao", NK_TEXT_LEFT);
+
+			nk_layout_row_dynamic(ctx, 48, 2);
+			nk_label(ctx, "", NK_TEXT_LEFT);
+			nk_label(ctx, "Yi Hui Chen", NK_TEXT_LEFT);
+
+			nk_layout_row_dynamic(ctx, 48, 2);
+			nk_label(ctx, "", NK_TEXT_LEFT);
+			nk_label(ctx, "Xiaoqi Jiang", NK_TEXT_LEFT);
+
+
+			nk_layout_row_dynamic(ctx, 48, 2);
+			nk_label(ctx, "", NK_TEXT_LEFT);
+			nk_label(ctx, "Aldo Malkhassian", NK_TEXT_LEFT);
+
+			nk_layout_row_dynamic(ctx, 48, 2);
+			nk_label(ctx, "Music: ", NK_TEXT_LEFT);
+			nk_label(ctx, "Clark Phan", NK_TEXT_LEFT);
+		}
+		nk_group_end(ctx);
 	}
 	nk_end(ctx);
 
