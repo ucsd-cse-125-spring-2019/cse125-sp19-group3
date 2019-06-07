@@ -473,19 +473,19 @@ int ServerGame::updateKillPhase() {
 				leaderBoard->awardRoundPoints(round_number);
 				round_number++;
 
+				Sleep(3000);		// wait 3 seconds before prep_phase/endgame
+
 				if (round_number <= TOTAL_ROUNDS)
 				{
 					// serialize leaderboard and gold of all players then broadcast to all clients
 					ServerInputPacket start_prep_phase_packet = createStartPrepPhasePacket();
 					network->broadcastSend(start_prep_phase_packet);
-					logger()->debug("Prep Phase: Broadcasting start prep phase packet");
 					return PREP_PHASE;
 				}
 				else	// GAME OVER! Send end game phase packet!
 				{
 					ServerInputPacket start_end_phase_packet = createStartEndPhasePacket();
 					network->broadcastSend(start_end_phase_packet);
-					logger()->debug("GAME OVER: Broadcasting start end phase packet");
 					return END_GAME_PHASE;
 				}
 			}
@@ -744,7 +744,7 @@ ServerInputPacket ServerGame::createStartKillPhasePacket()
 
 	// serealize leaderboard
 	unsigned int leaderBoard_size = 0;
-	leaderBoard_size = Serialization::serializeLeaderBoard(bufPtr, leaderBoard);
+	leaderBoard_size = Serialization::serializeLeaderBoard(bufPtr, leaderBoard, playerMetadatas);
 	bufPtr += leaderBoard_size;
 	sgSize += leaderBoard_size;
 
@@ -771,7 +771,7 @@ ServerInputPacket ServerGame::createStartEndPhasePacket()
 
 	// serealize leaderboard
 	unsigned int leaderBoard_size = 0;
-	leaderBoard_size = Serialization::serializeLeaderBoard(bufPtr, leaderBoard);
+	leaderBoard_size = Serialization::serializeLeaderBoard(bufPtr, leaderBoard, playerMetadatas);
 	bufPtr += leaderBoard_size;
 	sgSize += leaderBoard_size;
 
@@ -802,7 +802,7 @@ ServerInputPacket ServerGame::createStartPrepPhasePacket()
 
 	// serealize leaderboard
 	unsigned int leaderBoard_size = 0;
-	leaderBoard_size = Serialization::serializeLeaderBoard(bufPtr, leaderBoard);
+	leaderBoard_size = Serialization::serializeLeaderBoard(bufPtr, leaderBoard, playerMetadatas);
 	bufPtr += leaderBoard_size;
 	sgSize += leaderBoard_size;
 
@@ -866,6 +866,7 @@ ServerInputPacket ServerGame::createServerTickPacket() {
 	bufPtr += sizeof(int);
 	sgSize += sizeof(int);
 
+	// serialize sound
 	for (auto& sound : scene->soundsToPlay) {
 		memcpy(bufPtr, &sound, sizeof(int));
 		bufPtr += sizeof(int);
@@ -884,7 +885,7 @@ ServerInputPacket ServerGame::createServerTickPacket() {
 
 	// serealize leaderboard
 	unsigned int leaderBoard_size = 0;
-	leaderBoard_size = Serialization::serializeLeaderBoard(bufPtr, leaderBoard);
+	leaderBoard_size = Serialization::serializeLeaderBoard(bufPtr, leaderBoard, playerMetadatas);
 	bufPtr += leaderBoard_size;
 	sgSize += leaderBoard_size;
 

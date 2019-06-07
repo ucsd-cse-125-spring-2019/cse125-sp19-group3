@@ -19,6 +19,7 @@ public:
 	LeaderBoard* leaderBoard;
 	int round_number;
 	int client_id;
+	list<int>* killstreak_data;
 	unsigned int cheatingPoints;
 
 	void run();

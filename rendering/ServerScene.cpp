@@ -301,7 +301,7 @@ void ServerScene::update()
 		auto & skill = *skillIter;
 		bool skillCollidedEnv = false;
 		for (auto& envObj : env_objs) {
-			glm::vec3 forwardVector = skill.direction*skill.speed;
+			glm::vec3 forwardVector = (skill.direction*skill.speed) - Point(0,3,0);
 			if (skill.node->isCollided(forwardVector, model_radius, serverSceneGraphMap, envObj, model_boundingbox, true)) {
 				skillCollidedEnv = true;
 			}
@@ -392,9 +392,29 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 	killer_data->currKillStreak += 1;
 	killer_data->currLoseStreak  = 0;
 
-	// if killer ended killstreak they get bonus points
-	int shutdown_bonus = GOLD * (dead_player_ks / GOLD_MULTIPLIER);
-	killer_data->gold += shutdown_bonus;
+	// add killstreak data to list to be serialized to clients
+	// killer_id : current killstreak
+	if ( killer_data->currKillStreak > 0 && killer_data->currKillStreak % 3 == 0 )
+	{ 
+		killer_data->gold += 2;		// extra bonus for every 3
+		leaderBoard->curr_killstreaks.push_back(killer_id);
+		leaderBoard->curr_killstreaks.push_back(killer_data->currKillStreak);
+		leaderBoard->total_killstreaks++;
+	}
+
+
+	// if killer SHUTDOWN dead player they get bonus points
+	if ( dead_player_ks >= 3)
+	{
+		int shutdown_bonus = GOLD * (dead_player_ks / GOLD_MULTIPLIER);
+		killer_data->gold += shutdown_bonus;
+
+		// add data to list to be serialized to clients
+		// killer id: dead_player id
+		leaderBoard->curr_shutdowns.push_back(killer_id);
+		leaderBoard->curr_shutdowns.push_back(dead_player_id);
+		leaderBoard->total_shutdowns++;
+	}
 
 	// award kill to player (global & current rounds leaderboard)
 	leaderBoard->awardKillRound(killer_id);
@@ -443,7 +463,7 @@ void ServerScene::checkAndHandlePlayerCollision(unsigned int playerId) {
 		}
 
 		// collision detected --> handle player death
-		else if (player.playerRoot->isCollided(forwardVector, model_radius, serverSceneGraphMap, skill.node, model_boundingbox, false)) {
+		else if (player.playerRoot->isCollided(forwardVector + Point(0,3,0), model_radius, serverSceneGraphMap, skill.node, model_boundingbox, false)) {
 			handlePlayerDeath(player, skill.ownerId);
 			return;
 		}
@@ -509,7 +529,8 @@ void ServerScene::createSceneProjectile(unsigned int player_id, Point finalPoint
 {
 	// modify final point for non default projectile (e.g. Pyroblast)
 	if ( x != DEFAULT_X || z != DEFAULT_Z ) finalPoint = initPoint + Point({x, 0.0f, z});
-
+	initPoint = initPoint + Point({ 0, 3, 0 });
+	finalPoint = finalPoint + Point({0, 3, 0 });
 	nodeIdCounter++;
 	SceneProjectile proj = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range);
 	serverSceneGraphMap.insert({ nodeIdCounter, proj.node });
@@ -717,9 +738,9 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			// set animation mode so everyone can see your dragon breath state
 			scenePlayers[player_id].animationMode = skill_2;
 			nodeIdCounter++;
-			initPoint = initPoint + glm::vec3({ 0.0f, 30.0f, 0.0f });
-			SceneProjectile dirAOE = SceneProjectile(nodeIdCounter, player_id, initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range);
-			dirAOE.node->scale = glm::scale(glm::mat4(1.0f), Point(0.4f, 0.4f, 0.4f));
+			auto new_initPoint = finalPoint + glm::vec3({ 0.0f, 30.0f, 0.0f });
+			SceneProjectile dirAOE = SceneProjectile(nodeIdCounter, player_id, new_initPoint, finalPoint, skillRoot, adjustedSkill.speed, adjustedSkill.range);
+			dirAOE.node->scale = glm::scale(glm::mat4(1.0f), Point(1.20f));
 			serverSceneGraphMap.insert({ nodeIdCounter, dirAOE.node });
 			skills.push_back(dirAOE);
 			soundsToPlay.push_back(FIRE_CONE_AOE_AUDIO);

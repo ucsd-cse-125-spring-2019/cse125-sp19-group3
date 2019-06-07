@@ -4,36 +4,52 @@ using namespace std;
 
 Audio::Audio() {
 	loadWAVFiles();
+	// assassin skill sounds
 	assassin_projectile.setBuffer(assassin_projectile_Buffer);
 	assassin_stealth.setBuffer(assassin_stealth_Buffer);
 	assassin_teleport.setBuffer(assassin_teleport_Buffer);
+	
+	// king skill sounds
 	king_silence.setBuffer(king_silence_Buffer);
+	
+	// mage sounds
 	fire_aoe.setBuffer(fire_aoe_Buffer);
 	fire_cone_aoe.setBuffer(fire_cone_aoe_Buffer);
 	fireball_1.setBuffer(fireball_1_Buffer);
 	fireball_2.setBuffer(fireball_2_Buffer);
 	fireball_3.setBuffer(fireball_3_Buffer);
+	
+	// warrior sounds
 	warrior_charge.setBuffer(warrior_charge_Buffer);
 	warrior_projectile.setBuffer(warrior_projectile_Buffer);
 	warrior_slam_aoe.setBuffer(warrior_slam_aoe_Buffer);
+	
+	// death and shared skill sounds
 	skeleton_death_1.setBuffer(skeleton_death_1_Buffer);
 	skeleton_death_2.setBuffer(skeleton_death_2_Buffer);
 	skeleton_evade.setBuffer(skeleton_evade_Buffer);
 	skeleton_evade_2.setBuffer(skeleton_evade_2_Buffer);
 	cooldown_sound.setBuffer(cooldown_Buffer);
+	
+	// shop sounds
 	cannotBuyItem.setBuffer(cannotBuyItem_Buffer);
 	buyItem_1.setBuffer(buyItem_1_Buffer);
 	buyItem_2.setBuffer(buyItem_2_Buffer);
 	equipItem_1.setBuffer(equipItem_1_Buffer);
 	equipItem_2.setBuffer(equipItem_2_Buffer);
 	button_press.setBuffer(button_press_Buffer);
+	
+	// bgm
 	prepare_phase_music.setBuffer(prepare_phase_music_Buffer);
 	kill_phase_music.setBuffer(kill_phase_music_Buffer);
 	final_round_music.setBuffer(final_round_music_Buffer);
 	victory_music.setBuffer(victory_Buffer);
+	
+	// metagame sounds
 	timer.setBuffer(timer_Buffer);
 	killstreak.setBuffer(killstreak_Buffer);
 	shutdown.setBuffer(shutdown_Buffer);
+	game_over.setBuffer(game_over_Buffer);
 	//**BGM**
 	//if (!music.openFromFile("./audio/music.wav"))
 	//	cout << "unable to load wav file " << "music.wav" << endl;
@@ -107,6 +123,10 @@ void Audio::loadWAVFiles() {
 	if (!killstreak_Buffer.loadFromFile("../audio/phases/killstreak.wav"))
 		cout << "unable to load wav file " << "killstreak.wav" << endl;
 	if (!shutdown_Buffer.loadFromFile("../audio/phases/shutdown.wav"))
+		cout << "unable to load wav file " << "shutdown.wav" << endl;
+	if (!game_over_Buffer.loadFromFile("../audio/phases/game_over.wav"))
+		cout << "unable to load wav file " << "game_over.wav" << endl;
+	if (!cannotBuyItem_Buffer.loadFromFile("../audio/store/cannotBuy.wav"))
 		cout << "unable to load wav file " << "shutdown.wav" << endl;
 }
 

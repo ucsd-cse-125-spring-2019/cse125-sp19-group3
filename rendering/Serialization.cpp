@@ -65,7 +65,8 @@ unsigned int Serialization::serializeAnimationMode(unordered_map<unsigned int, S
 }
 
 // deserialize one of the leaderbo// serialize leaderboard
-unsigned int Serialization::serializeLeaderBoard(char* lb_data, LeaderBoard* leaderBoard)
+unsigned int Serialization::serializeLeaderBoard(char* lb_data, LeaderBoard* leaderBoard, 
+	unordered_map<unsigned int, PlayerMetadata*>* playerMetadatas)
 {
 	unsigned int size = 0;
 	for (int i = 0; i < GAME_SIZE; i++)			// kills
@@ -127,14 +128,69 @@ unsigned int Serialization::serializeLeaderBoard(char* lb_data, LeaderBoard* lea
 		lb_data += sizeof(int);
 	}
 
-	leaderBoard->deaths_this_tick = 0;	// reset deaths this tick
-	//leaderBoard->kill_map.clear();		// clear list of kills (just in case should be empty)
+	// serialize total kill streaks
+	memcpy(lb_data, &leaderBoard->total_killstreaks, sizeof(int));
+	size += sizeof(int);
+	lb_data += sizeof(int);
+
+	// for each killstreak... serialize client ID followed by running number of kills
+	for (int i = 0; i < leaderBoard->total_killstreaks; i++)
+	{
+
+		// TODO: REMOVE ME
+		//int curr_client = leaderBoard->curr_killstreaks.front();
+
+		// player id
+		memcpy(lb_data, &leaderBoard->curr_killstreaks.front(), sizeof(int));
+		leaderBoard->curr_killstreaks.pop_front();
+		size += sizeof(int);
+		lb_data += sizeof(int);
+
+		// TODO: REMOVE ME
+		//int ks = leaderBoard->curr_killstreaks.front();
+
+		// num running kills
+		memcpy(lb_data, &leaderBoard->curr_killstreaks.front(), sizeof(int));
+		leaderBoard->curr_killstreaks.pop_front();
+		size += sizeof(int);
+		lb_data += sizeof(int);
+
+		// TODO : REMOVE ME
+		//logger()->debug("CLIENT {} KILLSTREAK {}", curr_client, ks);
+	}
+
+	// serialzie total shutdowns
+	memcpy(lb_data, &leaderBoard->total_shutdowns, sizeof(int));
+	size += sizeof(int);
+	lb_data += sizeof(int);
+
+	// for each shutdown... serialize killer id followed by dead player id
+	for (int i = 0; i < leaderBoard->total_shutdowns; i++)
+	{
+		// killer id
+		memcpy(lb_data, &leaderBoard->curr_shutdowns.front(), sizeof(int));
+		leaderBoard->curr_shutdowns.pop_front();
+		size += sizeof(int);
+		lb_data += sizeof(int);
+
+		// dead player id
+		memcpy(lb_data, &leaderBoard->curr_shutdowns.front(), sizeof(int));
+		leaderBoard->curr_shutdowns.pop_front();
+		size += sizeof(int);
+		lb_data += sizeof(int);
+	}
+
+
+	// reset values based per server tick
+	leaderBoard->total_shutdowns = 0;
+	leaderBoard->deaths_this_tick = 0;	
+	leaderBoard->total_killstreaks = 0;
 
 	return size;
 }
 
 // deserialize leaderboard
-unsigned int Serialization::deserializeLeaderBoard(char* lb_data, LeaderBoard* leaderBoard)
+unsigned int Serialization::deserializeLeaderBoard(char* lb_data, LeaderBoard* leaderBoard, list<int>* killstreak_data)
 {
 	unsigned int sz = 0;
 
@@ -149,8 +205,6 @@ unsigned int Serialization::deserializeLeaderBoard(char* lb_data, LeaderBoard* l
 		memcpy(&leaderBoard->currPoints[i], lb_data, sizeof(int));
 		lb_data += sizeof(int);
 		sz += sizeof(int);
-
-		logger()->debug("Deserialize.. client {} points {}", i, leaderBoard->currPoints[i]);
 	}
 	for (int i = 0; i < GAME_SIZE; i++)		// killstreak
 	{
@@ -176,9 +230,6 @@ unsigned int Serialization::deserializeLeaderBoard(char* lb_data, LeaderBoard* l
 	sz		+= sizeof(int);
 
 
-	// reset kill_map before adding this ticks kills
-	//leaderBoard->kill_map.clear();
-
 	// deserialize who killed who (first int killers id, second int dead players id)
 	// for every death this tick you should pop two elements off the front of the list (killer, dead_player)
 	for (int i = 0; i < leaderBoard->deaths_this_tick; i++)
@@ -199,6 +250,54 @@ unsigned int Serialization::deserializeLeaderBoard(char* lb_data, LeaderBoard* l
 		leaderBoard->kill_map.push_back(killer_id);
 		leaderBoard->kill_map.push_back(dead_id);
 
+	}
+
+	// deserialize total killstreaks
+	int total_killstreaks = 0;
+	memcpy(&total_killstreaks, lb_data, sizeof(int));
+	lb_data += sizeof(int);
+	sz += sizeof(int);
+
+	// deserialize player id then total kills & add to killstreak_data list
+	for (int i = 0; i < total_killstreaks; i++)
+	{
+		int curr_client_id = -1;
+		int curr_kills = -1;
+
+		memcpy(&curr_client_id, lb_data, sizeof(int));
+		lb_data += sizeof(int);
+		sz		+= sizeof(int);
+
+		memcpy(&curr_kills, lb_data, sizeof(int));
+		lb_data += sizeof(int);
+		sz		+= sizeof(int);
+
+		leaderBoard->curr_killstreaks.push_back(curr_client_id);
+		leaderBoard->curr_killstreaks.push_back(curr_kills);
+	}
+
+	// deserialize total shutdowns
+	int total_shutdowns = 0;
+	memcpy(&total_shutdowns, lb_data, sizeof(int));
+	lb_data += sizeof(int);
+	sz += sizeof(int);
+
+	// deserialize killer id then dead player id
+	for (int i = 0; i < total_shutdowns; i++)
+	{
+		int killer_id = -1;
+		int dead_id = -1;
+
+		memcpy(&killer_id, lb_data, sizeof(int));
+		lb_data += sizeof(int);
+		sz += sizeof(int);
+
+		memcpy(&dead_id, lb_data, sizeof(int));
+		lb_data += sizeof(int);
+		sz += sizeof(int);
+
+		leaderBoard->curr_shutdowns.push_back(killer_id);
+		leaderBoard->curr_shutdowns.push_back(dead_id);
 	}
 
 	return sz;
@@ -235,7 +334,7 @@ Transform * Serialization::deserializeSceneGraph(char *data, unordered_map<unsig
 		if (clientSceneGraphMap.count(node_id) != 0) {
 			Transform * node = clientSceneGraphMap[node_id];
 			std::unordered_set<unsigned int> oldChildren = node->children_ids;
-			size = node->deserializeAndUpdate(data, particleShader, particleTexture);
+			size = node->deserializeAndUpdate(data, particleShader, particleTexture,false);
 			std::unordered_set<unsigned int> newChildren = node->children_ids;
 			auto toDelete = compareSets(oldChildren, newChildren);
 			for (auto element : toDelete) {
@@ -247,7 +346,7 @@ Transform * Serialization::deserializeSceneGraph(char *data, unordered_map<unsig
 		}
 		else {
 			Transform * newNode = new Transform();
-			size = newNode->deserializeAndUpdate(data, particleShader, particleTexture);
+			size = newNode->deserializeAndUpdate(data, particleShader, particleTexture,true);
 			clientSceneGraphMap.insert({ node_id, newNode });
 			if (!root) {
 				root = newNode;
