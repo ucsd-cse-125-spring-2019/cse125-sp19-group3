@@ -51,6 +51,7 @@ Audio::Audio() {
 	killstreak.setBuffer(killstreak_Buffer);
 	shutdown.setBuffer(shutdown_Buffer);
 	game_over.setBuffer(game_over_Buffer);
+	timeup.setBuffer(timeup_buffer);
 	//**BGM**
 	//if (!music.openFromFile("./audio/music.wav"))
 	//	cout << "unable to load wav file " << "music.wav" << endl;
@@ -131,6 +132,8 @@ void Audio::loadWAVFiles() {
 		cout << "unable to load wav file " << "cannotBuyItem.wav" << endl;
 	if (!crack_Buffer.loadFromFile("../audio/model/crack.wav"))
 		cout << "unable to load wav file " << "crack.wav" << endl;
+	if (!timeup_Buffer.loadFromFile("../audio/phases/timeup.wav"))
+		cout << "unable to load wav file " << "timeup.wav" << endl;
 
 }
 
@@ -231,6 +234,9 @@ void Audio::play(glm::vec3 pos, unsigned int audio_id) {
 		break;
 	case CRACK_AUDIO:
 		crack_sound.play();
+		break;
+	case TIMEUP_AUDIO:
+		timeup.play();
 		break;
 	}
 	
