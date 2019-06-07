@@ -382,20 +382,20 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 	s_it = playerMetadatas->find(killer_id);
 	PlayerMetadata* killer_data = s_it->second;
 
-	// award bonus gold for kilstreak 
-	int killstreak_bonus = killer_data->currKillStreak / GOLD_MULTIPLIER;	
-	killer_data->gold	+= (GOLD * killstreak_bonus);
-
 	// award killer gold, increment killstreak & reset losestreak 
 	killer_data->gold			+= GOLD;
 	killer_data->currKillStreak += 1;
 	killer_data->currLoseStreak  = 0;
 
+	// award bonus gold for kilstreak 
+	int killstreak_bonus = killer_data->currKillStreak / GOLD_MULTIPLIER;	
+	killer_data->gold	+= (GOLD * killstreak_bonus);
+
 	// add killstreak data to list to be serialized to clients
 	// killer_id : current killstreak
 	if ( killer_data->currKillStreak > 0 && killer_data->currKillStreak % 3 == 0 )
 	{ 
-		killer_data->gold += 2;		// extra bonus for every 3
+		//killer_data->gold += 2;		// extra bonus for every 3
 		leaderBoard->curr_killstreaks.push_back(killer_id);
 		leaderBoard->curr_killstreaks.push_back(killer_data->currKillStreak);
 		leaderBoard->total_killstreaks++;
@@ -801,6 +801,11 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 				}
 				if (glm::length(king.currentPos - player.second.currentPos) <= adjustedSkill.range) {
 					player.second.isSilenced = true;
+
+					unordered_map<unsigned int, PlayerMetadata*>::iterator p_it = playerMetadatas->find(player.first);
+					PlayerMetadata* player_meta = p_it->second;
+					player_meta->silenced = true;
+
 					if (player.second.modelType == ASSASSIN) {
 						serverSceneGraphMap[player.second.root_id]->enabled = true;
 						serverSceneGraphMap[player.second.root_id]->isInvisible = false;
