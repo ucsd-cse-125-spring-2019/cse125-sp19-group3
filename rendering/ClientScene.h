@@ -52,6 +52,10 @@ public:
 	void playInvalidButtonPress();
 	void playChaching();
 	void playInvest();
+	void playRoundOver();
+	void playKillStreak();
+	void playShutdown();
+	void playVictory();
 	//void playerInit(const ScenePlayer &player);
 	void clean_up();
 	GLFWwindow * create_window();
@@ -147,17 +151,23 @@ public:
 	static void playPreparePhaseBGM() { scene->playPreparePhaseBGM(); };
 	static void playKillPhaseBGM() { scene->playKillPhaseBGM(); };
 	static void playFinalRoundBGM() { scene->playFinalRoundBGM(); };
+	static void playRoundOver() { scene->playRoundOver(); };
 	static void playCountdown() { scene->playCountdown(); };
 	static void playButtonPress() { scene->playButtonPress(); };
 	static void playChaching() { scene->playChaching(); };
 	static void playInvest() { scene->playInvest(); };
 	static void playInvalidButtonPress() { scene->playInvalidButtonPress(); };
+	static void playKillStreak() { scene->playKillStreak(); };
+	static void playShutdown() { scene->playShutdown(); };
+	static void playVictory() { scene->playVictory(); };
+
 	static int getPlayerGold() { return scene->getPlayerGold(); };
 	static vector<Skill> getPlayerSkills() { return scene->getPlayerSkills(); };
 	static vector<string> getUsernames() { return scene->getUsernames(); };
 	static vector<int> getInvestmentInfo() { return scene->getInvestmentInfo(); };
 	static void clearInvestmentInfo() { return scene->clearInvestmentInfo(); };
 	static void updatePlayerGold(int curr_gold) { return scene->updatePlayerGold(curr_gold); };
+
 };
 
 

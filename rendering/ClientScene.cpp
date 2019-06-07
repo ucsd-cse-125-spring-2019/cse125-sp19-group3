@@ -772,6 +772,22 @@ void ClientScene::playInvest() {
 	audio.play(glm::vec3(0), BUY_ITEM_2_AUDIO);
 }
 
+void ClientScene::playRoundOver() {
+	audio.play(glm::vec3(0), GAME_OVER_AUDIO);
+}
+
+void ClientScene::playKillStreak() {
+	audio.play(glm::vec3(0), KILLSTREAK_AUDIO);
+}
+
+void ClientScene::playShutdown() {
+	audio.play(glm::vec3(0), SHUTDOWN_AUDIO);
+}
+
+void ClientScene::playVictory() {
+	audio.play(glm::vec3(0), VICTORY_AUDIO);
+}
+
 
 void ClientScene::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {

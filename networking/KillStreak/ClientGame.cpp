@@ -267,6 +267,8 @@ void ClientGame::endKillPhase()
 		closesocket(network->ConnectSocket);
 		return;
 	}
+	
+	Window_static::playRoundOver();
 
 	// wait for confirmation from server to start prep phase
 	int startPrepPhase = 0;
@@ -500,6 +502,7 @@ int ClientGame::switchPhase() {
 		// TODO: End game scene
 		case FINAL: 
 			logger()->debug("GAME OVER!!!!");
+			Window_static::playVictory();
 			currPhase = SUMMARY;
 			break;
 
@@ -572,6 +575,45 @@ void ClientGame::run() {
 			Window_static::display_callback(window);
 			// Idle callback. Updating objects, etc. can be done here.
 			Window_static::idle_callback();
+
+
+			// TODO: REMOVE ******
+
+			// any killstreaks?
+			if (!leaderBoard->curr_killstreaks.empty()) {
+				Window_static::playKillStreak();
+			}
+
+			while (!leaderBoard->curr_killstreaks.empty())
+			{
+				int curr_id = leaderBoard->curr_killstreaks.front();
+				leaderBoard->curr_killstreaks.pop_front();
+				int curr_kills = leaderBoard->curr_killstreaks.front();
+				leaderBoard->curr_killstreaks.pop_front();
+
+				string curr_name = Window_static::getUsernames()[curr_id];
+				logger()->debug("{} has a KILLSTREAK of {}!", curr_name, curr_kills);
+			}
+
+			if (!leaderBoard->curr_shutdowns.empty()) {
+				Window_static::playShutdown();
+			}
+			// any shutdowns?
+			while (!leaderBoard->curr_shutdowns.empty())
+			{
+				int killer_id = leaderBoard->curr_shutdowns.front();
+				leaderBoard->curr_shutdowns.pop_front();
+				int dead_id = leaderBoard->curr_shutdowns.front();
+				leaderBoard->curr_shutdowns.pop_front();
+
+				string killer_name = Window_static::getUsernames()[killer_id];
+				string dead_name = Window_static::getUsernames()[dead_id];
+				logger()->debug("{} SHUTDOWN {}!", killer_name, dead_name);
+			}
+
+
+
+			// TODO: REMOVE ******
 
 			// update all timers based on time elapsed
 			auto end = Clock::now();
