@@ -785,6 +785,7 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 				if (player.second.isEvading || !playerMetadatas->find(player.first)->second->alive) {
 					continue;
 				}
+
 				// add purple sphere effect above king
 				if (player_id == player.first) {
 					nodeIdCounter++;
@@ -801,9 +802,11 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 				}
 				if (glm::length(king.currentPos - player.second.currentPos) <= adjustedSkill.range) {
 					player.second.isSilenced = true;
-					playerMetadatas->find(player.first)->second->silenced = true;
-					player.second.speed = player.second.default_speed;
-					serverSceneGraphMap[player_id]->isInvisible = false;
+					if (player.second.modelType == ASSASSIN) {
+						serverSceneGraphMap[player.second.root_id]->enabled = true;
+						serverSceneGraphMap[player.second.root_id]->isInvisible = false;
+						player.second.speed = player.second.default_speed;
+					}
 
 					nodeIdCounter++;
 					
