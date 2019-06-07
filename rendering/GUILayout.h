@@ -403,8 +403,6 @@ static void ui_kill_info(struct nk_context *ctx, struct media *media, int width,
 static void ui_kill_timer(struct nk_context *ctx, struct media *media, int width, int height, ClientGame * game) {
 	static const float ratio[] = { 0.3f, 0.4f , 0.3f};
 	nk_style_set_font(ctx, &(media->font_64->handle));
-	nk_layout_row(ctx, NK_DYNAMIC, 65, 2, ratio);
-	nk_spacing(ctx, 1);
 
 	if (game->prepareTimer > std::chrono::seconds::zero()) {
 		auto timeExpr = chrono::duration_cast<chrono::seconds>(game->prepareTimer);
@@ -422,14 +420,26 @@ static void ui_kill_timer(struct nk_context *ctx, struct media *media, int width
 				ctx->style.text.color = nk_rgba(255, 255, 255, 255);
 			}
 			const char * result = (const char *)buf;
+			nk_layout_row(ctx, NK_DYNAMIC, 65, 3, ratio);
+			nk_spacing(ctx, 1);
 			nk_text(ctx, result, strlen(result), NK_TEXT_CENTERED);
+			nk_spacing(ctx, 1);
+
+			if (seconds < 1) {
+				nk_style_set_font(ctx, &(media->font_128->handle));
+				ctx->style.text.color = nk_rgba(255, 255, 255, 255);
+				nk_layout_row_static(ctx, 0.3*height, 1, 1);
+				nk_layout_row(ctx, NK_DYNAMIC, 130, 3, ratio);
+				nk_spacing(ctx, 1);
+				nk_label(ctx, "TIME'S UP!", NK_TEXT_CENTERED);
+				nk_spacing(ctx, 1);
+			}
 	}
 	else {
 		game->switchPhase();
 	}
 	// reset to white
 	ctx->style.text.color = nk_rgba(255, 255, 255, 255);
-	nk_spacing(ctx, 1);
 	nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
 }
 
@@ -882,7 +892,7 @@ static void ui_bets_shop(struct nk_context *ctx, struct media *media, int width,
 		nk_label(ctx, amount, NK_TEXT_CENTERED);
 		nk_layout_row(ctx, NK_DYNAMIC, 65, 4, bet_ratio);
 		nk_spacing(ctx, 1);
-		nk_slider_int(ctx, 0, &guiS.betAmount, player->gold, 2);
+		nk_slider_int(ctx, 0, &guiS.betAmount, player->gold, 1);
 		nk_spacing(ctx, 1);
 		nk_layout_row(ctx, NK_DYNAMIC, height*0.05f, 4, bet_ratio);
 		nk_spacing(ctx, 1);

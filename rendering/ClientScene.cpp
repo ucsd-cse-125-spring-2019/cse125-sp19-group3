@@ -234,6 +234,8 @@ void ClientScene::initialize_UI(GLFWwindow* window) {
 	media.font_48 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/monogram_extended.ttf", 48.0f, &cfg);
 
 	media.font_64 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/monogram_extended.ttf", 64.0f, &cfg);
+
+	media.font_128 = nk_font_atlas_add_from_file(atlas, "../nuklear-master/extra_font/monogram_extended.ttf", 128.0f, &cfg);
 	nk_glfw3_font_stash_end();
 	}
 	glfw.atlas.default_font = media.font_32;
