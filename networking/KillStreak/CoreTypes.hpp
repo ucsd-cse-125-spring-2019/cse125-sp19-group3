@@ -12,7 +12,7 @@
 #define END_PHASE_PACKET_SIZE   512
 
 
-#define KILLPHASE_TIME			90			// duration of kill phase
+#define KILLPHASE_TIME			180			// duration of kill phase
 #define PREPHASE_TIME			45			// duration of prepare phase
 #define ENDGAME_TIME			5			// duration of end of game 
 #define TOTAL_ROUNDS			5			// total rounds to be played in game

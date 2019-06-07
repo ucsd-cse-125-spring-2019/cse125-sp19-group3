@@ -833,6 +833,7 @@ ServerInputPacket ServerGame::createStartPrepPhasePacket()
 		// get clients gold 
 		unordered_map<unsigned int, PlayerMetadata*>::iterator p_it = playerMetadatas->find(client_id);
 		PlayerMetadata* player_meta = p_it->second;
+		player_meta->gold += 5;		// add 5 base gold per round
 		int curr_gold = player_meta->gold;
 		memcpy(bufPtr, &curr_gold, sizeof(int));
 		sgSize += sizeof(int);
