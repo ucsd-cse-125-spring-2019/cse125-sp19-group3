@@ -1,7 +1,7 @@
 #pragma warning(disable : 4996)
 #include "Particle.h"
 #include "ClientScene.h"
-#define MaxParticles 10
+#define MaxParticles 20
 
 static GLfloat g_vertex_buffer_data[] = {
 	-0.5f, -0.5f, 0.0f,
@@ -17,7 +17,7 @@ Particle ParticlesContainer[MaxParticles];
 void SortParticles() {
 	std::sort(&ParticlesContainer[0], &ParticlesContainer[MaxParticles]);
 }
-int newparticles = 5;
+int newparticles = 12;
 // Finds a Particle in ParticlesContainer which isn't used yet.
 // (i.e. life < 0);
 int FindUnusedParticle() {
@@ -184,15 +184,15 @@ void Particles::update(glm::vec3 move) {
 }
 
 void Particles::reinitParticle(Particle& p) {
-	p.life = 0.07f + (rand() % 2000) / 8000.0f;
+	p.life = 0.1f + (rand() % 2000) / 8000.0f;
 	p.pos = translation + glm::vec3(0.0f, 1.5f, 1.0f);
 
 	float spread = 5.0f;
-	glm::vec3 maindir = glm::vec3(0.0f, 1.0f, -5.0f);
+	glm::vec3 maindir = glm::vec3(0.0f, 1.0f, -3.0f);
 	glm::vec3 randomdir = glm::vec3(
-		(rand() % 2000 - 1000.0f) / 1000.0f,
-		(rand() % 2000 - 1000.0f) / 1000.0f,
-		(rand() % 2000 - 1000.0f) / 1000.0f
+		(rand() % 2000 - 1000.0f) / 2000.0f,
+		(rand() % 2000 - 1000.0f) / 2000.0f,
+		(rand() % 2000 - 1000.0f) / 2000.0f
 	);
 
 	p.speed = maindir + randomdir * spread;
@@ -204,7 +204,7 @@ void Particles::reinitParticle(Particle& p) {
 	p.b = 163;
 	p.a = (rand() % 256) / 2 + 100;
 
-	p.size = (rand() % 1000) / 2000.0f + 0.5f;
+	p.size = (rand() % 1000) / 2000.0f + 1.0f;
 }
 
 void Particles::draw() {

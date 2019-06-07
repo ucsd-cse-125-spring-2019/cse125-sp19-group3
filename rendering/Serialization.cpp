@@ -235,7 +235,7 @@ Transform * Serialization::deserializeSceneGraph(char *data, unordered_map<unsig
 		if (clientSceneGraphMap.count(node_id) != 0) {
 			Transform * node = clientSceneGraphMap[node_id];
 			std::unordered_set<unsigned int> oldChildren = node->children_ids;
-			size = node->deserializeAndUpdate(data, particleShader, particleTexture);
+			size = node->deserializeAndUpdate(data, particleShader, particleTexture,false);
 			std::unordered_set<unsigned int> newChildren = node->children_ids;
 			auto toDelete = compareSets(oldChildren, newChildren);
 			for (auto element : toDelete) {
@@ -247,7 +247,7 @@ Transform * Serialization::deserializeSceneGraph(char *data, unordered_map<unsig
 		}
 		else {
 			Transform * newNode = new Transform();
-			size = newNode->deserializeAndUpdate(data, particleShader, particleTexture);
+			size = newNode->deserializeAndUpdate(data, particleShader, particleTexture,true);
 			clientSceneGraphMap.insert({ node_id, newNode });
 			if (!root) {
 				root = newNode;
