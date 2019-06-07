@@ -9,9 +9,6 @@ using json = nlohmann::json;
 #define DEFAULT_X 666
 #define DEFAULT_Z 666
 
-#define GOLD			 5
-#define GOLD_MULTIPLIER  3		// number of kills in killstreak before next bonus
-#define LOSESTREAK_BONUS 2		// gold awarded for losestreak
 
 // skill_id's
 #define VULNERABLE         -2
@@ -385,7 +382,7 @@ void ServerScene::handlePlayerDeath(ScenePlayer& dead_player, unsigned int kille
 
 	// award bonus gold for kilstreak 
 	int killstreak_bonus = killer_data->currKillStreak / GOLD_MULTIPLIER;	
-	killer_data->gold	+= ((GOLD*2) * killstreak_bonus);
+	killer_data->gold	+= (GOLD * killstreak_bonus);
 
 	// award killer gold, increment killstreak & reset losestreak 
 	killer_data->gold			+= GOLD;

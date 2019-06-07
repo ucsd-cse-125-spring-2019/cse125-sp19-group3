@@ -5,18 +5,23 @@
 #include <string>
 
 
-#define GAME_SIZE				2			// total players required to start game
+#define GAME_SIZE				4			// total players required to start game
 #define NULL_POINT				Point(0.0,0.0,0.0)
 
 #define SERVER_TICK_PACKET_SIZE 10000
 #define END_PHASE_PACKET_SIZE   512
-
 
 #define KILLPHASE_TIME			90			// duration of kill phase
 #define PREPHASE_TIME			45			// duration of prepare phase
 #define ENDGAME_TIME			5			// duration of end of game 
 #define TOTAL_ROUNDS			5			// total rounds to be played in game
 #define TIMER_COUNTDOWN         10          // when the countdown tick sound should start playing
+
+#define BASE_GOLD		 5		// gold given at start of each round
+#define GOLD			 5		// gold awarded per kill
+#define GOLD_MULTIPLIER  3		// number of kills in killstreak before next bonus
+#define LOSESTREAK_BONUS 2		// gold awarded for losestreak
+
 
 typedef glm::vec3 Point;
 
