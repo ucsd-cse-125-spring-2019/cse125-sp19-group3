@@ -17,6 +17,7 @@
 #define VISIBILITY 14
 #define UNSPRINT 15
 #define RESPAWN_TIME 3
+#define TEXT_SHOW_TIME 3
 #define INVINCIBILITY_TIME 1
 
 using json = nlohmann::json;
@@ -56,6 +57,7 @@ void ClientScene::resetGUIStatus() {
 	guiStatuses.currPrepareLayout = 0;
 	guiStatuses.shopCategory = 0;
 	guiStatuses.killUpdates.clear();
+	guiStatuses.killStreakUpdates.clear();
 }
 
 void ClientScene::initialize_objects(ClientGame * game, ClientNetwork * network, LeaderBoard* leaderBoard, 
@@ -340,6 +342,19 @@ GLFWwindow* ClientScene::create_window()
 }
 
 void ClientScene::updateTimers(nanoseconds timePassed) {
+	//update kill streak timers
+	auto streakIter = guiStatuses.killStreakUpdates.begin();
+	for (; streakIter != guiStatuses.killStreakUpdates.end();) {
+		auto & ns = (*streakIter).second;
+		ns -= timePassed;
+		if (ns < nanoseconds::zero()) {
+			streakIter = guiStatuses.killStreakUpdates.erase(streakIter);
+		}
+		else {
+			++streakIter;
+		}
+	}
+
 	// update individual skill timers
 	for (int i = 0; i < skill_timers.size(); i++) {
 		if (skill_timers[i] > nanoseconds::zero()) {
@@ -1062,6 +1077,47 @@ void ClientScene::handleServerTickPacket(char * data) {
 		else {
 			guiStatuses.killUpdates.pop_back();
 			guiStatuses.killUpdates.push_front(std::make_pair(killername, deadname));
+		}
+	}
+
+	while (!leaderBoard->curr_killstreaks.empty()) {
+		int killer_id = leaderBoard->curr_killstreaks.front();
+		leaderBoard->curr_killstreaks.pop_front();
+		int numStreaks = leaderBoard->curr_killstreaks.front();
+		leaderBoard->curr_killstreaks.pop_front();
+
+		string killername = usernames[killer_id];
+		string update = killername + " is on KILLSTREAK " + (char)('0' +numStreaks) + "!";
+		std::chrono::seconds s(TEXT_SHOW_TIME);
+		std::chrono::nanoseconds ns(s);
+		if (guiStatuses.killStreakUpdates.size() < MAX_KILL_UPDATES) {
+			guiStatuses.killStreakUpdates.push_front(make_pair(update, ns));
+		}
+		else {
+			guiStatuses.killStreakUpdates.pop_back();
+			guiStatuses.killStreakUpdates.push_front(make_pair(update, ns));
+		}
+	}
+
+
+
+	while (!leaderBoard->curr_shutdowns.empty()) {
+		int killer_id = leaderBoard->curr_shutdowns.front();
+		leaderBoard->curr_shutdowns.pop_front();
+		int dead_id = leaderBoard->curr_shutdowns.front();
+		leaderBoard->curr_shutdowns.pop_front();
+
+		string killername = usernames[killer_id];
+		string deadname = usernames[dead_id];
+		string update = killername + " has shutdown " + deadname + "!";
+		std::chrono::seconds s(TEXT_SHOW_TIME);
+		std::chrono::nanoseconds ns(s);
+		if (guiStatuses.killStreakUpdates.size() < MAX_KILL_UPDATES) {
+			guiStatuses.killStreakUpdates.push_front(make_pair(update, ns));
+		}
+		else {
+			guiStatuses.killStreakUpdates.pop_back();
+			guiStatuses.killStreakUpdates.push_front(make_pair(update, ns));
 		}
 	}
 	
