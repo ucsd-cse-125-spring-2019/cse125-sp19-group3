@@ -30,6 +30,7 @@ using json = nlohmann::json;
 #define ROYAL_CROSS			32
 #define SUBJUGATION			33
 #define UNSILENCE           34
+#define END_SILENCE_HEMISPHERE 35
 
 ServerScene::ServerScene(LeaderBoard* leaderBoard, unordered_map<unsigned int, PlayerMetadata*>* playerMetadatas,
 	unordered_map<unsigned int, Skill>* skill_map, unordered_map<ArcheType, vector<unsigned int>> *archetype_skillset)
@@ -241,7 +242,7 @@ void ServerScene::resetScene()
 			auto & child_id = *childIter;
 			auto silenceNode = serverSceneGraphMap[child_id];
 			auto mids = silenceNode->model_ids;
-			if (mids.find(300) != mids.end()) {
+			if (mids.find(300) != mids.end() || mids.find(301) != mids.end()) { // think it will work; what if they have both models? not possible idont think
 				serverSceneGraphMap.erase(child_id);
 				player.playerRoot->removeChild(child_id);
 				delete(silenceNode);
@@ -636,6 +637,31 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 		return;
 	}
 
+	if (skill_id == END_SILENCE_HEMISPHERE) {
+		// DELETE HEMISPEHRE
+		for (auto& element : scenePlayers) {
+			auto& player = element.second;
+			auto & childs = player.playerRoot->children_ids;
+
+			auto childIter = childs.begin();
+			while (childIter != childs.end()) {
+				auto & child_id = *childIter;
+				auto silenceNode = serverSceneGraphMap[child_id];
+				auto mids = silenceNode->model_ids;
+				if (mids.find(301) != mids.end()) {
+					serverSceneGraphMap.erase(child_id);
+					player.playerRoot->removeChild(child_id);
+					delete(silenceNode);
+					break;
+				}
+				else {
+					childIter++;
+				}
+			}
+		}
+		return;
+	}
+
 	// special case of undoing invisibility
 	if (skill_id == VISIBILITY) {
 
@@ -759,7 +785,21 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 			// grab all players who are in the range of the skill.
 			for (auto& player : scenePlayers) {
 				// you can't silence yourself && players that are evading
-				if (player_id == player.first || player.second.isEvading) {
+				if (player.second.isEvading) {
+					continue;
+				}
+				// add purple sphere effect above king
+				if (player_id == player.first) {
+					nodeIdCounter++;
+					auto silenceNode = new Transform(nodeIdCounter, glm::translate(glm::mat4(1.0f), player.second.currentPos + Point(0, -adjustedSkill.range * 1.5, 0)),
+						glm::rotate(glm::mat4(1.0f), 0 / 180.f * glm::pi<float>(), glm::vec3(1, 0, 0)),
+						glm::scale(glm::mat4(1.0f), Point((adjustedSkill.range + 5) * 0.05f)));
+					silenceNode->M = glm::inverse(player.second.playerRoot->M) * (silenceNode->M);
+					//TODO: CHANGE THIS, IT'S HARD CODED
+					silenceNode->model_ids.insert(301);
+
+					player.second.playerRoot->addChild(nodeIdCounter);
+					serverSceneGraphMap.insert({ nodeIdCounter, silenceNode });
 					continue;
 				}
 				if (glm::length(king.currentPos - player.second.currentPos) <= adjustedSkill.range) {

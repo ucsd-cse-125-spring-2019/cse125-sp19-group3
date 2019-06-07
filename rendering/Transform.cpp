@@ -163,16 +163,17 @@ void Transform::draw( std::unordered_map<unsigned int, ModelData> &models, const
 
 	glm::mat4 childMtx = parentMtx * M;
 
-	for (unsigned int child_id : children_ids) {
-		Transform * child = sceneGraphMap[child_id];
-		child->draw( models, childMtx, viewProjMtx, sceneGraphMap);
-	}
-
 	for (unsigned int model_id : model_ids) {
 		if (models[model_id].renderMode == COLOR) {
 			models[model_id].shader->use();
 			models[model_id].shader->setVec4("color", models[model_id].color);
+			models[model_id].shader->setInt("UseTex", 0);
+			if (model_id == 301) {
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				glEnable(GL_BLEND);
+			}
 			models[model_id].model->draw(models[model_id].shader, childMtx, viewProjMtx);
+			glDisable(GL_BLEND);
 		}
 		else if (models[model_id].renderMode == TEXTURE) {
 			models[model_id].shader->use();
@@ -196,6 +197,10 @@ void Transform::draw( std::unordered_map<unsigned int, ModelData> &models, const
 		}
 	}
 
+	for (unsigned int child_id : children_ids) {
+		Transform * child = sceneGraphMap[child_id];
+		child->draw(models, childMtx, viewProjMtx, sceneGraphMap);
+	}
 }
 
 bool collisionSphere2Sphere(glm::vec3 myNextPos, float myRadius, glm::vec3 otherPos, float otherRadius) {
