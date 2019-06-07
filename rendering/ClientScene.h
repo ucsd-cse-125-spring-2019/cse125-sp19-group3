@@ -90,6 +90,7 @@ private:
 	Model * floor;
 	Model * arrow;
 	Model * cross;
+	Model * sphere;
 	Circle * range;
 	ScenePlayer player;
 	Transform * root;
@@ -111,6 +112,7 @@ private:
 	nanoseconds evadeDurationTimer; // used for evade
 	nanoseconds sprintDurationTimer; // used for sprint
 	nanoseconds invincibilityTimer;
+	nanoseconds kingSilenceHemisphereTimer;
 	bool isCharging = false;
 
 	// void removeTransform(Transform * parent, const unsigned int node_id);
