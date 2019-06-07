@@ -681,6 +681,27 @@ void ServerGame::resetValuesPreKillPhase()
 	std::fill(leaderBoard->currentKills.begin(),  leaderBoard->currentKills.end(), 0);
 	std::fill(leaderBoard->currentDeaths.begin(), leaderBoard->currentDeaths.end(), 0);
 
+	// reset global killstreak/shutdown
+	leaderBoard->curr_killstreaks.clear();
+	leaderBoard->curr_shutdowns.clear();
+	leaderBoard->kill_map.clear();
+
+	//  reset all player personal killstreaks & losestreaks 
+	unordered_map<unsigned int, PlayerMetadata*>::iterator p_it = playerMetadatas->begin();
+	while (p_it != playerMetadatas->end())
+	{
+		PlayerMetadata* curr_player = p_it->second;
+		curr_player->currKillStreak = 0;
+		curr_player->currLoseStreak = 0;
+
+		p_it++;
+	}
+
+	// per tick values
+	leaderBoard->total_shutdowns = 0;
+	leaderBoard->deaths_this_tick = 0;
+	leaderBoard->total_killstreaks = 0;
+
 	// reset scene data
 	scene->resetScene();
 }

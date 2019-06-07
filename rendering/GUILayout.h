@@ -241,15 +241,28 @@ static void ui_prepare_title(struct nk_context *ctx, struct media *media, int wi
 
 		if (game->prepareTimer > std::chrono::seconds::zero()) {
 			auto timeExpr = chrono::duration_cast<chrono::seconds>(game->prepareTimer);
-			string result_string = to_string(timeExpr.count());
-			char * result = new char[100];
-			strcpy(result, ("Time Left:  " + result_string).c_str());
-			//const char* result = ("Time Left:  " + result_string).c_str();
+			int minutes = timeExpr.count() / 60;
+			int seconds = timeExpr.count() % 60;
+			char buf[100];
+			if (seconds < 10) {
+				sprintf(buf, "%d:0%d", minutes, seconds);
+				if (minutes == 0) {
+					ctx->style.text.color = nk_rgba(255, 55, 55, 255);
+				}
+			}
+			else {
+				sprintf(buf, "%d:%d", minutes, seconds);
+				ctx->style.text.color = nk_rgba(255, 255, 255, 255);
+			}
+			const char* result = (const char *)buf;
 			nk_text(ctx, result, strlen(result), NK_TEXT_CENTERED);
 		}
 		else {
 			game->switchPhase();
 		}
+		// reset to white
+		ctx->style.text.color = nk_rgba(255, 255, 255, 255);
+		nk_spacing(ctx, 1);
 		nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
 }
 
@@ -395,15 +408,27 @@ static void ui_kill_timer(struct nk_context *ctx, struct media *media, int width
 
 	if (game->prepareTimer > std::chrono::seconds::zero()) {
 		auto timeExpr = chrono::duration_cast<chrono::seconds>(game->prepareTimer);
-		string result_string = to_string(timeExpr.count());
-		char * result = new char[100];
-		strcpy(result, ("Time Left:  " + result_string).c_str());
-		//const char* result = ("Time Left:  " + result_string).c_str();
-		nk_text(ctx, result, strlen(result), NK_TEXT_CENTERED);
+			int minutes = timeExpr.count() / 60;
+			int seconds = timeExpr.count() % 60;
+			char buf[100];
+			if (seconds < 10) {
+				sprintf(buf, "%d:0%d", minutes, seconds);
+				if (minutes == 0) {
+					ctx->style.text.color = nk_rgba(255, 55, 55, 255);
+				}
+			}
+			else {
+				sprintf(buf, "%d:%d", minutes, seconds);
+				ctx->style.text.color = nk_rgba(255, 255, 255, 255);
+			}
+			const char * result = (const char *)buf;
+			nk_text(ctx, result, strlen(result), NK_TEXT_CENTERED);
 	}
 	else {
 		game->switchPhase();
 	}
+	// reset to white
+	ctx->style.text.color = nk_rgba(255, 255, 255, 255);
 	nk_spacing(ctx, 1);
 	nk_style_set_font(ctx, &(glfw.atlas.default_font->handle));
 }

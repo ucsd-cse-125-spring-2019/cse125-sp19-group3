@@ -126,8 +126,8 @@ void Audio::loadWAVFiles() {
 		cout << "unable to load wav file " << "shutdown.wav" << endl;
 	if (!game_over_Buffer.loadFromFile("../audio/phases/game_over.wav"))
 		cout << "unable to load wav file " << "game_over.wav" << endl;
-	if (!cannotBuyItem_Buffer.loadFromFile("../audio/store/cannotBuy.wav"))
-		cout << "unable to load wav file " << "shutdown.wav" << endl;
+	if (!cannotBuyItem_Buffer.loadFromFile("../audio/store/cannotBuyItem.wav"))
+		cout << "unable to load wav file " << "cannotBuyItem.wav" << endl;
 }
 
 void Audio::play(glm::vec3 pos, unsigned int audio_id) {

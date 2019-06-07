@@ -468,8 +468,13 @@ void ClientGame::endPrepPhase()
 	// reset scene 
 	Window_static::scene->resetPreKillPhase();
 
-	// server starting kill phase! 
-	Window_static::playKillPhaseBGM();
+	// server starting kill phase!
+	if (round_number == TOTAL_ROUNDS) {
+		Window_static::playFinalRoundBGM();
+	}
+	else {
+		Window_static::playKillPhaseBGM();
+	}
 	currPhase = KILL;
 	std::chrono::seconds secKill(KILLPHASE_TIME);
 	prepareTimer = nanoseconds(secKill);
