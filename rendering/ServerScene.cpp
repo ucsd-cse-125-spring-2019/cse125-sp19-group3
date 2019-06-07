@@ -9,10 +9,6 @@ using json = nlohmann::json;
 #define DEFAULT_X 666
 #define DEFAULT_Z 666
 
-#define GOLD			 5
-#define GOLD_MULTIPLIER  3		// number of kills in killstreak before next bonus
-#define LOSESTREAK_BONUS 2		// gold awarded for losestreak
-
 // skill_id's
 #define VULNERABLE         -2
 #define UNEVADE            -1
@@ -504,6 +500,7 @@ void ServerScene::handlePlayerMovement(unsigned int playerId, glm::vec3 destinat
 	ScenePlayer &player = scenePlayers[playerId];
 	player.setDestination(destination);
 	float dotResult = glm::dot(glm::normalize(destination - player.currentPos), player.currentOri);
+	//logger()->debug("Current position ({},{},{})", player.currentPos.x, player.currentPos.y, player.currentPos.z);
 
 	if (abs(dotResult) < 1.0) {
 		float angle = glm::acos(dotResult);

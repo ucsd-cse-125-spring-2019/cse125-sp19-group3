@@ -19,6 +19,14 @@
 #define PREP_PHASE			 1
 #define END_GAME_PHASE		 2
 
+// X & Z boundaries for King of the Hill
+#define MIN_X_COORD				55
+#define MAX_X_COORD				110
+
+#define MIN_Z_COORD				10
+#define MAX_Z_COORD				50
+
+
 
 static int game_start			  = 0;	// game ready to begin?
 static int character_select_start = 0;	// character selection ready to begin?
@@ -58,6 +66,7 @@ ServerGame::ServerGame(string host, string port, double tick_rate)
 	scheduledEvent = ScheduledEvent(END_KILLPHASE, 10000000); // default huge value
 
 	char_select_lock = new mutex();
+	kingsOfTheHill = vector<int>(GAME_SIZE, 0);
 
 }
 
@@ -397,6 +406,53 @@ void ServerGame::launch() {
 
 
 /*
+	Checks if any players are on the hill and awards gold for those there
+	long enough.
+*/
+void ServerGame::handleKingOfTheHill()
+{
+	// iterate over all scene players checking location
+	unordered_map<unsigned int, ScenePlayer>::iterator s_it = scene->scenePlayers.begin();
+	while (s_it != scene->scenePlayers.end())
+	{
+		int curr_id = s_it->first;
+		ScenePlayer curr_player = s_it->second;
+
+		// get current position 
+		int x_pos = curr_player.currentPos.x;
+		int z_pos = curr_player.currentPos.z;
+
+		// player on the hill! --> award points!
+		if (x_pos <= MAX_X_COORD && x_pos >= MIN_X_COORD &&
+			z_pos <= MAX_Z_COORD && z_pos >= MIN_Z_COORD)
+		{
+			kingsOfTheHill[curr_id] += 1;
+		}
+		// player not on hill; reset points!
+		else	
+		{
+			kingsOfTheHill[curr_id] = 0;
+		}
+
+		s_it++;
+	}
+
+	// check if anyone has been KOTH long enough --> award gold!
+	for (int curr_id = 0; curr_id < kingsOfTheHill.size(); curr_id++)
+	{
+		// award 1 gold per second on the hill
+		if (kingsOfTheHill[curr_id] > 0 && kingsOfTheHill[curr_id] % 60 == 0)
+		{
+			unordered_map<unsigned int, PlayerMetadata*>::iterator p_it = playerMetadatas->find(curr_id);
+			PlayerMetadata* player_meta = p_it->second;
+			player_meta->gold += KOTH_GOLD;
+		}
+	}
+
+}
+
+
+/*
 	Runs on every server tick. Empties all client_thread queues, updates the game state, and 
 	broadcasts updated state back to all clients.
 	-- Return next phase next server tick should be on
@@ -495,6 +551,8 @@ int ServerGame::updateKillPhase() {
 	if (end_kill_phase) return KILL_PHASE;	// don't update; return treu b/c kill phase not over just yet!
 
 	scene->update();	// update scene graph
+
+	handleKingOfTheHill();
 
 	// Serialize scene graph & leaderboard -> send packet to clients
 	ServerInputPacket serverTickPacket = createServerTickPacket();
@@ -701,6 +759,9 @@ void ServerGame::resetValuesPreKillPhase()
 	leaderBoard->total_shutdowns = 0;
 	leaderBoard->deaths_this_tick = 0;
 	leaderBoard->total_killstreaks = 0;
+
+	// reset KOTH 
+	std::fill(kingsOfTheHill.begin(), kingsOfTheHill.end(), 0);
 
 	// reset scene data
 	scene->resetScene();
