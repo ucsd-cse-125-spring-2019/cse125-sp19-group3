@@ -785,6 +785,13 @@ void ServerScene::handlePlayerSkill(unsigned int player_id, Point finalPoint,
 				if (player.second.isEvading || !playerMetadatas->find(player.first)->second->alive) {
 					continue;
 				}
+
+				if (player.second.modelType == ASSASSIN) {
+					serverSceneGraphMap[player_id]->enabled = false;
+					serverSceneGraphMap[player_id]->isInvisible = true;
+					player.second.speed = player.second.default_speed;
+				}
+
 				// add purple sphere effect above king
 				if (player_id == player.first) {
 					nodeIdCounter++;
