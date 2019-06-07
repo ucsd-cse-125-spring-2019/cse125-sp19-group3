@@ -91,7 +91,7 @@ private:
 	sf::SoundBuffer timer_Buffer;
 	sf::SoundBuffer killstreak_Buffer;
 	sf::SoundBuffer shutdown_Buffer;
-	sf::SoundBuffer timeup_buffer;
+	sf::SoundBuffer timeup_Buffer;
 
 	sf::Sound game_over;
 	sf::Sound prepare_phase_music;
