@@ -71,7 +71,7 @@ unsigned int Transform::serialize(char * data) {
 	return size;
 }
 
-unsigned int Transform::deserializeAndUpdate(char * data, Shader* particleShader, GLuint particleTexture) {
+unsigned int Transform::deserializeAndUpdate(char * data, Shader* particleShader, GLuint particleTexture, bool isInitializing) {
 	unsigned int numModels, numChilds;
 	unsigned int size = 0;
 	glm::mat4 newMat(1.0f);
@@ -131,8 +131,18 @@ unsigned int Transform::deserializeAndUpdate(char * data, Shader* particleShader
 		children_ids.insert(childId);
 	}
 
-	setDestination(newMat);
-
+	if (!isInitializing)
+		setDestination(newMat);
+	else {
+		M = newMat;
+		destination = { M[3][0], M[3][1], M[3][2] };
+		float dist = glm::distance(destination, destination);
+		speed = dist;
+		direction = { 0,-1,0 };
+		glm::vec3 scaleVec = { glm::length(glm::vec3(M[0])), glm::length(glm::vec3(M[1])), glm::length(glm::vec3(M[2])) };
+		rotation = { M[0] / scaleVec[0], M[1] / scaleVec[1], M[2] / scaleVec[2],{ 0,0,0,1 } };
+		scale = glm::scale(glm::mat4(1.0f), scaleVec);
+	}
 	if (!particle_effect)
 		particle_effect = new Particles( particleTexture, particleShader, { newMat[3][0], newMat[3][1], newMat[3][2] });
 	return size;
@@ -153,16 +163,17 @@ void Transform::draw( std::unordered_map<unsigned int, ModelData> &models, const
 
 	glm::mat4 childMtx = parentMtx * M;
 
-	for (unsigned int child_id : children_ids) {
-		Transform * child = sceneGraphMap[child_id];
-		child->draw( models, childMtx, viewProjMtx, sceneGraphMap);
-	}
-
 	for (unsigned int model_id : model_ids) {
 		if (models[model_id].renderMode == COLOR) {
 			models[model_id].shader->use();
 			models[model_id].shader->setVec4("color", models[model_id].color);
+			models[model_id].shader->setInt("UseTex", 0);
+			if (model_id == 301) {
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				glEnable(GL_BLEND);
+			}
 			models[model_id].model->draw(models[model_id].shader, childMtx, viewProjMtx);
+			glDisable(GL_BLEND);
 		}
 		else if (models[model_id].renderMode == TEXTURE) {
 			models[model_id].shader->use();
@@ -186,6 +197,10 @@ void Transform::draw( std::unordered_map<unsigned int, ModelData> &models, const
 		}
 	}
 
+	for (unsigned int child_id : children_ids) {
+		Transform * child = sceneGraphMap[child_id];
+		child->draw(models, childMtx, viewProjMtx, sceneGraphMap);
+	}
 }
 
 bool collisionSphere2Sphere(glm::vec3 myNextPos, float myRadius, glm::vec3 otherPos, float otherRadius) {

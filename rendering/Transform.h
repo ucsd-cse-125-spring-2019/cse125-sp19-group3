@@ -60,7 +60,7 @@ public:
 	void addChild(const unsigned int id);
 	void removeChild(unsigned int id);
 	unsigned int serialize(char * data);
-	unsigned deserializeAndUpdate(char * data, Shader* particleShader, GLuint particleTexture);
+	unsigned deserializeAndUpdate(char * data, Shader* particleShader, GLuint particleTexture,bool isInitializing);
 	void draw(std::unordered_map<unsigned int, ModelData> &models, const glm::mat4 &parentMtx, const glm::mat4 &viewProjMtx, unordered_map<unsigned int, Transform *> &sceneGraphMap);
 	void update();
 	void clientUpdate();

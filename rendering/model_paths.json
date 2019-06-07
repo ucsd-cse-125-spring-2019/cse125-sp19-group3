@@ -249,8 +249,8 @@
       "radius": 1.0
     },
     {
-      "path": "../models/projectiles/candle_small_1.fbx",
-      "texture_path": "../textures/cemetery.tga",
+      "path": "../models/projectiles/fire.fbx",
+      "texture_path": "../textures/fire.png",
       "model_id": 200,
       "color_rgb": [
         1.0,
@@ -271,6 +271,18 @@
       ],
       "animated": false,
       "radius": 0.0
+    },
+    {
+      "path": "../models/sphere.obj",
+      "texture_path": "../textures/flame.png",
+      "model_id": 301,
+      "color_rgb": [
+        0.828,
+        0.7539,
+        0.9219
+      ],
+      "animated": false,
+      "radius": 10.0
     }
   ]
 }
