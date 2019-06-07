@@ -87,7 +87,7 @@ public:
 	void resetGUIStatus();
 	vector<int> getInvestmentInfo();
 	void clearInvestmentInfo();
-
+	void renderSkillInfo(GLFWwindow* window);
 private:
 	Audio audio;
 	float min_scroll = 20.0f;

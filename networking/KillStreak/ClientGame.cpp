@@ -505,6 +505,8 @@ void ClientGame::gameInfoScene()
 	/*
 		TODO: Display UI and start timer...
 	*/
+	Window_static::scene->renderSkillInfo(window);
+
 	Sleep(5000);
 
 
