@@ -21,7 +21,7 @@
 #define GOLD			 5		// gold awarded per kill
 #define GOLD_MULTIPLIER  3		// number of kills in killstreak before next bonus
 #define LOSESTREAK_BONUS 2		// gold awarded for losestreak
-
+#define KOTH_GOLD	 	 1		// gold awarded to kings/queens of the hill
 
 typedef glm::vec3 Point;
 
